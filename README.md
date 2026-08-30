@@ -6,8 +6,8 @@ traceable publication.
 The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
 personnel briefing. Runtime API reads are SQLAlchemy-backed. Opt-in live-capable official
 connectors are available for National Assembly member identity, legislative activity,
-Central Election Commission local-election candidates/winners, and NKIS policy-research
-metadata; Golden tests remain fully offline.
+Central Election Commission local-election candidates/winners, NKIS policy-research
+metadata, and selected OpenDART corporate disclosures; Golden tests remain fully offline.
 
 ## Setup
 
@@ -121,8 +121,41 @@ same unambiguous researcher label, publisher and classification; it remains iden
 unresolved until normal Identity Resolution succeeds. NKIS abstract/fulltext storage, AI
 use, excerpt display and commercial reuse remain disabled in V0 unless separately reviewed.
 
-The reviewed National Assembly and NEC SourcePolicies permit policy-approved fetch/metadata
-use. NKIS is metadata-only with stricter rights. No scheduled synchronization is enabled yet.
+## Private-sector senior staging
+
+`OpenDartCorporateConnector` supports selected official OpenDART disclosure APIs without
+using the ordinary employee-status API for person discovery. Live requests require
+`DART_API_KEY`.
+
+```bash
+DART_API_KEY=... civic-stage-corporate-dart \
+  --dataset EXECUTIVE_STATUS \
+  --corp-code 00123456 \
+  --business-year 2026 \
+  --report-code 11012
+```
+
+Supported datasets are:
+
+- `EXECUTIVE_STATUS`
+- `DIRECTOR_COMPENSATION_V2`
+- `TOP_COMPENSATION_V2`
+- `OFFICER_MAJOR_HOLDER_OWNERSHIP`
+
+Executive-status rows may create senior-person candidates. Compensation is enrichment only
+and never creates a Person by itself because the statutory top-compensation feed can include
+non-executive employees. Officer/major-holder ownership is a dated securities disclosure,
+not total wealth, effective company control, political influence or an automatic conflict of
+interest. The OpenDART receipt number remains the pointer to the underlying company filing.
+
+Senior CTO/research-center/business-unit leaders who do not appear as DART executives can
+enter through a separately reviewed **company official profile** lane. That lane has no
+generic crawler: the exact company domain must already have a reviewed SourcePolicy reference,
+and ordinary employees fail closed.
+
+OpenDART allows credentialed metadata retrieval under its service terms; V0 keeps fulltext,
+AI use, excerpt display and commercial reuse disabled pending deployment-specific review.
+No scheduled synchronization is enabled yet.
 
 ## Safety and source rights
 
