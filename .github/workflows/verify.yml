@@ -45,7 +45,6 @@ jobs:
 
       - name: Run canonical verification
         env:
-          DATABASE_URL: sqlite:///./ci-app.db
           CIVIC_FIXTURE_MODE: "true"
           NEXT_PUBLIC_API_URL: http://localhost:8000
         run: make verify
