@@ -31,3 +31,9 @@ an explicit H0/H1/H2 matrix plus an ordinary explanation and falsifier.
 Workers may normalize policy-approved input and create snapshots. They cannot publish.
 Golden tests use manually reviewed offline excerpts; no live connector, crawler, or raw
 search-result ingestion participates in Golden Set 001.
+
+Live-capable connectors are opt-in and source-specific. They must have an explicit reviewed
+SourcePolicy before `IngestionPipeline` can fetch. Credentials stay outside discovered
+source URLs and persisted metadata. The National Assembly member connector intentionally
+retains metadata only, not raw response fulltext, because the provider rows may contain
+contact fields that are unnecessary for identity resolution.
