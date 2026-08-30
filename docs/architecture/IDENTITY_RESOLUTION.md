@@ -136,3 +136,22 @@ A same-name observation with no bridge evidence, a birth-date conflict, or any `
 
 The profiler then consumes this target as structured research context and must still create
 canonical Claim/Evidence/Source records before anything becomes publishable.
+
+### Reviewed Person onboarding
+
+A `ProfileResearchTarget` does not write to the canonical database by itself. A new Person may
+enter the canonical SQLAlchemy store only through an explicit `ReviewedPersonBundle` and
+`SqlAlchemyRepository.import_reviewed_person()` transaction.
+
+The import gate:
+
+- requires a `RESOLVED` Person whose canonical name matches the research target;
+- refuses existing Person IDs and record-ID collisions rather than silently upserting;
+- permits references to existing canonical Source/SourcePolicy records but does not redeclare
+  conflicting copies;
+- verifies SourcePolicy storage rights before writing new source/snapshot metadata;
+- validates every published claim through the existing publication gate before commit;
+- rolls back the complete transaction on any identity, reference, policy or publication failure.
+
+Discovery reason, talent-pool inclusion and appointment-target relevance remain research context
+only and never become publishable claims through onboarding.
