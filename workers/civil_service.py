@@ -39,13 +39,16 @@ class StagedCivilServiceCareer:
 
 @dataclass(frozen=True)
 class StagedEmploymentReview:
-    candidate: IdentityCandidate
+    candidate: IdentityCandidate | None
     record: RetiredOfficialEmploymentReviewRecord
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "canonical_name": self.candidate.canonical_name,
-            "identity_anchors": list(self.candidate.career_anchors),
+            "canonical_name": self.candidate.canonical_name if self.candidate else None,
+            "identity_anchors": list(self.candidate.career_anchors) if self.candidate else [],
+            "identity_semantics": (
+                "PUBLIC_NAME_AVAILABLE" if self.candidate else "PERSON_NAME_NOT_PUBLIC"
+            ),
             "employment_review": {
                 "record_id": self.record.record_id,
                 "review_date": self.record.review_date.isoformat(),
@@ -63,7 +66,7 @@ class StagedEmploymentReview:
                 "source_ref": self.record.source_ref,
                 "semantics": (
                     "정부공직자윤리위원회의 공개 취업심사 결정 자체를 기록하며, "
-                    "승인·가능 결정을 위반이나 부당취업으로 해석하지 않는다."
+                    "취업가능·취업승인 결정을 위반이나 부당취업으로 해석하지 않는다."
                 ),
             },
         }
@@ -89,7 +92,9 @@ def personnel_record_to_identity(record: CivilServicePersonnelRecord) -> Identit
 
 def employment_review_to_identity(
     record: RetiredOfficialEmploymentReviewRecord,
-) -> IdentityCandidate:
+) -> IdentityCandidate | None:
+    if record.person_name is None:
+        return None
     anchors = [
         f"employment_review_record:{record.record_id}",
         f"employment_review_date:{record.review_date.isoformat()}",
