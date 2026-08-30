@@ -42,8 +42,10 @@ partisan desirability or hidden influence.
 | Presidential Office | chiefs, senior secretaries, secretaries and publicly named senior staff | official organization/appointment releases | OFFICIAL_WEB | name + office + dates | Public Service / Appointment | RESEARCHED |
 | Presidential commissions / TFs | chair, vice-chair, member, adviser where publicly named | official body/appointment records | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + body + role + dates | CommitteeMembershipEpisode | MERGED contract |
 | Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date + adjacent career anchors | Public Service | MERGED contracts/staging; live adapter pending |
-| Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | MERGED contracts/staging; source parser pending |
-| Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO | STRUCTURED_DISCLOSURE / API where reviewed | institution + name + role + term | Institutional Governance / Public Service | ISSUE_OPEN #25 |
+| Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | MERGED contracts/staging; live adapter pending |
+| Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO item 4 / general public-institution dataset | STRUCTURED_DISCLOSURE | ALIO institution code + name + role + term | Institutional Governance / Public Service | MERGED staging; live adapter pending |
+| Public-institution executive compensation | role-category compensation/annual-pay disclosures | ALIO item 10 | STRUCTURED_DISCLOSURE | institution + executive role category + fiscal year | Institutional Governance | MERGED staging; person attribution prohibited by default |
+| Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | MERGED staging; separate from #23 ethics review |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | MERGED contract; connectors pending |
 | Private-sector senior leaders | registered directors, disclosed executives, CEO/CTO/CSO, officially named senior technical/business leaders | OpenDART -> company official -> KRX | API / STRUCTURED_DISCLOSURE / OFFICIAL_WEB | DART corp code + person anchors | Corporate | ISSUE_OPEN #18 |
 | Government-funded policy research | institute leaders/researchers and named policy-output authors | NKIS + institute official profiles | API + OFFICIAL_WEB | research output + person/institute anchors | Academic / Policy Research | ISSUE_OPEN #24 |
@@ -59,7 +61,7 @@ partisan desirability or hidden influence.
 | Parliamentary staff / legislative researchers | publicly named aides/secretaries, committee professional staff, legislative researchers | official Assembly/public biographies and personnel notices | OFFICIAL_WEB | person + member/committee/office + dates | Legislative Staff / Public Service | RESEARCHED |
 | Media / public broadcasting | publicly consequential media executives, directors, senior editorial/policy leaders | broadcaster/company governance, OpenDART where applicable, official bios | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | person + media organization + public role | Media Career Facet | RESEARCHED |
 | International organizations | Koreans with verified UN/OECD/World Bank/IMF/etc. roles | international-organization official bio/appointment; MOFA route/JPO context | OFFICIAL_WEB / API context | person + organization + post + dates | International / Diplomatic | RESEARCHED |
-| Financial-market institutions | KRX/KSD/payment/clearing leaders; financial-holding/bank executives and outside directors | ALIO where applicable; OpenDART/company governance otherwise | STRUCTURED_DISCLOSURE / API | org/corp code + person + board role | Institutional Governance / Corporate | covered by #18/#25 strategy |
+| Financial-market institutions | KRX/KSD/payment/clearing leaders; financial-holding/bank executives and outside directors | ALIO where applicable; OpenDART/company governance otherwise | STRUCTURED_DISCLOSURE / API | org/corp code + person + board role | Institutional Governance / Corporate | covered by #18 and ALIO staging |
 | Science/technology/medical public experts | national-lab/hospital/technical-society leaders and publicly named advisers relevant to appointments | institution/committee official sources | OFFICIAL_WEB | person + institution/body + role | Academic/Technical/Public Advisory | UNRESEARCHED |
 
 ## Source-mode rules
@@ -99,6 +101,7 @@ research/policy leaders, public union leadership and public civic-organization l
 The following are prohibited feeder behavior:
 
 - ordinary civil-servant staff directories
+- ordinary public-institution employee rosters
 - ordinary private-company employee rosters
 - ordinary union-member rosters or inferred union affiliation
 - ordinary NGO/professional-association member rosters
@@ -121,6 +124,18 @@ NKIS report author
  -> FACT of authorship on that public output
  -> not automatically institute-employment FACT
 
+ALIO major-career entry
+ -> FACT that the public institution disclosed the entry
+ -> verify important prior CareerEpisodes against their original sources
+
+ALIO role-category compensation
+ -> FACT about institution/role-category compensation disclosure
+ -> not automatically a named person's compensation or wealth
+
+ALIO reemployment disclosure
+ -> FACT of disclosed retirement/reemployment event
+ -> not the same event as a Public Ethics Committee employment-review decision
+
 public entity owns 26.41% of a listed company
  -> FACT of dated ownership
  -> not automatically FACT that government personally selected the CEO
@@ -139,14 +154,14 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after civil-service staging:
+Current recommended sequence after ALIO staging:
 
-1. #25 ALIO public-institution executives/governance;
-2. #24 NKIS policy-research feeder;
-3. #21 legal/judicial/prosecution;
-4. #20 labor-union public leadership;
-5. #18 private-sector senior talent;
-6. #13 legislative completeness and official bill summaries;
+1. #24 NKIS policy-research feeder;
+2. #21 legal/judicial/prosecution;
+3. #20 labor-union public leadership;
+4. #18 private-sector senior talent;
+5. #13 legislative completeness and official bill summaries;
+6. one reviewed live ALIO adapter using the #25 staging contracts;
 7. one reviewed live civil-service/ethics source adapter using the #23 contracts.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.
