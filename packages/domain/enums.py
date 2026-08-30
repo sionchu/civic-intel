@@ -38,6 +38,13 @@ class PublicationStatus(StrEnum):
     WITHHELD = "WITHHELD"
 
 
+class SourceRunStatus(StrEnum):
+    RUNNING = "RUNNING"
+    SUCCESS = "SUCCESS"
+    PARTIAL = "PARTIAL"
+    FAILED = "FAILED"
+
+
 class RelationshipStrength(StrEnum):
     WEAK = "WEAK"
     STRONG = "STRONG"

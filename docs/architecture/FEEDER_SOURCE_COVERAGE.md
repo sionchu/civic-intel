@@ -42,7 +42,7 @@ L3.
 
 | Feeder | Public person scope | Strongest source lane | Mode | Identity anchor | Career / ontology destination | Maturity |
 |---|---|---|---|---|---|---|
-| National Assembly members | elected National Assembly members | 열린국회정보 member API | API | `MONA_CD` | Legislative | L2 SINGLE_PULL |
+| National Assembly members | elected National Assembly members | 열린국회정보 member API | API | `MONA_CD` | Legislative | L3 FULL_ENUMERATION |
 | National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | L2 SINGLE_PULL; no persistent resume |
 | National Assembly proposal-reason / major-content text | official full `제안이유` / 주요내용 | no verified structured Open Assembly source found in 2026-08-30 review | BLOCKED | bill ID/detail link only | Legislative text evidence | L0 RESEARCHED; BLOCKED, no HTML scraping |
 | Local elected offices | governors, mayors/county/district heads, local councilors, education superintendents, candidates | NEC candidate + winner APIs | API | NEC `huboid` | Local Elected Office | L2 SINGLE_PULL |

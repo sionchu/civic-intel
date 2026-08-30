@@ -23,6 +23,7 @@ from .enums import (
     RelationshipStrength,
     RoleFitStatus,
     SourceCollectionMode,
+    SourceRunStatus,
     TalentPoolBucket,
 )
 
@@ -313,6 +314,48 @@ class SourceSnapshot(Contract):
     content_hash: str
     metadata: dict[str, Any] = Field(default_factory=dict)
     fulltext: str | None = None
+
+
+class SourceRun(Contract):
+    id: UUID = Field(default_factory=uuid4)
+    feeder: str = Field(min_length=1, max_length=100)
+    scope_key: str = Field(min_length=1, max_length=300)
+    started_at: datetime = Field(default_factory=now_utc)
+    finished_at: datetime | None = None
+    status: SourceRunStatus = SourceRunStatus.RUNNING
+    checkpoint_before: str | None = None
+    checkpoint_after: str | None = None
+    records_seen: int = Field(default=0, ge=0)
+    observations_created: int = Field(default=0, ge=0)
+    observations_unchanged: int = Field(default=0, ge=0)
+    error_code: str | None = Field(default=None, max_length=120)
+    error_summary: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class SourceCheckpoint(Contract):
+    id: UUID = Field(default_factory=uuid4)
+    feeder: str = Field(min_length=1, max_length=100)
+    scope_key: str = Field(min_length=1, max_length=300)
+    cursor: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    updated_at: datetime = Field(default_factory=now_utc)
+    last_run_id: UUID | None = None
+
+
+class FeederObservation(Contract):
+    id: UUID = Field(default_factory=uuid4)
+    feeder: str = Field(min_length=1, max_length=100)
+    scope_key: str = Field(min_length=1, max_length=300)
+    provider_record_key: str = Field(min_length=1, max_length=500)
+    snapshot_id: UUID
+    run_id: UUID
+    recorded_at: datetime = Field(default_factory=now_utc)
+    provider_observed_at: datetime | None = None
+    semantic_scope: str = Field(min_length=1, max_length=120)
+    identity_hints: dict[str, Any] = Field(default_factory=dict)
+    normalized: dict[str, Any] = Field(default_factory=dict)
+    content_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
 class SourceOriginCluster(Contract):

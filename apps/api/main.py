@@ -6,10 +6,9 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException
 
 from packages.domain.enums import IdentityStatus
+from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
 from packages.rendering.profile_projection import build_profile_projection
 from packages.verification.claims import validate_claim_publication
-
-from .repository import SqlAlchemyRepository, bootstrap_repository, repository
 
 
 def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI:

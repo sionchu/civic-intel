@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from pathlib import Path
 
 from alembic import command
@@ -5,7 +6,7 @@ from alembic.config import Config
 from sqlalchemy import create_engine, inspect, text
 
 
-def test_clean_database_migrates_to_publication_semantics(tmp_path: Path) -> None:
+def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> None:
     database = tmp_path / "migration.db"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database.as_posix()}")
@@ -23,7 +24,28 @@ def test_clean_database_migrates_to_publication_semantics(tmp_path: Path) -> Non
     } <= columns
     assert "published" not in columns
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0002"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0003"
+    tables = set(inspect(engine).get_table_names())
+    assert {"source_runs", "source_checkpoints", "feeder_observations"} <= tables
+    command.downgrade(config, "0002")
+    downgraded_tables = set(inspect(engine).get_table_names())
+    assert "source_runs" not in downgraded_tables
+    assert "source_checkpoints" not in downgraded_tables
+    assert "feeder_observations" not in downgraded_tables
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO people "
+                "(id, canonical_name, birth_date, identity_status, valid_from, valid_to, "
+                "recorded_at, superseded_at) "
+                "VALUES (:id, :name, NULL, 'RESOLVED', :now, NULL, :now, NULL)"
+            ),
+            {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "migration populated person",
+                "now": datetime(2026, 8, 31, tzinfo=UTC),
+            },
+        )
     command.downgrade(config, "0001")
     downgraded = {item["name"] for item in inspect(engine).get_columns("claims")}
     assert "published" in downgraded
@@ -32,3 +54,8 @@ def test_clean_database_migrates_to_publication_semantics(tmp_path: Path) -> Non
     upgraded = {item["name"] for item in inspect(engine).get_columns("claims")}
     assert "publication_status" in upgraded
     assert "published" not in upgraded
+    assert {"source_runs", "source_checkpoints", "feeder_observations"} <= set(
+        inspect(engine).get_table_names()
+    )
+    with engine.connect() as connection:
+        assert connection.scalar(text("SELECT COUNT(*) FROM people")) == 1

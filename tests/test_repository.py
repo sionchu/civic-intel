@@ -5,13 +5,13 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import inspect, text
 
-from apps.api.repository import (
+from packages.domain.enums import EpistemicStatus, PublicationStatus
+from packages.persistence import (
     DatabaseNotReady,
     GoldenSeedError,
     SqlAlchemyRepository,
     bootstrap_repository,
 )
-from packages.domain.enums import EpistemicStatus, PublicationStatus
 
 
 def migrate(database: Path) -> str:

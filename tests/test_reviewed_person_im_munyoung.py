@@ -6,7 +6,6 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from apps.api.main import create_app
-from apps.api.repository import SqlAlchemyRepository
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -15,6 +14,7 @@ from packages.domain.contracts import (
     SourcePolicy,
     SourceSnapshot,
 )
+from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle
 from packages.verification.profile_target import (

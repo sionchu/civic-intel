@@ -3,7 +3,18 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -91,6 +102,71 @@ class SourceSnapshotRow(Base):
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
     metadata_json: Mapped[dict] = mapped_column(JSON)
     fulltext: Mapped[str | None] = mapped_column(Text)
+
+
+class SourceRunRow(Base):
+    __tablename__ = "source_runs"
+    __table_args__ = (Index("ix_source_runs_feeder_scope", "feeder", "scope_key"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    feeder: Mapped[str] = mapped_column(String(100), index=True)
+    scope_key: Mapped[str] = mapped_column(String(300))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    checkpoint_before: Mapped[str | None] = mapped_column(Text)
+    checkpoint_after: Mapped[str | None] = mapped_column(Text)
+    records_seen: Mapped[int] = mapped_column(Integer, default=0)
+    observations_created: Mapped[int] = mapped_column(Integer, default=0)
+    observations_unchanged: Mapped[int] = mapped_column(Integer, default=0)
+    error_code: Mapped[str | None] = mapped_column(String(120))
+    error_summary: Mapped[str | None] = mapped_column(Text)
+    metadata_json: Mapped[dict] = mapped_column(JSON)
+
+
+class SourceCheckpointRow(Base):
+    __tablename__ = "source_checkpoints"
+    __table_args__ = (
+        UniqueConstraint("feeder", "scope_key", name="uq_source_checkpoints_feeder_scope"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    feeder: Mapped[str] = mapped_column(String(100))
+    scope_key: Mapped[str] = mapped_column(String(300))
+    cursor: Mapped[str | None] = mapped_column(Text)
+    metadata_json: Mapped[dict] = mapped_column(JSON)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("source_runs.id"), index=True
+    )
+
+
+class FeederObservationRow(Base):
+    __tablename__ = "feeder_observations"
+    __table_args__ = (
+        UniqueConstraint(
+            "feeder",
+            "scope_key",
+            "provider_record_key",
+            "content_hash",
+            name="uq_feeder_observations_version",
+        ),
+        Index(
+            "ix_feeder_observations_feeder_provider",
+            "feeder",
+            "provider_record_key",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    feeder: Mapped[str] = mapped_column(String(100))
+    scope_key: Mapped[str] = mapped_column(String(300))
+    provider_record_key: Mapped[str] = mapped_column(String(500))
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("source_snapshots.id"), index=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("source_runs.id"), index=True)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    provider_observed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    semantic_scope: Mapped[str] = mapped_column(String(120), index=True)
+    identity_hints_json: Mapped[dict] = mapped_column(JSON)
+    normalized_json: Mapped[dict] = mapped_column(JSON)
+    content_hash: Mapped[str] = mapped_column(String(64), index=True)
 
 
 class SourceOriginClusterRow(Base):

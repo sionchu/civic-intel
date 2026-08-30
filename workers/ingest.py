@@ -30,6 +30,14 @@ class IngestionPipeline:
     ) -> IngestionResult:
         require_policy(policy, PolicyAction.FETCH)
         document: ConnectorDocument = self.connector.fetch(url)
+        return self.ingest_document(document, policy, previous_hash)
+
+    def ingest_document(
+        self,
+        document: ConnectorDocument,
+        policy: SourcePolicy,
+        previous_hash: str | None = None,
+    ) -> IngestionResult:
         require_policy(policy, PolicyAction.STORE_METADATA)
         normalized = normalize_text(document.body)
         digest = hashlib.sha256(normalized.encode()).hexdigest()

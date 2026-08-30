@@ -5,8 +5,9 @@
 `packages/domain → packages/verification + packages/connectors → workers + apps/api → apps/web`
 
 Pydantic contracts define canonical semantics. SQLAlchemy rows persist those contracts;
-Alembic is the only schema creation/change path. FastAPI reads through
-`SqlAlchemyRepository`, never module-level fixture dictionaries. Normal runtime startup
+Alembic is the only schema creation/change path. API and workers share the single
+`packages.persistence.SqlAlchemyRepository`; FastAPI never reads module-level fixture
+dictionaries. Normal runtime startup
 only verifies that the configured database is at the current Alembic head. It does not
 call `create_all()` and does not seed Golden Set 001. Golden seeding is an explicit,
 disposable development/test operation against an empty migrated database.

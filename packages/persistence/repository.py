@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
 
@@ -13,23 +14,30 @@ from sqlalchemy.orm import Session, sessionmaker
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
+    FeederObservation,
     Person,
     Source,
+    SourceCheckpoint,
     SourcePolicy,
+    SourceRun,
     SourceSnapshot,
+    now_utc,
 )
 from packages.domain.db import (
     ClaimEvidenceRow,
     ClaimRow,
     DecisionEpisodeRow,
+    FeederObservationRow,
     PersonRow,
     RelationshipRow,
+    SourceCheckpointRow,
     SourceOriginClusterRow,
     SourcePolicyRow,
     SourceRow,
+    SourceRunRow,
     SourceSnapshotRow,
 )
-from packages.domain.enums import PublicationStatus
+from packages.domain.enums import PublicationStatus, SourceRunStatus
 from packages.verification.claims import validate_claim_publication
 from packages.verification.golden import GoldenSet, load_golden_set
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError
@@ -42,6 +50,14 @@ class DatabaseNotReady(RuntimeError):
 
 class GoldenSeedError(RuntimeError):
     pass
+
+
+@dataclass(frozen=True)
+class BatchPageCommitResult:
+    snapshot_id: UUID
+    observation_ids: tuple[UUID, ...]
+    observations_created: int
+    observations_unchanged: int
 
 
 def _expected_schema_revision() -> str:
@@ -63,7 +79,16 @@ class SqlAlchemyRepository:
     def assert_ready(self) -> None:
         database = inspect(self.engine)
         tables = set(database.get_table_names())
-        required = {"alembic_version", "people", "claims", "claim_evidence", "sources"}
+        required = {
+            "alembic_version",
+            "people",
+            "claims",
+            "claim_evidence",
+            "sources",
+            "source_runs",
+            "source_checkpoints",
+            "feeder_observations",
+        }
         missing = sorted(required - tables)
         if missing:
             raise DatabaseNotReady(
@@ -78,6 +103,333 @@ class SqlAlchemyRepository:
                 f"Database schema revision is {current!r}; expected {expected!r}. "
                 "Run `python -m alembic upgrade head`."
             )
+
+    @staticmethod
+    def _source_run(row: SourceRunRow) -> SourceRun:
+        return SourceRun.model_validate(
+            {
+                "id": row.id,
+                "feeder": row.feeder,
+                "scope_key": row.scope_key,
+                "started_at": row.started_at,
+                "finished_at": row.finished_at,
+                "status": row.status,
+                "checkpoint_before": row.checkpoint_before,
+                "checkpoint_after": row.checkpoint_after,
+                "records_seen": row.records_seen,
+                "observations_created": row.observations_created,
+                "observations_unchanged": row.observations_unchanged,
+                "error_code": row.error_code,
+                "error_summary": row.error_summary,
+                "metadata": row.metadata_json,
+            }
+        )
+
+    @staticmethod
+    def _checkpoint(row: SourceCheckpointRow) -> SourceCheckpoint:
+        return SourceCheckpoint.model_validate(
+            {
+                "id": row.id,
+                "feeder": row.feeder,
+                "scope_key": row.scope_key,
+                "cursor": row.cursor,
+                "metadata": row.metadata_json,
+                "updated_at": row.updated_at,
+                "last_run_id": row.last_run_id,
+            }
+        )
+
+    @staticmethod
+    def _observation(row: FeederObservationRow) -> FeederObservation:
+        return FeederObservation.model_validate(
+            {
+                "id": row.id,
+                "feeder": row.feeder,
+                "scope_key": row.scope_key,
+                "provider_record_key": row.provider_record_key,
+                "snapshot_id": row.snapshot_id,
+                "run_id": row.run_id,
+                "recorded_at": row.recorded_at,
+                "provider_observed_at": row.provider_observed_at,
+                "semantic_scope": row.semantic_scope,
+                "identity_hints": row.identity_hints_json,
+                "normalized": row.normalized_json,
+                "content_hash": row.content_hash,
+            }
+        )
+
+    def start_source_run(
+        self, feeder: str, scope_key: str, metadata: dict | None = None
+    ) -> SourceRun:
+        self.assert_ready()
+        with self.sessions() as session:
+            checkpoint = session.scalar(
+                select(SourceCheckpointRow).where(
+                    SourceCheckpointRow.feeder == feeder,
+                    SourceCheckpointRow.scope_key == scope_key,
+                )
+            )
+            run = SourceRun(
+                feeder=feeder,
+                scope_key=scope_key,
+                checkpoint_before=checkpoint.cursor if checkpoint else None,
+                metadata=metadata or {},
+            )
+            session.add(
+                SourceRunRow(
+                    id=str(run.id),
+                    feeder=run.feeder,
+                    scope_key=run.scope_key,
+                    started_at=run.started_at,
+                    finished_at=None,
+                    status=run.status.value,
+                    checkpoint_before=run.checkpoint_before,
+                    checkpoint_after=None,
+                    records_seen=0,
+                    observations_created=0,
+                    observations_unchanged=0,
+                    error_code=None,
+                    error_summary=None,
+                    metadata_json=run.metadata,
+                )
+            )
+            session.commit()
+        return run
+
+    def finish_source_run(
+        self,
+        run_id: UUID,
+        status: SourceRunStatus,
+        *,
+        error_code: str | None = None,
+        error_summary: str | None = None,
+    ) -> SourceRun:
+        if status not in {SourceRunStatus.SUCCESS, SourceRunStatus.PARTIAL, SourceRunStatus.FAILED}:
+            raise ValueError("source run can only finish with a terminal status")
+        lowered = (error_summary or "").casefold()
+        if any(token in lowered for token in ("key=", "authkey=", "api_key", "token=")):
+            raise ValueError("error_summary may not contain credentials")
+        with self.sessions() as session:
+            row = session.get(SourceRunRow, str(run_id))
+            if row is None:
+                raise ValueError("source run does not exist")
+            if row.status != SourceRunStatus.RUNNING.value:
+                raise ValueError("source run is already finished")
+            row.status = status.value
+            row.finished_at = now_utc()
+            row.error_code = error_code
+            row.error_summary = error_summary
+            session.commit()
+            session.refresh(row)
+            return self._source_run(row)
+
+    def source_run(self, run_id: UUID) -> SourceRun | None:
+        with self.sessions() as session:
+            row = session.get(SourceRunRow, str(run_id))
+            return self._source_run(row) if row else None
+
+    def source_runs(
+        self, feeder: str | None = None, scope_key: str | None = None
+    ) -> list[SourceRun]:
+        statement = select(SourceRunRow)
+        if feeder is not None:
+            statement = statement.where(SourceRunRow.feeder == feeder)
+        if scope_key is not None:
+            statement = statement.where(SourceRunRow.scope_key == scope_key)
+        with self.sessions() as session:
+            rows = session.scalars(statement.order_by(SourceRunRow.started_at, SourceRunRow.id))
+            return [self._source_run(row) for row in rows]
+
+    def source_checkpoint(self, feeder: str, scope_key: str) -> SourceCheckpoint | None:
+        with self.sessions() as session:
+            row = session.scalar(
+                select(SourceCheckpointRow).where(
+                    SourceCheckpointRow.feeder == feeder,
+                    SourceCheckpointRow.scope_key == scope_key,
+                )
+            )
+            return self._checkpoint(row) if row else None
+
+    def feeder_observations(
+        self,
+        feeder: str,
+        scope_key: str,
+        provider_record_key: str | None = None,
+    ) -> list[FeederObservation]:
+        statement = select(FeederObservationRow).where(
+            FeederObservationRow.feeder == feeder,
+            FeederObservationRow.scope_key == scope_key,
+        )
+        if provider_record_key is not None:
+            statement = statement.where(
+                FeederObservationRow.provider_record_key == provider_record_key
+            )
+        with self.sessions() as session:
+            rows = session.scalars(statement.order_by(FeederObservationRow.recorded_at))
+            return [self._observation(row) for row in rows]
+
+    def commit_source_page(
+        self,
+        *,
+        run_id: UUID,
+        policy: SourcePolicy,
+        source: Source,
+        snapshot: SourceSnapshot,
+        observations: Sequence[FeederObservation],
+        cursor: str,
+        checkpoint_metadata: dict,
+    ) -> BatchPageCommitResult:
+        if source.policy_id != policy.id:
+            raise ValueError("source policy identity does not match SourcePolicy")
+        if snapshot.source_id != source.id:
+            raise ValueError("snapshot source identity does not match Source")
+        for observation in observations:
+            if observation.run_id != run_id:
+                raise ValueError("observation run identity does not match source run")
+            if observation.snapshot_id != snapshot.id:
+                raise ValueError("observation snapshot identity does not match page snapshot")
+
+        with self.sessions() as session:
+            try:
+                run_row = session.get(SourceRunRow, str(run_id))
+                if run_row is None or run_row.status != SourceRunStatus.RUNNING.value:
+                    raise ValueError("source page requires a running source run")
+                for observation in observations:
+                    if (
+                        observation.feeder != run_row.feeder
+                        or observation.scope_key != run_row.scope_key
+                    ):
+                        raise ValueError("observation scope does not match source run")
+
+                policy_row = session.get(SourcePolicyRow, str(policy.id))
+                domain_policy = session.scalar(
+                    select(SourcePolicyRow).where(SourcePolicyRow.domain == policy.domain)
+                )
+                if policy_row is None and domain_policy is not None:
+                    raise ValueError("SourcePolicy domain is already bound to another policy")
+                if policy_row is None:
+                    policy_data = policy.model_dump()
+                    policy_data["id"] = str(policy.id)
+                    policy_data["collection_mode"] = policy.collection_mode.value
+                    session.add(SourcePolicyRow(**policy_data))
+                elif policy_row.domain != policy.domain:
+                    raise ValueError("SourcePolicy identity conflict")
+
+                source_row = session.scalar(select(SourceRow).where(SourceRow.url == str(source.url)))
+                if source_row is None:
+                    source_row = SourceRow(
+                        id=str(source.id),
+                        url=str(source.url),
+                        title=source.title,
+                        publisher=source.publisher,
+                        published_at=source.published_at,
+                        policy_id=str(source.policy_id),
+                        origin_cluster_id=(
+                            str(source.origin_cluster_id) if source.origin_cluster_id else None
+                        ),
+                    )
+                    session.add(source_row)
+                    session.flush()
+                elif source_row.policy_id != str(policy.id):
+                    raise ValueError("source URL is bound to an incompatible SourcePolicy")
+
+                snapshot_row = session.scalar(
+                    select(SourceSnapshotRow).where(
+                        SourceSnapshotRow.source_id == source_row.id,
+                        SourceSnapshotRow.content_hash == snapshot.content_hash,
+                    )
+                )
+                if snapshot_row is None:
+                    snapshot_row = SourceSnapshotRow(
+                        id=str(snapshot.id),
+                        source_id=source_row.id,
+                        fetched_at=snapshot.fetched_at,
+                        content_hash=snapshot.content_hash,
+                        metadata_json=snapshot.metadata,
+                        fulltext=snapshot.fulltext,
+                    )
+                    session.add(snapshot_row)
+                    session.flush()
+
+                created = 0
+                unchanged = 0
+                observation_ids: list[UUID] = []
+                for observation in observations:
+                    existing = session.scalar(
+                        select(FeederObservationRow).where(
+                            FeederObservationRow.feeder == observation.feeder,
+                            FeederObservationRow.scope_key == observation.scope_key,
+                            FeederObservationRow.provider_record_key
+                            == observation.provider_record_key,
+                            FeederObservationRow.content_hash == observation.content_hash,
+                        )
+                    )
+                    if existing is not None:
+                        unchanged += 1
+                        observation_ids.append(UUID(existing.id))
+                        continue
+                    row = FeederObservationRow(
+                        id=str(observation.id),
+                        feeder=observation.feeder,
+                        scope_key=observation.scope_key,
+                        provider_record_key=observation.provider_record_key,
+                        snapshot_id=snapshot_row.id,
+                        run_id=str(observation.run_id),
+                        recorded_at=observation.recorded_at,
+                        provider_observed_at=observation.provider_observed_at,
+                        semantic_scope=observation.semantic_scope,
+                        identity_hints_json=observation.identity_hints,
+                        normalized_json=observation.normalized,
+                        content_hash=observation.content_hash,
+                    )
+                    session.add(row)
+                    created += 1
+                    observation_ids.append(observation.id)
+
+                checkpoint_row = session.scalar(
+                    select(SourceCheckpointRow).where(
+                        SourceCheckpointRow.feeder == run_row.feeder,
+                        SourceCheckpointRow.scope_key == run_row.scope_key,
+                    )
+                )
+                if checkpoint_row is None:
+                    checkpoint = SourceCheckpoint(
+                        feeder=run_row.feeder,
+                        scope_key=run_row.scope_key,
+                        cursor=cursor,
+                        metadata=checkpoint_metadata,
+                        last_run_id=run_id,
+                    )
+                    checkpoint_row = SourceCheckpointRow(
+                        id=str(checkpoint.id),
+                        feeder=checkpoint.feeder,
+                        scope_key=checkpoint.scope_key,
+                        cursor=checkpoint.cursor,
+                        metadata_json=checkpoint.metadata,
+                        updated_at=checkpoint.updated_at,
+                        last_run_id=str(run_id),
+                    )
+                    session.add(checkpoint_row)
+                else:
+                    checkpoint_row.cursor = cursor
+                    checkpoint_row.metadata_json = checkpoint_metadata
+                    checkpoint_row.updated_at = now_utc()
+                    checkpoint_row.last_run_id = str(run_id)
+
+                run_row.records_seen += len(observations)
+                run_row.observations_created += created
+                run_row.observations_unchanged += unchanged
+                run_row.checkpoint_after = cursor
+                session.commit()
+                return BatchPageCommitResult(
+                    snapshot_id=UUID(snapshot_row.id),
+                    observation_ids=tuple(observation_ids),
+                    observations_created=created,
+                    observations_unchanged=unchanged,
+                )
+            except Exception:
+                session.rollback()
+                raise
 
     def seed_golden(self, golden: GoldenSet | None = None) -> None:
         self.assert_ready()

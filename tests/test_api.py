@@ -6,7 +6,7 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from apps.api.main import create_app
-from apps.api.repository import DatabaseNotReady, SqlAlchemyRepository
+from packages.persistence import DatabaseNotReady, SqlAlchemyRepository
 
 PERSON_ID = "00000000-0000-0000-0000-000000000002"
 HA_JUNGWOO_ID = "00000000-0000-0000-0000-000000000009"

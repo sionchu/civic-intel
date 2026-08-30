@@ -8,7 +8,6 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from apps.api.main import create_app
-from apps.api.repository import SqlAlchemyRepository
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -25,6 +24,7 @@ from packages.domain.enums import (
     PublicationStatus,
     SourceCollectionMode,
 )
+from packages.persistence import SqlAlchemyRepository
 from packages.verification.cross_lane_identity import CrossLaneIdentityEvidence
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError

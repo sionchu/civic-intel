@@ -1,6 +1,6 @@
 # Batch ingestion L3 transition
 
-Status: active — Milestone A complete, Milestone B in progress.
+Status: active — Milestones A–B complete, Milestone C in progress.
 
 ## Objective
 
@@ -82,7 +82,7 @@ historical Known RE0 note.
 Commit:
 
 ```text
-pending Milestone A commit
+0fb6e0e P0: align batch ingestion L3 governance
 ```
 
 ---
@@ -91,61 +91,77 @@ pending Milestone A commit
 
 ## Persistence
 
-- [ ] search for equivalent persistence contracts before adding
-- [ ] decide canonical shared repository location
-- [ ] ensure only one SqlAlchemyRepository implementation
-- [ ] add SourceRun contract/row
-- [ ] add SourceCheckpoint contract/row
-- [ ] add FeederObservation contract/row
-- [ ] add indexes/uniqueness
-- [ ] add reversible Alembic migration
-- [ ] add repository CRUD/transaction helpers
-- [ ] keep SourceSnapshot as source-level capture
-- [ ] no raw-payload truth store
+- [x] search for equivalent persistence contracts before adding
+- [x] decide canonical shared repository location
+- [x] ensure only one SqlAlchemyRepository implementation
+- [x] add SourceRun contract/row
+- [x] add SourceCheckpoint contract/row
+- [x] add FeederObservation contract/row
+- [x] add indexes/uniqueness
+- [x] add reversible Alembic migration
+- [x] add repository CRUD/transaction helpers
+- [x] keep SourceSnapshot as source-level capture
+- [x] no raw-payload truth store
 
 ## Assembly
 
-- [ ] full unfiltered pagination
-- [ ] total count consistency
-- [ ] page consistency
-- [ ] MONA_CD uniqueness/conflict checks
-- [ ] page transaction
-- [ ] checkpoint
-- [ ] partial status
-- [ ] resume
-- [ ] unchanged rerun no-op
-- [ ] changed row new observation
-- [ ] privacy/contact exclusion
-- [ ] credential redaction
-- [ ] CLI or operational entrypoint only if justified
+- [x] full unfiltered pagination
+- [x] total count consistency
+- [x] page consistency
+- [x] MONA_CD uniqueness/conflict checks
+- [x] page transaction
+- [x] checkpoint
+- [x] partial status
+- [x] resume
+- [x] unchanged rerun no-op
+- [x] changed row new observation
+- [x] privacy/contact exclusion
+- [x] credential redaction
+- [x] CLI or operational entrypoint only if justified
 
 ## Tests
 
-- [ ] multi-page
-- [ ] unchanged rerun
-- [ ] changed row
-- [ ] failed page
-- [ ] resume
-- [ ] total count mismatch
-- [ ] duplicate page
-- [ ] conflicting MONA_CD
-- [ ] policy denied
-- [ ] secret absent
-- [ ] TEL_NO absent
-- [ ] E_MAIL absent
-- [ ] SQLite migration integration
-- [ ] existing staging regression
+- [x] multi-page
+- [x] unchanged rerun
+- [x] changed row
+- [x] failed page
+- [x] resume
+- [x] total count mismatch
+- [x] duplicate page
+- [x] conflicting MONA_CD
+- [x] policy denied
+- [x] secret absent
+- [x] TEL_NO absent
+- [x] E_MAIL absent
+- [x] SQLite migration integration
+- [x] existing staging regression
 
 Evidence:
 
 ```text
-fill during execution
+Alembic head: 0003
+Canonical repository: packages/persistence/repository.py
+Implementation search: exactly one `class SqlAlchemyRepository`; no apps.api.repository import.
+Targeted: pytest test_batch_assembly.py test_repository.py test_migrations.py
+          test_assembly_staging.py test_open_assembly.py -> 26 passed
+Full local verification after implementation:
+- ruff -> All checks passed
+- mypy -> Success: no issues found in 48 source files
+- pytest -> 190 passed, 3 warnings
+- packages.verification.quality -> passed: true
+- web lint/typecheck -> exit 0
+- web tests -> 2 passed
+- web build -> compiled successfully
+Migration regression upgrades a fresh DB through 0003, downgrades 0003 -> 0002 -> 0001,
+re-upgrades to head, and preserves a populated Person row.
+Privacy regression proves TEL_NO, E_MAIL, provider contact value and API secret are absent from
+observations, Source URLs, snapshot metadata, run receipts and error summaries.
 ```
 
 Commit:
 
 ```text
-fill during execution
+pending Milestone B commit
 ```
 
 ---
