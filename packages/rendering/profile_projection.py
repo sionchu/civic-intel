@@ -145,7 +145,9 @@ def _controversy_entries(
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
 
 
-def _decision_episode_entries(decision_episodes: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+def _decision_episode_entries(
+    decision_episodes: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for episode in decision_episodes:
         entries.append(
@@ -156,7 +158,9 @@ def _decision_episode_entries(decision_episodes: Sequence[dict[str, Any]]) -> li
                 "epistemic_status": EpistemicStatus.FACT.value,
                 "claim_id": None,
                 "evidence_ids": [],
-                "source_ids": _ordered_unique([str(item) for item in episode.get("source_ids", [])]),
+                "source_ids": _ordered_unique(
+                    [str(item) for item in episode.get("source_ids", [])]
+                ),
                 "date": None,
                 "details": {
                     "action": episode.get("action"),
@@ -228,7 +232,7 @@ def build_profile_projection(
 ) -> dict[str, Any]:
     """Build a deterministic read model without creating new profile truth."""
 
-    identity_entries = [
+    identity_entries: list[dict[str, Any]] = [
         {
             "id": f"identity:{person.id}",
             "kind": "IDENTITY",
@@ -244,7 +248,9 @@ def build_profile_projection(
             },
         }
     ]
-    identity_note = None if person.birth_date else "검토된 현재 근거에서 생년월일은 확인되지 않았습니다."
+    identity_note = (
+        None if person.birth_date else "검토된 현재 근거에서 생년월일은 확인되지 않았습니다."
+    )
 
     summary_entries = _claim_entries_for(claims, evidence_by_claim, SUMMARY_PREDICATES)
     timeline_entries = _claim_entries_for(claims, evidence_by_claim, CAREER_PREDICATES)
@@ -262,13 +268,21 @@ def build_profile_projection(
             "summary",
             "한눈에 보는 요약",
             summary_entries,
-            note="명시적 공직 상태·인선 사실만 투영합니다." if summary_entries else "검토된 요약용 공직 상태 근거가 없습니다.",
+            note=(
+                "명시적 공직 상태·인선 사실만 투영합니다."
+                if summary_entries
+                else "검토된 요약용 공직 상태 근거가 없습니다."
+            ),
         ),
         _section(
             "career_timeline",
             "경력 타임라인",
             timeline_entries,
-            note="날짜가 있는 명시적 경력·인선 predicate만 사용합니다." if timeline_entries else "검토된 경력 타임라인 근거가 없습니다.",
+            note=(
+                "날짜가 있는 명시적 경력·인선 predicate만 사용합니다."
+                if timeline_entries
+                else "검토된 경력 타임라인 근거가 없습니다."
+            ),
         ),
         _section(
             "current_power_tasks",
@@ -303,7 +317,8 @@ def build_profile_projection(
             [],
             status="UNKNOWN",
             note=(
-                "반복 패턴은 별도 검토된 패턴 근거가 필요하며, 최소 2개의 독립 의사결정 에피소드만으로도 자동 생성하지 않습니다."
+                "반복 패턴은 별도 검토된 패턴 근거가 필요하며, 최소 2개의 독립 "
+                "의사결정 에피소드만으로도 자동 생성하지 않습니다."
             ),
         ),
         _section(
@@ -375,7 +390,10 @@ def build_profile_projection(
             }
         )
     for claim in claims:
-        if claim.epistemic_status in {EpistemicStatus.UNKNOWN, EpistemicStatus.ENTITY_UNRESOLVED}:
+        if claim.epistemic_status in {
+            EpistemicStatus.UNKNOWN,
+            EpistemicStatus.ENTITY_UNRESOLVED,
+        }:
             limitations_entries.append(_claim_entry(claim, evidence_by_claim))
 
     sections.append(
@@ -384,7 +402,10 @@ def build_profile_projection(
             "한계 및 미확인",
             limitations_entries,
             status="AVAILABLE" if limitations_entries else "UNKNOWN",
-            note="미확인 영역을 숨기지 않고 section coverage와 UNKNOWN claim을 그대로 노출합니다.",
+            note=(
+                "미확인 영역을 숨기지 않고 section coverage와 UNKNOWN claim을 그대로 "
+                "노출합니다."
+            ),
         )
     )
 
