@@ -1,0 +1,125 @@
+{
+  "dart_executive_status": {
+    "status": "000",
+    "message": "정상",
+    "list": [
+      {
+        "rcept_no": "20260830000001",
+        "corp_cls": "Y",
+        "corp_code": "00123456",
+        "corp_name": "테스트테크",
+        "nm": "김대표",
+        "sexdstn": "남",
+        "birth_ym": "1975년 04월",
+        "ofcps": "대표이사",
+        "rgist_exctv_at": "등기임원",
+        "fte_at": "상근",
+        "chrg_job": "대표이사",
+        "main_career": "테스트산업 부사장",
+        "mxmm_shrholdr_relate": "본인",
+        "hffc_pd": "2024.03~현재",
+        "tenure_end_on": "2027-03-25",
+        "stlm_dt": "2026-06-30",
+        "private_email": "private@example.invalid"
+      },
+      {
+        "rcept_no": "20260830000001",
+        "corp_cls": "Y",
+        "corp_code": "00123456",
+        "corp_name": "테스트테크",
+        "nm": "이기술",
+        "birth_ym": "1980년 09월",
+        "ofcps": "전무",
+        "rgist_exctv_at": "미등기임원",
+        "fte_at": "상근",
+        "chrg_job": "AI 연구개발 총괄",
+        "main_career": "테스트AI 연구소장",
+        "mxmm_shrholdr_relate": "-",
+        "hffc_pd": "2022.01~현재",
+        "tenure_end_on": null,
+        "stlm_dt": "2026-06-30"
+      }
+    ]
+  },
+  "dart_compensation_v2": {
+    "status": "000",
+    "message": "정상",
+    "group": [
+      {
+        "rcept_no": "20260830000001",
+        "corp_cls": "Y",
+        "corp_code": "00123456",
+        "corp_name": "테스트테크",
+        "stlm_dt": "2026-06-30",
+        "nm": "김대표",
+        "fscl_year": "당기",
+        "ofcps": "대표이사",
+        "mendng_totamt": "750,000,000",
+        "list": []
+      },
+      {
+        "rcept_no": "20260830000001",
+        "corp_cls": "Y",
+        "corp_code": "00123456",
+        "corp_name": "테스트테크",
+        "stlm_dt": "2026-06-30",
+        "nm": "최고액",
+        "fscl_year": "당기",
+        "ofcps": "직원",
+        "mendng_totamt": "1,200,000,000",
+        "list": []
+      }
+    ]
+  },
+  "dart_ownership": {
+    "status": "000",
+    "message": "정상",
+    "list": [
+      {
+        "rcept_no": "20260830000999",
+        "rcept_dt": "20260830",
+        "corp_code": "00123456",
+        "corp_name": "테스트테크",
+        "repror": "김대표",
+        "isu_exctv_rgist_at": "등기임원",
+        "isu_exctv_ofcps": "대표이사",
+        "isu_main_shrholdr": "10%이상주주",
+        "sp_stock_lmp_cnt": "1,000,000",
+        "sp_stock_lmp_irds_cnt": "20,000",
+        "sp_stock_lmp_rate": "12.50",
+        "sp_stock_lmp_irds_rate": "0.25"
+      }
+    ]
+  },
+  "company_official_profiles": [
+    {
+      "record_id": "company-profile-001",
+      "person_name": "하AI",
+      "company_name": "테스트클라우드",
+      "title": "퓨처AI센터장",
+      "public_scope": "TECH_CENTER_HEAD",
+      "responsibility": "AI 전략 및 연구개발 조직 총괄",
+      "valid_from": "2025-01-01",
+      "valid_to": null,
+      "source_url": "https://www.example-corp.test/leadership/ha-ai",
+      "source_domain": "www.example-corp.test",
+      "source_ref": "company-official-profile-ha-ai",
+      "source_policy_ref": "source-policy-example-corp-reviewed",
+      "phone": "010-9999-9999",
+      "email": "private@example.invalid"
+    },
+    {
+      "record_id": "company-profile-ordinary",
+      "person_name": "일반직원",
+      "company_name": "테스트클라우드",
+      "title": "선임연구원",
+      "public_scope": "ORDINARY_EMPLOYEE",
+      "responsibility": "AI 연구",
+      "valid_from": "2025-01-01",
+      "source_url": "https://www.example-corp.test/team/ordinary",
+      "source_domain": "www.example-corp.test",
+      "source_ref": "company-official-ordinary",
+      "source_policy_ref": "source-policy-example-corp-reviewed"
+    }
+  ]
+}
