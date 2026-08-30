@@ -11,7 +11,10 @@ from packages.connectors.nkis_research import (
     nkis_research_policy,
     responsible_researcher_candidate_name,
 )
+from packages.domain.enums import SourceCollectionMode
+from packages.verification.policy import PolicyDenied
 from workers.policy_research import (
+    PolicyResearchStager,
     output_to_identity,
     repeated_research_topics,
     stage_outputs,
@@ -70,6 +73,21 @@ def test_missing_key_blocks_live_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     with pytest.raises(MissingNkisApiKey):
         connector.fetch(connector.discover()[0])
+
+
+def test_source_policy_denial_happens_before_fetch() -> None:
+    def forbidden(request: httpx.Request) -> httpx.Response:
+        pytest.fail(f"network should not be reached: {request}")
+
+    connector = NkisResearchReportConnector(
+        api_key=SECRET,
+        transport=httpx.MockTransport(forbidden),
+    )
+    blocked = nkis_research_policy().model_copy(
+        update={"collection_mode": SourceCollectionMode.BLOCKED, "can_fetch": False}
+    )
+    with pytest.raises(PolicyDenied):
+        PolicyResearchStager(connector, blocked).stage()
 
 
 def test_fetch_injects_key_only_outbound_and_redacts_echoed_service_key() -> None:
