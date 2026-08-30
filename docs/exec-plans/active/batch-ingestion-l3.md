@@ -1,6 +1,6 @@
 # Batch ingestion L3 transition
 
-Status: planned / active when implementation begins.
+Status: active — Milestone A complete, Milestone B in progress.
 
 ## Objective
 
@@ -16,15 +16,13 @@ the actual API/schema/rights before implementation.
 
 ## Baseline
 
-At plan creation handoff:
+Implementation baseline verified on 2026-08-31:
 
 ```text
-master: 52b32da5c8c0ec577ca81f7bd1a8c18037557304
+master: a56e7a665ce6de5bd12b11c75cbdc57ed4f40ffa
 Alembic head: 0002
-open person-specific issue: #55
+person-specific issue #55: deferred; no person-by-person work is in this plan
 ```
-
-Recheck these values before implementation and replace them here with actual values.
 
 ### Existing pieces to preserve
 
@@ -50,28 +48,41 @@ Recheck these values before implementation and replace them here with actual val
 
 # Milestone A — Governance alignment
 
-- [ ] read all governing docs
-- [ ] verify HEAD
-- [ ] run baseline `make verify`
-- [ ] update feeder maturity to L0–L4
-- [ ] update V0 scope for source-bounded official enumeration
-- [ ] keep generic broad crawling prohibited
-- [ ] add `BATCH_INGESTION.md` to docs index
-- [ ] clarify profiler is deep enrichment, not mandatory ingestion
-- [ ] document ReviewedPersonBundle as manual/regression path
-- [ ] defer #55 without changing current regression semantics
-- [ ] verify docs/code terminology
+- [x] read all governing docs
+- [x] verify HEAD
+- [x] run baseline `make verify`
+- [x] update feeder maturity to L0–L4
+- [x] update V0 scope for source-bounded official enumeration
+- [x] keep generic broad crawling prohibited
+- [x] add `BATCH_INGESTION.md` to docs index
+- [x] clarify profiler is deep enrichment, not mandatory ingestion
+- [x] document ReviewedPersonBundle as manual/regression path
+- [x] defer #55 without changing current regression semantics
+- [x] verify docs/code terminology
 
 Evidence:
 
 ```text
-fill during execution
+HEAD: a56e7a665ce6de5bd12b11c75cbdc57ed4f40ffa
+Alembic: .venv/Scripts/python.exe -m alembic heads -> 0002 (head)
+make verify -> RUNNER_UNAVAILABLE because GNU make is unavailable on this Windows host.
+Equivalent baseline gates executed individually:
+- ruff -> All checks passed
+- mypy -> Success: no issues found in 47 source files
+- pytest -> 181 passed, 1 warning
+- packages.verification.quality -> passed: true
+- web lint -> exit 0
+- web typecheck -> exit 0
+- web tests -> 2 passed
+- web build -> compiled successfully
+Terminology audit: no MERGED/ISSUE_OPEN/UNRESEARCHED feeder status remains outside this
+historical Known RE0 note.
 ```
 
 Commit:
 
 ```text
-fill during execution
+pending Milestone A commit
 ```
 
 ---
