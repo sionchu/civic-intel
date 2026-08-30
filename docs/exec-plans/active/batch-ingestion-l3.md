@@ -1,6 +1,6 @@
 # Batch ingestion L3 transition
 
-Status: active — Milestones A–D complete, Milestone E in progress.
+Status: completed — stop condition met on 2026-08-31.
 
 ## Objective
 
@@ -279,7 +279,7 @@ Full local verification:
 Commit:
 
 ```text
-pending Milestone D commit
+bb0c6f1 P0: add safe batch identity materialization
 ```
 
 ---
@@ -288,39 +288,68 @@ pending Milestone D commit
 
 ## Research
 
-- [ ] verify official current API
-- [ ] verify exact endpoint
-- [ ] verify authentication
-- [ ] verify pagination
-- [ ] verify provider record identifier
-- [ ] verify rate limit
-- [ ] verify license
-- [ ] review metadata/fulltext/AI/commercial rights
-- [ ] write SourcePolicy
+- [x] verify official current API
+- [x] verify exact endpoint
+- [x] verify authentication
+- [x] verify pagination
+- [x] verify provider record identifier
+- [x] verify rate limit; none published, so sequential bounded windows only
+- [x] verify license; none stated on the API page, so downstream reuse is blocked
+- [x] review metadata/fulltext/AI/commercial rights
+- [x] write SourcePolicy
 
 ## Implementation
 
-- [ ] connector
-- [ ] source-specific enumeration
-- [ ] SourceRun
-- [ ] checkpoint/resume
-- [ ] FeederObservation
-- [ ] policy-minimized normalized personnel record
-- [ ] no guessed career fields
-- [ ] reuse CivilServiceCareerEpisode semantics where applicable
-- [ ] mocked deterministic tests
-- [ ] no new generic framework unless proven by Assembly+Gwanbo duplication
+- [x] connector
+- [x] source-specific enumeration
+- [x] SourceRun
+- [x] checkpoint/resume
+- [x] FeederObservation
+- [x] policy-minimized normalized personnel record
+- [x] no guessed career fields
+- [x] reuse CivilServiceCareerEpisode semantics where applicable; list metadata stops before it
+- [x] mocked deterministic tests
+- [x] no new generic framework unless proven by Assembly+Gwanbo duplication
 
 Evidence:
 
 ```text
-fill during execution
+Official contract reviewed on 2026-08-31:
+- UI: https://open.gwanbo.go.kr/OpenApi/web/personnelList
+- list: POST https://open.gwanbo.go.kr/OpenApi/web/personnelListAjax
+- request: themaSe=06, reqFrom/reqTo, currentPage/rowPerPage
+- provider key: cntntSeqNo from the official fnDetail contract
+- authentication: none exposed or sent
+- rate limit/reuse license: not stated; page footer states all rights reserved
+
+SourcePolicy permits FETCH + STORE_METADATA only. Fulltext, excerpts, AI transmission and
+commercialization are blocked. Original-file URL/body and print flags are not persisted.
+identity_hints is empty because the list exposes no structured person identity. No title-derived
+Person or CivilServiceCareerEpisode is created.
+
+Targeted Gwanbo tests -> 7 passed, 1 cache warning.
+Coverage includes official POST contract, multi-page enumeration, unchanged rerun, immutable
+change version, failure/resume, total change, duplicate key, empty official shape and policy
+denial.
+
+Live local probe, scope 2026-08-01:2026-08-31:
+- status SUCCESS
+- pages_committed 1
+- unique_records 0
+The current official endpoint returned an empty result; this is recorded as current live source
+behavior and is not promoted to evidence of a permanently empty source.
+
+Full local verification after Gwanbo:
+- ruff -> All checks passed
+- mypy -> Success: no issues found in 52 source files
+- pytest -> 204 passed, 4 warnings
+- packages.verification.quality -> passed: true
 ```
 
 Commit:
 
 ```text
-fill during execution
+6d53562 P0: add Gwanbo personnel notice L3 feeder
 ```
 
 ---
@@ -329,41 +358,82 @@ fill during execution
 
 ## Verification
 
-- [ ] targeted tests
-- [ ] `make verify`
-- [ ] fresh Alembic upgrade
-- [ ] Alembic downgrade one revision
-- [ ] Alembic re-upgrade
-- [ ] inspect actual CI if available
-- [ ] local results labelled local
+- [x] targeted tests
+- [x] `make verify` attempted; GNU make unavailable on this Windows host
+- [x] fresh Alembic upgrade
+- [x] Alembic downgrade one revision
+- [x] Alembic re-upgrade
+- [x] inspect actual CI if available
+- [x] local results labelled local
 
 ## Clean-v0
 
-- [ ] no duplicate repository
-- [ ] no duplicate raw truth store
-- [ ] no old path drift
-- [ ] no unused batch abstractions
-- [ ] no numeric score materialization shortcut
-- [ ] no credential persistence
-- [ ] no contact/private field persistence
-- [ ] no generic crawler
-- [ ] no person-by-person #55 work mixed in
-- [ ] docs match implementation
+- [x] no duplicate repository
+- [x] no duplicate raw truth store
+- [x] no old path drift
+- [x] no unused batch abstractions
+- [x] no numeric score materialization shortcut
+- [x] no credential persistence
+- [x] no contact/private field persistence
+- [x] no generic crawler
+- [x] no person-by-person #55 work mixed in
+- [x] docs match implementation
 
 ## Deferred list confirmed
 
-- [ ] Splink
-- [ ] Vector DB
-- [ ] MCP
-- [ ] Temporal/Airflow/Celery/Kafka
-- [ ] L4 scheduler
-- [ ] all feeder conversions
-- [ ] UI redesign
+- [x] Splink
+- [x] Vector DB
+- [x] MCP
+- [x] Temporal/Airflow/Celery/Kafka
+- [x] L4 scheduler
+- [x] all feeder conversions
+- [x] UI redesign
+
+Evidence:
+
+```text
+Canonical make verify runner:
+- RUNNER_UNAVAILABLE: GNU make is not installed on this Windows host.
+
+Equivalent canonical commands executed locally:
+- ruff -> All checks passed
+- mypy -> Success: no issues found in 51 source files
+- pytest -> 204 passed, 4 warnings
+- packages.verification.quality -> passed: true
+- web lint -> exit 0
+- web typecheck -> exit 0
+- web tests -> 2 passed
+- web build -> compiled successfully
+- targeted batch/materialization/migration tests -> 23 passed, 3 warnings
+
+Independent migration DB:
+- fresh upgrade -> 0004
+- downgrade -1 -> 0003
+- re-upgrade -> 0004 (head)
+
+GitHub Actions inspected:
+- baseline master SHA a56e7a6 run 33327647910: CI_RUNNER_BLOCKED before any step
+- annotation: recent account payments failed or spending limit must be increased
+- no GitHub check exists for the local implementation commits; no CI PASS is claimed
+
+Clean-v0 audit:
+- exactly one class SqlAlchemyRepository, in packages/persistence/repository.py
+- no apps.api.repository import or API-local implementation
+- no raw observation/payload truth table
+- source-specific connectors only; no generic crawler/framework
+- origin deduplication retains its separate similarity score, while identity and
+  materialization contain no numeric threshold authority
+- contact/credential exclusion tests pass; no secret or provider contact field persists
+- deferred infrastructure and person-specific issue #55 are absent from the implementation diff
+- git diff --check passed
+```
 
 Final ending HEAD:
 
 ```text
-fill during execution
+Implementation HEAD: 6d53562
+Closure metadata: recorded by the commit containing this completed ExecPlan; a self-referential
+commit SHA is intentionally not embedded.
 ```
 
 ---
@@ -381,3 +451,9 @@ Stop this execution plan after:
 7. final diff contains no unnecessary parallel architecture.
 
 Then propose exactly one next feeder as Next Best Action.
+
+## Next Best Action
+
+Promote the NEC local elected-office winner roster from L2 to L3, bounded by election code and
+office class, using the existing official connector and `huboid` identity anchor on the same
+run/checkpoint/observation foundation.

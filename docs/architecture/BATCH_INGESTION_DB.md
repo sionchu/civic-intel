@@ -654,32 +654,24 @@ No orphan Person.
 
 # 9. Repository boundary
 
-Current baseline:
-
-```text
-apps/api/repository.py
-```
-
-contains shared SQLAlchemy repository behavior.
-
-Batch worker DB writes must not result in a second independent session/repository implementation.
-
-Preferred RE0:
+Canonical implementation:
 
 ```text
 packages/persistence/repository.py
 ```
 
-with API + worker both importing it.
+contains shared SQLAlchemy repository behavior used by both API and workers.
 
-If moved:
+Batch worker DB writes must not result in a second independent session/repository implementation.
 
-- update all internal imports
-- update ARCHITECTURE dependency direction
-- remove duplicate implementation
-- tests continue to use one repository
-- no module-level schema creation
-- runtime still requires Alembic head
+The previous API-local repository module was removed.
+
+- all internal imports use the shared package;
+- `ARCHITECTURE.md` records the dependency direction;
+- only one repository implementation remains;
+- API and worker tests use the same repository;
+- there is no module-level schema creation;
+- runtime still requires the Alembic head.
 
 ---
 
