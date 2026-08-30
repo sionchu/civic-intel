@@ -48,7 +48,8 @@ partisan desirability or hidden influence.
 | Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | MERGED staging; separate from #23 ethics review |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | MERGED contract; connectors pending |
 | Private-sector senior leaders | registered directors, disclosed executives, CEO/CTO/CSO, officially named senior technical/business leaders | OpenDART -> company official -> KRX | API / STRUCTURED_DISCLOSURE / OFFICIAL_WEB | DART corp code + person anchors | Corporate | ISSUE_OPEN #18 |
-| Government-funded policy research | institute leaders/researchers and named policy-output authors | NKIS + institute official profiles | API + OFFICIAL_WEB | research output + person/institute anchors | Academic / Policy Research | ISSUE_OPEN #24 |
+| Government-funded policy research outputs | named responsible researchers on public policy outputs | NKIS `ReportList.do` | API | NKIS output ID + responsible-researcher text + year | Academic / Policy Research Output | MERGED staging; no employment inference |
+| Government-funded research careers | institute presidents/directors/researchers with verified role/tenure | institute official profile / appointment release | OFFICIAL_WEB | person + institute + role + dates | Academic / Policy Research Career | verification lane pending |
 | General academia | professors/researchers relevant to public appointments | KCI, OpenAlex, Crossref, ORCID + university official profile | API + OFFICIAL_WEB | DOI/ORCID/OpenAlex + identity anchors | Academic | RESEARCHED |
 | Legal / judiciary / prosecution | judges, prosecutors, lawyers, legal-policy leaders | MOJ, Supreme Court, court gazette, KBA, official law-firm bios | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | name + office + appointment date; bar identity where public | Legal/Judicial/Prosecution | ISSUE_OPEN #21 |
 | Military | generals, chiefs, JCS/defense-policy leadership and path-relevant retired senior officers | MND/service personnel releases and official bios | OFFICIAL_WEB | name + rank/command + date | Military / Defense | RESEARCHED |
@@ -105,6 +106,7 @@ The following are prohibited feeder behavior:
 - ordinary private-company employee rosters
 - ordinary union-member rosters or inferred union affiliation
 - ordinary NGO/professional-association member rosters
+- broad institute staff scraping merely to populate a researcher directory
 - private donor/client/contact networks
 - private addresses, phone numbers, emails or precise locations
 - inferring political faction, ideology or loyalty from organizational proximity alone
@@ -120,9 +122,14 @@ NEC candidate career string
  -> FACT that the candidate submitted that career to NEC
  -> not automatically independently verified career FACT
 
-NKIS report author
- -> FACT of authorship on that public output
- -> not automatically institute-employment FACT
+NKIS responsible-researcher field
+ -> FACT that NKIS identifies a person/text as responsible researcher for that output
+ -> publishing institution is an output property, not automatically the person's employer
+ -> institute employment/leadership needs an institute official source
+
+NKIS repeated topic
+ -> DERIVED only from at least two separate research outputs
+ -> not a research-quality score or permanent expertise label
 
 ALIO major-career entry
  -> FACT that the public institution disclosed the entry
@@ -154,13 +161,13 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after ALIO staging:
+Current recommended sequence after NKIS staging:
 
-1. #24 NKIS policy-research feeder;
-2. #21 legal/judicial/prosecution;
-3. #20 labor-union public leadership;
-4. #18 private-sector senior talent;
-5. #13 legislative completeness and official bill summaries;
+1. #21 legal/judicial/prosecution;
+2. #20 labor-union public leadership;
+3. #18 private-sector senior talent;
+4. #13 legislative completeness and official bill summaries;
+5. official institute-profile/appointment adapter for NKIS-discovered researchers;
 6. one reviewed live ALIO adapter using the #25 staging contracts;
 7. one reviewed live civil-service/ethics source adapter using the #23 contracts.
 

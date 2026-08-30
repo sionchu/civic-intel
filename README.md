@@ -5,9 +5,9 @@ traceable publication.
 
 The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
 personnel briefing. Runtime API reads are SQLAlchemy-backed. Opt-in live-capable official
-connectors are available for National Assembly member identity, legislative activity, and
-Central Election Commission local-election candidates/winners; Golden tests remain fully
-offline.
+connectors are available for National Assembly member identity, legislative activity,
+Central Election Commission local-election candidates/winners, and NKIS policy-research
+metadata; Golden tests remain fully offline.
 
 ## Setup
 
@@ -102,9 +102,27 @@ explicitly labelled as submitted election-record data rather than independently 
 biographical FACT. A candidate absent from a partial winner page is `UNKNOWN`, not
 silently classified as a losing candidate.
 
+## Policy-research staging
+
+`NkisResearchReportConnector` uses the official NKIS research-report Open API and requires an
+issued `NKIS_API_KEY` for live requests.
+
+```bash
+NKIS_API_KEY=... civic-stage-policy-research \
+  --publisher "산업연구원" --year-begin 2024 --year-end 2026
+```
+
+The output stages research-report metadata and a researcher candidate only when
+`INCHARGE_NM` is an unambiguous single person. The NKIS publishing institution is retained
+as an output property but is **not** assigned as that person's employer. Institute
+employment/leadership requires a separate official institute profile or appointment source.
+A repeated-topic review candidate requires at least two distinct staged outputs with the
+same unambiguous researcher label, publisher and classification; it remains identity-
+unresolved until normal Identity Resolution succeeds. NKIS abstract/fulltext storage, AI
+use, excerpt display and commercial reuse remain disabled in V0 unless separately reviewed.
+
 The reviewed National Assembly and NEC SourcePolicies permit policy-approved fetch/metadata
-use. V0 deliberately does not retain raw API response fulltext or send these feeds to AI.
-No scheduled synchronization is enabled yet.
+use. NKIS is metadata-only with stricter rights. No scheduled synchronization is enabled yet.
 
 ## Safety and source rights
 
