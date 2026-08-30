@@ -20,9 +20,10 @@ class CrossLaneIdentityEvidence:
     def __post_init__(self) -> None:
         if not self.source_ref.strip():
             raise ValueError("cross-lane identity evidence requires source_ref")
-        if self.evidence_type == CrossLaneIdentityEvidenceType.EXTERNAL_ID:
-            if not self.namespace or not self.left_value or not self.right_value:
-                raise ValueError("EXTERNAL_ID evidence requires namespace and both values")
+        if self.evidence_type == CrossLaneIdentityEvidenceType.EXTERNAL_ID and (
+            not self.namespace or not self.left_value or not self.right_value
+        ):
+            raise ValueError("EXTERNAL_ID evidence requires namespace and both values")
         if self.evidence_type in {
             CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
             CrossLaneIdentityEvidenceType.OFFICIAL_BIOGRAPHY_CONTINUITY,
