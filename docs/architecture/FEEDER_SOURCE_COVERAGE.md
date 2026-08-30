@@ -37,7 +37,8 @@ partisan desirability or hidden influence.
 | Feeder | Public person scope | Strongest source lane | Mode | Identity anchor | Career / ontology destination | Status |
 |---|---|---|---|---|---|---|
 | National Assembly members | elected National Assembly members | 열린국회정보 member API | API | `MONA_CD` | Legislative | MERGED |
-| National Assembly legislation | representative/co-sponsorship and bill activity | 열린국회정보 bill APIs | API | `MONA_CD`, bill ID | Legislative | MERGED; completeness #13 |
+| National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | MERGED code-first staging |
+| National Assembly proposal-reason / major-content text | official full `제안이유` / 주요내용 | no verified structured Open Assembly source found in 2026-08-30 review | BLOCKED | bill ID/detail link only | Legislative text evidence | BLOCKED; no HTML scraping in #13 |
 | Local elected offices | governors, mayors/county/district heads, local councilors, education superintendents, candidates | NEC candidate + winner APIs | API | NEC `huboid` | Local Elected Office | MERGED |
 | Presidential Office | chiefs, senior secretaries, secretaries and publicly named senior staff | official organization/appointment releases | OFFICIAL_WEB | name + office + dates | Public Service / Appointment | RESEARCHED |
 | Presidential commissions / TFs | chair, vice-chair, member, adviser where publicly named | official body/appointment records | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + body + role + dates | CommitteeMembershipEpisode | MERGED contract |
@@ -123,6 +124,15 @@ A source may establish a narrower fact than the text visually suggests.
 Examples:
 
 ```text
+National Assembly RST/PUBL MONA code fields
+ -> FACT of code-linked representative/co-sponsorship when the full Assembly scan and role-code coverage are complete
+ -> joint representative proposers remain joint leads
+ -> co-sponsorship is participation, not faction/alliance proof
+
+National Assembly proposal-reason text
+ -> currently BLOCKED in V0 because no verified structured source was found and bill-detail HTML scraping is prohibited
+ -> do not fabricate a BPMBILLSUMMARY endpoint or infer content from the title
+
 NEC candidate career string
  -> FACT that the candidate submitted that career to NEC
  -> not automatically independently verified career FACT
@@ -196,14 +206,14 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after private-sector senior staging:
+Current recommended sequence after legislative completeness:
 
-1. #13 legislative completeness and official bill summaries;
-2. one real cross-lane corporate case: OpenDART/company official profile -> later public role -> profiler;
-3. small federation/social-dialogue public leadership verification lane using #20 semantics;
-4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
-5. official institute-profile/appointment adapter for NKIS-discovered researchers;
-6. one reviewed live ALIO adapter using the #25 staging contracts;
-7. one reviewed live civil-service/ethics source adapter using the #23 contracts.
+1. one real cross-lane corporate case: OpenDART/company official profile -> later public role -> profiler;
+2. small federation/social-dialogue public leadership verification lane using #20 semantics;
+3. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
+4. official institute-profile/appointment adapter for NKIS-discovered researchers;
+5. one reviewed live ALIO adapter using the #25 staging contracts;
+6. one reviewed live civil-service/ethics source adapter using the #23 contracts;
+7. revisit bill proposal-reason text only if a verified official structured source becomes available.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.
