@@ -9,6 +9,7 @@ from apps.api.main import create_app
 from apps.api.repository import DatabaseNotReady, SqlAlchemyRepository
 
 PERSON_ID = "00000000-0000-0000-0000-000000000002"
+HA_JUNGWOO_ID = "00000000-0000-0000-0000-000000000009"
 SOURCE_ID = "20000000-0000-0000-0000-000000000001"
 
 
@@ -53,6 +54,52 @@ def test_api_renders_explicit_unknown_without_fact_promotion(client: TestClient)
     assert unknown["asserted_as_true"] is False
     assert unknown["resolution_note"]
     assert unknown["evidence"] == []
+
+
+def test_ha_jungwoo_profile_projection_preserves_nomination_and_unknown_power(
+    client: TestClient,
+) -> None:
+    payload = client.get(f"/people/{HA_JUNGWOO_ID}").json()
+    profile = payload["profile"]
+    sections = {item["id"]: item for item in profile["sections"]}
+
+    assert profile["section_order"] == [
+        "identity",
+        "summary",
+        "career_timeline",
+        "current_power_tasks",
+        "appointment_logic",
+        "decision_episodes",
+        "repeated_patterns",
+        "stakeholders",
+        "controversies",
+        "hearing_questions",
+        "forecast",
+        "limitations",
+    ]
+    assert sections["identity"]["status"] == "AVAILABLE"
+    assert sections["summary"]["status"] == "AVAILABLE"
+    assert sections["career_timeline"]["status"] == "AVAILABLE"
+    nomination = sections["summary"]["entries"][0]
+    assert nomination["details"]["predicate"] == "NOMINATED_AS"
+    assert nomination["claim_id"] == "30000000-0000-0000-0000-000000000009"
+    assert nomination["source_ids"] == [SOURCE_ID]
+    assert sections["current_power_tasks"]["status"] == "UNKNOWN"
+    assert sections["current_power_tasks"]["entries"] == []
+    assert sections["stakeholders"]["status"] == "AVAILABLE"
+    assert sections["stakeholders"]["entries"][0]["details"]["evidence_types"] == [
+        "APPOINTMENT"
+    ]
+    assert sections["forecast"]["status"] == "UNKNOWN"
+    assert sections["limitations"]["status"] == "AVAILABLE"
+
+
+def test_profile_projection_keeps_flat_claims_for_backward_compatibility(
+    client: TestClient,
+) -> None:
+    payload = client.get(f"/people/{HA_JUNGWOO_ID}").json()
+    assert payload["claims"]
+    assert payload["profile"]["semantics"] == "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE"
 
 
 def test_review_surface_reports_source_conflict(client: TestClient) -> None:
