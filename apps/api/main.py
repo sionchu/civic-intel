@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException
 
 from packages.domain.enums import IdentityStatus
+from packages.rendering.profile_projection import build_profile_projection
 from packages.verification.claims import validate_claim_publication
 
 from .repository import SqlAlchemyRepository, bootstrap_repository, repository
@@ -19,7 +20,7 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
         bootstrap_repository(target)
         yield
 
-    app = FastAPI(title="Civic Intel API", version="0.3.0", lifespan=lifespan)
+    app = FastAPI(title="Civic Intel API", version="0.4.0", lifespan=lifespan)
 
     def person_or_404(person_id: UUID):
         person = target.person(person_id)
@@ -27,17 +28,19 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
             raise HTTPException(404, "person not found")
         return person
 
-    def claim_payload(claim) -> dict:
-        evidence = target.evidence_for(claim.id)
-        sources = target.sources(item.source_id for item in evidence)
+    def claim_payload(claim, evidence=None) -> dict:
+        selected_evidence = target.evidence_for(claim.id) if evidence is None else evidence
+        sources = target.sources(item.source_id for item in selected_evidence)
         policies = target.policies(source.policy_id for source in sources.values())
         person = person_or_404(claim.person_id)
-        gate = validate_claim_publication(claim, person, evidence, sources, policies)
+        gate = validate_claim_publication(
+            claim, person, selected_evidence, sources, policies
+        )
         if not gate.publishable:
             raise HTTPException(500, f"publication invariant violated: {gate.failures}")
         return claim.model_dump(mode="json") | {
-            "evidence": [item.model_dump(mode="json") for item in evidence],
-            "source_ids": sorted({str(item.source_id) for item in evidence}),
+            "evidence": [item.model_dump(mode="json") for item in selected_evidence],
+            "source_ids": sorted({str(item.source_id) for item in selected_evidence}),
         }
 
     @app.get("/health")
@@ -51,10 +54,25 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
     @app.get("/people/{person_id}")
     def person(person_id: UUID) -> dict:
         item = person_or_404(person_id)
-        person_claims = [claim_payload(claim) for claim in target.claims(person_id, True)]
+        published_claims = target.claims(person_id, True)
+        evidence_by_claim = {
+            claim.id: target.evidence_for(claim.id) for claim in published_claims
+        }
+        person_claims = [
+            claim_payload(claim, evidence_by_claim[claim.id]) for claim in published_claims
+        ]
         relationships = target.relationships(person_id)
+        decision_episodes = target.decision_episodes(person_id)
+        profile = build_profile_projection(
+            item,
+            published_claims,
+            evidence_by_claim,
+            relationships,
+            decision_episodes,
+        )
         return item.model_dump(mode="json") | {
             "claims": person_claims,
+            "profile": profile,
             "relationship_ids": [relationship["id"] for relationship in relationships],
             "asset_disclosure_ids": [],
         }
