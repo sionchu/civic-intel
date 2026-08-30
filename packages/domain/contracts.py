@@ -99,9 +99,12 @@ class RoleFitEvidence(Contract):
 
     @model_validator(mode="after")
     def evidence_semantics(self) -> RoleFitEvidence:
-        if self.status in {RoleFitStatus.EVIDENCED, RoleFitStatus.PARTIAL}:
-            if not self.claim_ids and not self.source_ids:
-                raise ValueError("evidenced role fit requires claim_ids or source_ids")
+        if (
+            self.status in {RoleFitStatus.EVIDENCED, RoleFitStatus.PARTIAL}
+            and not self.claim_ids
+            and not self.source_ids
+        ):
+            raise ValueError("evidenced role fit requires claim_ids or source_ids")
         if self.status in {RoleFitStatus.UNKNOWN, RoleFitStatus.GAP} and not self.note:
             raise ValueError("UNKNOWN/GAP role fit requires a note")
         return self
