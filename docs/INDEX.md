@@ -10,6 +10,7 @@ these rules without overriding them.
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
+- [Civil service feeder](architecture/CIVIL_SERVICE.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)
