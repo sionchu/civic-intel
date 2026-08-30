@@ -3,6 +3,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from packages.connectors.base import ConnectorDocument
 from packages.connectors.nkis_research import (
     MissingNkisApiKey,
     NkisResearchReportConnector,
@@ -21,6 +22,17 @@ SECRET = "nkis-secret-must-not-persist"
 
 def fixture_xml() -> str:
     return FIXTURE.read_text(encoding="utf-8")
+
+
+def fixture_document() -> ConnectorDocument:
+    return ConnectorDocument(
+        url="https://nkis.re.kr/nkisApi/search/ReportList.do?pageNo=1&rowCnt=30",
+        title="NKIS 연구보고서 목록",
+        publisher="경제·인문사회연구회 국가정책연구포털",
+        published_at=None,
+        body=fixture_xml(),
+        metadata={"total_count": "3"},
+    )
 
 
 def test_nkis_policy_is_metadata_only_and_commercial_ai_use_fail_closed() -> None:
@@ -76,12 +88,7 @@ def test_fetch_injects_key_only_outbound_and_redacts_echoed_service_key() -> Non
 
 
 def test_report_parser_preserves_research_output_without_employment_claim() -> None:
-    document = type(
-        "Document",
-        (),
-        {"body": fixture_xml()},
-    )()
-    outputs = NkisResearchReportConnector.parse_outputs(document)
+    outputs = NkisResearchReportConnector.parse_outputs(fixture_document())
     assert len(outputs) == 3
     assert outputs[0].output_id == "OTP_TEST_001"
     assert outputs[0].responsible_researcher_text == "김연구"
@@ -94,21 +101,23 @@ def test_report_parser_preserves_research_output_without_employment_claim() -> N
     assert candidate.office == "연구책임자(해당 연구성과)"
     assert "nkis_publisher:테스트정책연구원" in candidate.career_anchors
 
+    staged = stage_outputs(outputs)[0].to_dict()
+    assert "researcher_candidate" in staged
+    assert "author_candidate" not in staged
+
 
 def test_ambiguous_or_generic_researcher_text_never_creates_person_candidate() -> None:
     assert responsible_researcher_candidate_name("박정책 외 2인") is None
     assert responsible_researcher_candidate_name("연구원") is None
     assert responsible_researcher_candidate_name("김정책, 이연구") is None
 
-    document = type("Document", (), {"body": fixture_xml()})()
-    outputs = NkisResearchReportConnector.parse_outputs(document)
+    outputs = NkisResearchReportConnector.parse_outputs(fixture_document())
     staged = stage_outputs(outputs)
     assert staged[2].candidate is None
 
 
-def test_repeated_topics_require_multiple_outputs() -> None:
-    document = type("Document", (), {"body": fixture_xml()})()
-    outputs = NkisResearchReportConnector.parse_outputs(document)
+def test_repeated_topics_require_distinct_outputs() -> None:
+    outputs = NkisResearchReportConnector.parse_outputs(fixture_document())
     topics = repeated_research_topics(outputs)
     assert topics == [
         {
@@ -118,5 +127,6 @@ def test_repeated_topics_require_multiple_outputs() -> None:
         }
     ]
     assert repeated_research_topics(outputs[:1]) == []
+    assert repeated_research_topics([outputs[0], outputs[0]]) == []
     with pytest.raises(ValueError, match="at least two outputs"):
         repeated_research_topics(outputs, minimum_outputs=1)
