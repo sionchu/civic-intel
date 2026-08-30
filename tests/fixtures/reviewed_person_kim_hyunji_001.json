@@ -1,0 +1,186 @@
+{
+  "id": "REVIEWED_PERSON_KIM_HYUNJI_001",
+  "as_of": "2026-08-31",
+  "review_note": "Metadata-only neutral fact-profiling fixture. A political allegation and the Presidential Office response are stored as separate epistemic objects; the bundle does not adjudicate the allegation's truth.",
+  "person": {
+    "id": "00000000-0000-0000-0000-000000009201",
+    "canonical_name": "김현지",
+    "birth_date": null,
+    "identity_status": "RESOLVED"
+  },
+  "profile_target": {
+    "primary": {
+      "lane": "PRESIDENTIAL_PERSONNEL_AND_PUBLIC_CONTROVERSY",
+      "candidate": {
+        "canonical_name": "김현지",
+        "aliases": [],
+        "birth_date": null,
+        "office": "제1부속실장",
+        "organization": "대통령비서실",
+        "career_anchors": [
+          "official_current_role:제1부속실장:2026-08-31"
+        ]
+      },
+      "source_refs": [
+        "https://www.president.go.kr/information-disclosure/proactive",
+        "https://www.yna.co.kr/view/AKR20251014152700001"
+      ],
+      "discovery_reasons": [
+        "PRESIDENTIAL_OFFICE_FEEDER",
+        "PUBLIC_FACT_CHECK_INTEREST"
+      ],
+      "appointment_target_slugs": []
+    }
+  },
+  "policies": [
+    {
+      "id": "10000000-0000-0000-0000-000000009201",
+      "domain": "president.go.kr",
+      "source_class": "official_presidential_personnel_disclosure",
+      "collection_mode": "DISCOVERY_ONLY",
+      "can_fetch": false,
+      "can_store_metadata": true,
+      "can_store_fulltext": false,
+      "can_send_to_ai": false,
+      "can_show_excerpt": false,
+      "can_commercialize": false,
+      "license": null,
+      "policy_note": "Manually reviewed current personnel metadata only; no blanket fulltext or commercial reuse right assumed."
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000009202",
+      "domain": "yna.co.kr",
+      "source_class": "news_wire_contested_claim",
+      "collection_mode": "DISCOVERY_ONLY",
+      "can_fetch": false,
+      "can_store_metadata": true,
+      "can_store_fulltext": false,
+      "can_send_to_ai": false,
+      "can_show_excerpt": false,
+      "can_commercialize": false,
+      "license": null,
+      "policy_note": "Reviewed metadata only; the report records an allegation and response but is not treated as independent proof of the underlying allegation."
+    }
+  ],
+  "sources": [
+    {
+      "id": "20000000-0000-0000-0000-000000009201",
+      "url": "https://www.president.go.kr/information-disclosure/proactive",
+      "title": "대통령비서실 비서관급 인사 사전정보공개",
+      "publisher": "대한민국 청와대",
+      "published_at": null,
+      "policy_id": "10000000-0000-0000-0000-000000009201",
+      "origin_cluster_id": null
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000009202",
+      "url": "https://www.yna.co.kr/view/AKR20251014152700001",
+      "title": "대통령실, '김현지 종북 연결' 주장에 '5공 때도 안먹힐 프레임'",
+      "publisher": "연합뉴스",
+      "published_at": "2025-10-14T00:00:00+09:00",
+      "policy_id": "10000000-0000-0000-0000-000000009202",
+      "origin_cluster_id": null
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "21000000-0000-0000-0000-000000009201",
+      "source_id": "20000000-0000-0000-0000-000000009201",
+      "fetched_at": "2026-08-31T01:40:00+09:00",
+      "content_hash": "reviewed-kim-hyunji-current-role-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "bundle": "REVIEWED_PERSON_KIM_HYUNJI_001",
+        "as_of": "2026-08-31"
+      },
+      "fulltext": null
+    },
+    {
+      "id": "21000000-0000-0000-0000-000000009202",
+      "source_id": "20000000-0000-0000-0000-000000009202",
+      "fetched_at": "2026-08-31T01:42:00+09:00",
+      "content_hash": "reviewed-kim-hyunji-allegation-response-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "bundle": "REVIEWED_PERSON_KIM_HYUNJI_001"
+      },
+      "fulltext": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "30000000-0000-0000-0000-000000009201",
+      "person_id": "00000000-0000-0000-0000-000000009201",
+      "proposition": "김현지는 2026년 8월 31일 기준 대통령비서실 제1부속실장으로 공개돼 있다.",
+      "subject": "김현지",
+      "predicate": "HELD_ROLE",
+      "object_text": "대통령비서실 제1부속실장",
+      "qualifiers": {
+        "date": "2026-08-31",
+        "as_of": "2026-08-31"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000009202",
+      "person_id": "00000000-0000-0000-0000-000000009201",
+      "proposition": "김현지는 경기동부연합과 연관돼 있다.",
+      "subject": "김현지",
+      "predicate": "ALLEGATION",
+      "object_text": "경기동부연합 연관 주장",
+      "qualifiers": {
+        "date": "2025-10-14",
+        "proponent": "국민의힘 박정훈 의원",
+        "truth_status": "UNRESOLVED"
+      },
+      "epistemic_status": "CLAIM",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": false,
+      "resolution_note": "공개 정치적 주장으로 기록하며, 이 reviewed bundle은 해당 연관성의 진실 여부를 확정하지 않는다."
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000009203",
+      "person_id": "00000000-0000-0000-0000-000000009201",
+      "proposition": "대통령실은 2025년 10월 14일 김현지와 경기동부연합의 연관성을 제기한 주장에 대해 종북몰이 성격의 의혹 제기라며 공개 반박했다.",
+      "subject": "대통령실",
+      "predicate": "RESPONSE_TO_ALLEGATION",
+      "object_text": "김현지-경기동부연합 연관 주장에 대한 공개 반박",
+      "qualifiers": {
+        "date": "2025-10-14",
+        "respondent": "대통령실 김남준 대변인",
+        "responds_to_claim_id": "30000000-0000-0000-0000-000000009202"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    }
+  ],
+  "evidence": [
+    {
+      "id": "40000000-0000-0000-0000-000000009201",
+      "claim_id": "30000000-0000-0000-0000-000000009201",
+      "source_id": "20000000-0000-0000-0000-000000009201",
+      "snapshot_id": "21000000-0000-0000-0000-000000009201",
+      "stance": "SUPPORT",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000009202",
+      "claim_id": "30000000-0000-0000-0000-000000009202",
+      "source_id": "20000000-0000-0000-0000-000000009202",
+      "snapshot_id": "21000000-0000-0000-0000-000000009202",
+      "stance": "NEUTRAL",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000009203",
+      "claim_id": "30000000-0000-0000-0000-000000009203",
+      "source_id": "20000000-0000-0000-0000-000000009202",
+      "snapshot_id": "21000000-0000-0000-0000-000000009202",
+      "stance": "SUPPORT",
+      "excerpt": null
+    }
+  ]
+}
