@@ -4,7 +4,9 @@ Evidence-grounded public-official intelligence with policy-first ingestion and f
 traceable publication.
 
 The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
-personnel briefing. Runtime API reads are SQLAlchemy-backed. No live connector is enabled.
+personnel briefing. Runtime API reads are SQLAlchemy-backed. One opt-in live-capable
+official connector is available for National Assembly member information; Golden tests
+remain fully offline.
 
 ## Setup
 
@@ -34,10 +36,33 @@ make verify        # all required checks
 
 On Windows without `make`, run the commands shown in `Makefile` directly.
 
+## National Assembly member connector
+
+`OpenAssemblyMemberConnector` targets the official National Assembly Secretariat member
+information Open API. Normal live use requires an `ASSEMBLY_API_KEY`; the key is injected
+only into the outbound request and is never embedded in discovered/source URLs or stored
+metadata.
+
+```bash
+ASSEMBLY_API_KEY=... python - <<'PY'
+from packages.connectors import OpenAssemblyMemberConnector
+
+connector = OpenAssemblyMemberConnector(name="홍길동", page_size=10)
+document = connector.fetch(connector.discover()[0])
+for member in connector.parse_members(document):
+    print(member)
+PY
+```
+
+The reviewed SourcePolicy permits fetch/metadata use under the official dataset's
+unrestricted-use license, but V0 deliberately does not retain raw API response fulltext
+or send it to AI because member rows may include contact fields unnecessary for identity
+resolution. No scheduled synchronization is enabled yet.
+
 ## Safety and source rights
 
 All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
 metadata and short excerpts only; its policies are discovery-only or blocked, so tests
-cannot fetch them. The generic HTTP connector remains dormant and no live connector is
-enabled. The model has no private-family or precise-residence publication fields.
-Workers cannot publish claims.
+cannot fetch them. The National Assembly connector is opt-in and credential-gated; tests
+mock all network responses. The generic HTTP connector remains dormant. The model has no
+private-family or precise-residence publication fields. Workers cannot publish claims.
