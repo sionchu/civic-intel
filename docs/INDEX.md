@@ -7,6 +7,7 @@ these rules without overriding them.
 
 - [Architecture](../ARCHITECTURE.md)
 - [Career facets](architecture/CAREER_FACETS.md)
+- [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)
