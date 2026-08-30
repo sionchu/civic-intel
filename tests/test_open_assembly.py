@@ -1,5 +1,3 @@
-from urllib.parse import parse_qs, urlparse
-
 import httpx
 import pytest
 
@@ -77,21 +75,18 @@ def test_discovery_url_is_sanitized_and_filterable() -> None:
         district="서울 테스트구",
     )
     url = connector.discover()[0]
-    parsed = urlparse(url)
-    query = parse_qs(parsed.query)
+    parsed = httpx.URL(url)
     assert parsed.scheme == "https"
-    assert parsed.netloc == OpenAssemblyMemberConnector.HOST
+    assert parsed.host == OpenAssemblyMemberConnector.HOST
     assert parsed.path == OpenAssemblyMemberConnector.PATH
-    assert query == {
-        "Type": ["json"],
-        "pIndex": ["2"],
-        "pSize": ["50"],
-        "HG_NM": ["홍길동"],
-        "POLY_NM": ["테스트정당"],
-        "ORIG_NM": ["서울 테스트구"],
-    }
+    assert parsed.params["Type"] == "json"
+    assert parsed.params["pIndex"] == "2"
+    assert parsed.params["pSize"] == "50"
+    assert parsed.params["HG_NM"] == "홍길동"
+    assert parsed.params["POLY_NM"] == "테스트정당"
+    assert parsed.params["ORIG_NM"] == "서울 테스트구"
     assert SECRET not in url
-    assert "KEY" not in query
+    assert "KEY" not in parsed.params
 
 
 def test_successful_fetch_parses_identity_safe_member_fields() -> None:
@@ -112,6 +107,7 @@ def test_successful_fetch_parses_identity_safe_member_fields() -> None:
     assert member.name_ko == "홍길동"
     assert member.name_hanja == "洪吉童"
     assert member.name_en == "Hong Gil-dong"
+    assert member.birth_date is not None
     assert member.birth_date.isoformat() == "1970-01-02"
     assert member.party == "테스트정당"
     assert member.district == "서울 테스트구"
