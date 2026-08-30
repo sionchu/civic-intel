@@ -44,13 +44,13 @@
   "dart_compensation_v2": {
     "status": "000",
     "message": "정상",
+    "rcept_no": "20260830000001",
+    "corp_cls": "Y",
+    "corp_code": "00123456",
+    "corp_name": "테스트테크",
+    "stlm_dt": "2026-06-30",
     "group": [
       {
-        "rcept_no": "20260830000001",
-        "corp_cls": "Y",
-        "corp_code": "00123456",
-        "corp_name": "테스트테크",
-        "stlm_dt": "2026-06-30",
         "nm": "김대표",
         "fscl_year": "당기",
         "ofcps": "대표이사",
@@ -58,11 +58,6 @@
         "list": []
       },
       {
-        "rcept_no": "20260830000001",
-        "corp_cls": "Y",
-        "corp_code": "00123456",
-        "corp_name": "테스트테크",
-        "stlm_dt": "2026-06-30",
         "nm": "최고액",
         "fscl_year": "당기",
         "ofcps": "직원",
