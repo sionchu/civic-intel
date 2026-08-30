@@ -206,16 +206,41 @@ Reviewed source
 
 Staging alone never creates a publishable factual assertion.
 
-## Legislative v0 source boundary
+## Legislative source boundary
 
-The first legislative activity source is the National Assembly `의원 발의법률안` Open API
-(service code `nzmimeepazxkubdpn`). It provides bill identifiers/titles, proposal date,
-committee, processing result, Assembly term, representative proposer (`RST_PROPOSER`) and
-co-proposers (`PUBL_PROPOSER`).
+The National Assembly `의원 발의법률안` Open API (`nzmimeepazxkubdpn`) provides bill
+identifiers/titles, proposal date, committee, processing result, Assembly term, display-name
+proposers, and code fields used for exact participation:
 
-The API's `PROPOSER` filter is treated as representative-proposer search. Therefore:
+- `RST_MONA_CD`: representative-proposer member codes; joint leads can be comma-separated;
+- `PUBL_MONA_CD`: co-proposer member codes; reviewed public implementations document
+  semicolon separation.
 
-- a complete filtered result may support an exact representative-sponsored count;
-- the same filtered result does **not** establish a person's complete co-sponsorship count;
-- complete proposer-role coverage requires the proposer-detail source in a later scope;
-- proposal reason / full major-content text is not scraped in this scope.
+Exact term counts use an **unfiltered full-Assembly scan** and the reviewed Person's
+`MONA_CD`. Name matching is not used for exact participation.
+
+Exact representative/co-sponsored counts require all of the following:
+
+- scan begins at page 1 and fetches every expected page;
+- page totals remain consistent;
+- unique `BILL_ID` count equals source `list_total_count`;
+- no duplicate-page or conflicting duplicate-bill anomaly exists;
+- both role-code fields are present and parseable on every source bill row.
+
+If any condition fails, exact counts remain `UNKNOWN`/`None` rather than falling back to
+`PROPOSER`, `RST_PROPOSER`, or `PUBL_PROPOSER` name strings.
+
+A bill count is descriptive participation data, not a performance score. Raw
+`PROC_RESULT` stays canonical; `대안반영폐기` is never silently treated as
+`원안가결`/`수정가결`.
+
+### Proposal reason / main-content text
+
+As of the 2026-08-30 implementation review, no verified Open Assembly structured endpoint
+was found that returns full `제안이유` / 주요내용 text. Current public datasets that contain
+those texts obtain them from `likms.assembly.go.kr` bill-detail HTML.
+
+Because Issue #13 prohibits bill-detail HTML scraping, Civic Intel records this source lane as
+`BLOCKED_NO_VERIFIED_STRUCTURED_SOURCE`. It preserves official bill/detail identifiers and
+links but does not fabricate a `BPMBILLSUMMARY` connector, infer content from titles, or use
+third-party scraped text as canonical evidence.
