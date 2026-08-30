@@ -9,13 +9,13 @@ from packages.connectors.company_official_profiles import (
     parse_company_official_profile_rows,
 )
 from packages.connectors.open_dart_corporate import (
+    DartApiError,
     DartCompensationRecord,
     DartCorporateDataset,
     DartExecutiveRecord,
     DartOwnershipRecord,
     MissingDartApiKey,
     OpenDartCorporateConnector,
-    DartApiError,
     open_dart_corporate_policy,
 )
 from packages.domain.contracts import SourcePolicy
@@ -242,7 +242,9 @@ def render_corporate_json(payload: dict[str, object]) -> str:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Stage OpenDART corporate senior-person data.")
-    parser.add_argument("--dataset", required=True, choices=[item.value for item in DartCorporateDataset])
+    parser.add_argument(
+        "--dataset", required=True, choices=[item.value for item in DartCorporateDataset]
+    )
     parser.add_argument("--corp-code", required=True)
     parser.add_argument("--business-year", type=int)
     parser.add_argument("--report-code")
