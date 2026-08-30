@@ -9,7 +9,10 @@
     "destination_title": "사외이사",
     "decision": "취업승인",
     "employment_start_date": "2026-09-01",
-    "source_ref": "government-public-ethics-review-2026-08"
+    "source_ref": "government-public-ethics-review-2026-08",
+    "home_address": "수집금지 주소",
+    "phone": "010-0000-0000",
+    "email": "private@example.invalid"
   },
   {
     "record_id": "employment-review-2026-002",
@@ -33,6 +36,18 @@
     "destination_title": "상임이사",
     "decision": "취업가능",
     "employment_start_date": "2026-09-15",
+    "source_ref": "government-public-ethics-review-2026-08"
+  },
+  {
+    "record_id": "employment-review-2026-004",
+    "person_name": "○○○",
+    "review_date": "2026-08-27",
+    "former_organization": "테스트위원회",
+    "former_title": "사무처장",
+    "destination_organization": "테스트협회",
+    "destination_title": "부회장",
+    "decision": "취업불승인",
+    "employment_start_date": null,
     "source_ref": "government-public-ethics-review-2026-08"
   }
 ]
