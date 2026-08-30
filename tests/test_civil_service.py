@@ -89,17 +89,25 @@ def test_masked_employment_review_name_never_creates_person_candidate() -> None:
     assert data["identity_anchors"] == []
     assert data["identity_semantics"] == "PERSON_NAME_NOT_PUBLIC"
 
+    partial = load_fixture("employment_reviews.json")[0] | {
+        "record_id": "review-partial-mask",
+        "person_name": "김○○",
+    }
+    assert stage_employment_review_rows([partial])[0].candidate is None
+
 
 def test_employment_review_output_does_not_expose_private_fixture_fields_or_guilt_inference() -> None:
     careers = stage_personnel_rows(load_fixture("civil_service_personnel.json"))
     reviews = stage_employment_review_rows(load_fixture("employment_reviews.json"))
     rendered = render_civil_service_json(careers, reviews)
+    semantics = str(reviews[0].to_dict()["employment_review"]["semantics"])
 
     assert "수집금지 주소" not in rendered
     assert "010-0000-0000" not in rendered
     assert "private@example.invalid" not in rendered
-    assert "위반" not in reviews[0].to_dict()["employment_review"]["semantics"]
-    assert "부당취업" not in reviews[0].to_dict()["employment_review"]["semantics"]
+    assert "해석하지 않는다" in semantics
+    assert "위반이다" not in semantics
+    assert "부당취업이다" not in semantics
 
 
 def test_unknown_review_text_fails_closed_to_unknown_without_rewriting_source_text() -> None:
