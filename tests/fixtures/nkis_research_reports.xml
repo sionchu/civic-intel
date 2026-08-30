@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <TOTAL_COUNT>3</TOTAL_COUNT>
+  <results>
+    <result>
+      <OTP_ID>OTP_TEST_001</OTP_ID>
+      <OTP_SEQ>0</OTP_SEQ>
+      <LCLA_SCS_ID>L01</LCLA_SCS_ID>
+      <LCLA_SCS_NM>산업·통상</LCLA_SCS_NM>
+      <MCLA_SCS_ID>M01</MCLA_SCS_ID>
+      <MCLA_SCS_NM>인공지능 산업정책</MCLA_SCS_NM>
+      <OTP_HAN_NM>인공지능 산업 경쟁력과 정책 과제</OTP_HAN_NM>
+      <INCHARGE_NM>김연구</INCHARGE_NM>
+      <PUBAGC>테스트정책연구원</PUBAGC>
+      <PBL_YY>2025</PBL_YY>
+      <ORG_LINK>https://nkis.re.kr/subject_view.do?otpId=OTP_TEST_001</ORG_LINK>
+    </result>
+    <result>
+      <OTP_ID>OTP_TEST_002</OTP_ID>
+      <OTP_SEQ>0</OTP_SEQ>
+      <LCLA_SCS_ID>L01</LCLA_SCS_ID>
+      <LCLA_SCS_NM>산업·통상</LCLA_SCS_NM>
+      <MCLA_SCS_ID>M01</MCLA_SCS_ID>
+      <MCLA_SCS_NM>인공지능 산업정책</MCLA_SCS_NM>
+      <OTP_HAN_NM>AI 전환과 산업정책의 재설계</OTP_HAN_NM>
+      <INCHARGE_NM>김연구</INCHARGE_NM>
+      <PUBAGC>테스트정책연구원</PUBAGC>
+      <PBL_YY>2026</PBL_YY>
+      <ORG_LINK>https://nkis.re.kr/subject_view.do?otpId=OTP_TEST_002</ORG_LINK>
+    </result>
+    <result>
+      <OTP_ID>OTP_TEST_003</OTP_ID>
+      <OTP_SEQ>0</OTP_SEQ>
+      <LCLA_SCS_ID>L02</LCLA_SCS_ID>
+      <LCLA_SCS_NM>노동·사회</LCLA_SCS_NM>
+      <MCLA_SCS_ID>M02</MCLA_SCS_ID>
+      <MCLA_SCS_NM>노동시장</MCLA_SCS_NM>
+      <OTP_HAN_NM>디지털 전환과 노동시장 변화</OTP_HAN_NM>
+      <INCHARGE_NM>박정책 외 2인</INCHARGE_NM>
+      <PUBAGC>테스트노동연구원</PUBAGC>
+      <PBL_YY>2026</PBL_YY>
+      <ORG_LINK>https://nkis.re.kr/subject_view.do?otpId=OTP_TEST_003</ORG_LINK>
+    </result>
+  </results>
+</root>
