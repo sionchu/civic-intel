@@ -11,6 +11,7 @@ A person may have several simultaneous or sequential career facets:
 Person
 ├── Education / Credentials
 ├── Legislative
+├── Local Elected Office
 ├── Academic
 ├── Corporate
 ├── Civic / Association / Nonprofit
@@ -32,8 +33,8 @@ Prefer reusable, time-bounded facts over occupation-specific duplicates:
 
 - education institution, degree, field, dates when documented
 - organization, position, role and tenure
-- external identifiers such as National Assembly `MONA_CD`, ORCID, OpenAlex author ID,
-  and DART corporation linkage
+- external identifiers such as National Assembly `MONA_CD`, NEC `huboid`, ORCID,
+  OpenAlex author ID, and DART corporation linkage
 - valid time and recorded time
 - source provenance and source policy
 
@@ -77,6 +78,59 @@ They may be represented only as dated `CLAIM`, `INFERENCE`, or `HYPOTHESIS` with
 evidence. Stronger evidence can include public self-identification, documented campaign
 roles, repeated appointments/collaboration, or direct statements. Network similarity is a
 signal, not a faction FACT.
+
+## Local elected-office facet
+
+Central Election Commission candidate/winner APIs provide a strong official feeder for
+subnational political careers.
+
+Supported election scopes include:
+
+- `3` 시·도지사
+- `4` 구·시·군의 장
+- `5` 시·도의회의원
+- `6` 구·시·군의회의원
+- historical `10` 교육의원
+- `11` 교육감
+
+The candidate API exposes NEC candidate ID, name/Hanja, birth date, election jurisdiction,
+party, candidate number, public occupation, education, two career strings and registration
+status. The winner API supplies official winner identity and vote result fields.
+
+### Provenance rule
+
+Education, occupation and career fields in the NEC candidate feed are **candidate-submitted
+election records**. Civic Intel may accurately state that the candidate reported those
+fields to the election authority, but should not silently promote every string into an
+independently verified biography FACT.
+
+### Privacy rule
+
+The NEC API also exposes a coarse public address. Civic Intel discards it before staging
+because location is unnecessary for appointment-path analysis.
+
+### Election outcome rule
+
+A candidate is a valid CareerEpisode whether elected or not. Losing candidacy must not be
+dropped from a political career timeline.
+
+Winner joins use NEC candidate ID when available. If winner pagination/coverage is
+incomplete, absence from the staged winner page remains `UNKNOWN`; only complete source
+coverage may support `NOT_WINNER`.
+
+### Career-path value
+
+Local-election history can support descriptive feeder paths such as:
+
+```text
+기초의원 -> 광역의원 -> 기초단체장
+지방의원 -> 국회의원
+기초단체장 -> 국회의원 / 장관 / 대통령실
+광역단체장 -> 중앙정부 고위직
+교육감 -> 교육정책 고위공직
+```
+
+Historical frequency is descriptive and never appointment probability.
 
 ## Academic facet
 
