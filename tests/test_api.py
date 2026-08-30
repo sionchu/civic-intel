@@ -11,6 +11,7 @@ from apps.api.repository import DatabaseNotReady, SqlAlchemyRepository
 PERSON_ID = "00000000-0000-0000-0000-000000000002"
 HA_JUNGWOO_ID = "00000000-0000-0000-0000-000000000009"
 SOURCE_ID = "20000000-0000-0000-0000-000000000001"
+HA_ROLE_SOURCE_ID = "20000000-0000-0000-0000-000000000006"
 
 
 def migrated_repository(database: Path) -> SqlAlchemyRepository:
@@ -56,7 +57,7 @@ def test_api_renders_explicit_unknown_without_fact_promotion(client: TestClient)
     assert unknown["evidence"] == []
 
 
-def test_ha_jungwoo_profile_projection_preserves_nomination_and_unknown_power(
+def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
     client: TestClient,
 ) -> None:
     payload = client.get(f"/people/{HA_JUNGWOO_ID}").json()
@@ -79,11 +80,24 @@ def test_ha_jungwoo_profile_projection_preserves_nomination_and_unknown_power(
     ]
     assert sections["identity"]["status"] == "AVAILABLE"
     assert sections["summary"]["status"] == "AVAILABLE"
-    assert sections["career_timeline"]["status"] == "AVAILABLE"
     nomination = sections["summary"]["entries"][0]
     assert nomination["details"]["predicate"] == "NOMINATED_AS"
     assert nomination["claim_id"] == "30000000-0000-0000-0000-000000000009"
     assert nomination["source_ids"] == [SOURCE_ID]
+
+    assert sections["career_timeline"]["status"] == "AVAILABLE"
+    timeline_predicates = [entry["details"]["predicate"] for entry in sections["career_timeline"]["entries"]]
+    assert timeline_predicates == ["HELD_ROLE", "NOMINATED_AS"]
+    held_role = sections["career_timeline"]["entries"][0]
+    assert held_role["date"] == "2026-01-27"
+    assert held_role["source_ids"] == [HA_ROLE_SOURCE_ID]
+
+    assert sections["appointment_logic"]["status"] == "PARTIAL"
+    rationale = sections["appointment_logic"]["entries"][0]
+    assert rationale["details"]["predicate"] == "APPOINTMENT_RATIONALE"
+    assert rationale["epistemic_status"] == "CLAIM"
+    assert rationale["source_ids"] == [SOURCE_ID]
+
     assert sections["current_power_tasks"]["status"] == "UNKNOWN"
     assert sections["current_power_tasks"]["entries"] == []
     assert sections["stakeholders"]["status"] == "AVAILABLE"
