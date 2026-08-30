@@ -1,0 +1,12 @@
+[
+  {"id":"00000000-0000-0000-0000-000000000001","canonical_name":"Kim Min","identity_status":"RESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000002","canonical_name":"Lee Seo","identity_status":"RESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000003","canonical_name":"Park Jun","identity_status":"REVIEW"},
+  {"id":"00000000-0000-0000-0000-000000000004","canonical_name":"Choi Hana","identity_status":"UNRESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000005","canonical_name":"Jung Ara","identity_status":"RESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000006","canonical_name":"Kang Sol","identity_status":"RESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000007","canonical_name":"Yoon Dae","identity_status":"RESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000008","canonical_name":"Jang Yu","identity_status":"REVIEW"},
+  {"id":"00000000-0000-0000-0000-000000000009","canonical_name":"Lim Won","identity_status":"RESOLVED"},
+  {"id":"00000000-0000-0000-0000-000000000010","canonical_name":"Han Bit","identity_status":"RESOLVED"}
+]

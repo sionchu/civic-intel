@@ -1,0 +1,13 @@
+[
+  {"name":"resolved_identity","expected":"RESOLVED"},
+  {"name":"same_name_false_match","expected":"REVIEW"},
+  {"name":"source_reprint_collapse","raw":2,"independent":1},
+  {"name":"official_assertion_remains_claim","status":"CLAIM"},
+  {"name":"support_and_refute","stances":["SUPPORT","REFUTE"]},
+  {"name":"unknown_first_class","status":"UNKNOWN"},
+  {"name":"one_episode_not_pattern","episodes":1,"pattern":false},
+  {"name":"two_independent_episodes_candidate","episodes":2,"origins":2,"pattern":true},
+  {"name":"weak_comention","strength":"WEAK"},
+  {"name":"blocked_source_policy","mode":"BLOCKED","fetch":false},
+  {"name":"discovery_only_source_policy","mode":"DISCOVERY_ONLY","fetch":false}
+]
