@@ -1,0 +1,84 @@
+{
+  "id": "GOLDEN_SET_001_PROFILE_EVIDENCE",
+  "base_id": "GOLDEN_SET_001",
+  "review_note": "Reviewed profile-level evidence that extends Golden Set 001 without changing its ten-person roster or methodology baseline.",
+  "policies": [],
+  "sources": [
+    {
+      "id": "20000000-0000-0000-0000-000000000006",
+      "url": "https://www.president.go.kr/briefings/sVNpSTtz",
+      "title": "대미 통상현안 회의 개최 관련 강유정 대변인 서면 브리핑",
+      "publisher": "대한민국 청와대",
+      "published_at": "2026-01-27T00:00:00+09:00",
+      "policy_id": "10000000-0000-0000-0000-000000000001",
+      "origin_cluster_id": null
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "21000000-0000-0000-0000-000000000006",
+      "source_id": "20000000-0000-0000-0000-000000000006",
+      "fetched_at": "2026-08-31T00:00:00+09:00",
+      "content_hash": "presidential-trade-meeting-reviewed-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "golden_set": "001",
+        "profile_evidence": "ha-jungwoo"
+      },
+      "fulltext": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "30000000-0000-0000-0000-000000000014",
+      "person_id": "00000000-0000-0000-0000-000000000009",
+      "proposition": "하정우는 2026년 1월 27일 대통령비서실 AI미래기획수석으로 재직 중이었다.",
+      "subject": "하정우",
+      "predicate": "HELD_ROLE",
+      "object_text": "대통령비서실 AI미래기획수석",
+      "qualifiers": {
+        "date": "2026-01-27",
+        "source_context": "대미 통상현안 회의 참석자 직함"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000000015",
+      "person_id": "00000000-0000-0000-0000-000000000009",
+      "proposition": "대통령비서실은 하정우가 초대 AI미래기획수석으로서 전문성과 정책 역량이 검증됐고 국가AI전략위원회 출범을 함께했다고 평가했다.",
+      "subject": "하정우",
+      "predicate": "APPOINTMENT_RATIONALE",
+      "object_text": "초대 AI미래기획수석 경력과 국가AI전략위원회 출범 참여",
+      "qualifiers": {
+        "date": "2026-08-30",
+        "speaker": "대통령비서실"
+      },
+      "epistemic_status": "CLAIM",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": false
+    }
+  ],
+  "evidence": [
+    {
+      "id": "40000000-0000-0000-0000-000000000014",
+      "claim_id": "30000000-0000-0000-0000-000000000014",
+      "source_id": "20000000-0000-0000-0000-000000000006",
+      "snapshot_id": "21000000-0000-0000-0000-000000000006",
+      "stance": "SUPPORT",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000000015",
+      "claim_id": "30000000-0000-0000-0000-000000000015",
+      "source_id": "20000000-0000-0000-0000-000000000001",
+      "snapshot_id": "21000000-0000-0000-0000-000000000001",
+      "stance": "SUPPORT",
+      "excerpt": null
+    }
+  ],
+  "origin_clusters": [],
+  "relationships": [],
+  "episodes": []
+}
