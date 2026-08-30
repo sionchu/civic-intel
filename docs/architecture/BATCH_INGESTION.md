@@ -406,8 +406,12 @@ These may be evaluated after real L3 workloads demonstrate a need.
 
 ## Second-source proof
 
-After National Assembly L3, implement one independent official personnel source, initially
-Gwanbo personnel if current official API rights/schema are verified.
+Gwanbo personnel notices are the second concrete L3 feeder. They reuse the canonical
+SourcePolicy/Source/Snapshot/Observation/Run/Checkpoint persistence while keeping a separate
+source-specific HTML POST connector and parser.
+
+The Gwanbo policy is metadata-only because its current official Open API page does not state a
+reuse license. Notice titles are not treated as structured person or career fields.
 
 Only after two concrete L3 feeders should repeated batch mechanics be extracted into a more
 generic abstraction.

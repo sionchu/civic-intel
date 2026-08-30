@@ -14,6 +14,7 @@ implementation work.
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
 - [Batch ingestion](architecture/BATCH_INGESTION.md)
 - [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
+- [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [Civil service feeder](architecture/CIVIL_SERVICE.md)
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)

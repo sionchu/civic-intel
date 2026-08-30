@@ -18,6 +18,7 @@ dev = ["mypy>=1.11,<2", "pytest>=8.3,<9", "ruff>=0.6,<1"]
 [project.scripts]
 civic-quality = "packages.verification.quality:main"
 civic-stage-assembly = "workers.assembly_roster:main"
+civic-stage-gwanbo-personnel = "workers.gwanbo_personnel:main"
 civic-stage-legislative = "workers.legislative_activity:main"
 civic-stage-local-election = "workers.local_elections:main"
 civic-stage-policy-research = "workers.policy_research:main"
