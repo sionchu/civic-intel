@@ -74,7 +74,20 @@ def test_staged_personnel_record_is_consumable_by_existing_identity_resolver() -
     assert resolve_identity(observed, observed).status == IdentityStatus.RESOLVED
 
 
-def test_employment_review_preserves_official_decision_without_violation_inference() -> None:
+def test_private_fields_in_personnel_input_do_not_reach_staging_output() -> None:
+    row = load_fixture("civil_service_personnel.json")[0] | {
+        "phone": "010-0000-0000",
+        "email": "private@example.invalid",
+        "address": "수집금지 주소",
+    }
+    rendered = json.dumps(stage_personnel_rows([row])[0].to_dict(), ensure_ascii=False)
+
+    assert "010-0000-0000" not in rendered
+    assert "private@example.invalid" not in rendered
+    assert "수집금지 주소" not in rendered
+
+
+def test_employment_review_preserves_all_official_decision_types() -> None:
     records = parse_employment_review_rows(
         load_fixture("retired_official_employment_reviews.json")
     )
@@ -82,31 +95,52 @@ def test_employment_review_preserves_official_decision_without_violation_inferen
         EmploymentReviewDecision.APPROVED,
         EmploymentReviewDecision.RESTRICTED,
         EmploymentReviewDecision.EMPLOYABLE,
+        EmploymentReviewDecision.DISAPPROVED,
     ]
     assert records[0].decision_text == "취업승인"
     assert records[1].decision_text == "취업제한"
+    assert records[2].decision_text == "취업가능"
+    assert records[3].decision_text == "취업불승인"
 
+
+def test_masked_employment_review_name_never_creates_person_candidate() -> None:
+    rows = load_fixture("retired_official_employment_reviews.json")
+    staged = stage_employment_review_rows(rows)
+    masked = staged[3]
+
+    assert masked.record.person_name is None
+    assert masked.candidate is None
+    data = masked.to_dict()
+    assert data["canonical_name"] is None
+    assert data["identity_anchors"] == []
+    assert data["identity_semantics"] == "PERSON_NAME_NOT_PUBLIC"
+
+    partial = rows[0] | {"record_id": "partial-mask", "person_name": "김○○"}
+    assert stage_employment_review_rows([partial])[0].candidate is None
+
+
+def test_employment_review_output_omits_private_input_and_does_not_assert_wrongdoing() -> None:
     rendered = render_civil_service_json(
         stage_personnel_rows(load_fixture("civil_service_personnel.json")),
         stage_employment_review_rows(load_fixture("retired_official_employment_reviews.json")),
     )
     lowered = rendered.casefold()
-    assert "violation" not in lowered
-    assert "위반" not in rendered
-    assert "취업승인" in rendered
-    assert "취업제한" in rendered
-    assert "address" not in lowered
-    assert "telephone" not in lowered
-    assert "email" not in lowered
+
+    assert "010-0000-0000" not in rendered
+    assert "private@example.invalid" not in rendered
+    assert "수집금지 주소" not in rendered
+    assert '"violation"' not in lowered
+    assert '"wrongdoing"' not in lowered
+    assert "취업가능·취업승인 결정을 위반이나 부당취업으로 해석하지 않는다" in rendered
 
 
-def test_unknown_employment_review_decision_is_retained_as_other_not_guessed() -> None:
+def test_unknown_employment_review_decision_is_retained_as_unknown_not_guessed() -> None:
     row = load_fixture("retired_official_employment_reviews.json")[0] | {
-        "record_id": "employment-review-other",
+        "record_id": "employment-review-unknown",
         "decision": "추가확인",
     }
     record = parse_employment_review_rows([row])[0]
-    assert record.decision == EmploymentReviewDecision.OTHER
+    assert record.decision == EmploymentReviewDecision.UNKNOWN
     assert record.decision_text == "추가확인"
 
 
