@@ -16,6 +16,8 @@ from .enums import (
     GovernanceRelationType,
     IdentityStatus,
     InstitutionalBodyType,
+    LegalCareerEventType,
+    LegalCareerType,
     PublicationStatus,
     RelationshipEvidenceType,
     RelationshipStrength,
@@ -182,6 +184,22 @@ class CivilServiceCareerEpisode(TemporalRecord):
     event_date: date
     previous_organization_id: UUID | None = None
     previous_office_id: UUID | None = None
+    source_ids: list[UUID] = Field(min_length=1)
+    claim_ids: list[UUID] = Field(default_factory=list)
+
+
+class LegalCareerEpisode(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    person_id: UUID
+    organization_id: UUID
+    office_id: UUID | None = None
+    career_type: LegalCareerType
+    event_type: LegalCareerEventType
+    title: str = Field(min_length=1)
+    event_date: date
+    previous_organization_id: UUID | None = None
+    previous_office_id: UUID | None = None
+    public_assignment_domain: str | None = None
     source_ids: list[UUID] = Field(min_length=1)
     claim_ids: list[UUID] = Field(default_factory=list)
 

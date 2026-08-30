@@ -51,7 +51,8 @@ partisan desirability or hidden influence.
 | Government-funded policy research outputs | named responsible researchers on public policy outputs | NKIS `ReportList.do` | API | NKIS output ID + responsible-researcher text + year | Academic / Policy Research Output | MERGED staging; no employment inference |
 | Government-funded research careers | institute presidents/directors/researchers with verified role/tenure | institute official profile / appointment release | OFFICIAL_WEB | person + institute + role + dates | Academic / Policy Research Career | verification lane pending |
 | General academia | professors/researchers relevant to public appointments | KCI, OpenAlex, Crossref, ORCID + university official profile | API + OFFICIAL_WEB | DOI/ORCID/OpenAlex + identity anchors | Academic | RESEARCHED |
-| Legal / judiciary / prosecution | judges, prosecutors, lawyers, legal-policy leaders | MOJ, Supreme Court, court gazette, KBA, official law-firm bios | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | name + office + appointment date; bar identity where public | Legal/Judicial/Prosecution | ISSUE_OPEN #21 |
+| Judges / prosecution / judicial administration | judges, court presidents, prosecutors, senior prosecution and judicial-administration roles | MOJ prosecutor personnel + Supreme Court personnel releases/Court Gazette | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | name + office/title + effective date + prior office anchors | Legal/Judicial/Prosecution | MERGED contracts/staging; live adapters pending |
+| Lawyers / law firms | public professional registration and publicly consequential law-firm roles | KBA public search + official law-firm biography | OFFICIAL_WEB | public professional identity + firm/role/date when verified | Legal / Professional | RESEARCHED; no broad crawling |
 | Military | generals, chiefs, JCS/defense-policy leadership and path-relevant retired senior officers | MND/service personnel releases and official bios | OFFICIAL_WEB | name + rank/command + date | Military / Defense | RESEARCHED |
 | Diplomacy | ambassadors, senior foreign-service officers, path-relevant diplomats | MOFA personnel/appointment records | OFFICIAL_WEB | name + post + appointment date | Diplomatic / Public Service | MERGED staging semantics; live adapter pending |
 | Labor movement | publicly named union/federation leadership only | 전국노동조합표준데이터 + official federation/commission records | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | representative + union + date; requires identity review | Civic / Labor Leadership | ISSUE_OPEN #20 |
@@ -107,6 +108,7 @@ The following are prohibited feeder behavior:
 - ordinary union-member rosters or inferred union affiliation
 - ordinary NGO/professional-association member rosters
 - broad institute staff scraping merely to populate a researcher directory
+- broad lawyer/law-firm staff or client roster scraping
 - private donor/client/contact networks
 - private addresses, phone numbers, emails or precise locations
 - inferring political faction, ideology or loyalty from organizational proximity alone
@@ -130,6 +132,15 @@ NKIS responsible-researcher field
 NKIS repeated topic
  -> DERIVED only from at least two separate research outputs
  -> not a research-quality score or permanent expertise label
+
+MOJ / Supreme Court personnel order
+ -> FACT of the dated role/transfer/appointment stated in the official order
+ -> not automatic personal responsibility for every case handled by that office
+ -> not an ideology, sentencing-tendency or prosecution-tendency score
+
+law-firm affiliation
+ -> FACT of a verified professional affiliation when supported
+ -> not a client relationship or political relationship edge
 
 ALIO major-career entry
  -> FACT that the public institution disclosed the entry
@@ -161,12 +172,12 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after NKIS staging:
+Current recommended sequence after legal-career staging:
 
-1. #21 legal/judicial/prosecution;
-2. #20 labor-union public leadership;
-3. #18 private-sector senior talent;
-4. #13 legislative completeness and official bill summaries;
+1. #20 labor-union public leadership;
+2. #18 private-sector senior talent;
+3. #13 legislative completeness and official bill summaries;
+4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
 5. official institute-profile/appointment adapter for NKIS-discovered researchers;
 6. one reviewed live ALIO adapter using the #25 staging contracts;
 7. one reviewed live civil-service/ethics source adapter using the #23 contracts.
