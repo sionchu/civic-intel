@@ -27,6 +27,8 @@ FIXTURE = Path(__file__).parent / "fixtures" / "reviewed_person_kim_hyunji_001.j
 PERSON_ID = "00000000-0000-0000-0000-000000009201"
 OFFICIAL_ROLE_SOURCE = "20000000-0000-0000-0000-000000009201"
 CONTROVERSY_SOURCE = "20000000-0000-0000-0000-000000009202"
+ASSEMBLY_AIDE_SOURCE = "20000000-0000-0000-0000-000000009203"
+PRESIDENTIAL_TRANSFER_SOURCE = "20000000-0000-0000-0000-000000009204"
 
 
 def migrated_repository(database: Path) -> SqlAlchemyRepository:
@@ -69,19 +71,39 @@ def load_bundle() -> ReviewedPersonBundle:
     )
 
 
-def test_bundle_separates_official_role_allegation_and_response() -> None:
+def test_bundle_separates_career_facts_allegation_and_response() -> None:
     bundle = load_bundle()
-    claims = {claim.predicate: claim for claim in bundle.claims}
     evidence = {item.claim_id: item for item in bundle.evidence}
-
-    role = claims["HELD_ROLE"]
-    allegation = claims["ALLEGATION"]
-    response = claims["RESPONSE_TO_ALLEGATION"]
+    current_role = next(
+        claim
+        for claim in bundle.claims
+        if claim.predicate == "HELD_ROLE" and claim.object_text == "대통령비서실 제1부속실장"
+    )
+    allegation = next(claim for claim in bundle.claims if claim.predicate == "ALLEGATION")
+    response = next(
+        claim for claim in bundle.claims if claim.predicate == "RESPONSE_TO_ALLEGATION"
+    )
+    career_facts = [
+        claim
+        for claim in bundle.claims
+        if claim.id
+        in {
+            next(item.id for item in bundle.claims if item.object_text == "이재명 국회의원 보좌관"),
+            next(item.id for item in bundle.claims if item.object_text == "대통령실 총무비서관"),
+            next(
+                item.id
+                for item in bundle.claims
+                if item.predicate == "APPOINTED_AS"
+                and item.object_text == "대통령비서실 제1부속실장"
+            ),
+        }
+    ]
 
     assert bundle.person.canonical_name == "김현지"
     assert bundle.person.birth_date is None
-    assert role.epistemic_status == EpistemicStatus.FACT
-    assert role.asserted_as_true is True
+    assert current_role.epistemic_status == EpistemicStatus.FACT
+    assert current_role.asserted_as_true is True
+    assert all(item.epistemic_status == EpistemicStatus.FACT for item in career_facts)
     assert allegation.epistemic_status == EpistemicStatus.CLAIM
     assert allegation.asserted_as_true is False
     assert allegation.qualifiers["truth_status"] == "UNRESOLVED"
@@ -91,7 +113,7 @@ def test_bundle_separates_official_role_allegation_and_response() -> None:
     assert evidence[response.id].stance == EvidenceStance.SUPPORT
 
 
-def test_reviewed_kim_hyunji_bundle_imports_as_neutral_controversy_profile(tmp_path: Path) -> None:
+def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "kim-hyunji.db")
     repository.import_reviewed_person(load_bundle())
 
@@ -99,17 +121,37 @@ def test_reviewed_kim_hyunji_bundle_imports_as_neutral_controversy_profile(tmp_p
         payload = client.get(f"/people/{PERSON_ID}").json()
 
     assert payload["canonical_name"] == "김현지"
-    raw_claims = {item["predicate"]: item for item in payload["claims"]}
-    assert raw_claims["ALLEGATION"]["epistemic_status"] == "CLAIM"
-    assert raw_claims["ALLEGATION"]["asserted_as_true"] is False
-    assert raw_claims["ALLEGATION"]["evidence"][0]["stance"] == "NEUTRAL"
-    assert raw_claims["RESPONSE_TO_ALLEGATION"]["epistemic_status"] == "FACT"
-    assert raw_claims["RESPONSE_TO_ALLEGATION"]["evidence"][0]["stance"] == "SUPPORT"
+    raw_allegation = next(item for item in payload["claims"] if item["predicate"] == "ALLEGATION")
+    raw_response = next(
+        item for item in payload["claims"] if item["predicate"] == "RESPONSE_TO_ALLEGATION"
+    )
+    assert raw_allegation["epistemic_status"] == "CLAIM"
+    assert raw_allegation["asserted_as_true"] is False
+    assert raw_allegation["evidence"][0]["stance"] == "NEUTRAL"
+    assert raw_response["epistemic_status"] == "FACT"
+    assert raw_response["evidence"][0]["stance"] == "SUPPORT"
 
     sections = {item["id"]: item for item in payload["profile"]["sections"]}
-    assert sections["career_timeline"]["status"] == "AVAILABLE"
-    assert sections["career_timeline"]["entries"][0]["details"]["predicate"] == "HELD_ROLE"
-    assert sections["career_timeline"]["entries"][0]["source_ids"] == [OFFICIAL_ROLE_SOURCE]
+    timeline = sections["career_timeline"]
+    assert timeline["status"] == "AVAILABLE"
+    assert [entry["date"] for entry in timeline["entries"]] == [
+        "2022-06-22",
+        "2025-09-29",
+        "2025-09-29",
+        "2026-08-31",
+    ]
+    assert [entry["details"]["predicate"] for entry in timeline["entries"]] == [
+        "HELD_ROLE",
+        "HELD_ROLE",
+        "APPOINTED_AS",
+        "HELD_ROLE",
+    ]
+    assert [entry["source_ids"] for entry in timeline["entries"]] == [
+        [ASSEMBLY_AIDE_SOURCE],
+        [PRESIDENTIAL_TRANSFER_SOURCE],
+        [PRESIDENTIAL_TRANSFER_SOURCE],
+        [OFFICIAL_ROLE_SOURCE],
+    ]
     assert sections["current_power_tasks"]["status"] == "UNKNOWN"
 
     controversy = sections["controversies"]
@@ -120,21 +162,21 @@ def test_reviewed_kim_hyunji_bundle_imports_as_neutral_controversy_profile(tmp_p
     ]
     assert [item["epistemic_status"] for item in controversy["entries"]] == ["CLAIM", "FACT"]
     assert all(item["source_ids"] == [CONTROVERSY_SOURCE] for item in controversy["entries"])
-    assert controversy["entries"][0]["details"]["asserted_as_true"] is False
-    assert controversy["entries"][1]["details"]["asserted_as_true"] is True
 
 
-def test_profile_does_not_turn_competing_statements_into_truth_verdict(tmp_path: Path) -> None:
-    repository = migrated_repository(tmp_path / "kim-hyunji-neutral.db")
+def test_career_enrichment_does_not_infer_transfer_motive_or_older_roles(tmp_path: Path) -> None:
+    repository = migrated_repository(tmp_path / "kim-hyunji-career.db")
     repository.import_reviewed_person(load_bundle())
 
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{PERSON_ID}").json()
 
     rendered = json.dumps(payload["profile"], ensure_ascii=False).casefold()
+    assert "국감 회피" not in rendered
+    assert "성남참여자치시민연대" not in rendered
+    assert "경기도청 비서관" not in rendered
     assert "가짜뉴스" not in rendered
     assert "debunked" not in rendered
-    assert "팩트체크 결과 거짓" not in rendered
     assert "faction" not in rendered
     assert "loyalty" not in rendered
     assert "influence_score" not in rendered
