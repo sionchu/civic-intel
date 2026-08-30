@@ -56,6 +56,8 @@ _REVIEW_MAP = {
     "취업불승인": EmploymentReviewDecision.DISAPPROVED,
 }
 
+_MASK_CHARS = frozenset({"○", "●", "*", "＊", "□", "■"})
+
 
 @dataclass(frozen=True)
 class CivilServicePersonnelRecord:
@@ -77,7 +79,7 @@ class CivilServicePersonnelRecord:
 @dataclass(frozen=True)
 class RetiredOfficialEmploymentReviewRecord:
     record_id: str
-    person_name: str
+    person_name: str | None
     review_date: date
     former_organization: str
     former_title: str | None
@@ -115,6 +117,18 @@ def _date(row: dict, key: str, *, required: bool = True) -> date | None:
         return date.fromisoformat(value)
     except ValueError:
         raise CivilServiceRecordError(f"invalid ISO date: {key}") from None
+
+
+def _public_person_name(row: dict) -> str | None:
+    value = _optional(row, "person_name")
+    if value is None:
+        return None
+    compact = "".join(value.split())
+    if not compact or all(char in _MASK_CHARS for char in compact):
+        return None
+    if any(char in _MASK_CHARS for char in compact):
+        return None
+    return value
 
 
 def parse_personnel_notice_rows(rows: list[dict]) -> list[CivilServicePersonnelRecord]:
@@ -158,13 +172,13 @@ def parse_employment_review_rows(rows: list[dict]) -> list[RetiredOfficialEmploy
     records: list[RetiredOfficialEmploymentReviewRecord] = []
     for row in rows:
         decision_text = _required(row, "decision")
-        decision = _REVIEW_MAP.get(decision_text, EmploymentReviewDecision.OTHER)
+        decision = _REVIEW_MAP.get(decision_text, EmploymentReviewDecision.UNKNOWN)
         review_date = _date(row, "review_date")
         assert review_date is not None
         records.append(
             RetiredOfficialEmploymentReviewRecord(
                 record_id=_required(row, "record_id"),
-                person_name=_required(row, "person_name"),
+                person_name=_public_person_name(row),
                 review_date=review_date,
                 former_organization=_required(row, "former_organization"),
                 former_title=_optional(row, "former_title"),
