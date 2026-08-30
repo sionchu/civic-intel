@@ -63,6 +63,7 @@ CONTROVERSY_PREDICATES = frozenset(
     {
         "CONTROVERSY",
         "ALLEGATION",
+        "RESPONSE_TO_ALLEGATION",
         "DISPUTED_CLAIM",
         "CONTESTED_ASSERTION",
     }
