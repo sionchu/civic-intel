@@ -230,7 +230,9 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             try:
                 if session.get(PersonRow, str(bundle.person.id)) is not None:
-                    raise ReviewedPersonImportError("Person ID already exists; reviewed import does not upsert")
+                    raise ReviewedPersonImportError(
+                        "Person ID already exists; reviewed import does not upsert"
+                    )
 
                 declared_rows = (
                     *((SourcePolicyRow, item.id) for item in bundle.policies),
@@ -256,23 +258,23 @@ class SqlAlchemyRepository:
                 for source_id in needed_source_ids:
                     if source_id in sources:
                         continue
-                    row = session.get(SourceRow, str(source_id))
-                    if row is None:
+                    source_row = session.get(SourceRow, str(source_id))
+                    if source_row is None:
                         raise ReviewedPersonImportError(
                             f"reviewed import references missing source: {source_id}"
                         )
-                    sources[source_id] = self._source(row)
+                    sources[source_id] = self._source(source_row)
 
                 needed_policy_ids = {source.policy_id for source in sources.values()}
                 for policy_id in needed_policy_ids:
                     if policy_id in policies:
                         continue
-                    row = session.get(SourcePolicyRow, str(policy_id))
-                    if row is None:
+                    policy_row = session.get(SourcePolicyRow, str(policy_id))
+                    if policy_row is None:
                         raise ReviewedPersonImportError(
                             f"reviewed import references missing SourcePolicy: {policy_id}"
                         )
-                    policies[policy_id] = self._policy(row)
+                    policies[policy_id] = self._policy(policy_row)
 
                 for source in bundle.sources:
                     policy = policies[source.policy_id]
@@ -302,12 +304,12 @@ class SqlAlchemyRepository:
                     item.snapshot_id for item in bundle.evidence if item.snapshot_id is not None
                 } - set(snapshots)
                 for snapshot_id in existing_snapshot_ids:
-                    row = session.get(SourceSnapshotRow, str(snapshot_id))
-                    if row is None:
+                    snapshot_row = session.get(SourceSnapshotRow, str(snapshot_id))
+                    if snapshot_row is None:
                         raise ReviewedPersonImportError(
                             f"reviewed import references missing snapshot: {snapshot_id}"
                         )
-                    snapshots[snapshot_id] = self._snapshot(row)
+                    snapshots[snapshot_id] = self._snapshot(snapshot_row)
 
                 evidence_by_claim = {
                     claim.id: [item for item in bundle.evidence if item.claim_id == claim.id]
