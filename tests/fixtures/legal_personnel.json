@@ -1,0 +1,73 @@
+{
+  "prosecution": [
+    {
+      "record_id": "moj-2026-08-31-001",
+      "person_name": "김검사",
+      "event_date": "2026-08-31",
+      "event_type": "전보",
+      "organization": "부산지방검찰청",
+      "title": "검사",
+      "previous_organization": "서울중앙지방검찰청",
+      "previous_title": "검사",
+      "public_assignment_domain": null,
+      "order_text": "부산지방검찰청 검사로 전보",
+      "source_ref": "moj-2026-08-24-general-prosecutor-transfer",
+      "phone": "010-0000-0000",
+      "home_address": "수집금지 주소"
+    },
+    {
+      "record_id": "moj-2026-02-04-002",
+      "person_name": "이부장",
+      "event_date": "2026-02-04",
+      "event_type": "신규보임",
+      "organization": "대전지방검찰청",
+      "title": "부장검사",
+      "previous_organization": "법무부",
+      "previous_title": "부부장검사",
+      "public_assignment_domain": "형사부",
+      "order_text": "대전지방검찰청 부장검사에 신규 보임",
+      "source_ref": "moj-2026-01-29-prosecutor-personnel"
+    }
+  ],
+  "judiciary": [
+    {
+      "record_id": "court-2026-02-09-001",
+      "person_name": "박법원",
+      "event_date": "2026-02-09",
+      "event_type": "보임",
+      "organization": "대구고등법원",
+      "title": "법원장",
+      "previous_organization": "서울고등법원",
+      "previous_title": "부장판사",
+      "public_assignment_domain": null,
+      "order_text": "대구고등법원장에 보함",
+      "source_ref": "scourt-2026-01-30-court-president-personnel"
+    },
+    {
+      "record_id": "court-2026-02-23-002",
+      "person_name": "최판사",
+      "event_date": "2026-02-23",
+      "event_type": "전보",
+      "organization": "수원고등법원",
+      "title": "부장판사",
+      "previous_organization": "서울고등법원",
+      "previous_title": "부장판사",
+      "public_assignment_domain": null,
+      "order_text": "수원고등법원 부장판사에 보함",
+      "source_ref": "scourt-2026-01-30-high-court-personnel"
+    },
+    {
+      "record_id": "court-2026-02-09-003",
+      "person_name": "정행정",
+      "event_date": "2026-02-09",
+      "event_type": "보임",
+      "organization": "법원행정처",
+      "title": "차장",
+      "previous_organization": "서울고등법원",
+      "previous_title": "부장판사",
+      "public_assignment_domain": "사법행정",
+      "order_text": "법원행정처 차장에 보함",
+      "source_ref": "scourt-2026-01-30-judicial-administration-personnel"
+    }
+  ]
+}
