@@ -8,6 +8,7 @@ from packages.domain.contracts import (
     ClaimEvidence,
     Person,
     Relationship,
+    RelationshipEvidenceRef,
     Source,
     SourcePolicy,
 )
@@ -15,6 +16,8 @@ from packages.domain.enums import (
     EpistemicStatus,
     EvidenceStance,
     IdentityStatus,
+    PublicationStatus,
+    RelationshipEvidenceType,
     RelationshipStrength,
     SourceCollectionMode,
 )
@@ -53,8 +56,12 @@ def test_blocked_and_discovery_only_never_fetch() -> None:
 def test_entity_resolution_resolves_anchors_but_reviews_hard_conflict() -> None:
     observed = IdentityCandidate("Kim Min", birth_date=date(1970, 1, 1), office="Minister")
     assert resolve_identity(observed, observed).status == IdentityStatus.RESOLVED
-    false_match = IdentityCandidate("Kim Min", birth_date=date(1980, 1, 1), office="Minister")
-    assert resolve_identity(observed, false_match).status == IdentityStatus.REVIEW
+    assert (
+        resolve_identity(
+            observed, IdentityCandidate("Kim Min", birth_date=date(1980, 1, 1), office="Minister")
+        ).status
+        == IdentityStatus.REVIEW
+    )
 
 
 def test_origin_reprint_collapses_and_counts_are_distinct() -> None:
@@ -78,9 +85,12 @@ def test_origin_reprint_collapses_and_counts_are_distinct() -> None:
         a, b, "same body words here now", "same body words here now", True
     ).same_origin
     cluster = uuid4()
-    a = a.model_copy(update={"origin_cluster_id": cluster})
-    b = b.model_copy(update={"origin_cluster_id": cluster})
-    assert source_counts([a, b]) == {"raw_url_count": 2, "independent_origin_count": 1}
+    assert source_counts(
+        [
+            a.model_copy(update={"origin_cluster_id": cluster}),
+            b.model_copy(update={"origin_cluster_id": cluster}),
+        ]
+    ) == {"raw_url_count": 2, "independent_origin_count": 1}
 
 
 def test_claim_atomicity_examples() -> None:
@@ -88,7 +98,7 @@ def test_claim_atomicity_examples() -> None:
     assert not is_atomic("The official took office and changed the policy.")
 
 
-def test_fact_traceability_and_unknown_gate() -> None:
+def test_fact_traceability_and_unknown_display_semantics() -> None:
     p = policy()
     person = Person(canonical_name="Kim Min", identity_status=IdentityStatus.RESOLVED)
     source = Source(
@@ -97,8 +107,12 @@ def test_fact_traceability_and_unknown_gate() -> None:
     claim = Claim(
         person_id=person.id,
         proposition="Kim Min took office in 2026.",
+        subject="Kim Min",
+        predicate="TOOK_OFFICE",
+        object_text="Office in 2026",
         epistemic_status=EpistemicStatus.FACT,
-        published=True,
+        publication_status=PublicationStatus.PUBLISHED,
+        asserted_as_true=True,
     )
     assert not validate_claim_publication(
         claim, person, [], {source.id: source}, {p.id: p}
@@ -112,10 +126,18 @@ def test_fact_traceability_and_unknown_gate() -> None:
     assert validate_claim_publication(
         claim, person, [evidence], {source.id: source}, {p.id: p}
     ).publishable
-    unknown = claim.model_copy(update={"epistemic_status": EpistemicStatus.UNKNOWN})
-    assert not validate_claim_publication(
-        unknown, person, evidence=[evidence], sources={source.id: source}, policies={p.id: p}
-    ).publishable
+    unknown = Claim(
+        person_id=person.id,
+        proposition="Kim Min's birth date is not confirmed.",
+        subject="Kim Min",
+        predicate="BIRTH_DATE",
+        object_text="unconfirmed",
+        epistemic_status=EpistemicStatus.UNKNOWN,
+        publication_status=PublicationStatus.PUBLISHED,
+        asserted_as_true=False,
+        resolution_note="Reviewed sources do not establish it.",
+    )
+    assert validate_claim_publication(unknown, person, [], {}, {}).publishable
 
 
 def test_analysis_gates() -> None:
@@ -126,5 +148,15 @@ def test_analysis_gates() -> None:
         strength=RelationshipStrength.STRONG,
     )
     assert not validate_relationship(relationship).publishable
+    typed = relationship.model_copy(
+        update={
+            "evidence": [
+                RelationshipEvidenceRef(
+                    claim_evidence_id=uuid4(), evidence_type=RelationshipEvidenceType.APPOINTMENT
+                )
+            ]
+        }
+    )
+    assert validate_relationship(typed).publishable
     assert not validate_pattern([{"origin-a"}]).publishable
     assert validate_pattern([{"origin-a"}, {"origin-b"}]).publishable

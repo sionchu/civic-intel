@@ -11,6 +11,9 @@ export type Claim = {
   id: string;
   proposition: string;
   epistemic_status: Status;
+  publication_status: "DRAFT" | "REVIEW" | "PUBLISHED" | "WITHHELD";
+  asserted_as_true: boolean;
+  resolution_note: string | null;
   evidence: Evidence[];
   source_ids: string[];
 };

@@ -10,6 +10,8 @@ from .enums import (
     EpistemicStatus,
     EvidenceStance,
     IdentityStatus,
+    PublicationStatus,
+    RelationshipEvidenceType,
     RelationshipStrength,
     SourceCollectionMode,
 )
@@ -116,8 +118,25 @@ class Claim(TemporalRecord):
     id: UUID = Field(default_factory=uuid4)
     person_id: UUID
     proposition: str = Field(min_length=1)
+    subject: str = Field(min_length=1)
+    predicate: str = Field(min_length=1)
+    object_text: str = Field(min_length=1)
+    qualifiers: dict[str, str] = Field(default_factory=dict)
     epistemic_status: EpistemicStatus
-    published: bool = False
+    publication_status: PublicationStatus = PublicationStatus.DRAFT
+    asserted_as_true: bool = False
+    resolution_note: str | None = None
+
+    @model_validator(mode="after")
+    def publication_semantics(self) -> Claim:
+        if self.epistemic_status == EpistemicStatus.FACT and not self.asserted_as_true:
+            raise ValueError("FACT must be explicitly asserted_as_true")
+        if self.epistemic_status == EpistemicStatus.UNKNOWN:
+            if self.asserted_as_true:
+                raise ValueError("UNKNOWN cannot be asserted as true")
+            if not self.resolution_note:
+                raise ValueError("UNKNOWN requires a resolution_note")
+        return self
 
 
 class ClaimEvidence(Contract):
@@ -160,7 +179,16 @@ class DecisionEpisode(TemporalRecord):
     id: UUID = Field(default_factory=uuid4)
     person_id: UUID
     description: str
+    action: str = Field(min_length=1)
+    target: str = Field(min_length=1)
+    outcome: str = Field(min_length=1)
     source_ids: list[UUID] = Field(min_length=1)
+    independent_origin_ids: list[UUID] = Field(min_length=1)
+
+
+class RelationshipEvidenceRef(Contract):
+    claim_evidence_id: UUID
+    evidence_type: RelationshipEvidenceType
 
 
 class Relationship(TemporalRecord):
@@ -170,6 +198,12 @@ class Relationship(TemporalRecord):
     related_organization_id: UUID | None = None
     relationship_type: str
     strength: RelationshipStrength
+    evidence: list[RelationshipEvidenceRef] = Field(default_factory=list)
+
+
+class HypothesisAlternative(Contract):
+    label: str = Field(pattern=r"^H[012]$")
+    statement: str = Field(min_length=1)
     evidence_ids: list[UUID] = Field(default_factory=list)
 
 
@@ -179,7 +213,14 @@ class Hypothesis(TemporalRecord):
     statement: str
     ordinary_explanation: str = Field(min_length=1)
     falsifier: str = Field(min_length=1)
-    published: bool = False
+    alternatives: list[HypothesisAlternative] = Field(min_length=3, max_length=3)
+    publication_status: PublicationStatus = PublicationStatus.DRAFT
+
+    @model_validator(mode="after")
+    def complete_matrix(self) -> Hypothesis:
+        if {item.label for item in self.alternatives} != {"H0", "H1", "H2"}:
+            raise ValueError("hypothesis matrix must contain H0, H1, and H2")
+        return self
 
 
 class HypothesisEvidence(Contract):

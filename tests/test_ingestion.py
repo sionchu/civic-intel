@@ -9,7 +9,7 @@ from workers.ingest import IngestionPipeline
 
 def make_policy(mode=SourceCollectionMode.API, **updates):
     values = {
-        "domain": "example.gov",
+        "domain": "president.go.kr",
         "source_class": "official",
         "collection_mode": mode,
         "can_fetch": True,
@@ -18,7 +18,7 @@ def make_policy(mode=SourceCollectionMode.API, **updates):
         "can_send_to_ai": False,
         "can_show_excerpt": True,
         "can_commercialize": True,
-        "license": "Open Government Licence",
+        "license": None,
     }
     return SourcePolicy(**(values | updates))
 
