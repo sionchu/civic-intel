@@ -112,13 +112,14 @@ NKIS_API_KEY=... civic-stage-policy-research \
   --publisher "산업연구원" --year-begin 2024 --year-end 2026
 ```
 
-The output stages research-report metadata and an author candidate only when
+The output stages research-report metadata and a researcher candidate only when
 `INCHARGE_NM` is an unambiguous single person. The NKIS publishing institution is retained
 as an output property but is **not** assigned as that person's employer. Institute
 employment/leadership requires a separate official institute profile or appointment source.
-A recurring research-topic candidate requires at least two separate outputs in the same
-classification. NKIS abstract/fulltext storage, AI use, excerpt display and commercial reuse
-remain disabled in V0 unless separately reviewed.
+A repeated-topic review candidate requires at least two distinct staged outputs with the
+same unambiguous researcher label, publisher and classification; it remains identity-
+unresolved until normal Identity Resolution succeeds. NKIS abstract/fulltext storage, AI
+use, excerpt display and commercial reuse remain disabled in V0 unless separately reviewed.
 
 The reviewed National Assembly and NEC SourcePolicies permit policy-approved fetch/metadata
 use. NKIS is metadata-only with stricter rights. No scheduled synchronization is enabled yet.
