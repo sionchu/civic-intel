@@ -37,13 +37,14 @@ def alio_public_institution_policy() -> SourcePolicy:
         can_store_fulltext=False,
         can_send_to_ai=False,
         can_show_excerpt=False,
-        can_commercialize=True,
+        can_commercialize=False,
         terms_checked_at=reviewed_at,
-        license="이용허락범위 제한 없음 (공공데이터포털 공공기관 일반현황)",
+        license="일반현황 데이터: 이용허락범위 제한 없음; 개별 item은 별도 검토 필요",
         policy_note=(
             "Reviewed 2026-08-30 against ALIO disclosure items 4, 7-1 and 10 and the "
-            "data.go.kr public-institution general dataset. Live report fetching remains "
-            "disabled until a source-specific adapter contract is reviewed."
+            "data.go.kr public-institution general dataset. General-data reuse is unrestricted, "
+            "but item-level commercial reuse remains fail-closed until separately reviewed. "
+            "Live report fetching remains disabled until a source-specific adapter contract is reviewed."
         ),
     )
 
@@ -153,7 +154,9 @@ def _date_value(row: dict, key: str, *, required: bool = True) -> date | None:
             raise AlioRecordError(f"missing required field: {key}")
         return None
     normalized = value.replace("년", "-").replace("월", "-").replace("일", "")
-    normalized = "-".join(part.strip() for part in normalized.replace(".", "-").split("-") if part.strip())
+    normalized = "-".join(
+        part.strip() for part in normalized.replace(".", "-").split("-") if part.strip()
+    )
     try:
         if len(normalized) == 8 and normalized.isdigit():
             return date(int(normalized[:4]), int(normalized[4:6]), int(normalized[6:8]))
