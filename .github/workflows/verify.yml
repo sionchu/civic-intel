@@ -1,0 +1,60 @@
+name: Verify
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Install web dependencies
+        run: npm ci --prefix apps/web
+
+      - name: Run canonical verification
+        env:
+          DATABASE_URL: sqlite:///./ci-app.db
+          CIVIC_FIXTURE_MODE: "true"
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: make verify
+
+      - name: Verify Alembic round trip
+        env:
+          DATABASE_URL: sqlite:///./ci-migration.db
+        run: |
+          rm -f ci-migration.db
+          python -m alembic upgrade head
+          python -m alembic downgrade -1
+          python -m alembic upgrade head
