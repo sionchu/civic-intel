@@ -1,6 +1,6 @@
 # Batch ingestion L3 transition
 
-Status: active — Milestones A–B complete, Milestone C in progress.
+Status: active — Milestones A–C complete, Milestone D in progress.
 
 ## Objective
 
@@ -161,23 +161,23 @@ observations, Source URLs, snapshot metadata, run receipts and error summaries.
 Commit:
 
 ```text
-pending Milestone B commit
+620012e P0: add resumable Assembly L3 ingestion
 ```
 
 ---
 
 # Milestone C — Deterministic identity RE0
 
-- [ ] inspect all current resolver call sites
-- [ ] define explicit decision classes
-- [ ] remove or isolate numeric score
-- [ ] no score in materialization
-- [ ] update cross-lane rules
-- [ ] preserve reviewed research identity semantics where justified
-- [ ] distinguish research resolution from materialization permission
-- [ ] update ProfileResearchTarget serialization
-- [ ] update docs
-- [ ] update tests
+- [x] inspect all current resolver call sites
+- [x] define explicit decision classes
+- [x] remove or isolate numeric score
+- [x] no score in materialization
+- [x] update cross-lane rules
+- [x] preserve reviewed research identity semantics where justified
+- [x] distinguish research resolution from materialization permission
+- [x] update ProfileResearchTarget serialization
+- [x] update docs
+- [x] update tests
 
 Acceptance cases:
 
@@ -191,13 +191,30 @@ official career bridge → research evidence, not auto merge
 Evidence:
 
 ```text
-fill during execution
+Explicit IdentityDecisionClass replaces identity score/threshold fields.
+Acceptance cases:
+- name only -> REVIEW / CONTEXT_REVIEW
+- exact birth contradiction -> UNRESOLVED / BIRTH_DATE_CONFLICT
+- exact external id -> RESOLVED / EXTERNAL_ID
+- official career bridge -> RESOLVED / OFFICIAL_CAREER_CONTINUITY with
+  decision_scope=RESEARCH_IDENTITY_ONLY in ProfileResearchTarget serialization
+Targeted identity/profile regression -> 36 passed, 1 warning
+Full local verification:
+- ruff -> All checks passed
+- mypy -> Success: no issues found in 48 source files
+- pytest -> 191 passed, 3 warnings
+- packages.verification.quality -> passed: true
+- web lint/typecheck -> exit 0
+- web tests -> 2 passed
+- web build -> compiled successfully
+Search confirms no identity score or threshold remains; origin-source deduplication retains its
+separate similarity heuristic and is not identity or materialization authority.
 ```
 
 Commit:
 
 ```text
-fill during execution
+pending Milestone C commit
 ```
 
 ---

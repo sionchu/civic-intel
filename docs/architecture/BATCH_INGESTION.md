@@ -280,13 +280,9 @@ Exact contradictions fail closed.
 
 Identity scores are not probabilities and cannot be canonical merge authority.
 
-The batch path uses explicit deterministic decision classes and reasons.
-
-If legacy score fields remain temporarily for review compatibility, materialization must not
-inspect them.
-
-The intended target is to remove threshold-based resolution in favor of auditable branch
-semantics.
+The canonical identity contracts contain no numeric score. They expose explicit deterministic
+decision classes and reasons. Materialization uses its own action gate and must not reconstruct
+a threshold from identity hints, evidence counts or similarity values.
 
 ---
 

@@ -70,7 +70,8 @@ class ResolvedProfileTargetLink:
             "observation": self.observation.to_dict(),
             "identity": {
                 "status": self.decision.status.value,
-                "score": self.decision.score,
+                "decision_class": self.decision.decision_class.value,
+                "decision_scope": "RESEARCH_IDENTITY_ONLY",
                 "reasons": list(self.decision.reasons),
                 "evidence_types": [item.value for item in self.decision.evidence_types],
                 "evidence_source_refs": list(

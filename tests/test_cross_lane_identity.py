@@ -2,7 +2,11 @@ from datetime import date
 
 import pytest
 
-from packages.domain.enums import CrossLaneIdentityEvidenceType, IdentityStatus
+from packages.domain.enums import (
+    CrossLaneIdentityEvidenceType,
+    IdentityDecisionClass,
+    IdentityStatus,
+)
 from packages.verification.cross_lane_identity import (
     CrossLaneIdentityEvidence,
     resolve_cross_lane_identity,
@@ -41,7 +45,8 @@ def test_same_name_different_roles_without_bridge_evidence_stays_review() -> Non
     decision = resolve_cross_lane_identity(left, right)
 
     assert decision.status == IdentityStatus.REVIEW
-    assert decision.score == 35
+    assert decision.decision_class == IdentityDecisionClass.CONTEXT_REVIEW
+    assert not hasattr(decision, "score")
     assert "cross_lane_bridge_evidence_missing" in decision.reasons
     assert "office_conflict" not in decision.reasons
     assert "organization_conflict" not in decision.reasons
@@ -54,7 +59,7 @@ def test_official_career_continuity_can_resolve_compatible_transition() -> None:
     decision = resolve_cross_lane_identity(left, right, (continuity_evidence(),))
 
     assert decision.status == IdentityStatus.RESOLVED
-    assert decision.score == 75
+    assert decision.decision_class == IdentityDecisionClass.OFFICIAL_CAREER_CONTINUITY
     assert decision.evidence_types == (
         CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
     )
@@ -78,7 +83,7 @@ def test_hard_birth_date_conflict_fails_closed_even_with_continuity_source() -> 
     decision = resolve_cross_lane_identity(left, right, (continuity_evidence(),))
 
     assert decision.status == IdentityStatus.UNRESOLVED
-    assert decision.score == -100
+    assert decision.decision_class == IdentityDecisionClass.BIRTH_DATE_CONFLICT
     assert decision.reasons == ("birth_date_conflict",)
 
 
@@ -96,7 +101,7 @@ def test_source_backed_exact_birth_date_resolves_when_dates_match() -> None:
     )
 
     assert decision.status == IdentityStatus.RESOLVED
-    assert decision.score == 85
+    assert decision.decision_class == IdentityDecisionClass.EXACT_BIRTH_DATE
 
 
 def test_exact_birth_evidence_requires_both_candidate_dates() -> None:
@@ -123,7 +128,7 @@ def test_exact_external_id_match_can_resolve_cross_lane_identity() -> None:
         (evidence,),
     )
     assert decision.status == IdentityStatus.RESOLVED
-    assert decision.score == 95
+    assert decision.decision_class == IdentityDecisionClass.EXTERNAL_ID
 
 
 def test_mismatched_external_id_evidence_is_rejected() -> None:
@@ -154,7 +159,7 @@ def test_evidence_requires_source_and_continuity_roles() -> None:
         )
 
 
-def test_duplicate_same_evidence_type_does_not_inflate_identity_score() -> None:
+def test_duplicate_same_evidence_type_keeps_one_explicit_decision_class() -> None:
     first = continuity_evidence()
     second = CrossLaneIdentityEvidence(
         evidence_type=CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
@@ -166,7 +171,7 @@ def test_duplicate_same_evidence_type_does_not_inflate_identity_score() -> None:
     decision = resolve_cross_lane_identity(candidate(), candidate(), (first, second))
 
     assert decision.status == IdentityStatus.RESOLVED
-    assert decision.score == 75
+    assert decision.decision_class == IdentityDecisionClass.OFFICIAL_CAREER_CONTINUITY
     assert len(decision.evidence_types) == 2
 
 
@@ -175,6 +180,7 @@ def test_different_names_fail_before_cross_lane_evidence() -> None:
         candidate(name="김인재"), candidate(name="이인재"), (continuity_evidence(),)
     )
     assert decision.status == IdentityStatus.UNRESOLVED
+    assert decision.decision_class == IdentityDecisionClass.NAME_CONFLICT
     assert decision.reasons == ("name_conflict",)
 
 

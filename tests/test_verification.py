@@ -15,6 +15,7 @@ from packages.domain.contracts import (
 from packages.domain.enums import (
     EpistemicStatus,
     EvidenceStance,
+    IdentityDecisionClass,
     IdentityStatus,
     PublicationStatus,
     RelationshipEvidenceType,
@@ -53,15 +54,24 @@ def test_blocked_and_discovery_only_never_fetch() -> None:
             require_policy(policy(collection_mode=mode, can_fetch=True), PolicyAction.FETCH)
 
 
-def test_entity_resolution_resolves_anchors_but_reviews_hard_conflict() -> None:
+def test_entity_resolution_resolves_exact_birth_and_fails_closed_on_conflict() -> None:
     observed = IdentityCandidate("Kim Min", birth_date=date(1970, 1, 1), office="Minister")
-    assert resolve_identity(observed, observed).status == IdentityStatus.RESOLVED
-    assert (
-        resolve_identity(
-            observed, IdentityCandidate("Kim Min", birth_date=date(1980, 1, 1), office="Minister")
-        ).status
-        == IdentityStatus.REVIEW
+    resolved = resolve_identity(observed, observed)
+    assert resolved.status == IdentityStatus.RESOLVED
+    assert resolved.decision_class == IdentityDecisionClass.EXACT_BIRTH_DATE
+    conflict = resolve_identity(
+        observed, IdentityCandidate("Kim Min", birth_date=date(1980, 1, 1), office="Minister")
     )
+    assert conflict.status == IdentityStatus.UNRESOLVED
+    assert conflict.decision_class == IdentityDecisionClass.BIRTH_DATE_CONFLICT
+
+
+def test_name_only_identity_is_explicit_review_without_numeric_threshold() -> None:
+    decision = resolve_identity(IdentityCandidate("Kim Min"), IdentityCandidate("Kim Min"))
+
+    assert decision.status == IdentityStatus.REVIEW
+    assert decision.decision_class == IdentityDecisionClass.CONTEXT_REVIEW
+    assert not hasattr(decision, "score")
 
 
 def test_origin_reprint_collapses_and_counts_are_distinct() -> None:

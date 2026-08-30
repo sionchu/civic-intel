@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from packages.domain.enums import CrossLaneIdentityEvidenceType, IdentityStatus
+from packages.domain.enums import (
+    CrossLaneIdentityEvidenceType,
+    IdentityDecisionClass,
+    IdentityStatus,
+)
 
 from .identity import IdentityCandidate
 
@@ -34,17 +38,9 @@ class CrossLaneIdentityEvidence:
 @dataclass(frozen=True)
 class CrossLaneIdentityDecision:
     status: IdentityStatus
-    score: int
+    decision_class: IdentityDecisionClass
     reasons: tuple[str, ...]
     evidence_types: tuple[CrossLaneIdentityEvidenceType, ...]
-
-
-_EVIDENCE_WEIGHTS = {
-    CrossLaneIdentityEvidenceType.EXACT_BIRTH_DATE: 50,
-    CrossLaneIdentityEvidenceType.EXTERNAL_ID: 60,
-    CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY: 40,
-    CrossLaneIdentityEvidenceType.OFFICIAL_BIOGRAPHY_CONTINUITY: 40,
-}
 
 
 def _names(candidate: IdentityCandidate) -> set[str]:
@@ -95,7 +91,7 @@ def resolve_cross_lane_identity(
     if not (_names(left) & _names(right)):
         return CrossLaneIdentityDecision(
             IdentityStatus.UNRESOLVED,
-            -100,
+            IdentityDecisionClass.NAME_CONFLICT,
             ("name_conflict",),
             (),
         )
@@ -103,31 +99,55 @@ def resolve_cross_lane_identity(
     if left.birth_date and right.birth_date and left.birth_date != right.birth_date:
         return CrossLaneIdentityDecision(
             IdentityStatus.UNRESOLVED,
-            -100,
+            IdentityDecisionClass.BIRTH_DATE_CONFLICT,
             ("birth_date_conflict",),
             (),
         )
 
-    score = 35
     reasons = ["name_match"]
     accepted_types: list[CrossLaneIdentityEvidenceType] = []
-    scored_types: set[CrossLaneIdentityEvidenceType] = set()
+    unique_types: set[CrossLaneIdentityEvidenceType] = set()
 
     for item in evidence:
         _validate_evidence(left, right, item)
         accepted_types.append(item.evidence_type)
-        if item.evidence_type not in scored_types:
-            score += _EVIDENCE_WEIGHTS[item.evidence_type]
-            scored_types.add(item.evidence_type)
+        if item.evidence_type not in unique_types:
+            unique_types.add(item.evidence_type)
             reasons.append(item.evidence_type.value.casefold())
 
     if not evidence:
         reasons.append("cross_lane_bridge_evidence_missing")
+        return CrossLaneIdentityDecision(
+            IdentityStatus.REVIEW,
+            IdentityDecisionClass.CONTEXT_REVIEW,
+            tuple(reasons),
+            (),
+        )
 
-    status = IdentityStatus.RESOLVED if score >= 70 else IdentityStatus.REVIEW
+    precedence = (
+        (
+            CrossLaneIdentityEvidenceType.EXTERNAL_ID,
+            IdentityDecisionClass.EXTERNAL_ID,
+        ),
+        (
+            CrossLaneIdentityEvidenceType.EXACT_BIRTH_DATE,
+            IdentityDecisionClass.EXACT_BIRTH_DATE,
+        ),
+        (
+            CrossLaneIdentityEvidenceType.OFFICIAL_BIOGRAPHY_CONTINUITY,
+            IdentityDecisionClass.OFFICIAL_BIOGRAPHY_CONTINUITY,
+        ),
+        (
+            CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
+            IdentityDecisionClass.OFFICIAL_CAREER_CONTINUITY,
+        ),
+    )
+    decision_class = next(
+        decision for evidence_type, decision in precedence if evidence_type in unique_types
+    )
     return CrossLaneIdentityDecision(
-        status,
-        score,
+        IdentityStatus.RESOLVED,
+        decision_class,
         tuple(reasons),
         tuple(accepted_types),
     )

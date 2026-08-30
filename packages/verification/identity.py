@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from packages.domain.enums import IdentityStatus
+from packages.domain.enums import IdentityDecisionClass, IdentityStatus
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class IdentityCandidate:
 @dataclass(frozen=True)
 class IdentityDecision:
     status: IdentityStatus
-    score: int
+    decision_class: IdentityDecisionClass
     reasons: tuple[str, ...]
 
 
@@ -28,36 +28,58 @@ def resolve_identity(observed: IdentityCandidate, candidate: IdentityCandidate) 
     names_a = {observed.canonical_name.casefold(), *(x.casefold() for x in observed.aliases)}
     names_b = {candidate.canonical_name.casefold(), *(x.casefold() for x in candidate.aliases)}
     if not names_a & names_b:
-        return IdentityDecision(IdentityStatus.UNRESOLVED, -100, ("name_conflict",))
-    score = 35
+        return IdentityDecision(
+            IdentityStatus.UNRESOLVED,
+            IdentityDecisionClass.NAME_CONFLICT,
+            ("name_conflict",),
+        )
     reasons.append("name_match")
     if observed.birth_date and candidate.birth_date:
         if observed.birth_date != candidate.birth_date:
-            return IdentityDecision(IdentityStatus.REVIEW, -100, ("birth_date_conflict",))
-        score += 40
+            return IdentityDecision(
+                IdentityStatus.UNRESOLVED,
+                IdentityDecisionClass.BIRTH_DATE_CONFLICT,
+                ("birth_date_conflict",),
+            )
         reasons.append("birth_date_match")
-    for label, left, right, weight in (
-        ("office", observed.office, candidate.office, 20),
-        ("organization", observed.organization, candidate.organization, 15),
+        return IdentityDecision(
+            IdentityStatus.RESOLVED,
+            IdentityDecisionClass.EXACT_BIRTH_DATE,
+            tuple(reasons),
+        )
+
+    context_matches: dict[str, bool] = {}
+    for label, left, right in (
+        ("office", observed.office, candidate.office),
+        ("organization", observed.organization, candidate.organization),
     ):
+        context_matches[label] = False
         if left and right:
             if left.casefold() == right.casefold():
-                score += weight
+                context_matches[label] = True
                 reasons.append(f"{label}_match")
             else:
-                score -= weight
                 reasons.append(f"{label}_conflict")
     overlap = {x.casefold() for x in observed.career_anchors} & {
         x.casefold() for x in candidate.career_anchors
     }
-    score += min(len(overlap), 2) * 10
     if overlap:
         reasons.append("career_anchor_match")
-    status = (
-        IdentityStatus.RESOLVED
-        if score >= 70
-        else IdentityStatus.REVIEW
-        if score >= 20
-        else IdentityStatus.UNRESOLVED
+    if context_matches["office"] and context_matches["organization"]:
+        return IdentityDecision(
+            IdentityStatus.RESOLVED,
+            IdentityDecisionClass.SAME_STATE_CONTEXT,
+            tuple(reasons),
+        )
+    if len(overlap) >= 2 and any(context_matches.values()):
+        return IdentityDecision(
+            IdentityStatus.RESOLVED,
+            IdentityDecisionClass.SHARED_CAREER_ANCHORS,
+            tuple(reasons),
+        )
+    reasons.append("deterministic_identity_evidence_insufficient")
+    return IdentityDecision(
+        IdentityStatus.REVIEW,
+        IdentityDecisionClass.CONTEXT_REVIEW,
+        tuple(reasons),
     )
-    return IdentityDecision(status, score, tuple(reasons))

@@ -122,6 +122,13 @@ def test_aggregate_source_refs_are_deduplicated_but_observation_provenance_remai
     assert payload["linked_observations"][0]["identity"]["evidence_source_refs"] == [
         "presidential-briefing-kimai"
     ]
+    assert payload["linked_observations"][0]["identity"]["decision_class"] == (
+        "OFFICIAL_CAREER_CONTINUITY"
+    )
+    assert payload["linked_observations"][0]["identity"]["decision_scope"] == (
+        "RESEARCH_IDENTITY_ONLY"
+    )
+    assert "score" not in payload["linked_observations"][0]["identity"]
 
 
 def test_profile_target_has_no_appointment_probability_or_political_inference_fields() -> None:

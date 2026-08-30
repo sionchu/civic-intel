@@ -90,17 +90,20 @@ Cross-lane identity cannot be resolved from:
 
 Those signals may be useful for discovery in other contexts but are not identity evidence.
 
-## Scoring boundary
+## Decision-class boundary
 
-The score is an internal deterministic decision aid, not a public confidence percentage.
+Identity resolution uses explicit branch classes, not a numeric score or threshold.
 
-- base name/alias overlap: review-level only;
-- each evidence type has one bounded contribution;
-- multiple records of the same evidence type do not repeatedly inflate the score;
-- birth-date conflicts override positive continuity evidence.
+- name/alias overlap alone produces `CONTEXT_REVIEW`;
+- exact contradictory birth dates produce `BIRTH_DATE_CONFLICT` and fail closed;
+- source-backed exact provider identity produces `EXTERNAL_ID`;
+- exact source-backed birth date produces `EXACT_BIRTH_DATE`;
+- official career or biography continuity produces its named research decision class;
+- different office/organization remains neutral in cross-lane resolution.
 
-The public system should expose the decision status and underlying sources rather than convert
-this score into a probability.
+The decision status, decision class and underlying sources are exposed. Research-level
+`RESOLVED` means an observation may enter a reviewed profile research target; it does not grant
+batch materialization or cross-Person merge permission.
 
 ## Profile integration
 
