@@ -7,14 +7,22 @@ from .open_assembly import (
     OpenAssemblyMemberConnector,
     national_assembly_member_policy,
 )
+from .open_assembly_bills import (
+    AssemblyBillRecord,
+    OpenAssemblyBillConnector,
+    national_assembly_bill_policy,
+)
 
 __all__ = [
     "AssemblyApiError",
+    "AssemblyBillRecord",
     "AssemblyMemberRecord",
     "Connector",
     "ConnectorDocument",
     "MissingAssemblyApiKey",
     "OfficialRosterFixtureConnector",
+    "OpenAssemblyBillConnector",
     "OpenAssemblyMemberConnector",
+    "national_assembly_bill_policy",
     "national_assembly_member_policy",
 ]

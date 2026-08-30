@@ -18,6 +18,7 @@ dev = ["mypy>=1.11,<2", "pytest>=8.3,<9", "ruff>=0.6,<1"]
 [project.scripts]
 civic-quality = "packages.verification.quality:main"
 civic-stage-assembly = "workers.assembly_roster:main"
+civic-stage-legislative = "workers.legislative_activity:main"
 
 [build-system]
 requires = ["setuptools>=70"]
@@ -38,4 +39,3 @@ target-version = "py311"
 python_version = "3.11"
 plugins = ["pydantic.mypy"]
 ignore_missing_imports = true
-

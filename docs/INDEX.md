@@ -6,6 +6,7 @@ Workflow documents define change and completion gates. The profiler skill specia
 these rules without overriding them.
 
 - [Architecture](../ARCHITECTURE.md)
+- [Career facets](architecture/CAREER_FACETS.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)
