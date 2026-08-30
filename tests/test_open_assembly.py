@@ -4,13 +4,12 @@ import pytest
 from packages.connectors.open_assembly import (
     AssemblyApiError,
     MissingAssemblyApiKey,
-    national_assembly_member_policy,
     OpenAssemblyMemberConnector,
+    national_assembly_member_policy,
 )
 from packages.domain.enums import SourceCollectionMode
 from packages.verification.policy import PolicyDenied
 from workers.ingest import IngestionPipeline
-
 
 SECRET = "test-secret-must-never-persist"
 
