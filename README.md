@@ -4,9 +4,9 @@ Evidence-grounded public-official intelligence with policy-first ingestion and f
 traceable publication.
 
 The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
-personnel briefing. Runtime API reads are SQLAlchemy-backed. One opt-in live-capable
-official connector is available for National Assembly member information; Golden tests
-remain fully offline.
+personnel briefing. Runtime API reads are SQLAlchemy-backed. Opt-in live-capable official
+connectors are available for National Assembly member identity and legislative activity;
+Golden tests remain fully offline.
 
 ## Setup
 
@@ -41,6 +41,13 @@ make verify        # all required checks
 
 On Windows without `make`, run the commands shown in `Makefile` directly.
 
+## Career facets
+
+People are not assigned one permanent occupation type. Legislative, academic, corporate,
+civic/nonprofit, public-service, legal, military and diplomatic history can coexist as
+time-bounded evidence-backed facets of the same person. See
+`docs/architecture/CAREER_FACETS.md` for the canonical rules.
+
 ## National Assembly member connector
 
 `OpenAssemblyMemberConnector` targets the official National Assembly Secretariat member
@@ -59,29 +66,31 @@ database, publish claims, or expose raw provider rows. Korean name, optional Han
 aliases, birth date, current party, district, committee text, election metadata, and the
 National Assembly member code are used as identity anchors for the existing resolver.
 
-For lower-level connector inspection:
+## Legislative activity staging
+
+`OpenAssemblyBillConnector` uses the official `의원 발의법률안` dataset and stages bill
+metadata without writing the canonical database:
 
 ```bash
-ASSEMBLY_API_KEY=... python - <<'PY'
-from packages.connectors import OpenAssemblyMemberConnector
-
-connector = OpenAssemblyMemberConnector(name="홍길동", page_size=10)
-document = connector.fetch(connector.discover()[0])
-for member in connector.parse_members(document):
-    print(member)
-PY
+ASSEMBLY_API_KEY=... civic-stage-legislative \
+  --name "홍길동" --member-code "MONA_CD_VALUE" --age 22 --page-size 100
 ```
 
-The reviewed SourcePolicy permits fetch/metadata use under the official dataset's
-unrestricted-use license, but V0 deliberately does not retain raw API response fulltext
-or send it to AI because member rows may include contact fields unnecessary for identity
-resolution. No scheduled synchronization is enabled yet.
+The output preserves bill ID/title, proposal date, committee, processing result,
+representative proposer and co-proposers. Exact representative-sponsored counts are emitted
+only when the filtered result has complete page coverage. Complete co-sponsorship counts are
+left unresolved in this stage because the representative-proposer search endpoint alone does
+not establish full co-sponsor coverage. No faction/계파 classification is produced.
+
+The reviewed National Assembly SourcePolicies permit fetch/metadata use under the official
+datasets' unrestricted-use license. V0 deliberately does not retain raw API response
+fulltext or send it to AI. No scheduled synchronization is enabled yet.
 
 ## Safety and source rights
 
 All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
 metadata and short excerpts only; its policies are discovery-only or blocked, so tests
-cannot fetch them. The National Assembly connector is opt-in and credential-gated; tests
-mock all network responses. Staging is review-only and does not mutate the canonical DB.
-The generic HTTP connector remains dormant. The model has no private-family or
-precise-residence publication fields. Workers cannot publish claims.
+cannot fetch them. National Assembly connectors are opt-in and credential-gated; tests mock
+all network responses. Staging is review-only and does not mutate the canonical DB. The
+generic HTTP connector remains dormant. The model has no private-family or precise-residence
+publication fields. Workers cannot publish claims.
