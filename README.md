@@ -5,8 +5,9 @@ traceable publication.
 
 The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
 personnel briefing. Runtime API reads are SQLAlchemy-backed. Opt-in live-capable official
-connectors are available for National Assembly member identity and legislative activity;
-Golden tests remain fully offline.
+connectors are available for National Assembly member identity, legislative activity, and
+Central Election Commission local-election candidates/winners; Golden tests remain fully
+offline.
 
 ## Setup
 
@@ -43,9 +44,9 @@ On Windows without `make`, run the commands shown in `Makefile` directly.
 
 ## Career facets
 
-People are not assigned one permanent occupation type. Legislative, academic, corporate,
-civic/nonprofit, public-service, legal, military and diplomatic history can coexist as
-time-bounded evidence-backed facets of the same person. See
+People are not assigned one permanent occupation type. Legislative, local-elected,
+academic, corporate, civic/nonprofit, public-service, legal, military and diplomatic
+history can coexist as time-bounded evidence-backed facets of the same person. See
 `docs/architecture/CAREER_FACETS.md` for the canonical rules.
 
 ## National Assembly member connector
@@ -82,15 +83,34 @@ only when the filtered result has complete page coverage. Complete co-sponsorshi
 left unresolved in this stage because the representative-proposer search endpoint alone does
 not establish full co-sponsor coverage. No faction/계파 classification is produced.
 
-The reviewed National Assembly SourcePolicies permit fetch/metadata use under the official
-datasets' unrestricted-use license. V0 deliberately does not retain raw API response
-fulltext or send it to AI. No scheduled synchronization is enabled yet.
+## Local elected-official staging
+
+`NecCandidateConnector` and `NecWinnerConnector` use official Central Election Commission
+candidate/winner APIs. Supported local-election scopes are governors, city/county/district
+heads, metropolitan/provincial councilors, municipal/county/district councilors, historical
+education councilors, and superintendents of education.
+
+```bash
+NEC_API_KEY=... civic-stage-local-election \
+  --election-id 20260603 --type 4 --province "경기도" --district "테스트시"
+```
+
+The review output keeps NEC candidate ID, name/Hanja, birth date, election jurisdiction,
+party, candidate number, public occupation, education/career strings and election outcome.
+Candidate address is discarded before staging. Candidate-submitted education/career remains
+explicitly labelled as submitted election-record data rather than independently verified
+biographical FACT. A candidate absent from a partial winner page is `UNKNOWN`, not
+silently classified as a losing candidate.
+
+The reviewed National Assembly and NEC SourcePolicies permit policy-approved fetch/metadata
+use. V0 deliberately does not retain raw API response fulltext or send these feeds to AI.
+No scheduled synchronization is enabled yet.
 
 ## Safety and source rights
 
 All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
 metadata and short excerpts only; its policies are discovery-only or blocked, so tests
-cannot fetch them. National Assembly connectors are opt-in and credential-gated; tests mock
-all network responses. Staging is review-only and does not mutate the canonical DB. The
-generic HTTP connector remains dormant. The model has no private-family or precise-residence
+cannot fetch them. Official connectors are opt-in and credential-gated; tests mock all
+network responses. Staging is review-only and does not mutate the canonical DB. The generic
+HTTP connector remains dormant. The model has no private-family or precise-residence
 publication fields. Workers cannot publish claims.
