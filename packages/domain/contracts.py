@@ -13,7 +13,9 @@ from .enums import (
     PublicationStatus,
     RelationshipEvidenceType,
     RelationshipStrength,
+    RoleFitStatus,
     SourceCollectionMode,
+    TalentPoolBucket,
 )
 
 
@@ -68,6 +70,63 @@ class Appointment(TemporalRecord):
     id: UUID = Field(default_factory=uuid4)
     person_id: UUID
     office_id: UUID
+
+
+class AppointmentTarget(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    slug: str = Field(min_length=1, pattern=r"^[a-z0-9-]+$")
+    title: str = Field(min_length=1)
+    institution: str = Field(min_length=1)
+    appointment_route: str = Field(min_length=1)
+    hearing_required: bool | None = None
+    role_fit_dimensions: list[str] = Field(min_length=1)
+    source_ids: list[UUID] = Field(min_length=1)
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def unique_dimensions(self) -> AppointmentTarget:
+        if len(set(self.role_fit_dimensions)) != len(self.role_fit_dimensions):
+            raise ValueError("role_fit_dimensions must be unique")
+        return self
+
+
+class RoleFitEvidence(Contract):
+    dimension: str = Field(min_length=1)
+    status: RoleFitStatus
+    claim_ids: list[UUID] = Field(default_factory=list)
+    source_ids: list[UUID] = Field(default_factory=list)
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def evidence_semantics(self) -> RoleFitEvidence:
+        if self.status in {RoleFitStatus.EVIDENCED, RoleFitStatus.PARTIAL}:
+            if not self.claim_ids and not self.source_ids:
+                raise ValueError("evidenced role fit requires claim_ids or source_ids")
+        if self.status in {RoleFitStatus.UNKNOWN, RoleFitStatus.GAP} and not self.note:
+            raise ValueError("UNKNOWN/GAP role fit requires a note")
+        return self
+
+
+class TalentPoolEntry(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    person_id: UUID
+    appointment_target_id: UUID
+    bucket: TalentPoolBucket
+    inclusion_reason: str = Field(min_length=1)
+    role_fit: list[RoleFitEvidence] = Field(min_length=1)
+    actual_consideration_claim_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def explainable_inclusion(self) -> TalentPoolEntry:
+        dimensions = [item.dimension for item in self.role_fit]
+        if len(set(dimensions)) != len(dimensions):
+            raise ValueError("role_fit dimensions must be unique within a talent-pool entry")
+        if not any(
+            item.status in {RoleFitStatus.EVIDENCED, RoleFitStatus.PARTIAL}
+            for item in self.role_fit
+        ):
+            raise ValueError("talent-pool inclusion requires at least one evidenced dimension")
+        return self
 
 
 class SourcePolicy(Contract):
