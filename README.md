@@ -3,6 +3,9 @@
 Evidence-grounded public-official intelligence with policy-first ingestion and fully
 traceable publication.
 
+The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
+personnel briefing. Runtime API reads are SQLAlchemy-backed. No live connector is enabled.
+
 ## Setup
 
 Requires Python 3.11+ (3.12 recommended) and Node.js 20+.
@@ -33,7 +36,8 @@ On Windows without `make`, run the commands shown in `Makefile` directly.
 
 ## Safety and source rights
 
-All collection flows require a SourcePolicy. The included official connector is a
-deterministic fixture; the generic HTTP connector is disabled in practice until a
-caller supplies a reviewed policy. The model has no private-family or precise-residence
-publication fields. Workers cannot publish claims.
+All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
+metadata and short excerpts only; its policies are discovery-only or blocked, so tests
+cannot fetch them. The generic HTTP connector remains dormant and no live connector is
+enabled. The model has no private-family or precise-residence publication fields.
+Workers cannot publish claims.

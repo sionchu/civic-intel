@@ -1,4 +1,5 @@
 """Initial canonical schema."""
+
 from alembic import op
 
 from packages.domain.db import Base
@@ -15,4 +16,3 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     Base.metadata.drop_all(bind=op.get_bind())
-
