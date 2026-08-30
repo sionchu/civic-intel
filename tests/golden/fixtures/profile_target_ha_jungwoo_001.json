@@ -1,0 +1,70 @@
+{
+  "id": "PROFILE_TARGET_GOLDEN_HA_JUNGWOO_001",
+  "as_of": "2026-08-30",
+  "golden_set_person_id": "00000000-0000-0000-0000-000000000009",
+  "canonical_name": "하정우",
+  "review_note": "Manually reviewed source metadata only. Official Presidential Office continuity is accepted for the Presidential Office -> presidential commission transition. NAVER corporate context is intentionally not auto-merged without an approved cross-lane bridge.",
+  "sources": {
+    "presidential_office_role": {
+      "url": "https://www.president.go.kr/briefings/sVNpSTtz",
+      "publisher": "대한민국 청와대",
+      "published_at": "2026-01-27",
+      "reviewed_semantics": "Official briefing publicly identifies 하정우 as AI미래기획수석 among senior Presidential Office staff."
+    },
+    "presidential_commission_nomination": {
+      "url": "https://www.president.go.kr/briefings/qGTHgnQ8",
+      "publisher": "대한민국 청와대",
+      "published_at": "2026-08-30",
+      "reviewed_semantics": "Official personnel briefing nominates 하정우, described as former AI미래기획수석비서관, as 국가AI전략위원회 부위원장."
+    },
+    "naver_future_ai_center": {
+      "url": "https://www.navercorp.com/media/pressReleasesDetail?seq=31410",
+      "publisher": "NAVER Corp.",
+      "published_at": "2024-01-04",
+      "reviewed_semantics": "NAVER organization announcement publicly identifies 하정우 as head of the newly established Future AI Center."
+    }
+  },
+  "observations": {
+    "presidential_office": {
+      "lane": "PRESIDENTIAL_OFFICE",
+      "office": "AI미래기획수석비서관",
+      "organization": "대통령비서실",
+      "source_refs": ["https://www.president.go.kr/briefings/sVNpSTtz"],
+      "career_anchors": [
+        "presidential_role_scope:PRESIDENTIAL_SECRETARIAT",
+        "presidential_role:AI미래기획수석비서관"
+      ],
+      "discovery_reasons": ["GOLDEN_SET_001_PUBLIC_ROLE"]
+    },
+    "presidential_commission": {
+      "lane": "PRESIDENTIAL_COMMISSION",
+      "office": "국가AI전략위원회 부위원장",
+      "organization": "국가AI전략위원회",
+      "source_refs": ["https://www.president.go.kr/briefings/qGTHgnQ8"],
+      "career_anchors": [
+        "presidential_personnel_action:NOMINATED",
+        "presidential_role_scope:PRESIDENTIAL_COMMISSION"
+      ],
+      "discovery_reasons": ["PRESIDENTIAL_NOMINATION"],
+      "appointment_target_slugs": ["national-ai-strategy-committee-vice-chair"]
+    },
+    "corporate_context": {
+      "lane": "CORPORATE_OFFICIAL_PROFILE",
+      "office": "퓨처 AI 센터장",
+      "organization": "NAVER",
+      "source_refs": ["https://www.navercorp.com/media/pressReleasesDetail?seq=31410"],
+      "career_anchors": ["company_role:NAVER_FUTURE_AI_CENTER_HEAD"],
+      "discovery_reasons": ["PRIVATE_SECTOR_SENIOR_TALENT"]
+    }
+  },
+  "resolved_links": [
+    {
+      "from": "presidential_office",
+      "to": "presidential_commission",
+      "evidence_type": "OFFICIAL_CAREER_CONTINUITY",
+      "source_ref": "https://www.president.go.kr/briefings/qGTHgnQ8",
+      "from_role": "AI미래기획수석비서관",
+      "to_role": "국가AI전략위원회 부위원장"
+    }
+  ]
+}
