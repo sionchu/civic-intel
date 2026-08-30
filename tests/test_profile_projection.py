@@ -156,6 +156,36 @@ def test_typed_relationship_is_stakeholder_but_co_mention_only_is_not() -> None:
     assert stakeholders["entries"][0]["source_ids"] == [str(SOURCE_ID)]
 
 
+def test_untraceable_typed_relationship_fails_closed() -> None:
+    claim = nomination_claim()
+    evidence = nomination_evidence()
+    relationship = {
+        "id": "rel-untraceable",
+        "person_id": str(PERSON_ID),
+        "related_organization_id": "org-unknown",
+        "related_person_id": None,
+        "relationship_type": "untraceable leadership",
+        "strength": "STRONG",
+        "evidence": [
+            {
+                "claim_evidence_id": "40000000-0000-0000-0000-999999999999",
+                "evidence_type": "APPOINTMENT",
+            }
+        ],
+    }
+    profile = build_profile_projection(
+        person(),
+        [claim],
+        {claim.id: [evidence]},
+        [relationship],
+        [],
+    )
+
+    stakeholders = section(profile, "stakeholders")
+    assert stakeholders["status"] == "UNKNOWN"
+    assert stakeholders["entries"] == []
+
+
 def test_decision_episode_is_projected_without_creating_repeated_pattern() -> None:
     claim = nomination_claim()
     evidence = nomination_evidence()
