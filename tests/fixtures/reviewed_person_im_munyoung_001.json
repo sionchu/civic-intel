@@ -1,0 +1,168 @@
+{
+  "id": "REVIEWED_PERSON_IM_MUNYOUNG_001",
+  "as_of": "2026-08-31",
+  "review_note": "Metadata-only reviewed bundle. Prior IT, local-government and campaign career reported in media remains discovery-only until original/stronger sources are reviewed.",
+  "person": {
+    "id": "00000000-0000-0000-0000-000000009101",
+    "canonical_name": "임문영",
+    "birth_date": null,
+    "identity_status": "RESOLVED"
+  },
+  "profile_target": {
+    "primary": {
+      "lane": "REVIEWED_ELECTION_AND_PUBLIC_ROLE",
+      "candidate": {
+        "canonical_name": "임문영",
+        "aliases": [],
+        "birth_date": null,
+        "office": "광주 광산을 국회의원 당선인",
+        "organization": "대한민국 국회",
+        "career_anchors": [
+          "election:광주 광산을:2026-06-03",
+          "source_reported_prior_role:국가인공지능전략위원회 부위원장"
+        ]
+      },
+      "source_refs": [
+        "https://www.korea.kr/briefing/presidentView.do?newsId=148948860",
+        "https://www.yna.co.kr/view/AKR20260604012500054"
+      ],
+      "discovery_reasons": [
+        "PRESIDENTIAL_COMMISSION_FEEDER",
+        "LOCAL_ELECTED_FEEDER"
+      ],
+      "appointment_target_slugs": []
+    }
+  },
+  "policies": [
+    {
+      "id": "10000000-0000-0000-0000-000000009101",
+      "domain": "korea.kr",
+      "source_class": "official_presidential_briefing",
+      "collection_mode": "DISCOVERY_ONLY",
+      "can_fetch": false,
+      "can_store_metadata": true,
+      "can_store_fulltext": false,
+      "can_send_to_ai": false,
+      "can_show_excerpt": false,
+      "can_commercialize": false,
+      "license": null,
+      "policy_note": "Manually reviewed official Presidential Office briefing metadata. No blanket redistribution or commercial-use right assumed in this fixture."
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000009102",
+      "domain": "yna.co.kr",
+      "source_class": "news_wire_election_result",
+      "collection_mode": "DISCOVERY_ONLY",
+      "can_fetch": false,
+      "can_store_metadata": true,
+      "can_store_fulltext": false,
+      "can_send_to_ai": false,
+      "can_show_excerpt": false,
+      "can_commercialize": false,
+      "license": null,
+      "policy_note": "Reviewed metadata only. Election report explicitly attributes result figures to the NEC election statistics system; replace with direct NEC evidence when available."
+    }
+  ],
+  "sources": [
+    {
+      "id": "20000000-0000-0000-0000-000000009101",
+      "url": "https://www.korea.kr/briefing/presidentView.do?newsId=148948860",
+      "title": "국가인공지능전략위원회 출범 관련 강유정 대변인 브리핑",
+      "publisher": "대한민국 정책브리핑 / 대통령실",
+      "published_at": "2025-09-08T00:00:00+09:00",
+      "policy_id": "10000000-0000-0000-0000-000000009101",
+      "origin_cluster_id": null
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000009102",
+      "url": "https://www.yna.co.kr/view/AKR20260604012500054",
+      "title": "[6·3 지선] 광주 광산을 보궐 국회의원 민주당 임문영 당선",
+      "publisher": "연합뉴스",
+      "published_at": "2026-06-04T01:47:00+09:00",
+      "policy_id": "10000000-0000-0000-0000-000000009102",
+      "origin_cluster_id": null
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "21000000-0000-0000-0000-000000009101",
+      "source_id": "20000000-0000-0000-0000-000000009101",
+      "fetched_at": "2026-08-31T01:00:00+09:00",
+      "content_hash": "reviewed-im-munyoung-ai-committee-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "bundle": "REVIEWED_PERSON_IM_MUNYOUNG_001"
+      },
+      "fulltext": null
+    },
+    {
+      "id": "21000000-0000-0000-0000-000000009102",
+      "source_id": "20000000-0000-0000-0000-000000009102",
+      "fetched_at": "2026-08-31T01:05:00+09:00",
+      "content_hash": "reviewed-im-munyoung-election-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "bundle": "REVIEWED_PERSON_IM_MUNYOUNG_001",
+        "official_result_dependency": "NEC election statistics system"
+      },
+      "fulltext": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "30000000-0000-0000-0000-000000009101",
+      "person_id": "00000000-0000-0000-0000-000000009101",
+      "proposition": "임문영은 2025년 9월 8일 국가인공지능전략위원회 상근 부위원장으로 활동했다.",
+      "subject": "임문영",
+      "predicate": "HELD_ROLE",
+      "object_text": "국가인공지능전략위원회 상근 부위원장",
+      "qualifiers": {
+        "date": "2025-09-08"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000009102",
+      "person_id": "00000000-0000-0000-0000-000000009101",
+      "proposition": "임문영은 2026년 6월 3일 치러진 광주 광산을 국회의원 보궐선거에서 당선됐다.",
+      "subject": "임문영",
+      "predicate": "ELECTED_AS",
+      "object_text": "광주 광산을 국회의원",
+      "qualifiers": {
+        "date": "2026-06-03",
+        "result_source": "중앙선거관리위원회 선거통계시스템 인용 보도"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    }
+  ],
+  "evidence": [
+    {
+      "id": "40000000-0000-0000-0000-000000009101",
+      "claim_id": "30000000-0000-0000-0000-000000009101",
+      "source_id": "20000000-0000-0000-0000-000000009101",
+      "snapshot_id": "21000000-0000-0000-0000-000000009101",
+      "stance": "SUPPORT",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000009102",
+      "claim_id": "30000000-0000-0000-0000-000000009102",
+      "source_id": "20000000-0000-0000-0000-000000009102",
+      "snapshot_id": "21000000-0000-0000-0000-000000009102",
+      "stance": "SUPPORT",
+      "excerpt": null
+    }
+  ],
+  "deferred_discovery_leads": [
+    "한국PC통신 하이텔",
+    "나우콤",
+    "iMBC",
+    "성남시 정책보좌",
+    "경기도 정보화·미래성장 정책 경력",
+    "대선 캠프 디지털 관련 역할"
+  ]
+}
