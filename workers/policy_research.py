@@ -39,7 +39,7 @@ class StagedResearchOutput:
                 "name": self.output.middle_category_name,
             },
             "original_url": self.output.original_url,
-            "author_candidate": (
+            "researcher_candidate": (
                 {
                     "canonical_name": self.candidate.canonical_name,
                     "organization": self.candidate.organization,
@@ -86,9 +86,13 @@ def repeated_research_topics(
 ) -> list[dict[str, object]]:
     if minimum_outputs < 2:
         raise ValueError("research topic inference requires at least two outputs")
+
+    unique_outputs: dict[tuple[str, str], NkisResearchOutput] = {}
+    for output in outputs:
+        unique_outputs[(output.output_id, output.sequence)] = output
     topics = [
         output.middle_category_name or output.large_category_name
-        for output in outputs
+        for output in unique_outputs.values()
         if output.middle_category_name or output.large_category_name
     ]
     counts = Counter(topics)
