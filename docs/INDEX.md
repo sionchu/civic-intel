@@ -2,8 +2,9 @@
 
 `AGENTS.md` governs execution. `ARCHITECTURE.md` governs boundaries and canonical data
 flow. Product scope constrains features. Role documents define review responsibilities.
-Workflow documents define change and completion gates. The profiler skill specializes
-these rules without overriding them.
+Workflow documents define change and completion gates. Skills specialize these rules without
+overriding them. Active execution plans are the repository SSOT for approved long-running
+implementation work.
 
 - [Architecture](../ARCHITECTURE.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
@@ -11,6 +12,8 @@ these rules without overriding them.
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
+- [Batch ingestion](architecture/BATCH_INGESTION.md)
+- [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
 - [Civil service feeder](architecture/CIVIL_SERVICE.md)
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)
@@ -20,5 +23,8 @@ these rules without overriding them.
 - [Presidential personnel feeder](architecture/PRESIDENTIAL_PERSONNEL_FEEDER.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [Role model](roles/ROLE_MODEL.md)
+- [Batch ingestion agent](roles/BATCH_INGESTION_AGENT.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)
 - [Change control](workflows/CHANGE_CONTROL.md)
+- [Active batch-ingestion L3 plan](exec-plans/active/batch-ingestion-l3.md)
+- [Codex entrypoint for the active batch plan](exec-plans/active/batch-ingestion-l3-codex.md)
