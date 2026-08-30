@@ -128,4 +128,4 @@ class EmploymentReviewDecision(StrEnum):
     APPROVED = "APPROVED"
     RESTRICTED = "RESTRICTED"
     DISAPPROVED = "DISAPPROVED"
-    OTHER = "OTHER"
+    UNKNOWN = "UNKNOWN"
