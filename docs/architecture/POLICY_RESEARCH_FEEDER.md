@@ -3,8 +3,8 @@
 ## Purpose
 
 Civic Intel uses NKIS research-output metadata to discover policy researchers and recurring
-research domains that may feed commissions, ministries, Presidential Office roles, elected
-office and other public appointments.
+research-domain candidates that may feed commissions, ministries, Presidential Office roles,
+elected office and other public appointments.
 
 The core semantic split is mandatory:
 
@@ -14,7 +14,7 @@ ResearchOutput
 ResearchCareer
 ```
 
-Authorship/responsibility on a report does not automatically prove employment at the report's
+Research responsibility on a report does not automatically prove employment at the report's
 publishing institution.
 
 ## Official source
@@ -73,10 +73,10 @@ Only an unambiguous single-person `INCHARGE_NM` may create an `IdentityCandidate
 Examples:
 
 ```text
-김연구       -> candidate may be created
+김연구        -> candidate may be created
 박정책 외 2인 -> no person candidate
 김정책, 이연구 -> no person candidate
-연구원       -> no person candidate
+연구원        -> no person candidate
 ```
 
 The candidate uses:
@@ -91,19 +91,33 @@ A separate institute official biography or appointment source is required to cre
 
 ## Reported research topics
 
-Do not create a stable research-domain characterization from one report.
+Do not create a stable research-domain characterization from one report or from unrelated
+researchers on the same search page.
 
-V0 derives a `repeated topic` only when the same NKIS middle/large classification appears in
-at least two separate outputs. The result is a derived descriptor with source output count,
-not a quality score or personality inference.
+V0 derives a `repeated topic` review candidate only when:
+
+- `INCHARGE_NM` is an unambiguous single-person label;
+- the same researcher label is paired with the same `PUBAGC` output publisher;
+- the same NKIS middle/large classification appears in at least two **distinct** output IDs;
+- duplicate delivery of the same output ID/sequence is collapsed first.
+
+Even then, this is **not yet a resolved Person expertise FACT**. Same-name people can still
+exist. The result remains `IDENTITY_UNRESOLVED` until Identity Resolution and the separate
+employment/career lane confirm the person.
 
 ```text
-1 report in AI industry policy
- -> no repeated-topic output
+김연구 + 테스트연구원 + AI정책 output A
+김연구 + 테스트연구원 + AI정책 output B
+ -> repeated-topic candidate within staged outputs
+ -> Person expertise FACT: not yet
 
-2+ reports in AI industry policy
- -> derived recurring research topic candidate
+김연구 + output A
+이연구 + output B
+ -> no combined repeated-person topic
 ```
+
+The count is scoped to the outputs staged in the current collection window. It is not an
+exact lifetime publication count unless complete source coverage is separately established.
 
 ## Career-path integration
 
@@ -129,12 +143,14 @@ Historical frequency remains descriptive and is never appointment probability.
 
 ## Quality rules
 
-- authorship/responsibility != employment
+- research responsibility != employment
 - publishing institution != current employer
 - one report != recurring research specialty
+- same-name grouping != resolved identity
+- staged-output count != lifetime output count
 - report count != research quality
 - download/citation metrics != automatic expertise score
-- ambiguous author text never creates multiple guessed people
+- ambiguous researcher text never creates multiple guessed people
 - no abstract/fulltext AI processing in V0
 
 ## Current implementation
@@ -142,7 +158,8 @@ Historical frequency remains descriptive and is never appointment probability.
 - credential-safe `ReportList.do` connector
 - review-only metadata parser
 - safe single-responsible-researcher candidate staging
-- repeated-topic derivation requiring at least two outputs
+- repeated-topic review candidate requiring two distinct outputs within the same
+  researcher-label + publisher group
 - offline deterministic fixtures/tests
 - no automatic DB upsert/publication
 - no institute staff crawling
