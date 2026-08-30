@@ -64,6 +64,5 @@ def test_review_surface_reports_source_conflict(client: TestClient) -> None:
 
 def test_api_startup_fails_on_unmigrated_database(tmp_path: Path) -> None:
     repository = SqlAlchemyRepository(f"sqlite:///{(tmp_path / 'missing.db').as_posix()}")
-    with pytest.raises(DatabaseNotReady, match="not migrated"):
-        with TestClient(create_app(repository)):
-            pass
+    with pytest.raises(DatabaseNotReady, match="not migrated"), TestClient(create_app(repository)):
+        pass
