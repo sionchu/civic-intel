@@ -13,6 +13,7 @@ from packages.connectors.nkis_research import (
     nkis_research_policy,
     responsible_researcher_candidate_name,
 )
+from packages.domain.contracts import SourcePolicy
 from packages.verification.identity import IdentityCandidate
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
@@ -117,11 +118,17 @@ def repeated_research_topics(
 
 
 class PolicyResearchStager:
-    def __init__(self, connector: NkisResearchReportConnector) -> None:
+    def __init__(
+        self,
+        connector: NkisResearchReportConnector,
+        policy: SourcePolicy | None = None,
+    ) -> None:
         self.connector = connector
-        self.policy = nkis_research_policy()
+        self.policy = policy or nkis_research_policy()
 
     def stage(self) -> dict[str, object]:
+        if self.policy.domain != self.connector.HOST:
+            raise PolicyDenied("SourcePolicy domain does not match NKIS connector")
         require_policy(self.policy, PolicyAction.FETCH)
         document = self.connector.fetch(self.connector.discover()[0])
         outputs = self.connector.parse_outputs(document)
