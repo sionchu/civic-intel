@@ -181,16 +181,23 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    shared = {
-        "election_id": args.election_id,
-        "election_type": args.type,
-        "page_no": args.page_no,
-        "page_size": args.page_size,
-        "district_name": args.district,
-        "province_name": args.province,
-    }
-    candidate_connector = NecCandidateConnector(**shared, party=args.party)
-    winner_connector = NecWinnerConnector(**shared)
+    candidate_connector = NecCandidateConnector(
+        election_id=args.election_id,
+        election_type=args.type,
+        page_no=args.page_no,
+        page_size=args.page_size,
+        district_name=args.district,
+        province_name=args.province,
+        party=args.party,
+    )
+    winner_connector = NecWinnerConnector(
+        election_id=args.election_id,
+        election_type=args.type,
+        page_no=args.page_no,
+        page_size=args.page_size,
+        district_name=args.district,
+        province_name=args.province,
+    )
     try:
         staged = LocalElectionStager(candidate_connector, winner_connector).stage()
     except (NecApiError, PolicyDenied, ValueError) as exc:
