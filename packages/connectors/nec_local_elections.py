@@ -310,7 +310,14 @@ class NecCandidateConnector(_NecApiConnector):
             district_name = cls._optional(row, "sggName")
             province_name = cls._optional(row, "sdName")
             name_ko = cls._optional(row, "name")
-            if not all((candidate_id, election_id, election_type_text, district_name, province_name, name_ko)):
+            if (
+                candidate_id is None
+                or election_id is None
+                or election_type_text is None
+                or district_name is None
+                or province_name is None
+                or name_ko is None
+            ):
                 raise NecApiError("NEC candidate row lacks required identity fields")
             try:
                 election_type = int(election_type_text)
