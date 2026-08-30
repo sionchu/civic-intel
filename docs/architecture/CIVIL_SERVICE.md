@@ -126,7 +126,7 @@ Civic Intel preserves the official decision as a discrete fact:
 - `APPROVED` / 취업승인
 - `RESTRICTED` / 취업제한
 - `DISAPPROVED` / 취업불승인
-- `OTHER` when a source uses another status that requires review
+- `UNKNOWN` when a source uses another status that requires review
 
 The original Korean decision text is always retained.
 
@@ -134,6 +134,10 @@ A post-government job is **not** automatically a revolving-door violation. In pa
 `취업가능` and `취업승인` must never be re-labelled as wrongdoing. A restriction or
 disapproval is also reported only as the official committee decision unless separate facts
 support another claim.
+
+Published review tables may mask a person's name. A masked or partially masked name is not
+an identity anchor and must never create a Person candidate. The review record may remain as
+an organization-level/public decision record with `PERSON_NAME_NOT_PUBLIC` semantics.
 
 ## Identity rule
 
@@ -150,14 +154,16 @@ If the identity remains ambiguous, keep `REVIEW`/`ENTITY_UNRESOLVED` rather than
 
 ## Current implementation boundary
 
-The first implementation is deliberately offline and deterministic:
+The first implementation is deliberately offline and deterministic because there is no
+single stable named-person API covering all Korean central and local civil-service moves:
 
 - normalized fixture parser for official named personnel rows
 - normalized fixture parser for retired-public-official employment-review rows
-- mapping into the existing `IdentityCandidate`
+- mapping into the existing `IdentityCandidate` only when the public name is usable
 - canonical contracts for `CivilServiceCareerEpisode` and `EmploymentReviewEvent`
 - no automatic database upsert
 - no broad government-site crawler
 
-The next source adapter should target one stable official named-person feed/notice family and
-reuse these semantics instead of creating another career model.
+Every future live source must have its own SourcePolicy and source-specific parser. The next
+source adapter should target one stable official named-person feed/notice family and reuse
+these semantics instead of creating another career model.
