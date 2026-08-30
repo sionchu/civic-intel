@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
+from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import create_engine, select
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine, inspect, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from packages.domain.contracts import Claim, ClaimEvidence, Person, Source, SourcePolicy
 from packages.domain.db import (
-    Base,
     ClaimEvidenceRow,
     ClaimRow,
     DecisionEpisodeRow,
@@ -23,18 +25,56 @@ from packages.domain.db import (
 from packages.verification.golden import GoldenSet, load_golden_set
 
 
+class DatabaseNotReady(RuntimeError):
+    pass
+
+
+class GoldenSeedError(RuntimeError):
+    pass
+
+
+def _expected_schema_revision() -> str:
+    root = Path(__file__).resolve().parents[2]
+    config = Config(str(root / "alembic.ini"))
+    config.set_main_option("script_location", str(root / "migrations"))
+    revision = ScriptDirectory.from_config(config).get_current_head()
+    if revision is None:
+        raise DatabaseNotReady("Alembic has no current schema head")
+    return revision
+
+
 class SqlAlchemyRepository:
     def __init__(self, database_url: str | None = None):
         url = database_url or os.getenv("DATABASE_URL") or "sqlite:///./civic_intel.db"
         self.engine = create_engine(url)
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
 
-    def initialize(self, golden: GoldenSet | None = None) -> None:
-        Base.metadata.create_all(self.engine)
+    def assert_ready(self) -> None:
+        database = inspect(self.engine)
+        tables = set(database.get_table_names())
+        required = {"alembic_version", "people", "claims", "claim_evidence", "sources"}
+        missing = sorted(required - tables)
+        if missing:
+            raise DatabaseNotReady(
+                "Database is not migrated; run `python -m alembic upgrade head` "
+                f"before starting the API (missing: {', '.join(missing)})"
+            )
+        expected = _expected_schema_revision()
+        with self.engine.connect() as connection:
+            current = connection.scalar(text("SELECT version_num FROM alembic_version"))
+        if current != expected:
+            raise DatabaseNotReady(
+                f"Database schema revision is {current!r}; expected {expected!r}. "
+                "Run `python -m alembic upgrade head`."
+            )
+
+    def seed_golden(self, golden: GoldenSet | None = None) -> None:
+        self.assert_ready()
         with self.sessions() as session:
-            if session.scalar(select(PersonRow.id).limit(1)) is None:
-                self._seed(session, golden or load_golden_set())
-                session.commit()
+            if session.scalar(select(PersonRow.id).limit(1)) is not None:
+                raise GoldenSeedError("Golden Set seeding requires an empty migrated database")
+            self._seed(session, golden or load_golden_set())
+            session.commit()
 
     @staticmethod
     def _temporal(contract) -> dict:
@@ -214,5 +254,19 @@ class SqlAlchemyRepository:
             return [row.payload for row in rows if row.payload["person_id"] == str(person_id)]
 
 
+def bootstrap_repository(
+    target: SqlAlchemyRepository, mode: str | None = None
+) -> SqlAlchemyRepository:
+    selected = (mode or os.getenv("CIVIC_BOOTSTRAP_MODE") or "runtime").strip().casefold()
+    if selected == "runtime":
+        target.assert_ready()
+        return target
+    if selected == "golden":
+        target.seed_golden()
+        return target
+    raise DatabaseNotReady(
+        f"Unsupported CIVIC_BOOTSTRAP_MODE {selected!r}; expected 'runtime' or 'golden'"
+    )
+
+
 repository = SqlAlchemyRepository()
-repository.initialize()
