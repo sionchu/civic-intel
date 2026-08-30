@@ -47,7 +47,10 @@ partisan desirability or hidden influence.
 | Public-institution executive compensation | role-category compensation/annual-pay disclosures | ALIO item 10 | STRUCTURED_DISCLOSURE | institution + executive role category + fiscal year | Institutional Governance | MERGED staging; person attribution prohibited by default |
 | Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | MERGED staging; separate from #23 ethics review |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | MERGED contract; connectors pending |
-| Private-sector senior leaders | registered directors, disclosed executives, CEO/CTO/CSO, officially named senior technical/business leaders | OpenDART -> company official -> KRX | API / STRUCTURED_DISCLOSURE / OFFICIAL_WEB | DART corp code + person anchors | Corporate | ISSUE_OPEN #18 |
+| Private-sector disclosed executives | registered/non-registered executives publicly disclosed in periodic reports | OpenDART `exctvSttus` | API | DART corp code + receipt no + name + birth year/month + role | Corporate | MERGED staging; credentialed live connector |
+| Private-sector disclosed compensation | named statutory compensation disclosures | OpenDART compensation V2 APIs | API | DART corp code + receipt no + disclosed name | Corporate enrichment | MERGED staging; no Person creation by compensation alone |
+| Private-sector officer/major-holder ownership | disclosed officers/major holders with specific-security ownership reports | OpenDART `elestock` | API | DART corp code + receipt no + reporter + public relation | Corporate / Ownership | MERGED staging; no automatic conflict inference |
+| Private-sector senior technical/business leaders | CEO/CTO/CSO, research/technology-center and major business-unit heads not necessarily in DART executive status | company official governance/profile/press material | OFFICIAL_WEB | reviewed source + company + person + senior role + dates | Corporate | MERGED normalized lane; per-company adapters pending |
 | Government-funded policy research outputs | named responsible researchers on public policy outputs | NKIS `ReportList.do` | API | NKIS output ID + responsible-researcher text + year | Academic / Policy Research Output | MERGED staging; no employment inference |
 | Government-funded research careers | institute presidents/directors/researchers with verified role/tenure | institute official profile / appointment release | OFFICIAL_WEB | person + institute + role + dates | Academic / Policy Research Career | verification lane pending |
 | General academia | professors/researchers relevant to public appointments | KCI, OpenAlex, Crossref, ORCID + university official profile | API + OFFICIAL_WEB | DOI/ORCID/OpenAlex + identity anchors | Academic | RESEARCHED |
@@ -63,7 +66,7 @@ partisan desirability or hidden influence.
 | Parliamentary staff / legislative researchers | publicly named aides/secretaries, committee professional staff, legislative researchers | official Assembly/public biographies and personnel notices | OFFICIAL_WEB | person + member/committee/office + dates | Legislative Staff / Public Service | RESEARCHED |
 | Media / public broadcasting | publicly consequential media executives, directors, senior editorial/policy leaders | broadcaster/company governance, OpenDART where applicable, official bios | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | person + media organization + public role | Media Career Facet | RESEARCHED |
 | International organizations | Koreans with verified UN/OECD/World Bank/IMF/etc. roles | international-organization official bio/appointment; MOFA route/JPO context | OFFICIAL_WEB / API context | person + organization + post + dates | International / Diplomatic | RESEARCHED |
-| Financial-market institutions | KRX/KSD/payment/clearing leaders; financial-holding/bank executives and outside directors | ALIO where applicable; OpenDART/company governance otherwise | STRUCTURED_DISCLOSURE / API | org/corp code + person + board role | Institutional Governance / Corporate | covered by #18 and ALIO staging |
+| Financial-market institutions | KRX/KSD/payment/clearing leaders; financial-holding/bank executives and outside directors | ALIO where applicable; OpenDART/company governance otherwise | STRUCTURED_DISCLOSURE / API | org/corp code + person + board role | Institutional Governance / Corporate | covered by OpenDART and ALIO staging |
 | Science/technology/medical public experts | national-lab/hospital/technical-society leaders and publicly named advisers relevant to appointments | institution/committee official sources | OFFICIAL_WEB | person + institution/body + role | Academic/Technical/Public Advisory | UNRESEARCHED |
 
 ## Source-mode rules
@@ -104,7 +107,7 @@ The following are prohibited feeder behavior:
 
 - ordinary civil-servant staff directories
 - ordinary public-institution employee rosters
-- ordinary private-company employee rosters
+- ordinary private-company employee rosters, including using OpenDART employee-status data for person discovery
 - ordinary union-member rosters or inferred union affiliation
 - ordinary NGO/professional-association member rosters
 - broad institute staff scraping merely to populate a researcher directory
@@ -147,6 +150,22 @@ labor-union representative field
  -> membership count remains organization-level
  -> does not establish ordinary membership, party, faction or ideology of other people
 
+OpenDART executive-status row
+ -> FACT that the reporting company disclosed the named person/role in that report
+ -> preserve `rcept_no` because extracted OpenDART data is not a substitute for the original filing
+
+OpenDART compensation row
+ -> FACT of a disclosed compensation amount for the reporting period
+ -> not total wealth and does not create a Person candidate without a separate senior-role identity match
+
+OpenDART officer/major-holder ownership row
+ -> FACT of a dated specific-security ownership disclosure and disclosed company relation
+ -> not automatically effective control, conflict of interest or political influence
+
+company official senior profile
+ -> FACT that the company publicly identifies the person in the stated senior role/responsibility
+ -> not automatic DART registered-director status or causal ownership of company performance
+
 ALIO major-career entry
  -> FACT that the public institution disclosed the entry
  -> verify important prior CareerEpisodes against their original sources
@@ -177,10 +196,10 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after labor-leadership staging:
+Current recommended sequence after private-sector senior staging:
 
-1. #18 private-sector senior talent;
-2. #13 legislative completeness and official bill summaries;
+1. #13 legislative completeness and official bill summaries;
+2. one real cross-lane corporate case: OpenDART/company official profile -> later public role -> profiler;
 3. small federation/social-dialogue public leadership verification lane using #20 semantics;
 4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
 5. official institute-profile/appointment adapter for NKIS-discovered researchers;
