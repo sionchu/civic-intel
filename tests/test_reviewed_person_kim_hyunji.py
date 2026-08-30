@@ -15,7 +15,7 @@ from packages.domain.contracts import (
     SourcePolicy,
     SourceSnapshot,
 )
-from packages.domain.enums import EvidenceStance, EpistemicStatus
+from packages.domain.enums import EpistemicStatus, EvidenceStance
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle
 from packages.verification.profile_target import (
