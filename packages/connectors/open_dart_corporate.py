@@ -74,6 +74,7 @@ _REPORT_DATASETS = {
 }
 
 _REPORT_CODES = frozenset({"11011", "11012", "11013", "11014"})
+_EMPTY_MARKERS = frozenset({"", "-", "해당사항없음", "해당 없음"})
 
 
 @dataclass(frozen=True)
@@ -221,13 +222,13 @@ class OpenDartCorporateConnector(Connector):
         status = str(payload.get("status") or "")
         if status != "000":
             raise DartApiError(f"OpenDART corporate API returned status {status or 'UNKNOWN'}")
-        payload.pop("crtfc_key", None)
+        safe_payload = _redact_credentials(payload)
         return ConnectorDocument(
             url=url,
             title=f"OpenDART {self.dataset.value}",
             publisher="금융감독원 전자공시시스템 OpenDART",
             published_at=None,
-            body=json.dumps(payload, ensure_ascii=False, sort_keys=True),
+            body=json.dumps(safe_payload, ensure_ascii=False, sort_keys=True),
             metadata={
                 "dataset": self.dataset.value,
                 "corp_code": self.corp_code,
@@ -236,7 +237,9 @@ class OpenDartCorporateConnector(Connector):
             },
         )
 
-    def parse(self, document: ConnectorDocument) -> list[DartExecutiveRecord | DartCompensationRecord | DartOwnershipRecord]:
+    def parse(
+        self, document: ConnectorDocument
+    ) -> list[DartExecutiveRecord | DartCompensationRecord | DartOwnershipRecord]:
         if self.dataset == DartCorporateDataset.EXECUTIVE_STATUS:
             return list(parse_executive_status(document))
         if self.dataset in {
@@ -247,20 +250,34 @@ class OpenDartCorporateConnector(Connector):
         return list(parse_ownership(document))
 
 
-def _payload_rows(document: ConnectorDocument) -> list[dict]:
+def _redact_credentials(value):
+    if isinstance(value, dict):
+        return {
+            key: _redact_credentials(item)
+            for key, item in value.items()
+            if key.casefold() not in {"crtfc_key", "key", "authkey"}
+        }
+    if isinstance(value, list):
+        return [_redact_credentials(item) for item in value]
+    return value
+
+
+def _payload(document: ConnectorDocument) -> dict:
     try:
         payload = json.loads(document.body)
     except json.JSONDecodeError:
         raise DartApiError("OpenDART staged document is not valid JSON") from None
     if not isinstance(payload, dict) or str(payload.get("status") or "") != "000":
         raise DartApiError("OpenDART staged document is malformed")
-    rows = payload.get("list")
-    if rows is None:
-        rows = payload.get("group")
+    return payload
+
+
+def _rows(payload: dict, key: str) -> list[dict]:
+    rows = payload.get(key)
     if rows is None:
         return []
     if not isinstance(rows, list):
-        raise DartApiError("OpenDART staged rows are malformed")
+        raise DartApiError(f"OpenDART {key} rows are malformed")
     return [row for row in rows if isinstance(row, dict)]
 
 
@@ -277,7 +294,7 @@ def _optional(row: dict, key: str) -> str | None:
     if value is None:
         return None
     text = str(value).strip()
-    return text or None
+    return None if text in _EMPTY_MARKERS else text
 
 
 def _date(value: str, key: str) -> date:
@@ -314,8 +331,9 @@ def _float_value(value: object) -> float | None:
 
 
 def parse_executive_status(document: ConnectorDocument) -> list[DartExecutiveRecord]:
+    payload = _payload(document)
     records: list[DartExecutiveRecord] = []
-    for row in _payload_rows(document):
+    for row in _rows(payload, "list"):
         records.append(
             DartExecutiveRecord(
                 receipt_no=_required(row, "rcept_no"),
@@ -340,21 +358,26 @@ def parse_executive_status(document: ConnectorDocument) -> list[DartExecutiveRec
 def parse_compensation(
     document: ConnectorDocument, dataset: DartCorporateDataset
 ) -> list[DartCompensationRecord]:
+    payload = _payload(document)
+    receipt_no = _required(payload, "rcept_no")
+    corp_code = _required(payload, "corp_code")
+    corp_name = _required(payload, "corp_name")
+    settlement_date = _date(_required(payload, "stlm_dt"), "stlm_dt")
     records: list[DartCompensationRecord] = []
-    for row in _payload_rows(document):
+    for row in _rows(payload, "group"):
         total = _int_value(row.get("mendng_totamt"))
         if total is None or total < 0:
             raise DartApiError("OpenDART compensation row has invalid total")
         records.append(
             DartCompensationRecord(
-                receipt_no=_required(row, "rcept_no"),
-                corp_code=_required(row, "corp_code"),
-                corp_name=_required(row, "corp_name"),
+                receipt_no=receipt_no,
+                corp_code=corp_code,
+                corp_name=corp_name,
                 name=_required(row, "nm"),
                 position=_optional(row, "ofcps"),
                 fiscal_year_label=_optional(row, "fscl_year"),
                 compensation_total_krw=total,
-                settlement_date=_date(_required(row, "stlm_dt"), "stlm_dt"),
+                settlement_date=settlement_date,
                 dataset=dataset,
             )
         )
@@ -362,8 +385,9 @@ def parse_compensation(
 
 
 def parse_ownership(document: ConnectorDocument) -> list[DartOwnershipRecord]:
+    payload = _payload(document)
     records: list[DartOwnershipRecord] = []
-    for row in _payload_rows(document):
+    for row in _rows(payload, "list"):
         records.append(
             DartOwnershipRecord(
                 receipt_no=_required(row, "rcept_no"),
