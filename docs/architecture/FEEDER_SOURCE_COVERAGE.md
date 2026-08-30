@@ -55,7 +55,7 @@ partisan desirability or hidden influence.
 | Lawyers / law firms | public professional registration and publicly consequential law-firm roles | KBA public search + official law-firm biography | OFFICIAL_WEB | public professional identity + firm/role/date when verified | Legal / Professional | RESEARCHED; no broad crawling |
 | Military | generals, chiefs, JCS/defense-policy leadership and path-relevant retired senior officers | MND/service personnel releases and official bios | OFFICIAL_WEB | name + rank/command + date | Military / Defense | RESEARCHED |
 | Diplomacy | ambassadors, senior foreign-service officers, path-relevant diplomats | MOFA personnel/appointment records | OFFICIAL_WEB | name + post + appointment date | Diplomatic / Public Service | MERGED staging semantics; live adapter pending |
-| Labor movement | publicly named union/federation leadership only | 전국노동조합표준데이터 + official federation/commission records | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | representative + union + date; requires identity review | Civic / Labor Leadership | ISSUE_OPEN #20 |
+| Labor organizations / public leadership | explicitly public union representative/leadership only; no ordinary membership | 전국노동조합표준데이터 + official federation/commission records | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | representative name + union + source/as-of anchors | Civic / Labor Leadership | MERGED staging; federation/commission verification pending |
 | Civic / NGO / professional associations | public leaders of significant civic/professional bodies | official organization/governance/public disclosure | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + organization + role + dates | Civic / Association / Nonprofit | RESEARCHED |
 | Party permanent staff | publicly named senior party staff/policy committee leadership | party official appointments; NEC for party context | OFFICIAL_WEB | person + party role + date | Political / Party | RESEARCHED |
 | Party think tanks | presidents/directors/researchers where public-interest relevance exists | official party-institute pages/publications | OFFICIAL_WEB | person + institute + role/output | Policy Research / Political | RESEARCHED |
@@ -142,6 +142,11 @@ law-firm affiliation
  -> FACT of a verified professional affiliation when supported
  -> not a client relationship or political relationship edge
 
+labor-union representative field
+ -> FACT that the official standard dataset publicly names that representative for the union
+ -> membership count remains organization-level
+ -> does not establish ordinary membership, party, faction or ideology of other people
+
 ALIO major-career entry
  -> FACT that the public institution disclosed the entry
  -> verify important prior CareerEpisodes against their original sources
@@ -172,11 +177,11 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after legal-career staging:
+Current recommended sequence after labor-leadership staging:
 
-1. #20 labor-union public leadership;
-2. #18 private-sector senior talent;
-3. #13 legislative completeness and official bill summaries;
+1. #18 private-sector senior talent;
+2. #13 legislative completeness and official bill summaries;
+3. small federation/social-dialogue public leadership verification lane using #20 semantics;
 4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
 5. official institute-profile/appointment adapter for NKIS-discovered researchers;
 6. one reviewed live ALIO adapter using the #25 staging contracts;

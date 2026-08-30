@@ -14,6 +14,7 @@ these rules without overriding them.
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)
 - [Legal career feeder](architecture/LEGAL_CAREER_FEEDER.md)
+- [Labor leadership feeder](architecture/LABOR_LEADERSHIP_FEEDER.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)
