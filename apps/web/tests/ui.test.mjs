@@ -8,6 +8,9 @@ test("profile preserves epistemic labels and traceability", async () => {
   assert.match(page, /evidence\.map/);
   assert.match(page, /source_ids/);
   assert.match(page, /UNKNOWN/);
+  assert.match(page, /resolution_note/);
+  assert.match(page, /asserted_as_true/);
+  assert.match(page, /publication_status/);
 });
 
 test("UI does not implement publication decisions", async () => {

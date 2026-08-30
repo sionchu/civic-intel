@@ -31,6 +31,22 @@ class IdentityStatus(StrEnum):
     UNRESOLVED = "UNRESOLVED"
 
 
+class PublicationStatus(StrEnum):
+    DRAFT = "DRAFT"
+    REVIEW = "REVIEW"
+    PUBLISHED = "PUBLISHED"
+    WITHHELD = "WITHHELD"
+
+
 class RelationshipStrength(StrEnum):
     WEAK = "WEAK"
     STRONG = "STRONG"
+
+
+class RelationshipEvidenceType(StrEnum):
+    APPOINTMENT = "APPOINTMENT"
+    CO_SERVICE = "CO_SERVICE"
+    FINANCIAL = "FINANCIAL"
+    FAMILY_PUBLIC_RECORD = "FAMILY_PUBLIC_RECORD"
+    DIRECT_STATEMENT = "DIRECT_STATEMENT"
+    CO_MENTION = "CO_MENTION"

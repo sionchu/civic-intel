@@ -1,42 +1,42 @@
-import json
 from pathlib import Path
 
-from packages.domain.enums import EpistemicStatus, EvidenceStance, SourceCollectionMode
-from packages.verification.claims import validate_pattern
-from packages.verification.quality import evaluate_golden
+from packages.domain.enums import EpistemicStatus, EvidenceStance, PublicationStatus
+from packages.verification.golden import load_golden_set
+from packages.verification.quality import EXPECTED_ROSTER, evaluate_golden
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def scenarios():
-    path = Path(__file__).parent / "fixtures" / "scenarios.json"
-    return {item["name"]: item for item in json.loads(path.read_text(encoding="utf-8"))}
+def test_golden_set_001_is_real_and_executable() -> None:
+    golden = load_golden_set(FIXTURES)
+    report = evaluate_golden(FIXTURES)
+    assert golden.id == "GOLDEN_SET_001"
+    assert {item.person.canonical_name for item in golden.people} == EXPECTED_ROSTER
+    assert report.passed, report.failures
+    assert all(report.checks.values())
+    assert report.metrics["published_facts"] == 10
 
 
-def test_golden_manifest_is_complete() -> None:
-    report = evaluate_golden(Path(__file__).parent / "fixtures")
-    assert report.passed
-    assert report.people_count == 10
-
-
-def test_epistemic_and_stance_values_are_preserved() -> None:
-    data = scenarios()
-    assert (
-        EpistemicStatus(data["official_assertion_remains_claim"]["status"]) is EpistemicStatus.CLAIM
+def test_unknown_is_publicly_visible_without_becoming_fact() -> None:
+    golden = load_golden_set(FIXTURES)
+    unknown = next(
+        item for item in golden.claims if item.epistemic_status == EpistemicStatus.UNKNOWN
     )
-    assert EpistemicStatus(data["unknown_first_class"]["status"]) is EpistemicStatus.UNKNOWN
-    assert [EvidenceStance(x) for x in data["support_and_refute"]["stances"]] == [
-        EvidenceStance.SUPPORT,
-        EvidenceStance.REFUTE,
-    ]
+    assert unknown.publication_status == PublicationStatus.PUBLISHED
+    assert unknown.asserted_as_true is False
+    assert unknown.resolution_note
 
 
-def test_pattern_and_policy_scenarios() -> None:
-    data = scenarios()
-    assert not validate_pattern([{"one"}]).publishable
-    assert validate_pattern([{"one"}, {"two"}]).publishable
-    assert (
-        SourceCollectionMode(data["blocked_source_policy"]["mode"]) is SourceCollectionMode.BLOCKED
+def test_conflicting_evidence_and_official_claim_semantics_are_preserved() -> None:
+    golden = load_golden_set(FIXTURES)
+    stances = {
+        item.stance
+        for item in golden.evidence
+        if str(item.claim_id) == "30000000-0000-0000-0000-000000000013"
+    }
+    assert stances == {EvidenceStance.SUPPORT, EvidenceStance.REFUTE}
+    official = next(
+        item for item in golden.claims if item.qualifiers.get("speaker") == "대통령비서실"
     )
-    assert (
-        SourceCollectionMode(data["discovery_only_source_policy"]["mode"])
-        is SourceCollectionMode.DISCOVERY_ONLY
-    )
+    assert official.epistemic_status == EpistemicStatus.CLAIM
+    assert official.asserted_as_true is False

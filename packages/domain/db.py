@@ -106,8 +106,14 @@ class ClaimRow(TemporalMixin, Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     person_id: Mapped[str] = mapped_column(ForeignKey("people.id"), index=True)
     proposition: Mapped[str] = mapped_column(Text)
+    subject: Mapped[str] = mapped_column(Text)
+    predicate: Mapped[str] = mapped_column(String(120), index=True)
+    object_text: Mapped[str] = mapped_column(Text)
+    qualifiers: Mapped[dict] = mapped_column(JSON)
     epistemic_status: Mapped[str] = mapped_column(String(32), index=True)
-    published: Mapped[bool] = mapped_column(Boolean, default=False)
+    publication_status: Mapped[str] = mapped_column(String(32), index=True)
+    asserted_as_true: Mapped[bool] = mapped_column(Boolean, default=False)
+    resolution_note: Mapped[str | None] = mapped_column(Text)
 
 
 class ClaimEvidenceRow(Base):

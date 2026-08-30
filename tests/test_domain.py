@@ -4,9 +4,15 @@ import pytest
 from pydantic import ValidationError
 from sqlalchemy import create_engine, inspect
 
-from packages.domain.contracts import Hypothesis, Person
+from packages.domain.contracts import Hypothesis, HypothesisAlternative, Person
 from packages.domain.db import Base
 from packages.domain.enums import EpistemicStatus, IdentityStatus
+
+
+def alternatives(labels=("H0", "H1", "H2")):
+    return [
+        HypothesisAlternative(label=label, statement=f"Alternative {label}") for label in labels
+    ]
 
 
 def test_canonical_enums_and_temporal_ordering() -> None:
@@ -20,13 +26,22 @@ def test_canonical_enums_and_temporal_ordering() -> None:
         )
 
 
-def test_hypothesis_requires_h0_and_falsifier() -> None:
+def test_hypothesis_requires_h0_falsifier_and_complete_matrix() -> None:
     with pytest.raises(ValidationError):
         Hypothesis(
             person_id="00000000-0000-0000-0000-000000000001",
             statement="Influence",
             ordinary_explanation="",
             falsifier="",
+            alternatives=alternatives(),
+        )
+    with pytest.raises(ValidationError):
+        Hypothesis(
+            person_id="00000000-0000-0000-0000-000000000001",
+            statement="Influence",
+            ordinary_explanation="Ordinary",
+            falsifier="Contrary record",
+            alternatives=alternatives(("H0", "H1", "H1")),
         )
 
 
