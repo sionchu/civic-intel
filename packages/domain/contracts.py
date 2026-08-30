@@ -9,7 +9,9 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 from .enums import (
     EpistemicStatus,
     EvidenceStance,
+    GovernanceRelationType,
     IdentityStatus,
+    InstitutionalBodyType,
     PublicationStatus,
     RelationshipEvidenceType,
     RelationshipStrength,
@@ -58,6 +60,97 @@ class PersonAlias(TemporalRecord):
 class Organization(TemporalRecord):
     id: UUID = Field(default_factory=uuid4)
     name: str = Field(min_length=1)
+
+
+class InstitutionalBody(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    organization_id: UUID
+    body_type: InstitutionalBodyType
+    legal_basis: str | None = None
+    parent_organization_id: UUID | None = None
+    standing: bool | None = None
+    source_ids: list[UUID] = Field(min_length=1)
+
+
+class CommitteeMembershipEpisode(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    person_id: UUID
+    institutional_body_id: UUID
+    role: str = Field(min_length=1)
+    standing_member: bool | None = None
+    compensation_text: str | None = None
+    claim_ids: list[UUID] = Field(default_factory=list)
+    source_ids: list[UUID] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def evidence_required(self) -> CommitteeMembershipEpisode:
+        if not self.claim_ids and not self.source_ids:
+            raise ValueError("committee membership requires claim_ids or source_ids")
+        return self
+
+
+class OwnershipStake(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    owner_organization_id: UUID | None = None
+    owner_person_id: UUID | None = None
+    target_organization_id: UUID
+    percentage: float | None = Field(default=None, ge=0, le=100)
+    amount: float | None = Field(default=None, ge=0)
+    currency: str | None = None
+    share_class: str | None = None
+    direct: bool = True
+    as_of: date
+    source_ids: list[UUID] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def ownership_semantics(self) -> OwnershipStake:
+        if (self.owner_organization_id is None) == (self.owner_person_id is None):
+            raise ValueError("ownership stake requires exactly one owner")
+        if self.percentage is None and self.amount is None:
+            raise ValueError("ownership stake requires percentage or amount")
+        if self.amount is not None and not self.currency:
+            raise ValueError("ownership amount requires currency")
+        return self
+
+
+class GovernanceSelectionEvent(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    target_organization_id: UUID
+    target_person_id: UUID | None = None
+    target_office_id: UUID | None = None
+    event_date: date
+    selection_steps: list[str] = Field(min_length=1)
+    nominating_organization_id: UUID | None = None
+    recommending_organization_id: UUID | None = None
+    approving_organization_id: UUID | None = None
+    appointing_authority_organization_id: UUID | None = None
+    source_ids: list[UUID] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def selection_target_required(self) -> GovernanceSelectionEvent:
+        if self.target_person_id is None and self.target_office_id is None:
+            raise ValueError("governance selection requires target_person_id or target_office_id")
+        return self
+
+
+class BoardSeat(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    organization_id: UUID
+    person_id: UUID
+    board_type: str = Field(min_length=1)
+    role: str = Field(min_length=1)
+    selection_event_id: UUID | None = None
+    source_ids: list[UUID] = Field(min_length=1)
+
+
+class GovernanceRelation(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    source_organization_id: UUID
+    target_organization_id: UUID
+    relation_type: GovernanceRelationType
+    percentage: float | None = Field(default=None, ge=0, le=100)
+    as_of: date | None = None
+    source_ids: list[UUID] = Field(min_length=1)
 
 
 class Office(TemporalRecord):
