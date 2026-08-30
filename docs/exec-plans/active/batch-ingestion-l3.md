@@ -1,6 +1,6 @@
 # Batch ingestion L3 transition
 
-Status: active — Milestones A–C complete, Milestone D in progress.
+Status: active — Milestones A–D complete, Milestone E in progress.
 
 ## Objective
 
@@ -214,7 +214,7 @@ separate similarity heuristic and is not identity or materialization authority.
 Commit:
 
 ```text
-pending Milestone C commit
+a9fa069 P0: replace identity scores with explicit decisions
 ```
 
 ---
@@ -223,46 +223,63 @@ pending Milestone C commit
 
 ## Persistence
 
-- [ ] PersonObservationLink
-- [ ] IdentityReviewItem
-- [ ] reversible migration
-- [ ] optional ClaimEvidence → FeederObservation FK if coherent
+- [x] PersonObservationLink
+- [x] IdentityReviewItem
+- [x] reversible migration
+- [x] optional ClaimEvidence → FeederObservation FK if coherent
 
 ## Gate
 
-- [ ] AUTO_CREATE
-- [ ] AUTO_LINK
-- [ ] REVIEW_REQUIRED
-- [ ] HARD_CONFLICT
-- [ ] no fuzzy AUTO_MERGE
+- [x] AUTO_CREATE
+- [x] AUTO_LINK
+- [x] REVIEW_REQUIRED
+- [x] HARD_CONFLICT
+- [x] no fuzzy AUTO_MERGE
 
 ## Assembly
 
-- [ ] new unique MONA_CD can create one Person
-- [ ] same MONA_CD rerun reuses Person
-- [ ] same Korean name without provider link does not merge
-- [ ] minimal HELD_ROLE FACT
-- [ ] exact observation provenance
-- [ ] publication validator required
-- [ ] coherent transaction rollback
+- [x] new unique MONA_CD can create one Person
+- [x] same MONA_CD rerun reuses Person
+- [x] same Korean name without provider link does not merge
+- [x] minimal HELD_ROLE FACT
+- [x] exact observation provenance
+- [x] publication validator required
+- [x] coherent transaction rollback
 
 ## Regression
 
-- [ ] Golden Set green
-- [ ] ReviewedPersonBundle imports green
-- [ ] Kim Hyun-ji neutral controversy semantics unchanged
-- [ ] Ha Jung-woo/Im Moon-young regressions unchanged
+- [x] Golden Set green
+- [x] ReviewedPersonBundle imports green
+- [x] Kim Hyun-ji neutral controversy semantics unchanged
+- [x] Ha Jung-woo/Im Moon-young regressions unchanged
 
 Evidence:
 
 ```text
-fill during execution
+Alembic head: 0004
+Targeted materialization/migration/API/Golden/reviewed-person regression -> 35 passed;
+final materialization + migration check -> 7 passed after linked-provider conflict coverage.
+AUTO_CREATE writes Person + PUBLISHED HELD_ROLE FACT + ClaimEvidence + PersonObservationLink in
+one transaction only after validate_claim_publication succeeds.
+ClaimEvidence.feeder_observation_id retains exact provider-row provenance.
+AUTO_LINK requires an existing accepted provider-key link and is idempotent for the same
+observation. Same-name observations produce OPEN review items; exact birth-date contradictions
+produce HARD_CONFLICT review items. Synthetic publication failure leaves the observation intact
+and rolls back Person, Claim, Evidence and link.
+Full local verification:
+- ruff -> All checks passed
+- mypy -> Success: no issues found in 49 source files
+- pytest -> 197 passed, 3 warnings
+- packages.verification.quality -> passed: true
+- web lint/typecheck -> exit 0
+- web tests -> 2 passed
+- web build -> compiled successfully
 ```
 
 Commit:
 
 ```text
-fill during execution
+pending Milestone D commit
 ```
 
 ---

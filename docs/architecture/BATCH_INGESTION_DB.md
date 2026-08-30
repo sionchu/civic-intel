@@ -69,11 +69,9 @@ profile_snapshots
 
 ---
 
-# 2. Migration Phase 1
+# 2. Migration Phase 1 — implemented in `0003`
 
-실제 current Alembic head 다음 revision으로 구현.
-
-handoff baseline은 `0002`.
+Batch run/checkpoint/observation persistence is implemented in Alembic revision `0003`.
 
 ## 2.1 `source_runs`
 
@@ -473,9 +471,10 @@ status = FAILED
 
 ---
 
-# 6. Migration Phase 2 — Identity / Materialization
+# 6. Migration Phase 2 — implemented in `0004`
 
-Assembly L3 storage가 안정된 뒤 추가.
+Assembly identity links, review items and exact claim/observation provenance are implemented in
+Alembic revision `0004`.
 
 ## 6.1 `person_observation_links`
 

@@ -14,10 +14,13 @@ from .enums import (
     EpistemicStatus,
     EvidenceStance,
     GovernanceRelationType,
+    IdentityReviewStatus,
     IdentityStatus,
     InstitutionalBodyType,
     LegalCareerEventType,
     LegalCareerType,
+    MaterializationAction,
+    MaterializationDecisionClass,
     PublicationStatus,
     RelationshipEvidenceType,
     RelationshipStrength,
@@ -358,6 +361,36 @@ class FeederObservation(Contract):
     content_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
+class PersonObservationLink(Contract):
+    id: UUID = Field(default_factory=uuid4)
+    person_id: UUID
+    observation_id: UUID
+    action: MaterializationAction
+    decision_class: MaterializationDecisionClass
+    linked_at: datetime = Field(default_factory=now_utc)
+    superseded_at: datetime | None = None
+    review_item_id: UUID | None = None
+
+
+class IdentityReviewItem(Contract):
+    id: UUID = Field(default_factory=uuid4)
+    observation_id: UUID
+    candidate_person_id: UUID | None = None
+    reason_code: str = Field(min_length=1, max_length=100)
+    details: dict[str, Any] = Field(default_factory=dict)
+    status: IdentityReviewStatus = IdentityReviewStatus.OPEN
+    created_at: datetime = Field(default_factory=now_utc)
+    resolved_at: datetime | None = None
+    resolution_note: str | None = None
+
+
+class MaterializationDecision(Contract):
+    action: MaterializationAction
+    decision_class: MaterializationDecisionClass
+    candidate_person_id: UUID | None = None
+    reasons: tuple[str, ...] = ()
+
+
 class SourceOriginCluster(Contract):
     id: UUID = Field(default_factory=uuid4)
     canonical_source_id: UUID
@@ -395,6 +428,7 @@ class ClaimEvidence(Contract):
     claim_id: UUID
     source_id: UUID
     snapshot_id: UUID | None = None
+    feeder_observation_id: UUID | None = None
     stance: EvidenceStance
     excerpt: str | None = None
 

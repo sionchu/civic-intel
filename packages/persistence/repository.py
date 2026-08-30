@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from uuid import UUID
 
@@ -15,7 +16,9 @@ from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
     FeederObservation,
+    IdentityReviewItem,
     Person,
+    PersonObservationLink,
     Source,
     SourceCheckpoint,
     SourcePolicy,
@@ -28,6 +31,8 @@ from packages.domain.db import (
     ClaimRow,
     DecisionEpisodeRow,
     FeederObservationRow,
+    IdentityReviewItemRow,
+    PersonObservationLinkRow,
     PersonRow,
     RelationshipRow,
     SourceCheckpointRow,
@@ -37,9 +42,22 @@ from packages.domain.db import (
     SourceRunRow,
     SourceSnapshotRow,
 )
-from packages.domain.enums import PublicationStatus, SourceRunStatus
+from packages.domain.enums import (
+    EpistemicStatus,
+    EvidenceStance,
+    IdentityReviewStatus,
+    IdentityStatus,
+    MaterializationAction,
+    PublicationStatus,
+    SourceRunStatus,
+)
 from packages.verification.claims import validate_claim_publication
 from packages.verification.golden import GoldenSet, load_golden_set
+from packages.verification.materialization import (
+    MaterializationError,
+    MaterializationResult,
+    decide_materialization,
+)
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
@@ -88,6 +106,8 @@ class SqlAlchemyRepository:
             "source_runs",
             "source_checkpoints",
             "feeder_observations",
+            "person_observation_links",
+            "identity_review_items",
         }
         missing = sorted(required - tables)
         if missing:
@@ -155,6 +175,26 @@ class SqlAlchemyRepository:
                 "identity_hints": row.identity_hints_json,
                 "normalized": row.normalized_json,
                 "content_hash": row.content_hash,
+            }
+        )
+
+    @staticmethod
+    def _person_observation_link(row: PersonObservationLinkRow) -> PersonObservationLink:
+        return PersonObservationLink.model_validate(row)
+
+    @staticmethod
+    def _identity_review_item(row: IdentityReviewItemRow) -> IdentityReviewItem:
+        return IdentityReviewItem.model_validate(
+            {
+                "id": row.id,
+                "observation_id": row.observation_id,
+                "candidate_person_id": row.candidate_person_id,
+                "reason_code": row.reason_code,
+                "details": row.details_json,
+                "status": row.status,
+                "created_at": row.created_at,
+                "resolved_at": row.resolved_at,
+                "resolution_note": row.resolution_note,
             }
         )
 
@@ -267,6 +307,285 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             rows = session.scalars(statement.order_by(FeederObservationRow.recorded_at))
             return [self._observation(row) for row in rows]
+
+    def person_observation_links(
+        self, person_id: UUID | None = None
+    ) -> list[PersonObservationLink]:
+        statement = select(PersonObservationLinkRow)
+        if person_id is not None:
+            statement = statement.where(PersonObservationLinkRow.person_id == str(person_id))
+        with self.sessions() as session:
+            rows = session.scalars(statement.order_by(PersonObservationLinkRow.linked_at))
+            return [self._person_observation_link(row) for row in rows]
+
+    def identity_review_items(
+        self, status: IdentityReviewStatus | None = None
+    ) -> list[IdentityReviewItem]:
+        statement = select(IdentityReviewItemRow)
+        if status is not None:
+            statement = statement.where(IdentityReviewItemRow.status == status.value)
+        with self.sessions() as session:
+            rows = session.scalars(statement.order_by(IdentityReviewItemRow.created_at))
+            return [self._identity_review_item(row) for row in rows]
+
+    def materialize_feeder_observation(self, observation_id: UUID) -> MaterializationResult:
+        self.assert_ready()
+        with self.sessions() as session:
+            try:
+                observation_row = session.get(FeederObservationRow, str(observation_id))
+                if observation_row is None:
+                    raise MaterializationError("feeder observation does not exist")
+                observation = self._observation(observation_row)
+                canonical_name = observation.normalized.get("canonical_name")
+                if not isinstance(canonical_name, str) or not canonical_name.strip():
+                    raise MaterializationError("feeder observation lacks canonical_name")
+
+                linked_rows = session.scalars(
+                    select(PersonRow)
+                    .join(
+                        PersonObservationLinkRow,
+                        PersonObservationLinkRow.person_id == PersonRow.id,
+                    )
+                    .join(
+                        FeederObservationRow,
+                        FeederObservationRow.id == PersonObservationLinkRow.observation_id,
+                    )
+                    .where(
+                        FeederObservationRow.feeder == observation.feeder,
+                        FeederObservationRow.scope_key == observation.scope_key,
+                        FeederObservationRow.provider_record_key
+                        == observation.provider_record_key,
+                        PersonObservationLinkRow.superseded_at.is_(None),
+                    )
+                )
+                linked_people = tuple(self._person(row) for row in linked_rows)
+                same_name_rows = session.scalars(
+                    select(PersonRow).where(
+                        PersonRow.canonical_name == canonical_name,
+                        PersonRow.superseded_at.is_(None),
+                    )
+                )
+                same_name_people = tuple(self._person(row) for row in same_name_rows)
+                decision = decide_materialization(
+                    observation,
+                    linked_people=linked_people,
+                    same_name_people=same_name_people,
+                )
+
+                if decision.action in {
+                    MaterializationAction.REVIEW_REQUIRED,
+                    MaterializationAction.HARD_CONFLICT,
+                }:
+                    existing_review = session.scalar(
+                        select(IdentityReviewItemRow).where(
+                            IdentityReviewItemRow.observation_id == str(observation.id),
+                            IdentityReviewItemRow.reason_code
+                            == decision.decision_class.value,
+                            IdentityReviewItemRow.status == IdentityReviewStatus.OPEN.value,
+                        )
+                    )
+                    if existing_review is None:
+                        review = IdentityReviewItem(
+                            observation_id=observation.id,
+                            candidate_person_id=decision.candidate_person_id,
+                            reason_code=decision.decision_class.value,
+                            details={
+                                "action": decision.action.value,
+                                "feeder": observation.feeder,
+                                "provider_record_key": observation.provider_record_key,
+                                "reasons": list(decision.reasons),
+                            },
+                        )
+                        existing_review = IdentityReviewItemRow(
+                            id=str(review.id),
+                            observation_id=str(review.observation_id),
+                            candidate_person_id=(
+                                str(review.candidate_person_id)
+                                if review.candidate_person_id
+                                else None
+                            ),
+                            reason_code=review.reason_code,
+                            details_json=review.details,
+                            status=review.status.value,
+                            created_at=review.created_at,
+                            resolved_at=None,
+                            resolution_note=None,
+                        )
+                        session.add(existing_review)
+                    session.commit()
+                    return MaterializationResult(
+                        decision=decision,
+                        review_item_id=UUID(existing_review.id),
+                        created=False,
+                    )
+
+                if decision.action == MaterializationAction.AUTO_LINK:
+                    if decision.candidate_person_id is None:
+                        raise MaterializationError("AUTO_LINK requires a candidate Person")
+                    existing_link = session.scalar(
+                        select(PersonObservationLinkRow).where(
+                            PersonObservationLinkRow.person_id
+                            == str(decision.candidate_person_id),
+                            PersonObservationLinkRow.observation_id == str(observation.id),
+                            PersonObservationLinkRow.superseded_at.is_(None),
+                        )
+                    )
+                    if existing_link is None:
+                        link = PersonObservationLink(
+                            person_id=decision.candidate_person_id,
+                            observation_id=observation.id,
+                            action=decision.action,
+                            decision_class=decision.decision_class,
+                        )
+                        session.add(
+                            PersonObservationLinkRow(
+                                id=str(link.id),
+                                person_id=str(link.person_id),
+                                observation_id=str(link.observation_id),
+                                action=link.action.value,
+                                decision_class=link.decision_class.value,
+                                linked_at=link.linked_at,
+                                superseded_at=None,
+                                review_item_id=None,
+                            )
+                        )
+                    session.commit()
+                    return MaterializationResult(
+                        decision=decision,
+                        person_id=decision.candidate_person_id,
+                        created=False,
+                    )
+
+                if decision.action != MaterializationAction.AUTO_CREATE:
+                    raise MaterializationError("unsupported materialization action")
+
+                birth_date_value = observation.normalized.get("birth_date")
+                birth_date = None
+                if birth_date_value is not None:
+                    if not isinstance(birth_date_value, str):
+                        raise MaterializationError("observation birth_date is invalid")
+                    try:
+                        birth_date = date.fromisoformat(birth_date_value)
+                    except ValueError:
+                        raise MaterializationError("observation birth_date is invalid") from None
+                person = Person(
+                    canonical_name=canonical_name,
+                    birth_date=birth_date,
+                    identity_status=IdentityStatus.RESOLVED,
+                )
+
+                snapshot_row = session.get(SourceSnapshotRow, str(observation.snapshot_id))
+                if snapshot_row is None:
+                    raise MaterializationError("observation snapshot does not exist")
+                source_row = session.get(SourceRow, snapshot_row.source_id)
+                if source_row is None:
+                    raise MaterializationError("observation source does not exist")
+                policy_row = session.get(SourcePolicyRow, source_row.policy_id)
+                if policy_row is None:
+                    raise MaterializationError("observation SourcePolicy does not exist")
+                source = self._source(source_row)
+                policy = self._policy(policy_row)
+
+                draft_claim = Claim(
+                    person_id=person.id,
+                    proposition=f"{canonical_name}는 국회의원 명부에 등재되어 있다.",
+                    subject=canonical_name,
+                    predicate="HELD_ROLE",
+                    object_text="국회의원",
+                    qualifiers={
+                        "provider_record_key": observation.provider_record_key,
+                        "source_scope": observation.scope_key,
+                    },
+                    epistemic_status=EpistemicStatus.FACT,
+                    publication_status=PublicationStatus.DRAFT,
+                    asserted_as_true=True,
+                )
+                evidence = ClaimEvidence(
+                    claim_id=draft_claim.id,
+                    source_id=source.id,
+                    snapshot_id=observation.snapshot_id,
+                    feeder_observation_id=observation.id,
+                    stance=EvidenceStance.SUPPORT,
+                )
+                published_claim = draft_claim.model_copy(
+                    update={"publication_status": PublicationStatus.PUBLISHED}
+                )
+                gate = validate_claim_publication(
+                    published_claim,
+                    person,
+                    [evidence],
+                    {source.id: source},
+                    {policy.id: policy},
+                )
+                if not gate.publishable:
+                    raise MaterializationError(
+                        f"batch claim failed publication gate: {gate.failures}"
+                    )
+
+                link = PersonObservationLink(
+                    person_id=person.id,
+                    observation_id=observation.id,
+                    action=decision.action,
+                    decision_class=decision.decision_class,
+                )
+                session.add(
+                    PersonRow(
+                        id=str(person.id),
+                        canonical_name=person.canonical_name,
+                        birth_date=person.birth_date,
+                        identity_status=person.identity_status.value,
+                        **self._temporal(person),
+                    )
+                )
+                session.add(
+                    ClaimRow(
+                        id=str(published_claim.id),
+                        person_id=str(published_claim.person_id),
+                        proposition=published_claim.proposition,
+                        subject=published_claim.subject,
+                        predicate=published_claim.predicate,
+                        object_text=published_claim.object_text,
+                        qualifiers=published_claim.qualifiers,
+                        epistemic_status=published_claim.epistemic_status.value,
+                        publication_status=published_claim.publication_status.value,
+                        asserted_as_true=published_claim.asserted_as_true,
+                        resolution_note=published_claim.resolution_note,
+                        **self._temporal(published_claim),
+                    )
+                )
+                session.add(
+                    ClaimEvidenceRow(
+                        id=str(evidence.id),
+                        claim_id=str(evidence.claim_id),
+                        source_id=str(evidence.source_id),
+                        snapshot_id=str(evidence.snapshot_id),
+                        feeder_observation_id=str(evidence.feeder_observation_id),
+                        stance=evidence.stance.value,
+                        excerpt=evidence.excerpt,
+                    )
+                )
+                session.add(
+                    PersonObservationLinkRow(
+                        id=str(link.id),
+                        person_id=str(link.person_id),
+                        observation_id=str(link.observation_id),
+                        action=link.action.value,
+                        decision_class=link.decision_class.value,
+                        linked_at=link.linked_at,
+                        superseded_at=None,
+                        review_item_id=None,
+                    )
+                )
+                session.commit()
+                return MaterializationResult(
+                    decision=decision,
+                    person_id=person.id,
+                    claim_id=published_claim.id,
+                    created=True,
+                )
+            except Exception:
+                session.rollback()
+                raise
 
     def commit_source_page(
         self,

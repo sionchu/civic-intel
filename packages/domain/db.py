@@ -169,6 +169,44 @@ class FeederObservationRow(Base):
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
 
 
+class IdentityReviewItemRow(Base):
+    __tablename__ = "identity_review_items"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    observation_id: Mapped[str] = mapped_column(
+        ForeignKey("feeder_observations.id"), index=True
+    )
+    candidate_person_id: Mapped[str | None] = mapped_column(
+        ForeignKey("people.id"), index=True
+    )
+    reason_code: Mapped[str] = mapped_column(String(100), index=True)
+    details_json: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resolution_note: Mapped[str | None] = mapped_column(Text)
+
+
+class PersonObservationLinkRow(Base):
+    __tablename__ = "person_observation_links"
+    __table_args__ = (
+        UniqueConstraint(
+            "person_id", "observation_id", name="uq_person_observation_links_pair"
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    person_id: Mapped[str] = mapped_column(ForeignKey("people.id"), index=True)
+    observation_id: Mapped[str] = mapped_column(
+        ForeignKey("feeder_observations.id"), index=True
+    )
+    action: Mapped[str] = mapped_column(String(40), index=True)
+    decision_class: Mapped[str] = mapped_column(String(80), index=True)
+    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    review_item_id: Mapped[str | None] = mapped_column(
+        ForeignKey("identity_review_items.id"), index=True
+    )
+
+
 class SourceOriginClusterRow(Base):
     __tablename__ = "source_origin_clusters"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -198,6 +236,9 @@ class ClaimEvidenceRow(Base):
     claim_id: Mapped[str] = mapped_column(ForeignKey("claims.id"), index=True)
     source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), index=True)
     snapshot_id: Mapped[str | None] = mapped_column(ForeignKey("source_snapshots.id"))
+    feeder_observation_id: Mapped[str | None] = mapped_column(
+        ForeignKey("feeder_observations.id"), index=True
+    )
     stance: Mapped[str] = mapped_column(String(16))
     excerpt: Mapped[str | None] = mapped_column(Text)
 

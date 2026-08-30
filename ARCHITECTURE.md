@@ -2,7 +2,7 @@
 
 ## Authority and dependency direction
 
-`packages/domain → packages/verification + packages/connectors → workers + apps/api → apps/web`
+`packages/domain → packages/verification + packages/connectors → packages/persistence + workers → apps/api → apps/web`
 
 Pydantic contracts define canonical semantics. SQLAlchemy rows persist those contracts;
 Alembic is the only schema creation/change path. API and workers share the single

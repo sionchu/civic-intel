@@ -24,9 +24,26 @@ def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> Non
     } <= columns
     assert "published" not in columns
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0003"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0004"
     tables = set(inspect(engine).get_table_names())
-    assert {"source_runs", "source_checkpoints", "feeder_observations"} <= tables
+    assert {
+        "source_runs",
+        "source_checkpoints",
+        "feeder_observations",
+        "person_observation_links",
+        "identity_review_items",
+    } <= tables
+    evidence_columns = {
+        item["name"] for item in inspect(engine).get_columns("claim_evidence")
+    }
+    assert "feeder_observation_id" in evidence_columns
+    command.downgrade(config, "0003")
+    identity_downgraded_tables = set(inspect(engine).get_table_names())
+    assert "person_observation_links" not in identity_downgraded_tables
+    assert "identity_review_items" not in identity_downgraded_tables
+    assert "feeder_observation_id" not in {
+        item["name"] for item in inspect(engine).get_columns("claim_evidence")
+    }
     command.downgrade(config, "0002")
     downgraded_tables = set(inspect(engine).get_table_names())
     assert "source_runs" not in downgraded_tables
@@ -54,8 +71,16 @@ def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> Non
     upgraded = {item["name"] for item in inspect(engine).get_columns("claims")}
     assert "publication_status" in upgraded
     assert "published" not in upgraded
-    assert {"source_runs", "source_checkpoints", "feeder_observations"} <= set(
-        inspect(engine).get_table_names()
-    )
+    final_tables = set(inspect(engine).get_table_names())
+    assert {
+        "source_runs",
+        "source_checkpoints",
+        "feeder_observations",
+        "person_observation_links",
+        "identity_review_items",
+    } <= final_tables
+    assert "feeder_observation_id" in {
+        item["name"] for item in inspect(engine).get_columns("claim_evidence")
+    }
     with engine.connect() as connection:
         assert connection.scalar(text("SELECT COUNT(*) FROM people")) == 1
