@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 
 from packages.connectors.nkis_research import (
@@ -84,23 +84,36 @@ def stage_outputs(outputs: list[NkisResearchOutput]) -> list[StagedResearchOutpu
 def repeated_research_topics(
     outputs: list[NkisResearchOutput], *, minimum_outputs: int = 2
 ) -> list[dict[str, object]]:
+    """Derive review candidates without pretending name-text grouping resolves identity."""
+
     if minimum_outputs < 2:
         raise ValueError("research topic inference requires at least two outputs")
 
     unique_outputs: dict[tuple[str, str], NkisResearchOutput] = {}
     for output in outputs:
         unique_outputs[(output.output_id, output.sequence)] = output
-    topics = [
-        output.middle_category_name or output.large_category_name
-        for output in unique_outputs.values()
-        if output.middle_category_name or output.large_category_name
-    ]
-    counts = Counter(topics)
-    return [
-        {"topic": topic, "output_count": count, "semantics": "DERIVED_FROM_MULTIPLE_OUTPUTS"}
-        for topic, count in sorted(counts.items())
-        if count >= minimum_outputs
-    ]
+
+    grouped_topics: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for output in unique_outputs.values():
+        researcher = responsible_researcher_candidate_name(output.responsible_researcher_text)
+        topic = output.middle_category_name or output.large_category_name
+        if researcher and topic:
+            grouped_topics[(researcher, output.publisher)].append(topic)
+
+    derived: list[dict[str, object]] = []
+    for (researcher, publisher), topics in sorted(grouped_topics.items()):
+        for topic, count in sorted(Counter(topics).items()):
+            if count >= minimum_outputs:
+                derived.append(
+                    {
+                        "researcher_label": researcher,
+                        "publisher": publisher,
+                        "topic": topic,
+                        "output_count": count,
+                        "semantics": "DERIVED_FROM_MULTIPLE_STAGED_OUTPUTS_IDENTITY_UNRESOLVED",
+                    }
+                )
+    return derived
 
 
 class PolicyResearchStager:
@@ -117,6 +130,7 @@ class PolicyResearchStager:
                 "page_no": document.metadata.get("page_no"),
                 "row_count": document.metadata.get("row_count"),
                 "total_count": document.metadata.get("total_count"),
+                "topic_derivation_scope": "STAGED_OUTPUTS_ONLY",
             },
             "outputs": [item.to_dict() for item in stage_outputs(outputs)],
             "repeated_topics": repeated_research_topics(outputs),
