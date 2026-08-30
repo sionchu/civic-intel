@@ -253,6 +253,11 @@ class SqlAlchemyRepository:
             rows = session.scalars(select(RelationshipRow).order_by(RelationshipRow.id))
             return [row.payload for row in rows if row.payload["person_id"] == str(person_id)]
 
+    def decision_episodes(self, person_id: UUID) -> list[dict]:
+        with self.sessions() as session:
+            rows = session.scalars(select(DecisionEpisodeRow).order_by(DecisionEpisodeRow.id))
+            return [row.payload for row in rows if row.payload["person_id"] == str(person_id)]
+
 
 def bootstrap_repository(
     target: SqlAlchemyRepository, mode: str | None = None
