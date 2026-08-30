@@ -69,19 +69,33 @@ National Assembly member code are used as identity anchors for the existing reso
 
 ## Legislative activity staging
 
-`OpenAssemblyBillConnector` uses the official `의원 발의법률안` dataset and stages bill
-metadata without writing the canonical database:
+`OpenAssemblyBillConnector` uses the official `의원 발의법률안` dataset and scans the full
+Assembly term for exact code-first participation when source coverage is complete:
 
 ```bash
 ASSEMBLY_API_KEY=... civic-stage-legislative \
-  --name "홍길동" --member-code "MONA_CD_VALUE" --age 22 --page-size 100
+  --name "홍길동" --member-code "MONA_CD_VALUE" --age 22 \
+  --page-size 1000 --max-pages 100
 ```
 
-The output preserves bill ID/title, proposal date, committee, processing result,
-representative proposer and co-proposers. Exact representative-sponsored counts are emitted
-only when the filtered result has complete page coverage. Complete co-sponsorship counts are
-left unresolved in this stage because the representative-proposer search endpoint alone does
-not establish full co-sponsor coverage. No faction/계파 classification is produced.
+The exact scanner does not use the `PROPOSER` name filter. It fetches every expected page for
+that Assembly and matches the reviewed identity by `MONA_CD` using:
+
+- `RST_MONA_CD` for representative proposers, including comma-separated joint leads;
+- `PUBL_MONA_CD` for co-proposers, with reviewed semicolon-separated codes.
+
+Exact representative/co-sponsored counts are emitted only when pagination is complete,
+source totals are stable, unique `BILL_ID` count matches the source total, no duplicate-page
+anomaly exists, and both role-code fields are present/parseable on every bill row. Missing or
+malformed code fields leave both exact counts unresolved rather than falling back to names.
+Raw processing results such as `대안반영폐기`, `원안가결`, and `수정가결` remain distinct;
+bill counts are descriptive and never a performance score or faction signal.
+
+As of the 2026-08-30 review, the verified Open Assembly structured APIs do not provide full
+`제안이유`/주요내용 text. Public datasets with those texts obtain them from
+`likms.assembly.go.kr` bill-detail HTML. Issue #13 prohibits that HTML scraping, so Civic
+Intel reports the proposal-reason source lane as `BLOCKED_NO_VERIFIED_STRUCTURED_SOURCE`
+instead of inventing a `BPMBILLSUMMARY` connector or generating content from bill titles.
 
 ## Local elected-official staging
 
