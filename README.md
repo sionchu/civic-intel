@@ -43,6 +43,19 @@ information Open API. Normal live use requires an `ASSEMBLY_API_KEY`; the key is
 only into the outbound request and is never embedded in discovered/source URLs or stored
 metadata.
 
+For a review-only identity staging pass after installing the project:
+
+```bash
+ASSEMBLY_API_KEY=... civic-stage-assembly --name "홍길동" --page-size 10
+```
+
+The staging command emits identity-safe JSON candidates only. It does not write the
+database, publish claims, or expose raw provider rows. Korean name, optional Hanja/English
+aliases, birth date, current party, district, committee text, election metadata, and the
+National Assembly member code are used as identity anchors for the existing resolver.
+
+For lower-level connector inspection:
+
 ```bash
 ASSEMBLY_API_KEY=... python - <<'PY'
 from packages.connectors import OpenAssemblyMemberConnector
@@ -64,5 +77,6 @@ resolution. No scheduled synchronization is enabled yet.
 All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
 metadata and short excerpts only; its policies are discovery-only or blocked, so tests
 cannot fetch them. The National Assembly connector is opt-in and credential-gated; tests
-mock all network responses. The generic HTTP connector remains dormant. The model has no
-private-family or precise-residence publication fields. Workers cannot publish claims.
+mock all network responses. Staging is review-only and does not mutate the canonical DB.
+The generic HTTP connector remains dormant. The model has no private-family or
+precise-residence publication fields. Workers cannot publish claims.
