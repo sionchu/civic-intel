@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import httpx
@@ -116,17 +117,27 @@ def test_ambiguous_or_generic_researcher_text_never_creates_person_candidate() -
     assert staged[2].candidate is None
 
 
-def test_repeated_topics_require_distinct_outputs() -> None:
+def test_repeated_topics_require_distinct_outputs_for_same_researcher_label_and_publisher() -> None:
     outputs = NkisResearchReportConnector.parse_outputs(fixture_document())
     topics = repeated_research_topics(outputs)
     assert topics == [
         {
+            "researcher_label": "김연구",
+            "publisher": "테스트정책연구원",
             "topic": "인공지능 산업정책",
             "output_count": 2,
-            "semantics": "DERIVED_FROM_MULTIPLE_OUTPUTS",
+            "semantics": "DERIVED_FROM_MULTIPLE_STAGED_OUTPUTS_IDENTITY_UNRESOLVED",
         }
     ]
     assert repeated_research_topics(outputs[:1]) == []
     assert repeated_research_topics([outputs[0], outputs[0]]) == []
+
+    other_researcher = replace(
+        outputs[1],
+        output_id="OTP_TEST_DIFFERENT_RESEARCHER",
+        responsible_researcher_text="이연구",
+    )
+    assert repeated_research_topics([outputs[0], other_researcher]) == []
+
     with pytest.raises(ValueError, match="at least two outputs"):
         repeated_research_topics(outputs, minimum_outputs=1)
