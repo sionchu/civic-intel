@@ -18,7 +18,10 @@ from packages.domain.contracts import (
 from packages.domain.enums import EvidenceStance, EpistemicStatus
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle
-from packages.verification.profile_target import ProfileTargetObservation, build_profile_research_target
+from packages.verification.profile_target import (
+    ProfileTargetObservation,
+    build_profile_research_target,
+)
 
 FIXTURE = Path(__file__).parent / "fixtures" / "reviewed_person_kim_hyunji_001.json"
 PERSON_ID = "00000000-0000-0000-0000-000000009201"
@@ -121,24 +124,20 @@ def test_reviewed_kim_hyunji_bundle_imports_as_neutral_controversy_profile(tmp_p
     assert controversy["entries"][1]["details"]["asserted_as_true"] is True
 
 
-def test_profile_does_not_turn_competing_statements_into_truth_verdict() -> None:
-    repository = migrated_repository(Path("/tmp/civic-intel-kim-hyunji-neutral.db"))
-    try:
-        repository.import_reviewed_person(load_bundle())
-        with TestClient(create_app(repository)) as client:
-            payload = client.get(f"/people/{PERSON_ID}").json()
-        rendered = json.dumps(payload["profile"], ensure_ascii=False).casefold()
-        assert "가짜뉴스" not in rendered
-        assert "debunked" not in rendered
-        assert "팩트체크 결과 거짓" not in rendered
-        assert "faction" not in rendered
-        assert "loyalty" not in rendered
-        assert "influence_score" not in rendered
-    finally:
-        repository.engine.dispose()
-        database = Path("/tmp/civic-intel-kim-hyunji-neutral.db")
-        if database.exists():
-            database.unlink()
+def test_profile_does_not_turn_competing_statements_into_truth_verdict(tmp_path: Path) -> None:
+    repository = migrated_repository(tmp_path / "kim-hyunji-neutral.db")
+    repository.import_reviewed_person(load_bundle())
+
+    with TestClient(create_app(repository)) as client:
+        payload = client.get(f"/people/{PERSON_ID}").json()
+
+    rendered = json.dumps(payload["profile"], ensure_ascii=False).casefold()
+    assert "가짜뉴스" not in rendered
+    assert "debunked" not in rendered
+    assert "팩트체크 결과 거짓" not in rendered
+    assert "faction" not in rendered
+    assert "loyalty" not in rendered
+    assert "influence_score" not in rendered
 
 
 def test_source_policies_and_snapshots_remain_metadata_only() -> None:
