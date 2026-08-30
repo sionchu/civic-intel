@@ -30,9 +30,25 @@ class AssemblyBillRecord:
     proposer_summary: str | None = None
     representative_proposers: tuple[str, ...] = ()
     co_proposers: tuple[str, ...] = ()
+    representative_proposer_codes: tuple[str, ...] | None = None
+    co_proposer_codes: tuple[str, ...] | None = None
     detail_url: str | None = None
 
+    @property
+    def role_code_fields_complete(self) -> bool:
+        return self.representative_proposer_codes is not None and self.co_proposer_codes is not None
+
+    def role_for_code(self, member_code: str) -> str | None:
+        target = member_code.strip()
+        if self.representative_proposer_codes is not None and target in self.representative_proposer_codes:
+            return "LEAD"
+        if self.co_proposer_codes is not None and target in self.co_proposer_codes:
+            return "CO_SPONSOR"
+        return None
+
     def role_for(self, person_name: str) -> str | None:
+        """Legacy display-name helper. Exact participation staging must use role_for_code()."""
+
         target = _normalize_person_name(person_name)
         if target in {_normalize_person_name(item) for item in self.representative_proposers}:
             return "LEAD"
@@ -62,7 +78,8 @@ def national_assembly_bill_policy() -> SourcePolicy:
         rate_limit="Provider-controlled; development auto-approval, operation review",
         policy_note=(
             "Reviewed 2026-08-30 for National Assembly 의원 발의법률안 API "
-            "nzmimeepazxkubdpn. V0 stages structured metadata only; no bill-detail scraping."
+            "nzmimeepazxkubdpn. V0 stages structured metadata and proposer-code fields only; "
+            "no bill-detail HTML scraping."
         ),
     )
 
@@ -75,11 +92,32 @@ def _normalize_person_name(value: str) -> str:
 def _names(value: object) -> tuple[str, ...]:
     if value is None:
         return ()
-    return tuple(
-        name
-        for item in str(value).split(",")
-        if (name := str(item).strip())
-    )
+    return tuple(name for item in str(value).split(",") if (name := str(item).strip()))
+
+
+def _codes(row: dict, key: str, *, delimiter: str) -> tuple[str, ...] | None:
+    """Return normalized codes; None means field missing or malformed, () means present/empty."""
+
+    if key not in row:
+        return None
+    value = row.get(key)
+    if value is None:
+        return ()
+    text = str(value).strip()
+    if text in {"", "-"}:
+        return ()
+    unexpected = ";" if delimiter == "," else ","
+    if unexpected in text:
+        return None
+    parts = text.split(delimiter)
+    codes: list[str] = []
+    for part in parts:
+        code = part.strip()
+        if not code or any(char.isspace() for char in code) or "," in code or ";" in code:
+            return None
+        if code not in codes:
+            codes.append(code)
+    return tuple(codes)
 
 
 class OpenAssemblyBillConnector(Connector):
@@ -137,6 +175,37 @@ class OpenAssemblyBillConnector(Connector):
         self.process_result = process_result
         self.proposer = proposer
         self._transport = transport
+
+    @property
+    def has_filters(self) -> bool:
+        return any(
+            value
+            for value in (
+                self.bill_id,
+                self.bill_no,
+                self.bill_name,
+                self.committee,
+                self.committee_id,
+                self.process_result,
+                self.proposer,
+            )
+        )
+
+    def for_page(self, page_index: int) -> OpenAssemblyBillConnector:
+        return OpenAssemblyBillConnector(
+            assembly_age=self.assembly_age,
+            api_key=self._api_key,
+            page_index=page_index,
+            page_size=self.page_size,
+            bill_id=self.bill_id,
+            bill_no=self.bill_no,
+            bill_name=self.bill_name,
+            committee=self.committee,
+            committee_id=self.committee_id,
+            process_result=self.process_result,
+            proposer=self.proposer,
+            transport=self._transport,
+        )
 
     def _credential(self) -> str:
         value = self._api_key or os.getenv("ASSEMBLY_API_KEY")
@@ -322,6 +391,8 @@ class OpenAssemblyBillConnector(Connector):
                     proposer_summary=cls._optional(row, "PROPOSER"),
                     representative_proposers=_names(row.get("RST_PROPOSER")),
                     co_proposers=_names(row.get("PUBL_PROPOSER")),
+                    representative_proposer_codes=_codes(row, "RST_MONA_CD", delimiter=","),
+                    co_proposer_codes=_codes(row, "PUBL_MONA_CD", delimiter=";"),
                     detail_url=cls._optional(row, "DETAIL_LINK"),
                 )
             )
