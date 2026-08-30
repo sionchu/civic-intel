@@ -4,8 +4,8 @@ import pytest
 from packages.connectors.open_assembly import (
     AssemblyApiError,
     MissingAssemblyApiKey,
-    OpenAssemblyMemberConnector,
     national_assembly_member_policy,
+    OpenAssemblyMemberConnector,
 )
 from packages.domain.enums import SourceCollectionMode
 from packages.verification.policy import PolicyDenied
