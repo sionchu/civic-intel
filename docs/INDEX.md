@@ -29,3 +29,4 @@ implementation work.
 - [Change control](workflows/CHANGE_CONTROL.md)
 - [Active batch-ingestion L3 plan](exec-plans/active/batch-ingestion-l3.md)
 - [Codex entrypoint for the active batch plan](exec-plans/active/batch-ingestion-l3-codex.md)
+- [Active NEC local-winner L3 plan](exec-plans/active/nec-local-winners-l3.md)
