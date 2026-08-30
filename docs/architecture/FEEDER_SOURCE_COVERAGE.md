@@ -40,8 +40,8 @@ partisan desirability or hidden influence.
 | National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | MERGED code-first staging |
 | National Assembly proposal-reason / major-content text | official full `제안이유` / 주요내용 | no verified structured Open Assembly source found in 2026-08-30 review | BLOCKED | bill ID/detail link only | Legislative text evidence | BLOCKED; no HTML scraping in #13 |
 | Local elected offices | governors, mayors/county/district heads, local councilors, education superintendents, candidates | NEC candidate + winner APIs | API | NEC `huboid` | Local Elected Office | MERGED |
-| Presidential Office | chiefs, senior secretaries, secretaries and publicly named senior staff | official organization/appointment releases | OFFICIAL_WEB | name + office + dates | Public Service / Appointment | RESEARCHED |
-| Presidential commissions / TFs | chair, vice-chair, member, adviser where publicly named | official body/appointment records | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + body + role + dates | CommitteeMembershipEpisode | MERGED contract |
+| Presidential Office / National Security Office | chiefs, senior secretaries, secretaries and other publicly named senior staff | official organization + personnel briefings | OFFICIAL_WEB | name + role + exact personnel action + event date + source record | Public Service / Appointment | MERGED normalized staging; live adapter pending |
+| Presidential advisers / commissions / TFs | publicly named special advisers, commission chair/vice-chair/member and explicit presidential TF leadership | official personnel/body appointment records | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + body + role + exact personnel action + date | CommitteeMembershipEpisode / Appointment | MERGED contract + named-person staging; live roster adapter pending |
 | Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date + adjacent career anchors | Public Service | MERGED contracts/staging; live adapter pending |
 | Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | MERGED contracts/staging; live adapter pending |
 | Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO item 4 / general public-institution dataset | STRUCTURED_DISCLOSURE | ALIO institution code + name + role + term | Institutional Governance / Public Service | MERGED staging; live adapter pending |
@@ -107,6 +107,7 @@ research/policy leaders, public union leadership and public civic-organization l
 The following are prohibited feeder behavior:
 
 - ordinary civil-servant staff directories
+- ordinary Presidential Office / commission / TF staff directories beyond publicly consequential named roles
 - ordinary public-institution employee rosters
 - ordinary private-company employee rosters, including using OpenDART employee-status data for person discovery
 - ordinary union-member rosters or inferred union affiliation
@@ -132,6 +133,12 @@ National Assembly RST/PUBL MONA code fields
 National Assembly proposal-reason text
  -> currently BLOCKED in V0 because no verified structured source was found and bill-detail HTML scraping is prohibited
  -> do not fabricate a BPMBILLSUMMARY endpoint or infer content from the title
+
+Presidential personnel briefing
+ -> FACT of the dated official personnel action with the exact wording: 임명/지명/내정/위촉/etc.
+ -> 지명/내정 is not silently promoted to completed appointment
+ -> prior-career text is FACT that the Presidential Office reported it, not automatically an independently verified CareerEpisode
+ -> meeting/event attendance is not Presidential Office employment, adviser, commission or TF membership
 
 NEC candidate career string
  -> FACT that the candidate submitted that career to NEC
@@ -206,14 +213,15 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after legislative completeness:
+Current recommended sequence after presidential-personnel staging:
 
-1. one real cross-lane corporate case: OpenDART/company official profile -> later public role -> profiler;
-2. small federation/social-dialogue public leadership verification lane using #20 semantics;
-3. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
-4. official institute-profile/appointment adapter for NKIS-discovered researchers;
-5. one reviewed live ALIO adapter using the #25 staging contracts;
-6. one reviewed live civil-service/ethics source adapter using the #23 contracts;
-7. revisit bill proposal-reason text only if a verified official structured source becomes available.
+1. one real cross-lane profile case: corporate/academic/civil-service career -> Presidential Office/body -> profiler;
+2. one small reviewed live Presidential personnel or commission-roster adapter using #36 semantics;
+3. small federation/social-dialogue public leadership verification lane using #20 semantics;
+4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
+5. official institute-profile/appointment adapter for NKIS-discovered researchers;
+6. one reviewed live ALIO adapter using the #25 staging contracts;
+7. one reviewed live civil-service/ethics source adapter using the #23 contracts;
+8. revisit bill proposal-reason text only if a verified official structured source becomes available.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.
