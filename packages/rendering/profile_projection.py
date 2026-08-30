@@ -193,13 +193,13 @@ def _relationship_entries(
         if not typed_refs:
             continue
         evidence_ids = [str(item["claim_evidence_id"]) for item in typed_refs]
+        if any(evidence_id not in evidence_by_id for evidence_id in evidence_ids):
+            continue
         source_ids = _ordered_unique(
-            [
-                str(evidence_by_id[evidence_id].source_id)
-                for evidence_id in evidence_ids
-                if evidence_id in evidence_by_id
-            ]
+            [str(evidence_by_id[evidence_id].source_id) for evidence_id in evidence_ids]
         )
+        if not source_ids:
+            continue
         entries.append(
             {
                 "id": f"relationship:{relationship['id']}",
