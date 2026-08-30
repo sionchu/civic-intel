@@ -110,11 +110,29 @@ Feeder candidate B
  + CrossLaneIdentityEvidence
  -> CrossLaneIdentityDecision
     -> RESOLVED
-       -> one ProfileResearchTarget / Person projection
+       -> ProfileResearchTarget
+       -> public-official-profiler
     -> REVIEW / UNRESOLVED
        -> separate candidates; no silent merge
 ```
 
-The next step after this contract is to create a minimal profile-research target bridge that
-accepts only `RESOLVED` cross-lane identity decisions and preserves the contributing feeder
-sources.
+### `ProfileResearchTarget`
+
+`packages.verification.profile_target.build_profile_research_target()` is the review-only
+bridge between identity resolution and profiling.
+
+The target:
+
+- keeps one primary feeder observation;
+- accepts additional observations only when each cross-lane decision is `RESOLVED`;
+- preserves every observation's original lane, office, organization, career anchors and
+  source references;
+- deduplicates aggregate source references without erasing observation-level provenance;
+- carries discovery reasons and appointment-target slugs only as research context;
+- never creates a Person DB merge, publishable FACT or appointment probability by itself.
+
+A same-name observation with no bridge evidence, a birth-date conflict, or any `REVIEW` /
+`UNRESOLVED` decision cannot enter the target.
+
+The profiler then consumes this target as structured research context and must still create
+canonical Claim/Evidence/Source records before anything becomes publishable.
