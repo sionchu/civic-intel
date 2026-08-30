@@ -26,14 +26,16 @@ def fixture() -> dict[str, list[dict]]:
     return json.loads(FIXTURE.read_text(encoding="utf-8"))
 
 
-def test_alio_policy_is_reviewed_but_live_fetch_stays_disabled() -> None:
+def test_alio_policy_is_reviewed_but_live_and_commercial_item_use_stay_disabled() -> None:
     policy = alio_public_institution_policy()
     assert policy.domain == "alio.go.kr"
     assert policy.can_store_metadata
-    assert policy.can_commercialize
     assert not policy.can_fetch
+    assert not policy.can_commercialize
     assert not policy.can_store_fulltext
     assert not policy.can_send_to_ai
+    assert policy.license is not None
+    assert "개별 item은 별도 검토 필요" in policy.license
 
 
 def test_public_institution_classifications_remain_distinct() -> None:
