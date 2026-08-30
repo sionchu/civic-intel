@@ -135,12 +135,22 @@ def _event_type(row: dict) -> LegalCareerEventType:
         raise LegalPersonnelRecordError(f"unsupported legal personnel event: {text}") from None
 
 
-def _prosecution_career_type(title: str) -> LegalCareerType:
-    for token in ("검찰총장", "고검장", "지검장", "검사장", "차장검사", "지청장", "부장검사", "부부장검사", "검사"):
+def _prosecution_career_type(organization: str, title: str) -> LegalCareerType:
+    if "법무부" in organization:
+        return LegalCareerType.MINISTRY_OF_JUSTICE_LEGAL_ROLE
+    for token in (
+        "검찰총장",
+        "고검장",
+        "지검장",
+        "검사장",
+        "차장검사",
+        "지청장",
+        "부장검사",
+        "부부장검사",
+        "검사",
+    ):
         if token in title:
             return _PROSECUTION_TYPE_MAP[token]
-    if "법무부" in title:
-        return LegalCareerType.MINISTRY_OF_JUSTICE_LEGAL_ROLE
     raise LegalPersonnelRecordError(f"unsupported prosecution title: {title}")
 
 
@@ -159,15 +169,16 @@ def _judicial_career_type(organization: str, title: str) -> LegalCareerType:
 def parse_moj_prosecution_rows(rows: list[dict]) -> list[LegalPersonnelRecord]:
     records: list[LegalPersonnelRecord] = []
     for row in rows:
+        organization = _required(row, "organization")
         title = _required(row, "title")
         records.append(
             LegalPersonnelRecord(
                 record_id=_required(row, "record_id"),
                 person_name=_required(row, "person_name"),
                 event_date=_date(row, "event_date"),
-                career_type=_prosecution_career_type(title),
+                career_type=_prosecution_career_type(organization, title),
                 event_type=_event_type(row),
-                organization=_required(row, "organization"),
+                organization=organization,
                 title=title,
                 previous_organization=_optional(row, "previous_organization"),
                 previous_title=_optional(row, "previous_title"),
