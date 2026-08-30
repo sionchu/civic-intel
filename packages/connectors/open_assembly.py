@@ -4,6 +4,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from typing import ClassVar
 from urllib.parse import parse_qs, urlencode, urlparse
 from uuid import UUID
 
@@ -75,7 +76,9 @@ class OpenAssemblyMemberConnector(Connector):
     BASE_URL = f"https://open.assembly.go.kr/portal/openapi/{API_CODE}"
     HOST = "open.assembly.go.kr"
     PATH = f"/portal/openapi/{API_CODE}"
-    ALLOWED_QUERY = {"Type", "pIndex", "pSize", "HG_NM", "POLY_NM", "ORIG_NM"}
+    ALLOWED_QUERY: ClassVar[frozenset[str]] = frozenset(
+        {"Type", "pIndex", "pSize", "HG_NM", "POLY_NM", "ORIG_NM"}
+    )
 
     def __init__(
         self,
@@ -234,12 +237,13 @@ class OpenAssemblyMemberConnector(Connector):
         if not value:
             return None
         normalized = value.replace(".", "-").replace("/", "-")
-        formats = ("%Y-%m-%d", "%Y%m%d")
-        for fmt in formats:
-            try:
-                return datetime.strptime(normalized, fmt).date()
-            except ValueError:
-                continue
+        try:
+            if len(normalized) == 10:
+                return date.fromisoformat(normalized)
+            if len(normalized) == 8 and normalized.isdigit():
+                return date(int(normalized[:4]), int(normalized[4:6]), int(normalized[6:8]))
+        except ValueError:
+            return None
         return None
 
     @classmethod
