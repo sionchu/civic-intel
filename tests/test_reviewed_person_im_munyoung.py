@@ -17,7 +17,10 @@ from packages.domain.contracts import (
 )
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle
-from packages.verification.profile_target import ProfileTargetObservation, build_profile_research_target
+from packages.verification.profile_target import (
+    ProfileTargetObservation,
+    build_profile_research_target,
+)
 
 FIXTURE = Path(__file__).parent / "fixtures" / "reviewed_person_im_munyoung_001.json"
 PERSON_ID = "00000000-0000-0000-0000-000000009101"
