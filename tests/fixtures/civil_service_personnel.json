@@ -1,0 +1,47 @@
+[
+  {
+    "record_id": "personnel-2026-001",
+    "person_name": "김정책",
+    "event_date": "2026-01-15",
+    "service_category": "중앙일반직",
+    "event_type": "승진",
+    "appointment_route": "고위공무원단",
+    "organization": "테스트부",
+    "title": "정책기획관",
+    "grade": "고위공무원단",
+    "previous_organization": "테스트부",
+    "previous_title": "정책기획과장",
+    "source_ref": "official-personnel-notice-2026-01-15",
+    "public_scope": "SENIOR_DECISION_MAKER"
+  },
+  {
+    "record_id": "personnel-2026-002",
+    "person_name": "이개방",
+    "event_date": "2026-02-01",
+    "service_category": "중앙일반직",
+    "event_type": "임용",
+    "appointment_route": "개방형직위",
+    "organization": "테스트청",
+    "title": "디지털정책국장",
+    "grade": "고위공무원단",
+    "previous_organization": "민간정책연구원",
+    "previous_title": "연구본부장",
+    "source_ref": "official-open-position-result-2026-02-01",
+    "public_scope": "PATH_RELEVANT_NAMED_ROLE"
+  },
+  {
+    "record_id": "personnel-2026-003",
+    "person_name": "박외교",
+    "event_date": "2026-03-10",
+    "service_category": "외무",
+    "event_type": "전보",
+    "appointment_route": "일반",
+    "organization": "외교부",
+    "title": "테스트국 대사",
+    "grade": null,
+    "previous_organization": "외교부",
+    "previous_title": "외교전략기획관",
+    "source_ref": "official-diplomatic-personnel-2026-03-10",
+    "public_scope": "SENIOR_DECISION_MAKER"
+  }
+]
