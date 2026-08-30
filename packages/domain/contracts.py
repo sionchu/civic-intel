@@ -7,6 +7,10 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 from .enums import (
+    CivilServiceAppointmentRoute,
+    CivilServiceCategory,
+    CivilServiceEventType,
+    EmploymentReviewDecision,
     EpistemicStatus,
     EvidenceStance,
     GovernanceRelationType,
@@ -163,6 +167,37 @@ class Appointment(TemporalRecord):
     id: UUID = Field(default_factory=uuid4)
     person_id: UUID
     office_id: UUID
+
+
+class CivilServiceCareerEpisode(TemporalRecord):
+    id: UUID = Field(default_factory=uuid4)
+    person_id: UUID
+    organization_id: UUID
+    office_id: UUID | None = None
+    category: CivilServiceCategory
+    event_type: CivilServiceEventType
+    appointment_route: CivilServiceAppointmentRoute = CivilServiceAppointmentRoute.REGULAR
+    title: str = Field(min_length=1)
+    grade: str | None = None
+    event_date: date
+    previous_organization_id: UUID | None = None
+    previous_office_id: UUID | None = None
+    source_ids: list[UUID] = Field(min_length=1)
+    claim_ids: list[UUID] = Field(default_factory=list)
+
+
+class EmploymentReviewEvent(Contract):
+    id: UUID = Field(default_factory=uuid4)
+    person_id: UUID
+    former_organization_id: UUID
+    destination_organization_id: UUID
+    review_date: date
+    decision: EmploymentReviewDecision
+    decision_text: str = Field(min_length=1)
+    former_title: str | None = None
+    destination_title: str | None = None
+    employment_start_date: date | None = None
+    source_ids: list[UUID] = Field(min_length=1)
 
 
 class AppointmentTarget(TemporalRecord):

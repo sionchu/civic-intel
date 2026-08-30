@@ -41,8 +41,8 @@ partisan desirability or hidden influence.
 | Local elected offices | governors, mayors/county/district heads, local councilors, education superintendents, candidates | NEC candidate + winner APIs | API | NEC `huboid` | Local Elected Office | MERGED |
 | Presidential Office | chiefs, senior secretaries, secretaries and publicly named senior staff | official organization/appointment releases | OFFICIAL_WEB | name + office + dates | Public Service / Appointment | RESEARCHED |
 | Presidential commissions / TFs | chair, vice-chair, member, adviser where publicly named | official body/appointment records | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + body + role + dates | CommitteeMembershipEpisode | MERGED contract |
-| Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date | Public Service | ISSUE_OPEN #23 |
-| Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | ISSUE_OPEN #23 |
+| Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date + adjacent career anchors | Public Service | MERGED contracts/staging; live adapter pending |
+| Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | MERGED contracts/staging; source parser pending |
 | Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO | STRUCTURED_DISCLOSURE / API where reviewed | institution + name + role + term | Institutional Governance / Public Service | ISSUE_OPEN #25 |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | MERGED contract; connectors pending |
 | Private-sector senior leaders | registered directors, disclosed executives, CEO/CTO/CSO, officially named senior technical/business leaders | OpenDART -> company official -> KRX | API / STRUCTURED_DISCLOSURE / OFFICIAL_WEB | DART corp code + person anchors | Corporate | ISSUE_OPEN #18 |
@@ -50,7 +50,7 @@ partisan desirability or hidden influence.
 | General academia | professors/researchers relevant to public appointments | KCI, OpenAlex, Crossref, ORCID + university official profile | API + OFFICIAL_WEB | DOI/ORCID/OpenAlex + identity anchors | Academic | RESEARCHED |
 | Legal / judiciary / prosecution | judges, prosecutors, lawyers, legal-policy leaders | MOJ, Supreme Court, court gazette, KBA, official law-firm bios | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | name + office + appointment date; bar identity where public | Legal/Judicial/Prosecution | ISSUE_OPEN #21 |
 | Military | generals, chiefs, JCS/defense-policy leadership and path-relevant retired senior officers | MND/service personnel releases and official bios | OFFICIAL_WEB | name + rank/command + date | Military / Defense | RESEARCHED |
-| Diplomacy | ambassadors, senior foreign-service officers, path-relevant diplomats | MOFA personnel/appointment records | OFFICIAL_WEB | name + post + appointment date | Diplomatic / Public Service | covered by #23 design |
+| Diplomacy | ambassadors, senior foreign-service officers, path-relevant diplomats | MOFA personnel/appointment records | OFFICIAL_WEB | name + post + appointment date | Diplomatic / Public Service | MERGED staging semantics; live adapter pending |
 | Labor movement | publicly named union/federation leadership only | 전국노동조합표준데이터 + official federation/commission records | STRUCTURED_DISCLOSURE / OFFICIAL_WEB | representative + union + date; requires identity review | Civic / Labor Leadership | ISSUE_OPEN #20 |
 | Civic / NGO / professional associations | public leaders of significant civic/professional bodies | official organization/governance/public disclosure | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + organization + role + dates | Civic / Association / Nonprofit | RESEARCHED |
 | Party permanent staff | publicly named senior party staff/policy committee leadership | party official appointments; NEC for party context | OFFICIAL_WEB | person + party role + date | Political / Party | RESEARCHED |
@@ -139,14 +139,14 @@ Prefer new feeders in this order:
 3. official organization biographies/governance pages;
 4. attributable media only for discovery/context.
 
-Current recommended sequence after the local-election merge:
+Current recommended sequence after civil-service staging:
 
-1. #23 civil service + retired-official employment review;
-2. #25 ALIO public-institution executives/governance;
-3. #24 NKIS policy-research feeder;
-4. #21 legal/judicial/prosecution;
-5. #20 labor-union public leadership;
-6. #18 private-sector senior talent;
-7. #13 legislative completeness and official bill summaries.
+1. #25 ALIO public-institution executives/governance;
+2. #24 NKIS policy-research feeder;
+3. #21 legal/judicial/prosecution;
+4. #20 labor-union public leadership;
+5. #18 private-sector senior talent;
+6. #13 legislative completeness and official bill summaries;
+7. one reviewed live civil-service/ethics source adapter using the #23 contracts.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.
