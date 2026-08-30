@@ -1,0 +1,120 @@
+# Identity Resolution
+
+## Purpose
+
+Civic Intel must resolve a person before combining evidence into one profile. Cross-lane career
+movement makes this stricter than ordinary same-record matching because a real person can move
+between different organizations and offices over time.
+
+```text
+company executive
+ -> presidential adviser
+ -> commission member
+```
+
+Different role text is therefore not automatically an identity conflict.
+
+## Two resolution contexts
+
+### Existing local/same-state resolver
+
+`packages.verification.identity.resolve_identity()` remains the conservative V0 resolver for
+candidate comparisons where current office/organization agreement is useful evidence.
+
+Issue #39 does not weaken or silently reinterpret that function.
+
+### Cross-lane resolver
+
+`resolve_cross_lane_identity()` is used only when the system is deciding whether candidates
+from different career/source lanes may belong to one Person.
+
+Rules:
+
+- name/alias overlap is required;
+- name-only never resolves;
+- different office/organization is neutral;
+- hard birth-date conflict fails closed;
+- explicit source-backed bridge evidence is required for `RESOLVED`;
+- only `RESOLVED` candidates may later become one Person/profile projection.
+
+## Allowed bridge evidence
+
+### `EXACT_BIRTH_DATE`
+
+Both candidates expose the same exact birth date and the evidence keeps the public source
+reference that supports the date linkage.
+
+A missing date cannot be replaced by guessing year/month/day precision.
+
+### `EXTERNAL_ID`
+
+A reviewed public source/crosswalk demonstrates the same stable identifier in the same
+namespace on both sides.
+
+Different identifier namespaces are not interchangeable merely because values look similar.
+
+### `OFFICIAL_CAREER_CONTINUITY`
+
+An official personnel/appointment source explicitly links a named person's prior public or
+professional role to the new role.
+
+Example semantics:
+
+```text
+official personnel briefing:
+A, previously company X CTO, is appointed/designated/nominated to role Y
+```
+
+This can establish identity continuity. It does **not** automatically make every detail of the
+prior career independently verified; the original company/public source is still needed for
+that CareerEpisode's final FACT status.
+
+### `OFFICIAL_BIOGRAPHY_CONTINUITY`
+
+An official biography explicitly presents two career episodes as belonging to the same person.
+The biography source is retained as identity evidence and important underlying career facts are
+verified from their primary source families where practical.
+
+## Evidence that is never sufficient
+
+Cross-lane identity cannot be resolved from:
+
+- same name alone;
+- co-mention in news;
+- appearing at the same event;
+- social or organizational proximity;
+- political faction/party assumptions;
+- inferred friendship/loyalty;
+- overlapping topics or policy positions;
+- analyst intuition without a source reference.
+
+Those signals may be useful for discovery in other contexts but are not identity evidence.
+
+## Scoring boundary
+
+The score is an internal deterministic decision aid, not a public confidence percentage.
+
+- base name/alias overlap: review-level only;
+- each evidence type has one bounded contribution;
+- multiple records of the same evidence type do not repeatedly inflate the score;
+- birth-date conflicts override positive continuity evidence.
+
+The public system should expose the decision status and underlying sources rather than convert
+this score into a probability.
+
+## Profile integration
+
+```text
+Feeder candidate A
+Feeder candidate B
+ + CrossLaneIdentityEvidence
+ -> CrossLaneIdentityDecision
+    -> RESOLVED
+       -> one ProfileResearchTarget / Person projection
+    -> REVIEW / UNRESOLVED
+       -> separate candidates; no silent merge
+```
+
+The next step after this contract is to create a minimal profile-research target bridge that
+accepts only `RESOLVED` cross-lane identity decisions and preserves the contributing feeder
+sources.
