@@ -16,6 +16,7 @@ these rules without overriding them.
 - [Legal career feeder](architecture/LEGAL_CAREER_FEEDER.md)
 - [Labor leadership feeder](architecture/LABOR_LEADERSHIP_FEEDER.md)
 - [Corporate talent feeder](architecture/CORPORATE_TALENT_FEEDER.md)
+- [Presidential personnel feeder](architecture/PRESIDENTIAL_PERSONNEL_FEEDER.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)

@@ -1,0 +1,64 @@
+[
+  {
+    "record_id": "presidential-personnel-2026-06-21-01",
+    "record_kind": "PERSONNEL_ACTION",
+    "person_name": "성기홍",
+    "event_date": "2026-06-21",
+    "action": "임명",
+    "role_scope": "대통령비서실",
+    "organization": "대통령비서실",
+    "role": "홍보소통수석비서관",
+    "reported_prior_careers": ["연합뉴스 대표이사"],
+    "source_ref": "https://www.president.go.kr/briefings/qGHEgnQ8",
+    "phone": "02-0000-0000",
+    "address": "수집금지 주소"
+  },
+  {
+    "record_id": "presidential-personnel-2026-06-21-02",
+    "record_kind": "PERSONNEL_ACTION",
+    "person_name": "강건작",
+    "event_date": "2026-06-21",
+    "action": "임명",
+    "role_scope": "국가안보실",
+    "organization": "국가안보실",
+    "role": "제1차장 겸 국가안전보장회의 사무처장",
+    "reported_prior_careers": ["미래국방전략위원회 위원", "육군 장성"],
+    "source_ref": "https://www.president.go.kr/briefings/qGHEgnQ8"
+  },
+  {
+    "record_id": "presidential-personnel-2026-08-30-01",
+    "record_kind": "PERSONNEL_ACTION",
+    "person_name": "이해민",
+    "event_date": "2026-08-30",
+    "action": "내정",
+    "role_scope": "대통령비서실",
+    "organization": "대통령비서실",
+    "role": "AI미래기획수석비서관",
+    "reported_prior_careers": ["조국혁신당 국회의원", "구글 엔지니어"],
+    "source_ref": "https://www.president.go.kr/briefings/qGTHgnQ8"
+  },
+  {
+    "record_id": "presidential-personnel-2026-08-30-02",
+    "record_kind": "PERSONNEL_ACTION",
+    "person_name": "하정우",
+    "event_date": "2026-08-30",
+    "action": "지명",
+    "role_scope": "대통령직속위원회",
+    "organization": "국가AI전략위원회",
+    "role": "부위원장",
+    "reported_prior_careers": ["대통령비서실 AI미래기획수석비서관"],
+    "source_ref": "https://www.president.go.kr/briefings/qGTHgnQ8"
+  },
+  {
+    "record_id": "presidential-personnel-2026-08-30-03",
+    "record_kind": "PERSONNEL_ACTION",
+    "person_name": "김경수",
+    "event_date": "2026-08-30",
+    "action": "위촉",
+    "role_scope": "대통령특별보좌관",
+    "organization": "대통령",
+    "role": "정무특별보좌관",
+    "reported_prior_careers": ["지방시대위원회 위원장"],
+    "source_ref": "https://www.president.go.kr/briefings/qGTHgnQ8"
+  }
+]
