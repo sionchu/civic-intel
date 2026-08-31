@@ -34,4 +34,4 @@ implementation work.
 - [Codex entrypoint for the batch foundation](exec-plans/active/batch-ingestion-l3-codex.md)
 - [Completed NEC local-winner L3 plan](exec-plans/active/nec-local-winners-l3.md)
 - [Completed Assembly bill-participation L3 plan](exec-plans/active/assembly-bill-participation-l3.md)
-- [Active NEC local-candidate L3 plan](exec-plans/active/nec-local-candidates-l3.md)
+- [Completed NEC local-candidate L3 plan](exec-plans/active/nec-local-candidates-l3.md)

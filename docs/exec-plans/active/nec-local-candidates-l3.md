@@ -1,6 +1,6 @@
 # NEC local election candidate L3
 
-Status: in progress.
+Status: completed — stop condition met locally on 2026-08-31.
 
 ## Objective
 
@@ -104,49 +104,49 @@ make verify: runner unavailable because GNU Make is absent
 - [x] verify access, license and traffic conditions
 - [x] confirm unfiltered `(sgId, sgTypecode)` bounded scope
 - [x] confirm `huboid` provider row key
-- [ ] update SourcePolicy review evidence for candidate and winner APIs
-- [ ] define privacy-minimized persistent candidate fields
-- [ ] preserve existing candidate/winner review staging behavior
+- [x] update SourcePolicy review evidence for candidate and winner APIs
+- [x] define privacy-minimized persistent candidate fields
+- [x] preserve existing candidate/winner review staging behavior
 
 ## Milestone B — Candidate L3 enumeration
 
-- [ ] define feeder, scope key, semantic scope and source contract
-- [ ] reject province/district/party-filtered enumeration
-- [ ] full pagination from page 1
-- [ ] validate requested and provider-returned page/size
-- [ ] validate stable total count and expected pages
-- [ ] validate exact expected page row counts
-- [ ] validate row election id/type consistency
-- [ ] detect duplicate page content
-- [ ] detect duplicate/conflicting `huboid`
-- [ ] persist SourceRun/SourceCheckpoint/FeederObservation
-- [ ] commit each page and checkpoint atomically
-- [ ] support PARTIAL and resume
-- [ ] unchanged rerun no-op
-- [ ] changed candidate row creates immutable observation
-- [ ] keep identity/materialization/publication boundaries
-- [ ] extend the existing CLI without breaking staging or winner enumeration
+- [x] define feeder, scope key, semantic scope and source contract
+- [x] reject province/district/party-filtered enumeration
+- [x] full pagination from page 1
+- [x] validate requested and provider-returned page/size
+- [x] validate stable total count and expected pages
+- [x] validate exact expected page row counts
+- [x] validate row election id/type consistency
+- [x] detect duplicate page content
+- [x] detect duplicate/conflicting `huboid`
+- [x] persist SourceRun/SourceCheckpoint/FeederObservation
+- [x] commit each page and checkpoint atomically
+- [x] support PARTIAL and resume
+- [x] unchanged rerun no-op
+- [x] changed candidate row creates immutable observation
+- [x] keep identity/materialization/publication boundaries
+- [x] extend the existing CLI without breaking staging or winner enumeration
 
 ## Milestone C — Verification and closure
 
-- [ ] deterministic multi-page test
-- [ ] unchanged rerun test
-- [ ] changed row test
-- [ ] failed page/resume test
-- [ ] atomic checkpoint failure test
-- [ ] total/page/row mismatch tests
-- [ ] duplicate/conflicting key tests
-- [ ] policy denial before network/run
-- [ ] credential absent from persistence/errors
-- [ ] address/gender/age absent from persistence
-- [ ] zero-result bounded scope test
-- [ ] existing NEC staging and winner L3 regressions
-- [ ] full Python verification
-- [ ] web verification
-- [ ] Alembic roundtrip
-- [ ] inspect clean-v0 diff
-- [ ] update feeder maturity to L3
-- [ ] record live fetch as NOT_RUN when key remains unavailable
+- [x] deterministic multi-page test
+- [x] unchanged rerun test
+- [x] changed row test
+- [x] failed page/resume test
+- [x] atomic checkpoint failure test
+- [x] total/page/row mismatch tests
+- [x] duplicate/conflicting key tests
+- [x] policy denial before network/run
+- [x] credential absent from persistence/errors
+- [x] address/gender/age absent from persistence
+- [x] zero-result bounded scope test
+- [x] existing NEC staging and winner L3 regressions
+- [x] full Python verification
+- [x] web verification
+- [x] Alembic roundtrip
+- [x] inspect clean-v0 diff
+- [x] update feeder maturity to L3
+- [x] record live fetch as NOT_RUN when key remains unavailable
 
 ## Stop condition
 
@@ -163,4 +163,69 @@ Stop when the candidate roster for one unfiltered `(sgId, sgTypecode)` scope has
 
 ## Evidence
 
-Implementation and final verification evidence will be recorded as milestones complete.
+Official contract review on 2026-08-31 confirmed the candidate catalog `15000908`, exact
+`PofelcddInfoInqireService/getPofelcddRegistSttusInfoInqire` operation, required
+`sgId`/`sgTypecode`, provider pagination, `huboid`, free access, development auto-approval,
+operational review approval, a 10,000-request development allowance and 이용허락범위 제한 없음.
+
+Implementation:
+
+```text
+5cee6a7 P0 docs: define NEC local candidate L3 plan
+3e9a393 P0: add resumable NEC local candidate L3
+```
+
+Observed local verification:
+
+```text
+NEC candidate/staging/winner targeted pytest: 32 passed, 1 cache warning
+full pytest: 243 passed, 4 warnings in 59.20s
+ruff: All checks passed
+mypy: Success, 51 source files
+packages.verification.quality: passed=true
+apps/web lint: PASS
+apps/web typecheck: PASS
+apps/web tests: 2 passed
+apps/web build: PASS
+```
+
+`make verify` itself remains runner-unavailable because GNU Make is not installed on this
+Windows host. Every underlying Makefile verification command was executed directly; this is not
+recorded as a Make runner pass.
+
+Migration verification:
+
+```text
+Alembic heads: 0004 (head)
+tests/test_migrations.py: 1 passed
+fresh upgrade -> 0004
+downgrade 0004 -> 0003 -> 0002 -> 0001
+re-upgrade -> 0004 while preserving a populated Person row
+```
+
+No migration was added because candidate L3 reuses the canonical 0004
+SourceRun/SourceCheckpoint/FeederObservation schema.
+
+Clean-v0 audit from starting HEAD `a236f35` through implementation HEAD `3e9a393`:
+
+```text
+SqlAlchemyRepository class definitions: 1
+apps.api.repository imports: 0
+schema migration changes: 0
+parallel raw observation/payload stores: 0
+generic crawler/framework additions: 0
+Person/materialization/publication path changes: 0
+dependency manifest changes: 0
+git diff --check: PASS
+```
+
+`NEC_API_KEY` is absent on this host, so live candidate enumeration remains `NOT_RUN`. The
+deterministic transport tests exercised full pagination, persistence, resume and redaction. Local
+commits are not pushed, so no CI pass is claimed.
+
+## Next Best Action
+
+Define the bounded provider universe for an OpenDART executive-status L3 feeder before writing
+enumeration code. The existing source is L2 and has strong filing/corporation anchors, but a
+complete L3 scope must first pin the corporation-code set, fiscal/report period and provider
+coverage rules rather than treating one `corp_code` pull as full enumeration.
