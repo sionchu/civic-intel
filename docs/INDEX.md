@@ -35,3 +35,4 @@ implementation work.
 - [Completed NEC local-winner L3 plan](exec-plans/active/nec-local-winners-l3.md)
 - [Completed Assembly bill-participation L3 plan](exec-plans/active/assembly-bill-participation-l3.md)
 - [Completed NEC local-candidate L3 plan](exec-plans/active/nec-local-candidates-l3.md)
+- [ALIO public-institution executives L3 plan](exec-plans/active/alio-public-institution-executives-l3.md)
