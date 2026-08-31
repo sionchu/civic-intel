@@ -55,9 +55,9 @@ def nec_local_election_policy() -> SourcePolicy:
             "Development account 10,000 requests; operational account requires review approval"
         ),
         policy_note=(
-            "Reviewed against data.go.kr dataset 15000864 on 2026-08-31 for the Central "
-            "Election Commission winner API. Civic Intel discards candidate address and stores "
-            "only public-interest election metadata."
+            "Reviewed against data.go.kr datasets 15000908 and 15000864 on 2026-08-31 for "
+            "the Central Election Commission candidate and winner APIs. Civic Intel discards "
+            "candidate address and stores only public-interest election metadata."
         ),
     )
 
@@ -212,7 +212,10 @@ class _NecApiConnector(Connector):
         response = payload.get("response")
         if isinstance(response, dict):
             header = response.get("header")
-            if isinstance(header, dict) and str(header.get("resultCode") or "00") not in {"00", "0"}:
+            if isinstance(header, dict) and str(header.get("resultCode") or "00") not in {
+                "00",
+                "0",
+            }:
                 raise NecApiError("NEC API returned a provider error")
             body = response.get("body")
             if not isinstance(body, dict):

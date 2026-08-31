@@ -422,6 +422,11 @@ unfiltered Assembly `AGE`, its provider row key is `BILL_ID`, and every row must
 parseable `RST_MONA_CD`/`PUBL_MONA_CD` fields. Observations are multi-person legislative events;
 they do not create Persons or turn participation into a performance/faction claim.
 
+The NEC local-candidate source is the fifth L3 feeder. Its bounded universe is one unfiltered
+`(sgId, sgTypecode)` scope and its provider row key is `huboid`. It stores privacy-minimized
+candidate-registration observations with candidate-submitted disclosure semantics and no winner
+inference or Person creation.
+
 The concrete feeders now demonstrate the shared repository transaction while retaining distinct
 source contracts, coverage rules and semantic boundaries. Any future helper must remain small and
 must be earned by verified duplication; a generic crawler or universal page runner is still not

@@ -17,6 +17,7 @@ implementation work.
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
+- [NEC local candidate feeder](architecture/NEC_LOCAL_CANDIDATE_FEEDER.md)
 - [Civil service feeder](architecture/CIVIL_SERVICE.md)
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)

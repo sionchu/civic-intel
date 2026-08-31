@@ -118,13 +118,15 @@ Winner joins use NEC candidate ID when available. If winner pagination/coverage 
 incomplete, absence from the staged winner page remains `UNKNOWN`; only complete source
 coverage may support `NOT_WINNER`.
 
-The unfiltered winner endpoint is L3 for one exact `(sgId, sgTypecode)` scope. It validates
-provider page/size, total count, row count and unique `huboid`, then persists resumable
-metadata-only observations. The broader candidate endpoint remains L2 single-pull staging.
+The unfiltered candidate and winner endpoints are separate L3 feeders for one exact
+`(sgId, sgTypecode)` scope. Each validates provider page/size, total count, row count and unique
+`huboid`, then persists resumable metadata-only observations. Filtered candidate/winner review
+staging remains a separate L2-compatible path.
 
-Winner observations retain exact name, birth date, jurisdiction, party and result fields while
-discarding address, gender and age. They do not bypass Person materialization or publication
-review.
+Candidate observations retain exact registration status without inferring an election outcome;
+winner observations retain exact result fields. Both retain name, birth date, jurisdiction and
+party while discarding address, gender and age. Neither bypasses Person materialization or
+publication review.
 
 ### Career-path value
 
