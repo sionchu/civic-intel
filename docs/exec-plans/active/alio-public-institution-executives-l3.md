@@ -1,6 +1,6 @@
 # ALIO public-institution executives L3
 
-Status: active — implementation pending.
+Status: completed — stop condition met locally on 2026-08-31.
 
 ## Objective
 
@@ -143,53 +143,131 @@ live contract probes: official item/directory/report/document/copyright/robots s
 
 ## Milestone A — Connector and parser
 
-- [ ] update SourcePolicy from the current official terms review
-- [ ] preserve existing fixture parser/stager contracts and tests
-- [ ] add the exact unfiltered item 4 directory request
-- [ ] validate directory total and unique `apbaId`
-- [ ] add the exact current-report page request
-- [ ] validate page number, size, totals, result rank and report/institution identifiers
-- [ ] follow only the exact report-document path embedded by the official report page
-- [ ] parse only existing `AlioExecutiveRecord` fields from item 4 executive tables
-- [ ] fail closed on malformed, masked or unsupported executive rows
-- [ ] exclude gender, contacts, staff identities, attachments and raw HTML
+- [x] update SourcePolicy from the current official terms review
+- [x] preserve existing fixture parser/stager contracts and tests
+- [x] add the exact unfiltered item 4 directory request
+- [x] validate directory total and unique `apbaId`
+- [x] add the exact current-report page request
+- [x] validate page number, size, totals, result rank and report/institution identifiers
+- [x] follow only the exact report-document path embedded by the official report page
+- [x] parse only existing `AlioExecutiveRecord` fields from item 4 executive tables
+- [x] fail closed on malformed, masked or unsupported executive rows
+- [x] exclude gender, contacts, staff identities, attachments and raw HTML
 
 ## Milestone B — Current-roster L3 enumeration
 
-- [ ] define feeder, scope key, semantic scope and source contract
-- [ ] reject institution/type filters and non-current report selection
-- [ ] enumerate every unique institution returned by the item 4 directory
-- [ ] use `disclosureNo:ordinal` only as a disclosure-row provider key
-- [ ] detect duplicate/conflicting provider rows and disclosure reuse
-- [ ] persist SourceRun/SourceCheckpoint/FeederObservation
-- [ ] commit each institution and checkpoint atomically
-- [ ] support PARTIAL and resume with directory fingerprint validation
-- [ ] unchanged rerun no-op
-- [ ] changed row creates an immutable observation version
-- [ ] keep existing staging output valid
-- [ ] keep ALIO materialization on the existing unsupported-feeder REVIEW_REQUIRED branch
-- [ ] add a source-specific CLI entrypoint without a generic runner
+- [x] define feeder, scope key, semantic scope and source contract
+- [x] reject institution/type filters and non-current report selection
+- [x] enumerate every unique institution returned by the item 4 directory
+- [x] use `disclosureNo:ordinal` only as a disclosure-row provider key
+- [x] detect duplicate/conflicting provider rows and disclosure reuse
+- [x] persist SourceRun/SourceCheckpoint/FeederObservation
+- [x] commit each institution and checkpoint atomically
+- [x] support PARTIAL and resume with directory fingerprint validation
+- [x] unchanged rerun no-op
+- [x] changed row creates an immutable observation version
+- [x] keep existing staging output valid
+- [x] keep ALIO materialization on the existing unsupported-feeder REVIEW_REQUIRED branch
+- [x] add a source-specific CLI entrypoint without a generic runner
 
 ## Milestone C — Verification and closure
 
-- [ ] deterministic multi-institution full-scope test
-- [ ] directory total/duplicate identifier tests
-- [ ] current report page/size/total/rank mismatch tests
-- [ ] duplicate/conflicting row and disclosure tests
-- [ ] unchanged rerun and immutable changed-row tests
-- [ ] partial failure, resume and atomic-checkpoint tests
-- [ ] policy denial before network/run
-- [ ] contact/staff/raw HTML exclusion tests
-- [ ] materialization REVIEW_REQUIRED and no-Person test
-- [ ] existing ALIO staging regression
-- [ ] full Python verification
-- [ ] Ruff and mypy
-- [ ] quality report
-- [ ] web verification
-- [ ] Alembic upgrade/downgrade/re-upgrade roundtrip
-- [ ] clean-v0 audit
-- [ ] update maturity to L3
-- [ ] close plan with actual evidence
+- [x] deterministic multi-institution full-scope test
+- [x] directory total/duplicate identifier tests
+- [x] current report page/size/total/rank mismatch tests
+- [x] duplicate/conflicting row and disclosure tests
+- [x] unchanged rerun and immutable changed-row tests
+- [x] partial failure, resume and atomic-checkpoint tests
+- [x] policy denial before network/run
+- [x] contact/staff/raw HTML exclusion tests
+- [x] materialization REVIEW_REQUIRED and no-Person test
+- [x] existing ALIO staging regression
+- [x] full Python verification
+- [x] Ruff and mypy
+- [x] quality report
+- [x] web verification
+- [x] Alembic upgrade/downgrade/re-upgrade roundtrip
+- [x] clean-v0 audit
+- [x] update maturity to L3
+- [x] close plan with actual evidence
+
+## Evidence
+
+Official live contract review on 2026-08-31:
+
+```text
+item catalog/item 4 page: HTTP 200
+copyright policy: HTTP 200
+robots.txt: HTTP 200, User-agent * / Allow /
+unfiltered item 4 directory total: 355 institutions
+sample institution: C0847
+sample report history: 13 reports, 2 provider pages
+provider-ranked current disclosure: 2026020303111469
+sample current report: 7 supported executive rows
+report form: 20305
+```
+
+The live probe exercised one institution through the production connector. A 355-institution
+live persistence run was not executed because ALIO publishes no request-rate limit; complete
+enumeration, coverage, atomicity, resume and idempotency were exercised with deterministic
+multi-institution transports.
+
+Implementation:
+
+```text
+333218d P0 docs: define ALIO executives L3 plan
+28f62e6 P0: add resumable ALIO executives L3
+```
+
+Observed local verification:
+
+```text
+five pre-existing L3 feeder regressions: 55 passed, 1 pytest-cache warning
+ALIO L1/L3 targeted tests: 21 passed, 1 pytest-cache warning
+full pytest: 257 passed, 4 warnings in 55.49s
+ruff check: All checks passed
+mypy: Success, 51 source files
+packages.verification.quality: passed=true
+apps/web lint: PASS
+apps/web typecheck: PASS
+apps/web tests: 2 passed
+apps/web build: PASS
+```
+
+`make verify` itself is runner-unavailable because GNU Make is not installed on this Windows
+host. Every command in the Makefile's verify path was executed directly. Repository-wide
+`ruff format --check` remains non-passing on 47 pre-existing files; all four Python files
+touched by this implementation were formatted and pass targeted format-check.
+
+Migration verification:
+
+```text
+Alembic heads: 0004 (head)
+tests/test_migrations.py: 1 passed
+fresh upgrade -> 0004
+downgrade 0004 -> 0003 -> 0002 -> 0001
+re-upgrade -> 0004 while preserving a populated Person row
+```
+
+No migration was added because ALIO L3 reuses the canonical
+SourceRun/SourceCheckpoint/FeederObservation and review-item schema through revision `0004`.
+
+Clean-v0 audit from implementation baseline `333218d` through `28f62e6`:
+
+```text
+SqlAlchemyRepository class definitions: 1
+apps.api.repository imports: 0
+parallel raw observation/payload stores: 0
+generic crawler/framework additions: 0
+materialization policy changes: 0
+migration changes: 0
+new dependency changes: 0
+git diff --check: PASS
+```
+
+ALIO observations carry no stable provider Person ID. The exact existing materialization gate
+returns `REVIEW_REQUIRED / UNSUPPORTED_FEEDER`; the regression proves zero automatic Persons are
+created and an OPEN IdentityReviewItem is persisted.
 
 ## Stop condition
 
