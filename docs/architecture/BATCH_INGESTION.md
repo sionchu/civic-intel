@@ -433,6 +433,13 @@ unique `apbaId`. The disclosure-bound `disclosureNo:row ordinal` key is an obser
 not a stable Person identifier, so the existing materialization gate keeps every ALIO row in
 `REVIEW_REQUIRED`. Raw report HTML, gender and disclosure-staff contacts are excluded.
 
+CleanEye local-public-institution executives remain an L0 blocked candidate, not a seventh L3
+feeder. The official REST catalog currently has no named-executive dataset, while the named
+executive HTML surfaces expose no stable executive identifier or disclosure version and the
+current robots policy disallows automated access. The aggregate executive-compensation API
+cannot be repurposed into a person roster. No connector or guessed endpoint is added until the
+provider publishes or permits a machine-readable named-executive contract.
+
 The concrete feeders now demonstrate the shared repository transaction while retaining distinct
 source contracts, coverage rules and semantic boundaries. Any future helper must remain small and
 must be earned by verified duplication; a generic crawler or universal page runner is still not

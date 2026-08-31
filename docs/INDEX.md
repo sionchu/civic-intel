@@ -20,6 +20,7 @@ implementation work.
 - [NEC local candidate feeder](architecture/NEC_LOCAL_CANDIDATE_FEEDER.md)
 - [Civil service feeder](architecture/CIVIL_SERVICE.md)
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
+- [CleanEye local public institution feeder](architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)
 - [Legal career feeder](architecture/LEGAL_CAREER_FEEDER.md)
 - [Labor leadership feeder](architecture/LABOR_LEADERSHIP_FEEDER.md)
@@ -36,3 +37,4 @@ implementation work.
 - [Completed Assembly bill-participation L3 plan](exec-plans/active/assembly-bill-participation-l3.md)
 - [Completed NEC local-candidate L3 plan](exec-plans/active/nec-local-candidates-l3.md)
 - [Completed ALIO public-institution executives L3 plan](exec-plans/active/alio-public-institution-executives-l3.md)
+- [Blocked CleanEye local-public-institution executives L3 plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)
