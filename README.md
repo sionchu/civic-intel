@@ -210,3 +210,11 @@ cannot fetch them. Official connectors are opt-in and credential-gated; tests mo
 network responses. Staging is review-only and does not mutate the canonical DB. The generic
 HTTP connector remains dormant. The model has no private-family or precise-residence
 publication fields. Workers cannot publish claims.
+
+## License and external data
+
+Repository-authored source code is licensed under [Apache-2.0](LICENSE). Public data,
+regulatory disclosures, provider metadata/content and provider-derived fixture metadata are
+not relicensed by Civic Intel; their use remains governed by the original provider terms,
+applicable law and the relevant `SourcePolicy`. See [NOTICE](NOTICE) and the
+[public release checklist](docs/workflows/PUBLIC_RELEASE_CHECKLIST.md).
