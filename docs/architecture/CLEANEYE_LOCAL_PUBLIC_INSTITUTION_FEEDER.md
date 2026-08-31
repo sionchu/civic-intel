@@ -10,9 +10,11 @@ institution heads and the executive/director/auditor roles the provider itself d
 - local-government invested institutions; and
 - local-government contributed institutions.
 
-The lane is currently `L0 RESEARCHED; BLOCKED`. It must not be implemented from the public HTML
-surfaces while their automated-access policy remains closed, and the available official REST
-catalog does not expose named executive status.
+The lane is currently `L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED`. The official REST
+catalog does not expose named executive status, but the official HTML disclosures do expose
+named executive rows. A source-specific automated-access review must resolve the current
+all-path robots instruction and the route-level contract before a repeated HTML collector is
+implemented.
 
 ## Official institution surfaces
 
@@ -73,8 +75,9 @@ for the Civic Intel governance lane and are prohibited from snapshots, observati
 metadata and errors.
 
 The inspected pages expose no stable executive-person identifier, no disclosure number and no
-explicit page-level as-of/version field. A source row or ordinal therefore cannot authorize
-automatic Person creation, linking or merge. Name + position + institution is not identity.
+explicit page-level as-of/version field. These facts do not prevent collection. They mean that
+a source row or ordinal is only an observation identity and cannot authorize automatic Person
+creation, linking or merge. Name + position + institution is not identity.
 
 The local-public-enterprise writing standard covers the provider's disclosed heads,
 directors/auditors and standing/non-standing roles. The invested/contributed writing standard
@@ -95,8 +98,9 @@ On 2026-08-31 it listed 34 REST datasets. No named-executive-status dataset was 
 and role-category counts/compensation, not executive names or provider Person identifiers.
 
 Do not derive an executive endpoint from the salary service name, HTML route or an adjacent
-dataset. A future connector requires an official published named-executive operation and exact
-field documentation.
+dataset. The known official HTML disclosure routes remain a separate source-specific parser
+candidate; any future connector requires an approved automated-access basis and exact
+request/field/coverage documentation for those routes.
 
 ## Rights and automated-access boundary
 
@@ -110,7 +114,7 @@ It permits free use of site-owned works and public data, including commercial us
 protected third-party rights exclusions. That reuse statement does not publish a named-
 executive API or grant an automated HTML collection contract.
 
-The current official robots policy is:
+The current official robots instruction is:
 
 ```text
 https://www.cleaneye.go.kr/robots.txt
@@ -119,11 +123,15 @@ User-agent: *
 Disallow: /
 ```
 
-No request limit is published for the named-executive HTML routes. Limits stated for REST
-datasets apply only to those operations and must not be borrowed for HTML enumeration.
+Robots is an automated-agent instruction, not a public-data reuse license or a substitute for
+route-level collection terms. It nevertheless prevents this repository from treating repeated
+HTML requests as policy-approved. No request limit is published for the named-executive HTML
+routes. Limits stated for REST datasets apply only to those operations and must not be borrowed
+for HTML enumeration.
 
-Therefore current allowed activity stops at finite contract review. Full or repeated automated
-HTML enumeration is blocked. A live L3 worker must wait for one of:
+Therefore current implementation stops at finite contract review. Full or repeated automated
+HTML enumeration is `HTML_COLLECTION_REVIEW_REQUIRED`, not a conclusion that the feeder itself
+is permanently blocked. A live L3 worker requires one of:
 
 1. an official machine-readable named-executive dataset with complete contract documentation;
 2. a changed official automated-access policy that permits the exact source-bounded routes; or
@@ -153,9 +161,9 @@ create zero Persons automatically.
 ## Maturity decision
 
 ```text
-L0 RESEARCHED; BLOCKED
+L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED
 ```
 
-Public pages and aggregate APIs establish the source strategy, but no permitted machine-readable
-named-executive universe currently satisfies L1/L2/L3. No connector, guessed field, generic
-crawler or ALIO/CleanEye abstraction is authorized by this review.
+Public pages establish the source strategy and named-executive disclosure shape, but no
+source-specific automated-collection contract currently satisfies L1/L2/L3. No connector,
+guessed field, generic crawler or ALIO/CleanEye abstraction is authorized by this review.

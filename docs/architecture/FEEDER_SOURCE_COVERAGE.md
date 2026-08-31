@@ -53,7 +53,7 @@ L3.
 | Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date + adjacent career anchors | Public Service | L1 CONTRACT_STAGED; live adapter pending |
 | Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | L1 CONTRACT_STAGED; live adapter pending |
 | Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO item 4 current disclosure for every unfiltered directory institution | STRUCTURED_DISCLOSURE | ALIO `apbaId` + `disclosureNo:row ordinal` observation key + name/role/term; no provider Person ID | Institutional Governance / Public Service | L3 FULL_ENUMERATION; automatic Person materialization remains REVIEW_REQUIRED |
-| Local public institutions | local-public-enterprise and local invested/contributed institution heads and disclosed executives | CleanEye named executive disclosure; current HTML automation is disallowed and the official REST catalog exposes no named-executive dataset | BLOCKED | institution-level `entId` or `insttCode`; no provider Person ID or disclosure version on the inspected executive pages | Institutional Governance / Public Service | L0 RESEARCHED; BLOCKED pending a permitted machine-readable named-executive contract |
+| Local public institutions | local-public-enterprise and local invested/contributed institution heads and disclosed executives | CleanEye named executive structured disclosures; official REST catalog has no named-executive dataset, and source-specific HTML collection requires an explicit policy review | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | institution-level `entId` or `insttCode`; no provider Person ID, so all materialization must remain REVIEW_REQUIRED | Institutional Governance / Public Service | L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED |
 | Public-institution executive compensation | role-category compensation/annual-pay disclosures | ALIO item 10 | STRUCTURED_DISCLOSURE | institution + executive role category + fiscal year | Institutional Governance | L1 CONTRACT_STAGED; person attribution prohibited |
 | Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | L1 CONTRACT_STAGED; separate from ethics review |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | L1 CONTRACT_STAGED; connectors pending |
@@ -232,8 +232,9 @@ Current recommended sequence after presidential-personnel staging:
 4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
 5. official institute-profile/appointment adapter for NKIS-discovered researchers;
 6. completed: reviewed ALIO item 4 current-roster L3 adapter using the existing staging contracts;
-7. blocked: CleanEye local-public-institution executive enumeration until the provider publishes
-   or permits a machine-readable named-executive contract;
+7. review: CleanEye local-public-institution executive collection only after a source-specific
+   automated-access review resolves the all-path `robots.txt` instruction, route contract,
+   coverage semantics and request pacing; stable Person IDs are not a collection prerequisite;
 8. completed: source-bounded OpenDART executive-status L3 over the official corp-code master;
 9. one reviewed live civil-service/ethics source adapter using the #23 contracts;
 10. revisit bill proposal-reason text only if a verified official structured source becomes available.

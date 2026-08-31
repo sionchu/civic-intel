@@ -1,6 +1,6 @@
 # CleanEye local-public-institution executives L3
 
-Status: blocked — official source-contract gate failed on 2026-08-31; L3 was not implemented.
+Status: research complete — `L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED` as of 2026-08-31; L3 was not implemented.
 
 ## Objective
 
@@ -31,7 +31,7 @@ local/origin HEAD: 782a3068ca8d9418cb0b8a1ebdff305a8ae29184
 tracked tree: clean
 Alembic head: 0004
 CleanEye connector/contracts/tests: none
-actual CleanEye maturity: L0 RESEARCHED while this source gate is evaluated
+actual CleanEye maturity: L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED
 ```
 
 Six existing source-specific L3 feeders remain implemented on the canonical repository:
@@ -49,7 +49,7 @@ connector, fixture contract or observation shape is added.
 
 ## Official source-contract gate
 
-The following must all be verified from current official sources before implementation:
+The following were verified from current official sources before implementation is considered:
 
 - [x] official institution-universe surfaces
 - [x] available REST dataset catalog
@@ -61,7 +61,7 @@ The following must all be verified from current official sources before implemen
 - [x] current robots policy
 - [x] published request-limit behavior
 - [x] policy-minimized metadata boundary
-- [ ] machine-readable named-executive contract permitted for automated enumeration
+- [ ] source-specific automated-access basis and request contract confirmed for repeated enumeration
 
 ### Current official findings
 
@@ -98,15 +98,18 @@ does not expose executive names or person identifiers and cannot satisfy this fe
 
 The official copyright/public-data policy permits free use of site-owned works and public data,
 including commercial use, subject to protected third-party rights. That permission does not
-establish an automated named-executive endpoint. The current official `robots.txt` is:
+establish an automated named-executive endpoint or route-level request contract. The current
+official `robots.txt` is:
 
 ```text
 User-agent: *
 Disallow: /
 ```
 
-No request limit is published for the executive HTML surfaces. The REST catalog documents its
-own API limits, but those limits cannot be transferred to the separate HTML routes.
+The robots instruction is not a substantive public-data license or prohibition by itself, but
+it prevents this repository from treating repeated HTML requests as policy-approved. No request
+limit is published for the executive HTML surfaces. The REST catalog documents its own API
+limits, but those limits cannot be transferred to the separate HTML routes.
 
 ### Storage boundary if the source gate later passes
 
@@ -124,9 +127,9 @@ Prohibited persistence includes gender, origin, employee rosters, disclosure-sta
 phone numbers, addresses, attachments, raw HTML and provider credentials.
 
 Without a provider executive-person ID, any future observation key would remain a disclosure-
-row identity only. It must not authorize `AUTO_CREATE`, `AUTO_LINK` or merge. Every CleanEye
-observation must enter `REVIEW_REQUIRED`, and name + position + institution must never become
-merge authority.
+row identity only. This is a materialization limitation, not a collection blocker: it must not
+authorize `AUTO_CREATE`, `AUTO_LINK` or merge. Every CleanEye observation must enter
+`REVIEW_REQUIRED`, and name + position + institution must never become merge authority.
 
 ## Milestone A — Source gate
 
@@ -137,7 +140,7 @@ merge authority.
 - [x] inspect current official REST dataset catalog and executive-compensation schema
 - [x] verify rights, robots and rate-limit statements without borrowing semantics across routes
 - [x] record the smallest permitted metadata boundary
-- [ ] establish a permitted machine-readable named-executive universe
+- [ ] establish a source-specific permitted collection contract for the known HTML disclosures
 
 ## Milestone B — Conditional L3 implementation
 
@@ -163,7 +166,7 @@ This milestone may start only after Milestone A's final source gate passes.
 - [ ] coherent commit and push
 - [ ] update feeder maturity to L3 only when all L3 conditions pass
 
-## Blocked closure evidence
+## Collection-review evidence
 
 Official finite probes on 2026-08-31 confirmed:
 
@@ -242,7 +245,7 @@ git diff --check: PASS
 ```
 
 The conditional implementation and CleanEye-specific targeted tests remain `NOT_RUN` because
-the source gate failed. This plan closes as blocked and does not claim L1, L2 or L3.
+the source-specific HTML collection review is unresolved. This plan does not claim L1, L2 or L3.
 
 ## Stop condition
 
@@ -251,15 +254,16 @@ bounded institution universe, exact institution identifiers, executive rows, cov
 and a usable disclosure-time/version contract, and the implementation proves atomic persistence,
 resume, idempotency and REVIEW_REQUIRED identity isolation.
 
-If the official catalog still lacks that contract and the only named-executive surfaces remain
-disallowed for automated access, close this plan as `BLOCKED` without connector code, without a
-guessed endpoint/field and without promoting the maturity beyond L0.
+If the official catalog still lacks that contract and the known named-executive HTML routes have
+no approved source-specific automated-access basis, retain `L0 RESEARCHED;
+HTML_COLLECTION_REVIEW_REQUIRED` without connector code, without a guessed endpoint/field and
+without promoting the maturity beyond L0.
 
-That blocked branch is the observed result. The stop condition is satisfied as a safe source-
-contract stop, not as L3 completion.
+That review-required branch is the observed result. The L3 implementation stop condition is
+satisfied without claiming a permanent feeder block or L3 completion.
 
 ## Next Best Action
 
-Obtain a published CleanEye named-executive API contract or written provider permission that
-defines the complete institution universe, exact executive fields, disclosure version,
-pagination/coverage, request limit and storage terms before resuming this feeder.
+Complete a source-specific CleanEye automated-access review for the known executive disclosure
+routes, establishing permitted request pacing, complete-universe/coverage semantics and
+policy-minimized storage terms before deciding whether to stage an HTML contract.

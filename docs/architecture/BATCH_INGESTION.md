@@ -433,12 +433,15 @@ unique `apbaId`. The disclosure-bound `disclosureNo:row ordinal` key is an obser
 not a stable Person identifier, so the existing materialization gate keeps every ALIO row in
 `REVIEW_REQUIRED`. Raw report HTML, gender and disclosure-staff contacts are excluded.
 
-CleanEye local-public-institution executives remain an L0 blocked candidate, not an L3 feeder.
-The official REST catalog currently has no named-executive dataset, while the named
-executive HTML surfaces expose no stable executive identifier or disclosure version and the
-current robots policy disallows automated access. The aggregate executive-compensation API
-cannot be repurposed into a person roster. No connector or guessed endpoint is added until the
-provider publishes or permits a machine-readable named-executive contract.
+CleanEye local-public-institution executives remain `L0 RESEARCHED;
+HTML_COLLECTION_REVIEW_REQUIRED`, not an L3 feeder. The official REST catalog currently has
+no named-executive dataset, but the official HTML disclosures do expose named executive rows.
+The current all-path `robots.txt` instruction and absence of route-specific automated-access,
+rate-limit and coverage documentation require a source-specific collection review before any
+repeated HTML request. The aggregate executive-compensation API cannot be repurposed into a
+person roster. A missing stable executive Person ID is a materialization limitation only: a
+future permitted collector would retain each observation in `REVIEW_REQUIRED` rather than
+auto-creating or merging Persons.
 
 OpenDART disclosed executives are the seventh L3 feeder. One bounded scope is the complete
 official corp-code master for one explicit `(business year, report code)` pair. The master and

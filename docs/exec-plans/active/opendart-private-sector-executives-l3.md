@@ -40,8 +40,8 @@ The repository has six source-specific L3 feeders:
 5. NEC local-election candidates
 6. ALIO public-institution executives
 
-CleanEye local-public-institution executives remain `L0 RESEARCHED; BLOCKED` and are outside
-this plan.
+CleanEye local-public-institution executives remain `L0 RESEARCHED;
+HTML_COLLECTION_REVIEW_REQUIRED` and are outside this plan.
 
 Existing OpenDART artifacts to preserve:
 
