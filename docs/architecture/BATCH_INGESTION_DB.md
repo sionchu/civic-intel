@@ -185,6 +185,12 @@ Gwanbo scope key:
 "2026-08-01:2026-08-31"
 ```
 
+NEC local winner scope key:
+
+```text
+"20260603:4"
+```
+
 date window feeder:
 
 ```text

@@ -413,6 +413,10 @@ source-specific HTML POST connector and parser.
 The Gwanbo policy is metadata-only because its current official Open API page does not state a
 reuse license. Notice titles are not treated as structured person or career fields.
 
+The NEC local-winner source is the third L3 feeder. It uses the same persistence transaction
+without extracting a generic page-runner framework. Its bounded universe is one unfiltered
+`(sgId, sgTypecode)` scope and its exact provider row key is `huboid`.
+
 Only after two concrete L3 feeders should repeated batch mechanics be extracted into a more
 generic abstraction.
 

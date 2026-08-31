@@ -37,7 +37,7 @@ POLICY_ID = UUID("12000000-0000-0000-0000-000000000001")
 
 
 def nec_local_election_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 8, 30, tzinfo=UTC)
+    reviewed_at = datetime(2026, 8, 31, tzinfo=UTC)
     return SourcePolicy(
         id=POLICY_ID,
         domain="apis.data.go.kr",
@@ -51,10 +51,13 @@ def nec_local_election_policy() -> SourcePolicy:
         can_commercialize=True,
         terms_checked_at=reviewed_at,
         license="이용허락범위 제한 없음",
-        rate_limit="Public Data Portal key required; provider-controlled traffic limits",
+        rate_limit=(
+            "Development account 10,000 requests; operational account requires review approval"
+        ),
         policy_note=(
-            "Reviewed 2026-08-30 for Central Election Commission candidate/winner APIs. "
-            "Civic Intel discards candidate address and stores only public-interest election metadata."
+            "Reviewed against data.go.kr dataset 15000864 on 2026-08-31 for the Central "
+            "Election Commission winner API. Civic Intel discards candidate address and stores "
+            "only public-interest election metadata."
         ),
     )
 
@@ -82,6 +85,20 @@ class NecCandidateRecord:
 @dataclass(frozen=True)
 class NecWinnerRecord:
     candidate_id: str
+    election_id: str
+    election_type: int
+    district_name: str
+    province_name: str
+    municipality_name: str | None
+    candidate_number: str | None
+    candidate_sub_number: str | None
+    party: str | None
+    name_ko: str
+    name_hanja: str | None
+    birth_date: date | None
+    public_job: str | None
+    submitted_education: str | None
+    submitted_careers: tuple[str, ...]
     votes: int | None
     vote_rate: float | None
 
@@ -189,7 +206,9 @@ class _NecApiConnector(Connector):
         return value
 
     @staticmethod
-    def _response_parts(payload: dict, service_name: str) -> tuple[list[dict], int | None]:
+    def _response_parts(
+        payload: dict, service_name: str
+    ) -> tuple[list[dict], int | None, int | None, int | None]:
         response = payload.get("response")
         if isinstance(response, dict):
             header = response.get("header")
@@ -203,25 +222,64 @@ class _NecApiConnector(Connector):
                 total_count = int(total) if total is not None else None
             except (TypeError, ValueError):
                 total_count = None
+            try:
+                provider_page_no = int(body["pageNo"])
+            except (KeyError, TypeError, ValueError):
+                provider_page_no = None
+            try:
+                provider_page_size = int(body["numOfRows"])
+            except (KeyError, TypeError, ValueError):
+                provider_page_size = None
             items = body.get("items")
             if not items:
-                return [], total_count
+                return [], total_count, provider_page_no, provider_page_size
             if isinstance(items, dict):
                 candidate_rows = items.get("item", [])
                 if isinstance(candidate_rows, dict):
-                    return [candidate_rows], total_count
+                    return [candidate_rows], total_count, provider_page_no, provider_page_size
                 if isinstance(candidate_rows, list):
-                    return [item for item in candidate_rows if isinstance(item, dict)], total_count
+                    return (
+                        [item for item in candidate_rows if isinstance(item, dict)],
+                        total_count,
+                        provider_page_no,
+                        provider_page_size,
+                    )
             raise NecApiError("NEC API returned malformed items")
 
         legacy = payload.get(service_name)
         if isinstance(legacy, dict):
             candidate_rows = legacy.get("item", [])
             if isinstance(candidate_rows, dict):
-                return [candidate_rows], None
+                return [candidate_rows], None, None, None
             if isinstance(candidate_rows, list):
-                return [item for item in candidate_rows if isinstance(item, dict)], None
+                return [item for item in candidate_rows if isinstance(item, dict)], None, None, None
         raise NecApiError("NEC API returned a malformed response")
+
+    @staticmethod
+    def _optional(row: dict, key: str) -> str | None:
+        value = row.get(key)
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
+    @classmethod
+    def _birth_date(cls, row: dict) -> date | None:
+        value = cls._optional(row, "birthday")
+        if not value or len(value) != 8 or not value.isdigit():
+            return None
+        try:
+            return date(int(value[:4]), int(value[4:6]), int(value[6:8]))
+        except ValueError:
+            return None
+
+    @classmethod
+    def _submitted_careers(cls, row: dict) -> tuple[str, ...]:
+        return tuple(
+            value
+            for key in ("career1", "career2")
+            if (value := cls._optional(row, key)) and value != "-"
+        )
 
     def fetch(self, url: str) -> ConnectorDocument:
         query = self._validated_query(url)
@@ -241,14 +299,19 @@ class _NecApiConnector(Connector):
         if not isinstance(payload, dict):
             raise NecApiError("NEC API returned a malformed response")
         payload = self._redact_credentials(payload)
-        rows, total_count = self._response_parts(payload, self.service_name)
+        rows, total_count, provider_page_no, provider_page_size = self._response_parts(
+            payload, self.service_name
+        )
         metadata = {
+            "service_name": self.service_name,
             "election_id": query["sgId"],
             "election_type": query["sgTypecode"],
             "page_no": query.get("pageNo", "1"),
             "page_size": query.get("numOfRows", "100"),
             "row_count": str(len(rows)),
             "total_count": "" if total_count is None else str(total_count),
+            "provider_page_no": "" if provider_page_no is None else str(provider_page_no),
+            "provider_page_size": "" if provider_page_size is None else str(provider_page_size),
         }
         for key in ("sggName", "sdName", "jdName"):
             if key in query:
@@ -275,24 +338,6 @@ class NecCandidateConnector(_NecApiConnector):
     def service_name(self) -> str:
         return "getPofelcddRegistSttusInfoInqire"
 
-    @staticmethod
-    def _optional(row: dict, key: str) -> str | None:
-        value = row.get(key)
-        if value is None:
-            return None
-        text = str(value).strip()
-        return text or None
-
-    @classmethod
-    def _birth_date(cls, row: dict) -> date | None:
-        value = cls._optional(row, "birthday")
-        if not value or len(value) != 8 or not value.isdigit():
-            return None
-        try:
-            return date(int(value[:4]), int(value[4:6]), int(value[6:8]))
-        except ValueError:
-            return None
-
     @classmethod
     def parse_candidates(cls, document: ConnectorDocument) -> list[NecCandidateRecord]:
         try:
@@ -301,7 +346,7 @@ class NecCandidateConnector(_NecApiConnector):
             raise NecApiError("NEC candidate document is not valid JSON") from None
         if not isinstance(payload, dict):
             raise NecApiError("NEC candidate document is malformed")
-        rows, _ = cls._response_parts(payload, "getPofelcddRegistSttusInfoInqire")
+        rows, _, _, _ = cls._response_parts(payload, "getPofelcddRegistSttusInfoInqire")
         records: list[NecCandidateRecord] = []
         for row in rows:
             candidate_id = cls._optional(row, "huboid")
@@ -325,11 +370,6 @@ class NecCandidateConnector(_NecApiConnector):
                 raise NecApiError("NEC candidate row has invalid election type") from None
             if election_type not in LOCAL_ELECTION_TYPES:
                 raise NecApiError("NEC candidate row is outside local-election scope")
-            careers = tuple(
-                value
-                for key in ("career1", "career2")
-                if (value := cls._optional(row, key)) and value != "-"
-            )
             records.append(
                 NecCandidateRecord(
                     candidate_id=candidate_id,
@@ -346,7 +386,7 @@ class NecCandidateConnector(_NecApiConnector):
                     birth_date=cls._birth_date(row),
                     public_job=cls._optional(row, "job"),
                     submitted_education=cls._optional(row, "edu"),
-                    submitted_careers=careers,
+                    submitted_careers=cls._submitted_careers(row),
                     registration_status=cls._optional(row, "status"),
                 )
             )
@@ -387,15 +427,47 @@ class NecWinnerConnector(_NecApiConnector):
             raise NecApiError("NEC winner document is not valid JSON") from None
         if not isinstance(payload, dict):
             raise NecApiError("NEC winner document is malformed")
-        rows, _ = cls._response_parts(payload, "getWinnerInfoInqire")
+        rows, _, _, _ = cls._response_parts(payload, "getWinnerInfoInqire")
         winners: list[NecWinnerRecord] = []
         for row in rows:
-            candidate_id = str(row.get("huboid") or "").strip()
-            if not candidate_id:
-                raise NecApiError("NEC winner row lacks candidate ID")
+            candidate_id = cls._optional(row, "huboid")
+            election_id = cls._optional(row, "sgId")
+            election_type_text = cls._optional(row, "sgTypecode")
+            district_name = cls._optional(row, "sggName")
+            province_name = cls._optional(row, "sdName")
+            name_ko = cls._optional(row, "name")
+            if (
+                candidate_id is None
+                or election_id is None
+                or election_type_text is None
+                or district_name is None
+                or province_name is None
+                or name_ko is None
+            ):
+                raise NecApiError("NEC winner row lacks required identity fields")
+            try:
+                election_type = int(election_type_text)
+            except ValueError:
+                raise NecApiError("NEC winner row has invalid election type") from None
+            if election_type not in LOCAL_ELECTION_TYPES:
+                raise NecApiError("NEC winner row is outside local-election scope")
             winners.append(
                 NecWinnerRecord(
                     candidate_id=candidate_id,
+                    election_id=election_id,
+                    election_type=election_type,
+                    district_name=district_name,
+                    province_name=province_name,
+                    municipality_name=cls._optional(row, "wiwName"),
+                    candidate_number=cls._optional(row, "giho"),
+                    candidate_sub_number=cls._optional(row, "gihoSangse"),
+                    party=cls._optional(row, "jdName"),
+                    name_ko=name_ko,
+                    name_hanja=cls._optional(row, "hanjaName"),
+                    birth_date=cls._birth_date(row),
+                    public_job=cls._optional(row, "job"),
+                    submitted_education=cls._optional(row, "edu"),
+                    submitted_careers=cls._submitted_careers(row),
                     votes=cls._int_value(row.get("dugsu")),
                     vote_rate=cls._float_value(row.get("dugyul")),
                 )
