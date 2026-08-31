@@ -78,6 +78,18 @@ ASSEMBLY_API_KEY=... civic-stage-legislative \
   --page-size 1000 --max-pages 100
 ```
 
+The same unfiltered term can be persisted with run/checkpoint/resume receipts after the target
+database is migrated:
+
+```bash
+ASSEMBLY_API_KEY=... civic-stage-legislative \
+  --age 22 --page-size 1000 --enumerate-bills \
+  --database-url sqlite:///civic-intel.db
+```
+
+Use `--resume` with the same age and page size after a partial run. Persistent observations are
+multi-person bill events keyed by `BILL_ID`; they do not create Persons or publish claims.
+
 The exact scanner does not use the `PROPOSER` name filter. It fetches every expected page for
 that Assembly and matches the reviewed identity by `MONA_CD` using:
 

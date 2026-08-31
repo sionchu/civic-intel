@@ -44,7 +44,7 @@ L3.
 |---|---|---|---|---|---|---|
 | National Assembly members | elected National Assembly members | 열린국회정보 member API | API | `MONA_CD` | Legislative | L3 FULL_ENUMERATION |
 | Gwanbo personnel notices | official personnel-notice metadata in an explicit publication-date window | 대한민국 전자관보 인사 API | OFFICIAL_WEB | notice `cntntSeqNo`; no Person anchor at list stage | Public Service notice discovery | L3 FULL_ENUMERATION; metadata only, no Person creation |
-| National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | L2 SINGLE_PULL; no persistent resume |
+| National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | L3 FULL_ENUMERATION; multi-person event observations, no Person creation |
 | National Assembly proposal-reason / major-content text | official full `제안이유` / 주요내용 | no verified structured Open Assembly source found in 2026-08-30 review | BLOCKED | bill ID/detail link only | Legislative text evidence | L0 RESEARCHED; BLOCKED, no HTML scraping |
 | Local elected-office winners | governors, mayors/county/district heads, local councilors and education superintendents elected in one exact election/type scope | NEC winner API | API | NEC `huboid` within `(sgId, sgTypecode)` | Local Elected Office | L3 FULL_ENUMERATION |
 | Local election candidates | all registered candidates in a reviewed election query | NEC candidate API | API | NEC `huboid` | Local Elected Office candidacy | L2 SINGLE_PULL |

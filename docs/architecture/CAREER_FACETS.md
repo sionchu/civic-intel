@@ -238,6 +238,11 @@ Exact representative/co-sponsored counts require all of the following:
 If any condition fails, exact counts remain `UNKNOWN`/`None` rather than falling back to
 `PROPOSER`, `RST_PROPOSER`, or `PUBL_PROPOSER` name strings.
 
+The unfiltered term endpoint is L3. It persists one immutable multi-person event observation per
+`BILL_ID`, with transactional page checkpoints and resume. Persistent observations retain exact
+member-code sets but omit display-name proposer strings. They do not create Persons or publish
+participation claims without an accepted exact `MONA_CD` identity and the canonical evidence gate.
+
 A bill count is descriptive participation data, not a performance score. Raw
 `PROC_RESULT` stays canonical; `대안반영폐기` is never silently treated as
 `원안가결`/`수정가결`.

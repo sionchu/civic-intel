@@ -61,7 +61,7 @@ POLICY_ID = UUID("11000000-0000-0000-0000-000000000002")
 
 
 def national_assembly_bill_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 8, 30, tzinfo=UTC)
+    reviewed_at = datetime(2026, 8, 31, tzinfo=UTC)
     return SourcePolicy(
         id=POLICY_ID,
         domain="open.assembly.go.kr",
@@ -75,11 +75,13 @@ def national_assembly_bill_policy() -> SourcePolicy:
         can_commercialize=True,
         terms_checked_at=reviewed_at,
         license="이용허락범위 제한 없음",
-        rate_limit="Provider-controlled; development auto-approval, operation review",
+        rate_limit=(
+            "Provider-controlled traffic; development auto-approval, operation review approval"
+        ),
         policy_note=(
-            "Reviewed 2026-08-30 for National Assembly 의원 발의법률안 API "
-            "nzmimeepazxkubdpn. V0 stages structured metadata and proposer-code fields only; "
-            "no bill-detail HTML scraping."
+            "Reviewed 2026-08-31 against data.go.kr dataset 15125946 and the National Assembly "
+            "의원 발의법률안 API nzmimeepazxkubdpn. Civic Intel stores structured metadata and "
+            "exact proposer-code fields only; no bill-detail HTML scraping."
         ),
     )
 

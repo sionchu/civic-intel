@@ -404,7 +404,7 @@ These may be evaluated after real L3 workloads demonstrate a need.
 
 ---
 
-## Second-source proof
+## Concrete L3 feeder proofs
 
 Gwanbo personnel notices are the second concrete L3 feeder. They reuse the canonical
 SourcePolicy/Source/Snapshot/Observation/Run/Checkpoint persistence while keeping a separate
@@ -417,7 +417,12 @@ The NEC local-winner source is the third L3 feeder. It uses the same persistence
 without extracting a generic page-runner framework. Its bounded universe is one unfiltered
 `(sgId, sgTypecode)` scope and its exact provider row key is `huboid`.
 
-Only after two concrete L3 feeders should repeated batch mechanics be extracted into a more
-generic abstraction.
+National Assembly bill participation is the fourth L3 feeder. Its bounded universe is one
+unfiltered Assembly `AGE`, its provider row key is `BILL_ID`, and every row must expose complete
+parseable `RST_MONA_CD`/`PUBL_MONA_CD` fields. Observations are multi-person legislative events;
+they do not create Persons or turn participation into a performance/faction claim.
 
-The abstraction must be earned by actual duplication.
+The concrete feeders now demonstrate the shared repository transaction while retaining distinct
+source contracts, coverage rules and semantic boundaries. Any future helper must remain small and
+must be earned by verified duplication; a generic crawler or universal page runner is still not
+justified.

@@ -14,6 +14,7 @@ implementation work.
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
 - [Batch ingestion](architecture/BATCH_INGESTION.md)
 - [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
+- [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
 - [Civil service feeder](architecture/CIVIL_SERVICE.md)

@@ -191,6 +191,12 @@ NEC local winner scope key:
 "20260603:4"
 ```
 
+National Assembly bill-participation scope key:
+
+```text
+"assembly_age:22"
+```
+
 date window feeder:
 
 ```text
