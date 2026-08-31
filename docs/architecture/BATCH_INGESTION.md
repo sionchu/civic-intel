@@ -427,6 +427,12 @@ The NEC local-candidate source is the fifth L3 feeder. Its bounded universe is o
 candidate-registration observations with candidate-submitted disclosure semantics and no winner
 inference or Person creation.
 
+ALIO public-institution executives are the sixth L3 feeder. The bounded universe is the
+unfiltered item 4 institution directory and the provider-ranked current disclosure for each
+unique `apbaId`. The disclosure-bound `disclosureNo:row ordinal` key is an observation identity,
+not a stable Person identifier, so the existing materialization gate keeps every ALIO row in
+`REVIEW_REQUIRED`. Raw report HTML, gender and disclosure-staff contacts are excluded.
+
 The concrete feeders now demonstrate the shared repository transaction while retaining distinct
 source contracts, coverage rules and semantic boundaries. Any future helper must remain small and
 must be earned by verified duplication; a generic crawler or universal page runner is still not

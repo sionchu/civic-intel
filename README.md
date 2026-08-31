@@ -7,7 +7,8 @@ The offline baseline is Golden Set 001: the ten people in the official 2026-08-3
 personnel briefing. Runtime API reads are SQLAlchemy-backed. Opt-in live-capable official
 connectors are available for National Assembly member identity, legislative activity,
 Central Election Commission local-election candidates/winners, NKIS policy-research
-metadata, and selected OpenDART corporate disclosures; Golden tests remain fully offline.
+metadata, selected OpenDART corporate disclosures, and the ALIO item 4 current executive
+roster; Golden tests remain fully offline.
 
 ## Setup
 
@@ -182,6 +183,24 @@ and ordinary employees fail closed.
 OpenDART allows credentialed metadata retrieval under its service terms; V0 keeps fulltext,
 AI use, excerpt display and commercial reuse disabled pending deployment-specific review.
 No scheduled synchronization is enabled yet.
+
+## ALIO public-institution executives
+
+`AlioExecutiveDisclosureConnector` uses the exact institution, current-report and report-
+document surfaces exposed by the official ALIO item 4 page. The L3 scope is every institution
+in the unfiltered item 4 directory and the provider-ranked current disclosure for each one.
+
+```bash
+civic-stage-public-institutions --database-url sqlite:///civic-intel.db
+```
+
+Use `--resume` only after a partial run. The worker is sequential because ALIO publishes no
+request-rate limit. It stores normalized executive metadata and exact snapshot provenance but
+not raw report HTML, gender, disclosure-staff identities or phone numbers.
+
+ALIO does not expose a stable executive-person identifier on this surface. The persisted
+`disclosureNo:row-ordinal` key identifies a disclosure row only, so materialization remains on
+the existing `REVIEW_REQUIRED` path and does not automatically create or merge Persons.
 
 ## Safety and source rights
 

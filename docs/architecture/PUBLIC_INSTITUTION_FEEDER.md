@@ -6,13 +6,15 @@ Civic Intel uses ALIO to explain career paths through public corporations, quasi
 institutions and other designated public institutions without flattening them into one
 `공기업` label or inferring political patronage.
 
-The first implementation is deterministic and staging-only:
+The fixture path remains deterministic and review-only. The item 4 live path now adds bounded
+current-roster enumeration:
 
 ```text
-ALIO institution disclosure
+ALIO item 4 institution directory
+ -> provider-ranked current disclosure for every institution
  -> institution classification
  -> executive / governance disclosure
- -> IdentityCandidate
+ -> FeederObservation / IdentityCandidate
  -> Institutional Governance / CareerEpisode projection
  -> AppointmentPath / TalentPoolEntry
  -> Public Official Profiler
@@ -29,9 +31,24 @@ items include:
 - item 10: executive annual compensation (`임원 연봉`)
 - board/governance and other institutional disclosures where separately reviewed
 
-The public-data portal's ALIO-based general public-institution dataset is free and marked
-`이용허락범위 제한 없음`. The V0 SourcePolicy still disables live report fetching until a
-source-specific live adapter is reviewed; normalized metadata staging is allowed.
+The official ALIO copyright policy permits free use of ALIO-owned works and public data,
+including commercial use, subject to protected third-party rights exclusions. The reviewed
+SourcePolicy permits the source-specific item 4 adapter to fetch and store normalized metadata.
+Full report HTML, excerpts and AI transmission remain disabled by data minimization.
+
+## Item 4 L3 source contract
+
+The bounded L3 universe is the unfiltered item 4 (`reportFormRootNo=20305`) institution
+directory and exactly one provider-ranked current disclosure (`rnum=1`) per returned `apbaId`.
+The directory total must equal its complete row set and `apbaId` values must be unique.
+
+The official report list is page-based with `pageNo`, `currPage`, `unitPage`, `totalCount` and
+`totalPage`. Current-roster enumeration requests page 1 and validates the provider page size,
+total-page calculation, exact expected row count, institution/report identity and current rank.
+Historical disclosure pages are outside this scope.
+
+The report page itself supplies the exact `/upload/disclosure/.../doc.html` path. The connector
+follows only that embedded path; it does not derive or crawl report locations.
 
 ## Institution classification
 
@@ -66,6 +83,11 @@ Supported person-scope roles:
 - non-standing auditor
 
 These roles are public-governance positions. Ordinary employees do not enter this feeder.
+
+The current report exposes no stable executive-person identifier. L3 therefore uses
+`disclosureNo:one-based executive table ordinal` only as a disclosure-row observation key.
+It is not an external Person identity. Automatic Person creation/linking/merging is not enabled;
+the existing deterministic materialization gate returns `REVIEW_REQUIRED` for ALIO observations.
 
 ### Selection-procedure rule
 
@@ -140,17 +162,16 @@ Do not emit:
 - inferred political affiliation from board membership
 - inferred union membership from institution-level labor disclosure
 
-## First implementation boundary
+## Implementation boundary
 
-- normalized ALIO-shaped fixtures only
-- reviewed SourcePolicy with live fetch disabled
+- normalized ALIO-shaped fixture staging remains supported
+- reviewed source-specific live item 4 fetch and metadata-only storage
 - institution classification parser
 - executive-status parser and IdentityCandidate staging
+- complete current item 4 institution enumeration
+- SourceRun / SourceCheckpoint / FeederObservation persistence and resume
 - role-category compensation staging
 - executive-only reemployment identity staging
-- no DB upsert/publication
+- no automatic Person creation/merge or publication
 - no generic ALIO crawler
 - no board-minutes NLP or political-patronage model
-
-The next live adapter should target one stable ALIO report/data export and reuse these
-semantics rather than introduce a second public-institution model.

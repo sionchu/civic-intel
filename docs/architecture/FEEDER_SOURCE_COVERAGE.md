@@ -52,7 +52,7 @@ L3.
 | Presidential advisers / commissions / TFs | publicly named special advisers, commission chair/vice-chair/member and explicit presidential TF leadership | official personnel/body appointment records | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | person + body + role + exact personnel action + date | CommitteeMembershipEpisode / Appointment | L1 CONTRACT_STAGED; live roster adapter pending |
 | Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date + adjacent career anchors | Public Service | L1 CONTRACT_STAGED; live adapter pending |
 | Retired-public-official employment review | covered former officials and destination organizations in published ethics review | MPM / Government Public Ethics Committee | STRUCTURED_DISCLOSURE | name + former agency/title + destination + review date | EmploymentReviewEvent | L1 CONTRACT_STAGED; live adapter pending |
-| Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO item 4 / general public-institution dataset | STRUCTURED_DISCLOSURE | ALIO institution code + name + role + term | Institutional Governance / Public Service | L1 CONTRACT_STAGED; live adapter pending |
+| Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO item 4 current disclosure for every unfiltered directory institution | STRUCTURED_DISCLOSURE | ALIO `apbaId` + `disclosureNo:row ordinal` observation key + name/role/term; no provider Person ID | Institutional Governance / Public Service | L3 FULL_ENUMERATION; automatic Person materialization remains REVIEW_REQUIRED |
 | Public-institution executive compensation | role-category compensation/annual-pay disclosures | ALIO item 10 | STRUCTURED_DISCLOSURE | institution + executive role category + fiscal year | Institutional Governance | L1 CONTRACT_STAGED; person attribution prohibited |
 | Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | L1 CONTRACT_STAGED; separate from ethics review |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | L1 CONTRACT_STAGED; connectors pending |
@@ -228,7 +228,7 @@ Current recommended sequence after presidential-personnel staging:
 3. small federation/social-dialogue public leadership verification lane using #20 semantics;
 4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
 5. official institute-profile/appointment adapter for NKIS-discovered researchers;
-6. one reviewed live ALIO adapter using the #25 staging contracts;
+6. completed: reviewed ALIO item 4 current-roster L3 adapter using the existing staging contracts;
 7. one reviewed live civil-service/ethics source adapter using the #23 contracts;
 8. revisit bill proposal-reason text only if a verified official structured source becomes available.
 

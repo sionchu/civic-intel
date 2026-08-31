@@ -23,6 +23,7 @@ civic-stage-legislative = "workers.legislative_activity:main"
 civic-stage-local-election = "workers.local_elections:main"
 civic-stage-policy-research = "workers.policy_research:main"
 civic-stage-corporate-dart = "workers.corporate_talent:main"
+civic-stage-public-institutions = "workers.public_institutions:main"
 
 [build-system]
 requires = ["setuptools>=70"]
