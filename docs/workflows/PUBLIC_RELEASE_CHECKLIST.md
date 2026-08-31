@@ -53,3 +53,15 @@ Complete every gate in this section immediately after changing repository visibi
 - verify an actual CI-green result; a runner/billing block remains `POST_PUBLIC_REQUIRED` and is not a pass;
 - clone the public repository into a fresh location and repeat the history/privacy audit; and
 - verify the public repository exposes the intended `LICENSE`, `NOTICE` and README licensing boundary.
+
+## Completed release record
+
+The 2026-08-31 public-release verification completed for candidate
+`fb67315394797f17164d144b5abfd625a5792099`:
+
+- public visibility was confirmed;
+- Verify run [33360331366](https://github.com/sionchu/civic-intel/actions/runs/33360331366),
+  attempt 2, ran on a GitHub-hosted runner and completed successfully;
+- a fresh unauthenticated public clone passed the reachable-history privacy, high-confidence
+  secret, `git fsck`, artifact/blob, ref and document checks; and
+- the public repository exposed `LICENSE`, `NOTICE` and the README licensing boundary.
