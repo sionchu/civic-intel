@@ -57,7 +57,7 @@ L3.
 | Public-institution executive compensation | role-category compensation/annual-pay disclosures | ALIO item 10 | STRUCTURED_DISCLOSURE | institution + executive role category + fiscal year | Institutional Governance | L1 CONTRACT_STAGED; person attribution prohibited |
 | Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | L1 CONTRACT_STAGED; separate from ethics review |
 | Policy banks / state-linked companies | public-policy bank executives; state-linked listed-company boards/executives | statute + ALIO/OpenDART/KRX/institution governance | STRUCTURED_DISCLOSURE | org IDs / DART corp code + person | Institutional Governance / Corporate | L1 CONTRACT_STAGED; connectors pending |
-| Private-sector disclosed executives | registered/non-registered executives publicly disclosed in periodic reports | OpenDART `exctvSttus` | API | DART corp code + receipt no + name + birth year/month + role | Corporate | L2 SINGLE_PULL; credentialed connector |
+| Private-sector disclosed executives | registered/non-registered executives publicly disclosed in periodic reports | OpenDART corp-code master + `exctvSttus` for one exact business-year/report-code scope | API | `{corp_code}:{rcept_no}:{row ordinal}` disclosure-row key; no provider Person ID | Corporate | L3 FULL_ENUMERATION; all Person materialization remains REVIEW_REQUIRED |
 | Private-sector disclosed compensation | named statutory compensation disclosures | OpenDART compensation V2 APIs | API | DART corp code + receipt no + disclosed name | Corporate enrichment | L2 SINGLE_PULL; no Person creation alone |
 | Private-sector officer/major-holder ownership | disclosed officers/major holders with specific-security ownership reports | OpenDART `elestock` | API | DART corp code + receipt no + reporter + public relation | Corporate / Ownership | L2 SINGLE_PULL; no automatic conflict inference |
 | Private-sector senior technical/business leaders | CEO/CTO/CSO, research/technology-center and major business-unit heads not necessarily in DART executive status | company official governance/profile/press material | OFFICIAL_WEB | reviewed source + company + person + senior role + dates | Corporate | L1 CONTRACT_STAGED; per-company adapters pending |
@@ -179,6 +179,8 @@ labor-union representative field
 OpenDART executive-status row
  -> FACT that the reporting company disclosed the named person/role in that report
  -> preserve `rcept_no` because extracted OpenDART data is not a substitute for the original filing
+ -> `corp_code` identifies the company and `rcept_no` identifies the filing; neither identifies a Person
+ -> name + company + role does not authorize automatic Person creation, linking or merge
 
 OpenDART compensation row
  -> FACT of a disclosed compensation amount for the reporting period
@@ -232,7 +234,8 @@ Current recommended sequence after presidential-personnel staging:
 6. completed: reviewed ALIO item 4 current-roster L3 adapter using the existing staging contracts;
 7. blocked: CleanEye local-public-institution executive enumeration until the provider publishes
    or permits a machine-readable named-executive contract;
-8. one reviewed live civil-service/ethics source adapter using the #23 contracts;
-9. revisit bill proposal-reason text only if a verified official structured source becomes available.
+8. completed: source-bounded OpenDART executive-status L3 over the official corp-code master;
+9. one reviewed live civil-service/ethics source adapter using the #23 contracts;
+10. revisit bill proposal-reason text only if a verified official structured source becomes available.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.

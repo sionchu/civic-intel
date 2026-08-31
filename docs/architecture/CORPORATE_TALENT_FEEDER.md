@@ -159,6 +159,51 @@ URLs, metadata or errors.
 - no generic company crawler;
 - no company-performance-to-person causal attribution.
 
-The next best corporate step after this staging layer is to select one real high-public-
-interest company/person case and verify `DART disclosure + company official profile + later
-public role` end to end through the existing profiler.
+## Executive-status L3 full enumeration
+
+The executive-status lane now uses the official corporation-code master:
+
+```text
+GET https://opendart.fss.or.kr/api/corpCode.xml
+```
+
+The credentialed response is one ZIP/XML master with `corp_code`, formal Korean/English names,
+listed-company `stock_code` when present and company-overview `modify_date`. It has no pagination.
+The parser validates a non-empty universe, exact 8-digit unique corporation codes, optional
+6-digit stock codes and dates, then sorts by `corp_code` and fingerprints the complete master.
+
+One L3 scope is:
+
+```text
+all_corporations:{bsns_year}:{reprt_code}
+```
+
+`bsns_year` is explicit and begins at the provider's documented 2015 coverage boundary.
+`reprt_code` is one of first-quarter `11013`, half-year `11012`, third-quarter `11014` or annual
+`11011`. There is no implicit “latest” report.
+
+For each corporation, `exctvSttus` returns one unpaginated list or official status `013` when no
+data exists. Both outcomes advance the company-ordinal checkpoint. A successful run proves that
+every company in the captured master was attempted exactly once and that with-data plus no-data
+company counts equal the master total. Resume requires the same master fingerprint and total;
+otherwise it fails closed rather than mixing universes.
+
+The deterministic disclosure-row observation key is:
+
+```text
+{corp_code}:{rcept_no}:{one-based row ordinal within that receipt}
+```
+
+It is not Person identity. `corp_code` identifies a company and `rcept_no` identifies a filing.
+The endpoint supplies no stable executive-person ID, so all materialization remains
+`REVIEW_REQUIRED` with zero automatic Person creation/link/merge. Name + company + role and birth
+year/month cannot change that rule.
+
+Normalized observations retain only company/disclosure scope, name, disclosed birth year/month,
+role/status/responsibility, attributed main-career text, largest-shareholder relation, tenure and
+settlement date. Gender, raw ZIP/XML/JSON, credentials, contacts, employee-status rows and
+compensation data are excluded. Source snapshots remain metadata-only under the existing
+OpenDART SourcePolicy.
+
+Current executive-status maturity is `L3 FULL_ENUMERATION`. Compensation and ownership remain
+separate L2 enrichment/source lanes and do not inherit executive Person-discovery authority.

@@ -5,9 +5,12 @@ import os
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from enum import StrEnum
+from io import BytesIO
 from typing import ClassVar
 from urllib.parse import parse_qs, urlencode, urlparse
 from uuid import UUID
+from xml.etree import ElementTree
+from zipfile import BadZipFile, ZipFile
 
 import httpx
 
@@ -36,7 +39,7 @@ POLICY_ID = UUID("17000000-0000-0000-0000-000000000001")
 
 
 def open_dart_corporate_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 8, 30, tzinfo=UTC)
+    reviewed_at = datetime(2026, 8, 31, tzinfo=UTC)
     return SourcePolicy(
         id=POLICY_ID,
         domain="opendart.fss.or.kr",
@@ -50,12 +53,15 @@ def open_dart_corporate_policy() -> SourcePolicy:
         can_commercialize=False,
         terms_checked_at=reviewed_at,
         license="OpenDART API terms apply; public-data/copyright rules govern reuse",
-        rate_limit="Provider-controlled; general guide notes request-limit errors around 20,000 requests",
+        rate_limit=(
+            "Provider-controlled; official error 020 generally occurs above 20,000 requests, "
+            "but a different limit may apply"
+        ),
         policy_note=(
-            "Reviewed 2026-08-30 against OpenDART terms and official executive-status, "
-            "individual-compensation V2, top-compensation V2, and officer/major-holder "
-            "ownership APIs. V0 stores normalized disclosure metadata only. Commercial reuse "
-            "remains fail-closed pending product-use review."
+            "Reviewed 2026-08-31 against OpenDART terms and official corporation-code, "
+            "executive-status, individual-compensation V2, top-compensation V2, and "
+            "officer/major-holder ownership APIs. V0 stores normalized disclosure metadata "
+            "only. Commercial reuse remains fail-closed pending product-use review."
         ),
     )
 
@@ -75,6 +81,167 @@ _REPORT_DATASETS = {
 
 _REPORT_CODES = frozenset({"11011", "11012", "11013", "11014"})
 _EMPTY_MARKERS = frozenset({"", "-", "해당사항없음", "해당 없음"})
+
+
+@dataclass(frozen=True)
+class DartCorporationRecord:
+    corp_code: str
+    corp_name: str
+    corp_eng_name: str | None
+    stock_code: str | None
+    modified_on: date
+
+
+class OpenDartCorpCodeConnector(Connector):
+    HOST = "opendart.fss.or.kr"
+    PATH = "/api/corpCode.xml"
+
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        self._api_key = api_key
+        self._transport = transport
+
+    @property
+    def base_url(self) -> str:
+        return f"https://{self.HOST}{self.PATH}"
+
+    def _credential(self) -> str:
+        value = self._api_key or os.getenv("DART_API_KEY")
+        if not value:
+            raise MissingDartApiKey("DART_API_KEY is required for live fetch")
+        return value
+
+    def discover(self) -> list[str]:
+        return [self.base_url]
+
+    def fetch(self, url: str) -> ConnectorDocument:
+        parsed = urlparse(url)
+        if parsed.scheme != "https" or parsed.netloc != self.HOST or parsed.path != self.PATH:
+            raise ValueError("unsupported OpenDART corporation-code URL")
+        if parsed.query:
+            raise ValueError("OpenDART corporation-code discovery URL must not contain query data")
+        headers = {
+            "User-Agent": os.getenv(
+                "CIVIC_HTTP_USER_AGENT", "CivicIntel/0.1 (+contact@example.invalid)"
+            )
+        }
+        try:
+            with httpx.Client(transport=self._transport, timeout=30, headers=headers) as client:
+                response = client.get(self.base_url, params={"crtfc_key": self._credential()})
+                response.raise_for_status()
+                payload = _corporation_payload_from_archive(response.content)
+        except httpx.HTTPError:
+            raise DartApiError("OpenDART corporation-code API request failed") from None
+        body = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        records = parse_corporation_codes_body(body)
+        return ConnectorDocument(
+            url=url,
+            title="OpenDART corporation-code master",
+            publisher="금융감독원 전자공시시스템 OpenDART",
+            published_at=None,
+            body=body,
+            metadata={
+                "dataset": "CORPORATION_CODE_MASTER",
+                "record_count": str(len(records)),
+                "source_contract": "opendart_corp_code_master",
+            },
+        )
+
+    @staticmethod
+    def parse_corporations(document: ConnectorDocument) -> tuple[DartCorporationRecord, ...]:
+        return parse_corporation_codes_body(document.body)
+
+
+def _corporation_payload_from_archive(content: bytes) -> dict[str, object]:
+    try:
+        with ZipFile(BytesIO(content)) as archive:
+            xml_names = [
+                name
+                for name in archive.namelist()
+                if not name.endswith("/") and name.casefold().endswith(".xml")
+            ]
+            if len(xml_names) != 1:
+                raise DartApiError(
+                    "OpenDART corporation-code archive must contain exactly one XML file"
+                )
+            xml_content = archive.read(xml_names[0])
+    except BadZipFile:
+        status = _xml_error_status(content)
+        raise DartApiError(
+            f"OpenDART corporation-code API returned status {status or 'UNKNOWN'}"
+        ) from None
+    try:
+        root = ElementTree.fromstring(xml_content)
+    except ElementTree.ParseError:
+        raise DartApiError("OpenDART corporation-code XML is malformed") from None
+    rows: list[dict[str, str]] = []
+    for element in root.findall("list"):
+        rows.append(
+            {
+                "corp_code": _xml_text(element, "corp_code"),
+                "corp_name": _xml_text(element, "corp_name"),
+                "corp_eng_name": _xml_text(element, "corp_eng_name"),
+                "stock_code": _xml_text(element, "stock_code"),
+                "modify_date": _xml_text(element, "modify_date"),
+            }
+        )
+    if not rows:
+        raise DartApiError("OpenDART corporation-code master is empty")
+    return {"status": "000", "list": rows}
+
+
+def _xml_error_status(content: bytes) -> str | None:
+    try:
+        root = ElementTree.fromstring(content)
+    except ElementTree.ParseError:
+        return None
+    value = root.findtext("status")
+    return value.strip() if value else None
+
+
+def _xml_text(element: ElementTree.Element, key: str) -> str:
+    value = element.findtext(key)
+    return "" if value is None else value.strip()
+
+
+def parse_corporation_codes_body(body: str) -> tuple[DartCorporationRecord, ...]:
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        raise DartApiError("OpenDART corporation-code document is not valid JSON") from None
+    if not isinstance(payload, dict) or str(payload.get("status") or "") != "000":
+        raise DartApiError("OpenDART corporation-code document is malformed")
+    rows = payload.get("list")
+    if not isinstance(rows, list) or not rows:
+        raise DartApiError("OpenDART corporation-code master is empty")
+    records: list[DartCorporationRecord] = []
+    seen_codes: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            raise DartApiError("OpenDART corporation-code row is malformed")
+        corp_code = _required(row, "corp_code")
+        if len(corp_code) != 8 or not corp_code.isdigit():
+            raise DartApiError("OpenDART corporation code must be 8 digits")
+        if corp_code in seen_codes:
+            raise DartApiError("duplicate OpenDART corporation code")
+        stock_code = _optional(row, "stock_code")
+        if stock_code is not None and (len(stock_code) != 6 or not stock_code.isdigit()):
+            raise DartApiError("OpenDART stock code must be 6 digits when present")
+        records.append(
+            DartCorporationRecord(
+                corp_code=corp_code,
+                corp_name=_required(row, "corp_name"),
+                corp_eng_name=_optional(row, "corp_eng_name"),
+                stock_code=stock_code,
+                modified_on=_date(_required(row, "modify_date"), "modify_date"),
+            )
+        )
+        seen_codes.add(corp_code)
+    return tuple(sorted(records, key=lambda item: item.corp_code))
 
 
 @dataclass(frozen=True)
@@ -130,9 +297,7 @@ class DartOwnershipRecord:
 
 class OpenDartCorporateConnector(Connector):
     HOST = "opendart.fss.or.kr"
-    ALLOWED_QUERY: ClassVar[frozenset[str]] = frozenset(
-        {"corp_code", "bsns_year", "reprt_code"}
-    )
+    ALLOWED_QUERY: ClassVar[frozenset[str]] = frozenset({"corp_code", "bsns_year", "reprt_code"})
 
     def __init__(
         self,
@@ -149,6 +314,8 @@ class OpenDartCorporateConnector(Connector):
         if dataset in _REPORT_DATASETS:
             if business_year is None or report_code is None:
                 raise ValueError("report datasets require business_year and report_code")
+            if business_year < 2015 or business_year > 9999:
+                raise ValueError("OpenDART business_year must be a 4-digit year from 2015")
             if report_code not in _REPORT_CODES:
                 raise ValueError("unsupported OpenDART report code")
         elif business_year is not None or report_code is not None:
@@ -220,7 +387,7 @@ class OpenDartCorporateConnector(Connector):
         if not isinstance(payload, dict):
             raise DartApiError("OpenDART corporate API returned malformed JSON")
         status = str(payload.get("status") or "")
-        if status != "000":
+        if status not in {"000", "013"}:
             raise DartApiError(f"OpenDART corporate API returned status {status or 'UNKNOWN'}")
         safe_payload = _redact_credentials(payload)
         return ConnectorDocument(
@@ -234,6 +401,7 @@ class OpenDartCorporateConnector(Connector):
                 "corp_code": self.corp_code,
                 "business_year": "" if self.business_year is None else str(self.business_year),
                 "report_code": self.report_code or "",
+                "provider_status": status,
             },
         )
 
@@ -267,7 +435,7 @@ def _payload(document: ConnectorDocument) -> dict:
         payload = json.loads(document.body)
     except json.JSONDecodeError:
         raise DartApiError("OpenDART staged document is not valid JSON") from None
-    if not isinstance(payload, dict) or str(payload.get("status") or "") != "000":
+    if not isinstance(payload, dict) or str(payload.get("status") or "") not in {"000", "013"}:
         raise DartApiError("OpenDART staged document is malformed")
     return payload
 
@@ -278,7 +446,9 @@ def _rows(payload: dict, key: str) -> list[dict]:
         return []
     if not isinstance(rows, list):
         raise DartApiError(f"OpenDART {key} rows are malformed")
-    return [row for row in rows if isinstance(row, dict)]
+    if any(not isinstance(row, dict) for row in rows):
+        raise DartApiError(f"OpenDART {key} rows are malformed")
+    return rows
 
 
 def _required(row: dict, key: str) -> str:
@@ -332,12 +502,20 @@ def _float_value(value: object) -> float | None:
 
 def parse_executive_status(document: ConnectorDocument) -> list[DartExecutiveRecord]:
     payload = _payload(document)
+    if str(payload.get("status")) == "013":
+        return []
     records: list[DartExecutiveRecord] = []
     for row in _rows(payload, "list"):
+        receipt_no = _required(row, "rcept_no")
+        if len(receipt_no) != 14 or not receipt_no.isdigit():
+            raise DartApiError("OpenDART receipt number must be 14 digits")
+        corp_code = _required(row, "corp_code")
+        if len(corp_code) != 8 or not corp_code.isdigit():
+            raise DartApiError("OpenDART corporation code must be 8 digits")
         records.append(
             DartExecutiveRecord(
-                receipt_no=_required(row, "rcept_no"),
-                corp_code=_required(row, "corp_code"),
+                receipt_no=receipt_no,
+                corp_code=corp_code,
                 corp_name=_required(row, "corp_name"),
                 name=_required(row, "nm"),
                 birth_year_month=_optional(row, "birth_ym"),
@@ -359,6 +537,8 @@ def parse_compensation(
     document: ConnectorDocument, dataset: DartCorporateDataset
 ) -> list[DartCompensationRecord]:
     payload = _payload(document)
+    if str(payload.get("status")) == "013":
+        return []
     receipt_no = _required(payload, "rcept_no")
     corp_code = _required(payload, "corp_code")
     corp_name = _required(payload, "corp_name")
@@ -386,6 +566,8 @@ def parse_compensation(
 
 def parse_ownership(document: ConnectorDocument) -> list[DartOwnershipRecord]:
     payload = _payload(document)
+    if str(payload.get("status")) == "013":
+        return []
     records: list[DartOwnershipRecord] = []
     for row in _rows(payload, "list"):
         records.append(
