@@ -232,6 +232,10 @@ returned a self-redirect and no usable content metadata; no response body, previ
 bytes were retrieved. The route behavior is an access limitation, not evidence of a rights denial,
 and does not close the rights gate.
 
+The post identifies `검찰과` as its publishing department and provides a packet-specific
+consultation route. No external inquiry was sent as part of this gate; the department listing is
+only an official routing signal, not a rights decision.
+
 **Decision:** keep the existing MOJ `SourcePolicy` fail-closed (`can_fetch=False`,
 `can_store_fulltext=False`, `can_commercialize=False`) and keep this lane at `L1 CONTRACT_STAGED`.
 No L2 packet staging or L3 promotion is authorized. Reopen only after an official, packet-specific

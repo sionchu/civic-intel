@@ -17,7 +17,7 @@ SCOURT_POLICY_ID = UUID("15000000-0000-0000-0000-000000000002")
 
 
 def moj_prosecution_personnel_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 8, 30, tzinfo=UTC)
+    reviewed_at = datetime(2026, 9, 13, tzinfo=UTC)
     return SourcePolicy(
         id=MOJ_POLICY_ID,
         domain="moj.go.kr",
@@ -30,11 +30,12 @@ def moj_prosecution_personnel_policy() -> SourcePolicy:
         can_show_excerpt=False,
         can_commercialize=False,
         terms_checked_at=reviewed_at,
-        license="공공누리 제2유형 notice observed on reviewed 2026-08-24 MOJ page",
+        license="Page-level 공공누리 제2유형 notice revalidated 2026-09-13; attachment rights pending",
         policy_note=(
-            "Reviewed 2026-08-30 against Ministry of Justice prosecutor personnel releases. "
-            "This PR accepts normalized personnel metadata only; live attachment collection "
-            "and reuse rights require a source-specific adapter review."
+            "Revalidated 2026-09-13 against MOJ post 602956 and the MOJ copyright policy. "
+            "The publishing department is the packet-specific consultation route; this policy "
+            "accepts normalized personnel metadata only, while live attachment collection and "
+            "reuse rights remain closed pending an exact packet decision."
         ),
     )
 

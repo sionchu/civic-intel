@@ -122,6 +122,8 @@ work-level rights check and consultation for unmarked material. The inspected pa
 per-attachment ownership or third-party scope, and a metadata-only HEAD probe self-redirected for
 each attachment route; no body, preview or bytes were retrieved. The rights gate therefore remains
 open/blocking, with no L2 or L3 promotion.
+The post's listed publishing department, `검찰과`, is the official routing signal for a packet-
+specific rights decision; no external inquiry was sent.
 
 ## Decisions and reasons
 
@@ -218,8 +220,13 @@ Executed locally on 2026-09-12 and 2026-09-13:
 - Revalidated the official [MOJ packet](https://www.moj.go.kr/bbs/moj/182/602956/artclView.do),
   [KOGL type-2 terms](https://www.kogl.or.kr/info/licenseType2.do) and [MOJ copyright policy](https://www.moj.go.kr/moj/129/subview.do).
   The six attachment routes were probed with HEAD only and self-redirected without usable metadata;
-  no attachment body, preview or bytes were retrieved or retained. The source policy and L1 decision
-  were left unchanged.
+  no attachment body, preview or bytes were retrieved or retained. The source policy's fail-closed
+  permissions and L1 decision were left unchanged.
+- Recorded the post's listed publishing department, `검찰과`, as the official routing signal for
+  packet-specific rights consultation; no external inquiry or contact detail was stored.
+- Revalidated `moj_prosecution_personnel_policy()` with `terms_checked_at=2026-09-13` while
+  keeping fetch, fulltext, AI, excerpt and commercial permissions disabled; targeted legal tests,
+  full Python tests and Ruff passed after the policy metadata update.
 - Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_assembly_evidence_directory.py
   -q`: 6 passed; full `.venv\\Scripts\\python.exe -m pytest -o addopts='' -q`: 282 passed.
 - Re-ran `.venv\\Scripts\\python.exe -m ruff check apps packages workers
@@ -269,6 +276,7 @@ enumerator; the first MOJ packet is still pending packet-specific rights clearan
 - `apps/web/app/types.ts`
 - `apps/web/tests/ui.test.mjs`
 - `packages/domain/contracts.py`
+- `packages/connectors/legal_personnel_records.py`
 - `packages/persistence/repository.py`
 - `packages/rendering/profile_projection.py`
 - `tests/test_api.py`
