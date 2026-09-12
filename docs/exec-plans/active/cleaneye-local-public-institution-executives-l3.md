@@ -1,8 +1,8 @@
 # CleanEye local-public-institution executives L3
 
-Status: research complete — `L0 RESEARCHED; BLOCKED` as of 2026-08-31; L3 was not implemented.
+Status: source gate revalidated — `L0 RESEARCHED; BLOCKED` as of 2026-09-13; L3 was not implemented.
 
-Methodology follow-up (2026-09-12): the source acquisition playbook in
+Methodology follow-up (2026-09-13): the source acquisition playbook in
 `docs/architecture/FEEDER_SOURCE_COVERAGE.md` permits evaluating one rights-approved official
 institution packet/response for human-assisted L1/L2 independently of these automated-L3 gates.
 The recorded robots restriction is not bypassed; no importer or maturity promotion is claimed.
@@ -28,11 +28,11 @@ infrastructure.
 
 ## Baseline and actual maturity
 
-Verified on 2026-08-31:
+Source-gate baseline revalidated on 2026-09-13 before this documentation-only update:
 
 ```text
 branch: master
-local/origin HEAD: 782a3068ca8d9418cb0b8a1ebdff305a8ae29184
+local/origin HEAD: 0cc84a64f1b2c752d62d3d57ebb506b4265a3f79
 tracked tree: clean
 Alembic head: 0004
 CleanEye connector/contracts/tests: none
@@ -64,6 +64,7 @@ The following were verified from current official sources before implementation 
 - [x] provider disclosure-date/version behavior
 - [x] copyright and public-data reuse policy
 - [x] current robots policy
+- [x] revalidate the all-path robots instruction and exact named-route method behavior
 - [x] published request-limit behavior
 - [x] policy-minimized metadata boundary
 - [ ] source-specific automated-access basis and request contract confirmed for repeated enumeration
@@ -73,8 +74,8 @@ The following were verified from current official sources before implementation 
 The official establishment-status pages describe two dated universes:
 
 ```text
-local public enterprises: 423 at 2026-01-01
-local invested/contributed institutions: 890 at 2026-06-30
+local public enterprises: 423 at 2026-06-30
+local invested/contributed institutions: 892 at 2026-06-30
 ```
 
 The live institution selectors expose source identifiers and current lists:
@@ -115,6 +116,21 @@ The robots instruction is not a substantive public-data license or prohibition b
 it prevents this repository from treating repeated HTML requests as policy-approved. No request
 limit is published for the executive HTML surfaces. The REST catalog documents its own API
 limits, but those limits cannot be transferred to the separate HTML routes.
+
+The 2026-09-13 source-specific revalidation added the following bounded evidence:
+
+```text
+robots.txt: User-agent: * / Disallow: /
+REST dataset catalog: 34 datasets; no named-executive-status dataset
+public-enterprise establishment total: 423 at 2026.06.30
+invested/contributed establishment total: 892 at 2026.06.30
+empOwnerStatus HEAD: 405 Method Not Allowed; Allow: GET, POST
+iptSuOwnerStatus HEAD: 405 Method Not Allowed; Allow: GET, POST
+```
+
+The two `HEAD` results describe HTTP method handling only. They do not close the route-level
+permission, request-pacing, pagination/coverage, version or storage contract. No route body,
+row payload or attachment was fetched or retained.
 
 ### Storage boundary if the source gate later passes
 
@@ -173,7 +189,7 @@ This milestone may start only after Milestone A's final source gate passes.
 
 ## Collection-review evidence
 
-Official finite probes on 2026-08-31 confirmed:
+Historical finite probes on 2026-08-31 confirmed:
 
 ```text
 establishment status pages: HTTP 200
@@ -200,6 +216,20 @@ named-executive HTML rate limit: not published
 The selector totals are not silently equated to the differently dated establishment totals.
 The review found no official version/as-of field on the named executive pages and no stable
 executive-person identifier. No full live enumeration or persistence run was performed.
+
+Source-gate revalidation on 2026-09-13 confirmed:
+
+```text
+establishment pages: 423 local public enterprises and 892 invested/contributed institutions,
+  both dated 2026.06.30
+REST catalog: 34 datasets; no named-executive-status dataset
+robots.txt: User-agent: * / Disallow: /
+empOwnerStatus and iptSuOwnerStatus: HEAD 405 with Allow: GET, POST
+route body/payload/attachment: not requested or retained
+```
+
+The current result keeps repeated automated HTML collection blocked. It does not remove the
+conditional finite-packet path for rights-approved human review.
 
 Observed local verification after the documentation/maturity change:
 
@@ -269,6 +299,7 @@ satisfied without claiming a permanent feeder block or L3 completion.
 
 ## Next Best Action
 
-Complete a source-specific CleanEye automated-access review for the known executive disclosure
-routes, establishing permitted request pacing, complete-universe/coverage semantics and
-policy-minimized storage terms before deciding whether to stage an HTML contract.
+Obtain a source-specific permitted automated-access contract for the known CleanEye executive
+routes. Until it specifies permission, request pacing, complete-universe/coverage semantics and
+policy-minimized storage terms, retain `L0 RESEARCHED; BLOCKED` and do not stage an HTML
+connector.

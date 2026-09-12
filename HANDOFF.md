@@ -132,6 +132,12 @@ effective/version or correction semantics. KDI's Open API is publication metadat
 copyright policy states 공공누리 제3유형 (출처표시+변경금지) without a profile-specific
 normalization/storage/republication contract. The KDI automated profile path remains
 `L0 RESEARCHED; BLOCKED`; no staff crawler, adapter, Person materialization or schema was added.
+The same-day CleanEye source-specific revalidation found 423 local public enterprises and 892
+invested/contributed institutions, both dated 2026-06-30; the official REST catalog still lists
+34 datasets without a named-executive dataset; and the exact named-executive routes return only
+`HEAD 405 / Allow: GET, POST` under a current `robots.txt` of `Disallow: /`. Those results provide
+no route permission, request-pacing, complete-coverage, version or storage contract. CleanEye
+remains `L0 RESEARCHED; BLOCKED`; no HTML collector, source request, payload or schema was added.
 
 ## Decisions and reasons
 
@@ -169,6 +175,10 @@ normalization/storage/republication contract. The KDI automated profile path rem
   human-assisted source observation only after exact scope and profile-data rights are recorded;
   no name-only identity link, automatic Person materialization or second researcher registry is
   allowed.
+- CleanEye's institution selectors and named-executive HTML routes remain a source-specific
+  research lane. The 2026-09-13 all-path robots and method revalidation does not grant collection
+  permission or fill the missing coverage/version contract; only a permitted finite packet may
+  proceed through conditional human review, with no disclosure-row-to-Person promotion.
 
 ## Verification evidence
 
@@ -240,6 +250,14 @@ Executed locally on 2026-09-12 and 2026-09-13:
 - Revalidated `moj_prosecution_personnel_policy()` with `terms_checked_at=2026-09-13` while
   keeping fetch, fulltext, AI, excerpt and commercial permissions disabled; targeted legal tests,
   full Python tests and Ruff passed after the policy metadata update.
+- Re-opened the official [CleanEye enterprise](https://www.cleaneye.go.kr/siteGuide/pubCompStatus.do),
+  [invested/contributed](https://www.cleaneye.go.kr/siteGuide/iptCompStatus.do),
+  [REST catalog](https://www.cleaneye.go.kr/user/openDataSet.do),
+  [copyright policy](https://www.cleaneye.go.kr/user/copyrightPolicy.do) and
+  [robots](https://www.cleaneye.go.kr/robots.txt) surfaces. Current establishment totals are
+  423 and 892 at 2026-06-30, the catalog lists 34 datasets without named executive status, and
+  the two named routes return `HEAD 405 / Allow: GET, POST`. No route body, row payload or
+  attachment was requested or retained; the L0 source gate remains blocked.
 - Re-opened the official [NKIS institution directory](https://nkis.re.kr/org.do), [KDI researcher
   directory](https://www.kdi.re.kr/introduce/expert), [KDI organization tree](https://www.kdi.re.kr/introduce/org),
   [KDI Open API](https://www.kdi.re.kr/share/openAPI) and [KDI copyright policy](https://www.kdi.re.kr/servicePolicy/copyright).
@@ -272,7 +290,7 @@ Executed locally on 2026-09-12 and 2026-09-13:
 ## Not executed
 
 No feeder implementation, labor federation/commission acquisition, MOJ/Supreme Court legal
-personnel acquisition, KDI institute-profile acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
+personnel acquisition, KDI institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
 provider payload browser, schema change, migration file, dependency install, admin write action,
 authenticated operator system or production deployment was performed. No official labor or
 legal attachment was downloaded or retained. The public review route remains intentionally
@@ -282,7 +300,7 @@ unavailable until an operator access boundary is designed.
 
 Evidence Directory v0 has no implementation blocker. Source work remains bounded by rights and
 contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
-CleanEye remain L0 RESEARCHED; BLOCKED; and the labor federation/commission lanes lack a complete
+CleanEye remain L0 RESEARCHED; BLOCKED after the 2026-09-13 route/robots revalidation; and the labor federation/commission lanes lack a complete
 universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
 reopen for a finite reviewed packet only when the playbook gates close. MOJ/Supreme Court legal
 personnel likewise remain L1 with a conditional human-assisted packet path rather than a live
@@ -314,6 +332,7 @@ human-assisted path.
 - `docs/architecture/LABOR_LEADERSHIP_FEEDER.md`
 - `docs/architecture/LEGAL_CAREER_FEEDER.md`
 - `docs/architecture/POLICY_RESEARCH_FEEDER.md`
+- `docs/architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `docs/exec-plans/active/batch-ingestion-l3.md`
 - `docs/architecture/IDENTITY_RESOLUTION.md`
@@ -321,6 +340,7 @@ human-assisted path.
 - `docs/exec-plans/active/assembly-roster-evidence-directory.md`
 - `workers/assembly_roster.py`
 - `tests/test_assembly_evidence_directory.py`
+- `docs/exec-plans/active/cleaneye-local-public-institution-executives-l3.md`
 - `HANDOFF.md`
 
 ## Next concrete action

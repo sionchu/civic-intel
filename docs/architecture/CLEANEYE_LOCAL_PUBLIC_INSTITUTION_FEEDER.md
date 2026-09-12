@@ -12,13 +12,13 @@ institution heads and the executive/director/auditor roles the provider itself d
 
 The lane is currently `L0 RESEARCHED; BLOCKED`. The official REST
 catalog does not expose named executive status, but the official HTML disclosures do expose
-named executive rows. A source-specific automated-access review must resolve the current
-all-path robots instruction and the route-level contract before a repeated HTML collector is
-implemented.
+named executive rows. The source-specific automated-access revalidation on 2026-09-13 found
+that the all-path robots instruction and route-level collection contract remain unresolved, so
+no repeated HTML collector is permitted.
 
 ## Official institution surfaces
 
-Reviewed on 2026-08-31:
+Reviewed on 2026-08-31; source-gate revalidated on 2026-09-13:
 
 ```text
 local public enterprise establishment status:
@@ -28,8 +28,8 @@ local invested/contributed institution establishment status:
 https://www.cleaneye.go.kr/siteGuide/iptCompStatus.do
 ```
 
-The first page states 423 local public enterprises at 2026-01-01. The second states 890
-invested/contributed institutions at 2026-06-30.
+The current pages state 423 local public enterprises and 892 invested/contributed institutions,
+both at 2026-06-30.
 
 The current institution selectors expose two different source-specific identity contracts:
 
@@ -93,7 +93,7 @@ The official catalog is:
 https://www.cleaneye.go.kr/user/openDataSet.do
 ```
 
-On 2026-08-31 it listed 34 REST datasets. No named-executive-status dataset was present. The
+On 2026-09-13 it listed 34 REST datasets. No named-executive-status dataset was present. The
 `openApiOwnerSal` executive-compensation API is not a substitute: it exposes annual institution
 and role-category counts/compensation, not executive names or provider Person identifiers.
 
@@ -101,6 +101,12 @@ Do not derive an executive endpoint from the salary service name, HTML route or 
 dataset. The known official HTML disclosure routes remain a separate source-specific parser
 candidate; any future connector requires an approved automated-access basis and exact
 request/field/coverage documentation for those routes.
+
+On 2026-09-13, a metadata-only `HEAD` probe against each named-executive route returned
+`405 Method Not Allowed` with `Allow: GET, POST`. This establishes only HTTP method behavior;
+it does not establish permission to automate, pagination, complete coverage, request pacing,
+version semantics or storage rights. No route body, row payload or attachment was requested or
+retained during this revalidation.
 
 ## Rights and automated-access boundary
 
@@ -165,11 +171,21 @@ L0 RESEARCHED; BLOCKED
 ```
 
 Public pages establish the source strategy and named-executive disclosure shape, but no
-source-specific automated-collection contract currently satisfies L1/L2/L3. No connector,
-guessed field, generic crawler or ALIO/CleanEye abstraction is authorized by this review.
+source-specific automated-collection contract currently satisfies L3. No connector, guessed
+field, generic crawler or ALIO/CleanEye abstraction is authorized by this review. The automation
+ceiling remains `L0 RESEARCHED; BLOCKED`; a bounded human-assisted packet remains conditional
+on source-specific permission, exact scope and reproducible review.
 
 This automation block does not exclude a conditional human-assisted packet path. Under the
 [source acquisition playbook](FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook), one
 permitted institution disclosure or official response can be evaluated for L1 fixtures and
 L2 reviewed import independently of nationwide enumeration. Rights and provenance must pass;
 every identity remains REVIEW_REQUIRED. No packet import or maturity promotion occurred.
+
+### Reopen condition
+
+Reopen the automated lane only when CleanEye publishes a named-executive machine-readable
+dataset, changes its automated-access policy to permit the exact source-bounded routes, or
+provides written permission specifying routes, fields, request limits and storage terms. A
+finite permitted institution packet may be considered independently for human-assisted L1/L2;
+that path must not promote the automated lane or materialize a Person from a disclosure row.
