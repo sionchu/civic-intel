@@ -245,6 +245,9 @@ Executed locally on 2026-09-12 and 2026-09-13:
   [KDI Open API](https://www.kdi.re.kr/share/openAPI) and [KDI copyright policy](https://www.kdi.re.kr/servicePolicy/copyright).
   The source-contract result was recorded in `POLICY_RESEARCH_FEEDER.md`; no KDI profile body,
   contact field, connector, crawler, schema or runtime dependency was added.
+- Updated the active batch-ingestion plan and coverage priority after the KDI gate so the completed
+  source-contract reviews and the single current external rights action are explicit; no new
+  feeder implementation was selected from an unclosed contract.
 - Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_assembly_evidence_directory.py
   -q`: 6 passed; full `.venv\\Scripts\\python.exe -m pytest -o addopts='' -q`: 282 passed.
 - Re-ran `.venv\\Scripts\\python.exe -m ruff check apps packages workers
@@ -312,6 +315,7 @@ human-assisted path.
 - `docs/architecture/LEGAL_CAREER_FEEDER.md`
 - `docs/architecture/POLICY_RESEARCH_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
+- `docs/exec-plans/active/batch-ingestion-l3.md`
 - `docs/architecture/IDENTITY_RESOLUTION.md`
 - `docs/INDEX.md`
 - `docs/exec-plans/active/assembly-roster-evidence-directory.md`

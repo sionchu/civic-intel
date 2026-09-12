@@ -296,6 +296,7 @@ import commands. They need only a justified **packet** contract, not every L3 au
 | National Assembly roll-call votes — L0 RESEARCHED; BLOCKED | No vote connector; official catalog/service metadata gives only a partial scope and license/attribution surface, not a complete operation contract | One finite official file/packet under its published terms, with bill/session/member anchors and source-level review; no OpenWatch ingestion, ideology inference or automatic FACT promotion | Reopen: published operation/schema, 20th+ coverage proof, pagination/total, stable vote/member/bill keys, correction/version behavior, route limits and QA evidence |
 | Labor federation / social-dialogue leadership — L0 source gates; aggregate labor standard-data lane remains L1 | No central stable roster or complete machine-readable universe across the independently reviewed 민주노총, 한국노총 and 경사노위 lanes; no live adapter | A finite rights-approved 민주노총 page packet, 경사노위 post/attachment packet or bounded 한국노총 official event may support human-reviewed source observations; no ordinary membership or name-only identity | Reopen L3 only with a complete declared universe, deterministic page/document coverage, stable record semantics, correction/version behavior, route limits and reuse rights; human L1/L2 requires packet manifest, locator, minimized fields and reproducible review |
 | MOJ / Supreme Court legal personnel — L1 CONTRACT_STAGED | Release/issue packets expose named personnel tables, but no unified complete universe, row-level Person key or single correction/version contract; Court Gazette contains multiple order types; first MOJ packet candidate is not rights-cleared for acquisition | One rights-approved MOJ personnel-round packet or Court Gazette issue with deterministic extraction, exact locators and review; reuse `LegalPersonnelRecord` and shared observations, no case-responsibility or name-only inference | Reopen L3 only with an exact personnel/order universe, issue/page coverage, stable record semantics, correction/withdrawal behavior, route limits and rights; human L2 requires packet-specific storage/redistribution decision |
+| Government-funded research careers / KDI — L0 RESEARCHED; automated path blocked | Current official researcher/profile views have no declared complete staff universe, stable profile key or profile-specific reuse contract; KDI Open API is publication metadata only | A finite rights-approved KDI profile/appointment packet may support human-reviewed source observations with original and analyst representations kept separate; no name-only identity or automatic Person materialization | Reopen automated L3 only with a complete institute universe, deterministic coverage, stable identity/version semantics, route limits and reuse rights; human L1/L2 requires exact packet scope, rights, deterministic mapping and reviewer comparison |
 
 ### National Assembly roll-call votes — documentation-only source gate (2026-09-12)
 
@@ -472,13 +473,15 @@ Current recommended sequence after presidential-personnel staging:
    #20 semantics; no live adapter or maturity promotion;
 4. completed (2026-09-12): MOJ/Supreme Court personnel source-contract gate using #21
    semantics; no live adapter or maturity promotion;
-5. official institute-profile/appointment adapter for NKIS-discovered researchers;
+5. completed (2026-09-13): KDI institute-profile source-contract gate for NKIS-discovered
+   researchers; automated profile path remains blocked, with no live adapter or maturity promotion;
 6. completed: reviewed ALIO item 4 current-roster L3 adapter using the existing staging contracts;
 7. review: CleanEye local-public-institution executive collection only after a source-specific
    automated-access review resolves the all-path `robots.txt` instruction, route contract,
    coverage semantics and request pacing; stable Person IDs are not a collection prerequisite;
 8. completed: source-bounded OpenDART executive-status L3 over the official corp-code master;
-9. one reviewed live civil-service/ethics source adapter using the #23 contracts;
+9. one reviewed live civil-service/ethics source adapter using the #23 contracts, only after a
+   permitted source contract closes;
 10. revisit bill proposal-reason text only if a verified official structured source becomes available.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.

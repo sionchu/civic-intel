@@ -454,7 +454,13 @@ Then propose exactly one next feeder as Next Best Action.
 
 ## Next Best Action
 
-The next source-contract review is [the Government Public Ethics Committee retired-public-
-official employment-review L3 plan](government-public-ethics-employment-review-l3.md). It must
-remain at L1 unless the official result universe, row identity, correction/version semantics,
-and permitted structured access contract are all established.
+The [Government Public Ethics Committee retired-public-official employment-review source gate](government-public-ethics-employment-review-l3.md)
+and the follow-on [KDI institute-profile source gate](../../architecture/POLICY_RESEARCH_FEEDER.md#institute-profile-source-gate-kdi-pilot-2026-09-13)
+are complete. MPM remains `L1 CONTRACT_STAGED; L3 promotion blocked`, and the KDI automated
+research-career path remains `L0 RESEARCHED; BLOCKED`; neither has an implementation ExecPlan
+or live adapter.
+
+The current repository Next Best Action is the packet-specific MOJ rights decision recorded in
+`HANDOFF.md`. Until that external decision is recorded, do not open the MOJ attachments, weaken
+`SourcePolicy`, or select another feeder implementation from a sample or an unclosed source
+contract.
