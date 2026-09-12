@@ -1,0 +1,45 @@
+{
+  "id": "PROFILE_TARGET_GOLDEN_LEE_WONJOO_001",
+  "as_of": "2026-08-30",
+  "golden_set_person_id": "00000000-0000-0000-0000-000000000008",
+  "canonical_name": "이원주",
+  "review_note": "Manually reviewed source metadata only. The official briefing explicitly pairs the current civil-service role with the designated adviser role. This is a profiler research target only; it does not create a Person, CareerEpisode, or publishable FACT.",
+  "sources": {
+    "presidential_designation": {
+      "url": "https://www.president.go.kr/briefings/qGTHgnQ8",
+      "publisher": "대한민국 청와대",
+      "published_at": "2026-08-30",
+      "reviewed_semantics": "The official personnel briefing identifies 이원주 as the current 기후에너지환경부 에너지전환정책실장 and names him as the person designated for the planned 메가프로젝트 보좌관 role."
+    }
+  },
+  "observations": {
+    "civil_service": {
+      "lane": "CIVIL_SERVICE",
+      "office": "기후에너지환경부 에너지전환정책실장",
+      "organization": "기후에너지환경부",
+      "source_refs": ["https://www.president.go.kr/briefings/qGTHgnQ8"],
+      "career_anchors": [
+        "civil_service_role:기후에너지환경부 에너지전환정책실장"
+      ],
+      "discovery_reasons": ["PRESIDENTIAL_DESIGNATION"]
+    },
+    "presidential_adviser": {
+      "lane": "PRESIDENTIAL_OFFICE",
+      "office": "메가프로젝트 보좌관",
+      "organization": null,
+      "source_refs": ["https://www.president.go.kr/briefings/qGTHgnQ8"],
+      "career_anchors": ["presidential_personnel_action:DESIGNATED"],
+      "discovery_reasons": ["PRESIDENTIAL_DESIGNATION"]
+    }
+  },
+  "resolved_links": [
+    {
+      "from": "civil_service",
+      "to": "presidential_adviser",
+      "evidence_type": "OFFICIAL_CAREER_CONTINUITY",
+      "source_ref": "https://www.president.go.kr/briefings/qGTHgnQ8",
+      "from_role": "기후에너지환경부 에너지전환정책실장",
+      "to_role": "메가프로젝트 보좌관"
+    }
+  ]
+}

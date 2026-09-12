@@ -86,6 +86,11 @@ enumeration or commercial republication. The same page contains ten action subje
 narrative and no row-level action keys, so a reviewed ordinal would remain snapshot-scoped only.
 Presidential personnel remains `L1 CONTRACT_STAGED`; live collection is disabled pending route-
 and rights-specific approval.
+The first follow-on cross-lane case is now fixed as a research-only fixture: the same official
+briefing explicitly pairs 이원주의 current 기후에너지환경부 에너지전환정책실장 role with the
+planned 메가프로젝트 보좌관 designation. The case reuses the existing profile-target and
+cross-lane identity contracts, preserves the exact briefing reference on both observations, and
+does not create a Person, CareerEpisode or publishable FACT.
 
 ## Decisions and reasons
 
@@ -113,7 +118,7 @@ Executed locally on 2026-09-12:
 
 - `.venv\Scripts\python.exe -m pytest -o addopts='' tests/test_api.py tests/test_profile_projection.py -q`:
   21 passed, 2 warnings.
-- `.venv\Scripts\python.exe -m pytest -o addopts='' --disable-warnings`: 273 passed after
+- `.venv\Scripts\python.exe -m pytest -o addopts='' --disable-warnings`: 276 passed after
   hardening.
 - `.venv\Scripts\python.exe -m ruff check apps packages workers tests`: passed.
 - `.venv\Scripts\python.exe -m mypy packages workers apps/api`: success, 51 source files.
@@ -147,6 +152,9 @@ Executed locally on 2026-09-12:
   a multi-action detail page, the organization page and the copyright-policy page; the detail page
   visibly rendered the KOGL type 4 notice, and no live page body or raw provider payload was
   retained.
+- Added and verified the fixture-only civil-service -> Presidential personnel cross-lane case for
+  이원주; no live Presidential adapter, source fetch, Person materialization or schema change was
+  introduced.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -182,10 +190,14 @@ before any promotion.
 - `packages/persistence/repository.py`
 - `packages/rendering/profile_projection.py`
 - `tests/test_api.py`
+- `tests/golden/fixtures/profile_target_lee_wonjoo_001.json`
+- `tests/test_profile_target_golden_lee_wonjoo.py`
+- `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `HANDOFF.md`
 
 ## Next concrete action
 
-Keep the Presidential personnel lane at `L1 CONTRACT_STAGED` and use only an exact,
-rights-approved briefing packet until page/action version semantics and the permitted route are
-documented; do not create a keyword crawler, live connector or importer before those gates close.
+Evaluate federation/social-dialogue public leadership as its own source-contract gate, while
+keeping Presidential personnel at `L1 CONTRACT_STAGED` and the Lee Won-joo case fixture-only; do
+not create a live Presidential adapter until route, rights and page/action version semantics
+close the existing gate.

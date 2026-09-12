@@ -374,6 +374,12 @@ Presidential personnel briefing
  -> prior-career text is FACT that the Presidential Office reported it, not automatically an independently verified CareerEpisode
  -> meeting/event attendance is not Presidential Office employment, adviser, commission or TF membership
 
+Cross-lane profile research target
+ -> an official source may supply two role observations when its wording explicitly pairs the same person across lanes
+ -> explicit continuity evidence can resolve a research identity link without creating a Person merge
+ -> preserve the exact source reference on each observation and do not invent an organization or completed appointment status
+ -> the target remains research-only and does not publish a FACT by itself
+
 NEC candidate career string
  -> FACT that the candidate submitted that career to NEC
  -> not automatically independently verified career FACT
@@ -457,7 +463,8 @@ Prefer new feeders in this order:
 
 Current recommended sequence after presidential-personnel staging:
 
-1. one real cross-lane profile case: corporate/academic/civil-service career -> Presidential Office/body -> profiler;
+1. completed (fixture-only): civil-service -> Presidential personnel -> profiler research target
+   (`profile_target_lee_wonjoo_001`); no live adapter or Person materialization;
 2. one small reviewed live Presidential personnel or commission-roster adapter using #36 semantics;
 3. small federation/social-dialogue public leadership verification lane using #20 semantics;
 4. one reviewed live MOJ/Supreme Court personnel adapter using #21 semantics;
