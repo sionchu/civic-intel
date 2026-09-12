@@ -158,6 +158,16 @@ retain `MASKED_OR_VACANT` missingness. No name was invented for an empty or corr
 source result, masked/vacant rows were kept out of identity staging, and no Person was created.
 The ALIO lane remains L3 for current-disclosure observation enumeration, while named-row
 completeness is explicitly bounded by those source-declared outcomes.
+The same local canonical batch database then registered the already-defined Gwanbo scope
+`2026-08-01:2026-08-31`: the official personnel-list request completed with `SUCCESS`, one page,
+and zero notices. Gwanbo is metadata-only and intentionally creates no Person/name observation;
+the empty result is recorded as the current response for that bounded interval, not as a claim
+that the historical source is globally empty.
+The operational audit of all seven existing L3 targets is now: Assembly roster, Assembly bill
+participation, NEC winners, NEC candidates and OpenDART are source-specific and ready for their
+declared scopes but await runtime API credentials; Gwanbo has one bounded scope registered; ALIO
+has the full 355-institution current-disclosure scope registered. No new target or generic
+registry was added.
 
 ## Decisions and reasons
 
@@ -336,6 +346,10 @@ Executed locally on 2026-09-12 and 2026-09-13:
   masked/vacant rows.
 - No Alembic migration was added; the ALIO hardening reuses revision `0004` and the canonical
   SourceRun/SourceCheckpoint/FeederObservation transaction.
+- `.venv\Scripts\python.exe -m workers.gwanbo_personnel --from-date 2026-08-01
+  --to-date 2026-08-31 --database-url sqlite:///./civic_intel.db`: official Gwanbo scope returned
+  `SUCCESS`, `pages_committed=1` and `unique_records=0`; the checkpoint was persisted without
+  Person or name fields.
 
 ## Not executed
 
@@ -346,8 +360,8 @@ provider payload browser, schema change, migration file, dependency install, adm
 authenticated operator system or production deployment was performed. No official labor or
 legal attachment was downloaded or retained. The public review route remains intentionally
 unavailable until an operator access boundary is designed. Assembly, NEC and OpenDART full-list
-runs were not started because their runtime credentials are absent; no Gwanbo date window was
-selected because that lane requires an explicit bounded interval.
+runs were not started because their runtime credentials are absent; additional Gwanbo windows
+were not selected because that lane requires an explicit bounded interval.
 
 ## Blockers
 
@@ -363,8 +377,8 @@ profile routes lack a complete declared universe, stable record/version contract
 profile-specific reuse permission; a finite rights-approved packet remains the only possible
 human-assisted path. ALIO's L3 observation scope is complete, but its 8 no-current institutions,
 173 masked/vacant rows and one correction-only report are not converted into named People. The
-remaining full-list lanes require their exact source credentials and, for Gwanbo, an explicit
-date window.
+remaining full-list lanes require their exact source credentials; any additional Gwanbo run
+requires an explicit date window.
 
 ## Modified files
 
