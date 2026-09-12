@@ -21,6 +21,11 @@ with a resolution note.
 
 Every rendered factual item must traverse Claim, ClaimEvidence, Source, and SourcePolicy.
 Origin clusters determine independent-source counts. SUPPORT and REFUTE remain distinct.
+Decision episodes may be rendered only when they explicitly reference a published Claim and
+its ClaimEvidence; legacy or incomplete episode records stay out of the public projection.
+Review-only identity and source-operational metadata are not public data. The API review surface
+is disabled by default because V0 has no authenticated operator boundary; test/internal callers
+must opt in explicitly.
 
 ## Temporal and analysis model
 

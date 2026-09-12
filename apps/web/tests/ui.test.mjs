@@ -25,6 +25,7 @@ test("UI does not implement publication decisions", async () => {
 test("UI exposes explicit provenance and a read-only review surface", async () => {
   const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
   const review = await readFile(new URL("../app/admin/review/page.tsx", import.meta.url), "utf8");
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.match(profile, /SOURCE CONFLICT/);
   assert.match(profile, /trace\.stance/);
   assert.match(profile, /snapshot_id/);
@@ -33,6 +34,7 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.match(review, /item\.action/);
   assert.match(review, /item\.status/);
   assert.doesNotMatch(review, /<button|onClick/);
+  assert.doesNotMatch(layout, /admin\/review/);
 });
 
 test("UI stays within the directory scope", async () => {

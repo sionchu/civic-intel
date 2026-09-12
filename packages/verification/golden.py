@@ -166,6 +166,27 @@ def _validate_references(golden: GoldenSet) -> None:
             raise GoldenSupplementError(
                 f"decision episode {episode.id} has missing independent origin"
             )
+        if episode.claim_id is not None:
+            episode_claim = next(
+                (item for item in golden.claims if item.id == episode.claim_id), None
+            )
+            if episode_claim is None:
+                raise GoldenSupplementError(
+                    f"decision episode {episode.id} references missing claim"
+                )
+            if episode_claim.person_id != episode.person_id:
+                raise GoldenSupplementError(
+                    f"decision episode {episode.id} references a claim for another person"
+                )
+            linked_evidence = {
+                item.id
+                for item in golden.evidence
+                if item.claim_id == episode.claim_id
+            }
+            if any(item not in linked_evidence for item in episode.evidence_ids):
+                raise GoldenSupplementError(
+                    f"decision episode {episode.id} has evidence for another claim"
+                )
 
 
 def load_golden_set(root: Path | None = None) -> GoldenSet:

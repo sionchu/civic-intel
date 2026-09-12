@@ -8,7 +8,8 @@ evidence-first contracts. Keep OpenWatch and future feeder expansion out of this
 ## Scope
 
 Public resolved-person roster, evidence-backed person profile, explicit epistemic/stance/conflict
-rendering, source-policy audit projection, and a separate read-only identity review surface.
+rendering, source-policy audit projection, and a separate read-only identity review surface that
+is unavailable from the public API unless an internal/test caller explicitly enables it.
 Reuse the existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when
 present, `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
 migration, feeder, search infrastructure, or new persistence abstraction.
@@ -22,8 +23,12 @@ migration, feeder, search infrastructure, or new persistence abstraction.
   downgrading or deleting the claim.
 - Profile and source cards expose human-readable provenance/policy summaries while placing UUIDs
   and snapshot/observation references in audit details.
-- `/admin/review` is read-only and exposes existing review actions, observations, candidates and
-  source/snapshot provenance without normalized payload or fulltext leakage.
+- An explicitly enabled internal `/admin/review` surface is read-only and exposes existing review
+  actions, observations, candidates and source/snapshot provenance without normalized payload or
+  fulltext leakage; the public API does not register this route by default.
+- Decision episodes are public only when linked to a published Claim and its ClaimEvidence; legacy
+  or incomplete episode rows fail closed instead of being rendered as FACT.
+- Public claim, relationship and episode reads exclude superseded temporal rows.
 - Existing Golden Set, batch materialization and reviewed-person behavior remains intact.
 
 ## Completed
@@ -49,6 +54,9 @@ migration, feeder, search infrastructure, or new persistence abstraction.
   new unsupported asset/vote/score UI was added.
 - Added deterministic API and UI regressions for identity filtering, epistemic/provenance trace,
   conflict visibility, review actions, payload minimization and directory scope.
+- Completed an independent read-only review and hardened the three findings: unlinked decision
+  episodes no longer bypass Claim/Evidence, the review route is disabled by default and no longer
+  linked from public navigation, and superseded public temporal records are filtered out.
 - Connected the migrated Golden fixture database to the local FastAPI and Next.js development
   servers and manually inspected the roster, resolved profile, conflict profile, populated review
   queue and blocked review-identity route in the in-app browser. Temporary review observations,
@@ -56,10 +64,11 @@ migration, feeder, search infrastructure, or new persistence abstraction.
 
 ## Current checkpoint
 
-Implementation is complete in the working tree and all direct verification commands pass. The
-only runner limitation is that GNU Make is unavailable on this Windows host, so the Makefile's
-constituent commands were executed directly. The seven existing L3 feeders and the blocked MPM,
-National Assembly asset, CleanEye and roll-call source gates are unchanged.
+Evidence Directory v0 and its post-review hardening are complete in the working tree and all
+direct verification commands pass. The only runner limitation is that GNU Make is unavailable on
+this Windows host, so the Makefile's constituent commands were executed directly. The seven
+existing L3 feeders and the blocked MPM, National Assembly asset, CleanEye and roll-call source
+gates are unchanged.
 
 ## Decisions and reasons
 
@@ -71,6 +80,13 @@ National Assembly asset, CleanEye and roll-call source gates are unchanged.
   existing source endpoint and are shown only in audit-oriented detail where appropriate.
 - Review items expose identifiers and provenance needed for human review but deliberately omit
   `FeederObservation.normalized`, source snapshot metadata and fulltext from the review payload.
+- V0 has no authenticated operator boundary, so `create_app()` does not register `/admin/review`
+  unless the caller explicitly opts into the internal/test surface; public navigation does not
+  advertise it.
+- A decision episode's raw `source_ids` are not sufficient publication evidence. Its projection
+  derives evidence and source IDs from an explicitly linked published Claim and ClaimEvidence.
+- Public temporal reads use non-superseded claims, relationships and decision episodes; historical
+  rows remain persistence data rather than current public profile content.
 - No `ReviewedPersonBundle` main path, generic evidence graph, shadow review model, provider
   ingestion, OpenWatch integration or dependency was introduced.
 
@@ -79,8 +95,9 @@ National Assembly asset, CleanEye and roll-call source gates are unchanged.
 Executed locally on 2026-09-12:
 
 - `.venv\Scripts\python.exe -m pytest -o addopts='' tests/test_api.py tests/test_profile_projection.py -q`:
-  17 passed, 2 warnings.
-- `.venv\Scripts\python.exe -m pytest -o addopts='' --disable-warnings`: 269 passed.
+  21 passed, 2 warnings.
+- `.venv\Scripts\python.exe -m pytest -o addopts='' --disable-warnings`: 273 passed after
+  hardening.
 - `.venv\Scripts\python.exe -m ruff check apps packages workers tests`: passed.
 - `.venv\Scripts\python.exe -m mypy packages workers apps/api`: success, 51 source files.
 - `.venv\Scripts\python.exe -m packages.verification.quality`: passed=true; all Golden Set
@@ -100,12 +117,20 @@ Executed locally on 2026-09-12:
 - `git diff --check`: passed before final documentation update; rerun after commit staging.
 - `make verify`: runner-unavailable because GNU Make is not installed; every constituent command
   was run directly. No GitHub Actions result was claimed locally.
+- Independent Sol review completed read-only; it identified one provenance bypass and two public
+  exposure/temporal-read risks, all rechecked against the repository and covered by the hardening
+  tests.
+- Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
+  retains the read-only review regression coverage.
+- Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
+  was needed because decision links remain in the existing JSON temporal payload.
 
 ## Not executed
 
 No feeder implementation, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
-provider payload browser, schema change, migration file, dependency install, admin write action or
-production deployment was performed.
+provider payload browser, schema change, migration file, dependency install, admin write action,
+authenticated operator system or production deployment was performed. The public review route
+remains intentionally unavailable until an operator access boundary is designed.
 
 ## Blockers
 
@@ -116,6 +141,7 @@ before any promotion.
 
 ## Modified files
 
+- `ARCHITECTURE.md`
 - `apps/api/main.py`
 - `apps/web/app/admin/review/page.tsx`
 - `apps/web/app/data.ts`
@@ -125,6 +151,7 @@ before any promotion.
 - `apps/web/app/styles.css`
 - `apps/web/app/types.ts`
 - `apps/web/tests/ui.test.mjs`
+- `packages/domain/contracts.py`
 - `packages/persistence/repository.py`
 - `packages/rendering/profile_projection.py`
 - `tests/test_api.py`
@@ -132,5 +159,6 @@ before any promotion.
 
 ## Next concrete action
 
-Request an independent review of the Evidence Directory v0 read surface and the next source-gate
-milestone before implementing another feeder.
+Begin the next source-contract reconnaissance for the Government Public Ethics Committee / MPM
+employment-review lane, keeping it at L1 until its official universe, coverage, identity and rights
+contract passes the source gate.

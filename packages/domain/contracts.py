@@ -469,6 +469,14 @@ class DecisionEpisode(TemporalRecord):
     outcome: str = Field(min_length=1)
     source_ids: list[UUID] = Field(min_length=1)
     independent_origin_ids: list[UUID] = Field(min_length=1)
+    claim_id: UUID | None = None
+    evidence_ids: list[UUID] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def complete_evidence_link(self) -> DecisionEpisode:
+        if (self.claim_id is None) != (not self.evidence_ids):
+            raise ValueError("decision episode claim and evidence links must be complete")
+        return self
 
 
 class RelationshipEvidenceRef(Contract):

@@ -5,5 +5,5 @@ import "./styles.css";
 export const metadata: Metadata = { title: "Civic Intel", description: "Evidence-grounded public-official intelligence" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><header><Link href="/">Civic Intel</Link><nav><Link href="/">Roster</Link><Link href="/admin/review">Review · read-only</Link></nav></header><main>{children}</main><footer>V0 · Every published fact is source-traceable.</footer></body></html>;
+  return <html lang="en"><body><header><Link href="/">Civic Intel</Link><nav><Link href="/">Roster</Link></nav></header><main>{children}</main><footer>V0 · Every published fact is source-traceable.</footer></body></html>;
 }

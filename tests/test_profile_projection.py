@@ -186,7 +186,7 @@ def test_untraceable_typed_relationship_fails_closed() -> None:
     assert stakeholders["entries"] == []
 
 
-def test_decision_episode_is_projected_without_creating_repeated_pattern() -> None:
+def test_untraceable_decision_episode_fails_closed() -> None:
     claim = nomination_claim()
     evidence = nomination_evidence()
     profile = build_profile_projection(
@@ -210,10 +210,42 @@ def test_decision_episode_is_projected_without_creating_repeated_pattern() -> No
 
     episodes = section(profile, "decision_episodes")
     patterns = section(profile, "repeated_patterns")
-    assert episodes["status"] == "AVAILABLE"
-    assert episodes["entries"][0]["source_ids"] == [str(SOURCE_ID)]
+    assert episodes["status"] == "UNKNOWN"
+    assert episodes["entries"] == []
     assert patterns["status"] == "UNKNOWN"
     assert patterns["entries"] == []
+
+
+def test_evidence_linked_decision_episode_keeps_canonical_trace() -> None:
+    claim = nomination_claim()
+    evidence = nomination_evidence()
+    profile = build_profile_projection(
+        person(),
+        [claim],
+        {claim.id: [evidence]},
+        [],
+        [
+            {
+                "id": "episode-1",
+                "person_id": str(PERSON_ID),
+                "description": "Public decision episode",
+                "action": "acted",
+                "target": "policy",
+                "outcome": "published",
+                "source_ids": [str(SOURCE_ID)],
+                "independent_origin_ids": ["origin-1"],
+                "claim_id": str(claim.id),
+                "evidence_ids": [str(evidence.id)],
+            }
+        ],
+    )
+
+    entry = section(profile, "decision_episodes")["entries"][0]
+    assert entry["kind"] == "DECISION_EPISODE"
+    assert entry["claim_id"] == str(claim.id)
+    assert entry["evidence_ids"] == [str(evidence.id)]
+    assert entry["source_ids"] == [str(SOURCE_ID)]
+    assert entry["evidence"][0]["stance"] == "SUPPORT"
 
 
 def test_limitations_surface_unknown_sections_instead_of_filling_them() -> None:

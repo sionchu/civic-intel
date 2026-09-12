@@ -14,7 +14,7 @@ from packages.domain.contracts import (
     SourcePolicy,
     SourceSnapshot,
 )
-from packages.domain.db import PersonRow
+from packages.domain.db import ClaimRow, DecisionEpisodeRow, PersonRow, RelationshipRow
 from packages.domain.enums import IdentityStatus, SourceCollectionMode, SourceRunStatus
 from packages.persistence import DatabaseNotReady, SqlAlchemyRepository
 
@@ -43,7 +43,7 @@ def seeded_repository(tmp_path: Path) -> SqlAlchemyRepository:
 @pytest.fixture()
 def client(seeded_repository: SqlAlchemyRepository):
     repository = seeded_repository
-    with TestClient(create_app(repository)) as api_client:
+    with TestClient(create_app(repository, enable_review_surface=True)) as api_client:
         yield api_client
 
 
@@ -154,6 +154,45 @@ def test_public_roster_and_profiles_exclude_unresolved_identities(
     assert unresolved_id not in {item["id"] for item in people}
     assert client.get(f"/people/{review_id}").status_code == 404
     assert client.get(f"/people/{unresolved_id}/claims").status_code == 404
+
+
+def test_review_surface_is_disabled_by_default(seeded_repository: SqlAlchemyRepository) -> None:
+    with TestClient(create_app(seeded_repository)) as public_client:
+        assert public_client.get("/admin/review").status_code == 404
+
+
+def test_public_profile_does_not_publish_unlinked_decision_episodes(client: TestClient) -> None:
+    payload = client.get("/people/00000000-0000-0000-0000-000000000007").json()
+    episodes = next(
+        section for section in payload["profile"]["sections"] if section["id"] == "decision_episodes"
+    )
+    assert episodes["status"] == "UNKNOWN"
+    assert episodes["entries"] == []
+
+
+def test_public_profiles_exclude_superseded_temporal_records(
+    client: TestClient, seeded_repository: SqlAlchemyRepository
+) -> None:
+    with seeded_repository.sessions() as session:
+        session.get(ClaimRow, "30000000-0000-0000-0000-000000000013").superseded_at = datetime.now(
+            UTC
+        )
+        session.get(RelationshipRow, "50000000-0000-0000-0000-000000000001").superseded_at = (
+            datetime.now(UTC)
+        )
+        session.get(DecisionEpisodeRow, "70000000-0000-0000-0000-000000000002").superseded_at = (
+            datetime.now(UTC)
+        )
+        session.commit()
+
+    profile = client.get("/people/00000000-0000-0000-0000-000000000007").json()
+    assert all(claim["id"] != "30000000-0000-0000-0000-000000000013" for claim in profile["claims"])
+    assert next(
+        section for section in profile["profile"]["sections"] if section["id"] == "decision_episodes"
+    )["entries"] == []
+
+    relationship_profile = client.get("/people/00000000-0000-0000-0000-000000000009").json()
+    assert relationship_profile["relationship_ids"] == []
 
 
 def test_published_fact_is_traceable_through_source_policy(client: TestClient) -> None:

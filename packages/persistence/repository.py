@@ -1115,12 +1115,19 @@ class SqlAlchemyRepository:
             row = session.get(PersonRow, str(person_id))
             return self._person(row) if row else None
 
-    def claims(self, person_id: UUID | None = None, published_only: bool = False) -> list[Claim]:
+    def claims(
+        self,
+        person_id: UUID | None = None,
+        published_only: bool = False,
+        current_only: bool = False,
+    ) -> list[Claim]:
         statement = select(ClaimRow)
         if person_id is not None:
             statement = statement.where(ClaimRow.person_id == str(person_id))
         if published_only:
             statement = statement.where(ClaimRow.publication_status == "PUBLISHED")
+        if current_only:
+            statement = statement.where(ClaimRow.superseded_at.is_(None))
         with self.sessions() as session:
             return [self._claim(row) for row in session.scalars(statement.order_by(ClaimRow.id))]
 
@@ -1157,12 +1164,20 @@ class SqlAlchemyRepository:
 
     def relationships(self, person_id: UUID) -> list[dict]:
         with self.sessions() as session:
-            rows = session.scalars(select(RelationshipRow).order_by(RelationshipRow.id))
+            rows = session.scalars(
+                select(RelationshipRow)
+                .where(RelationshipRow.superseded_at.is_(None))
+                .order_by(RelationshipRow.id)
+            )
             return [row.payload for row in rows if row.payload["person_id"] == str(person_id)]
 
     def decision_episodes(self, person_id: UUID) -> list[dict]:
         with self.sessions() as session:
-            rows = session.scalars(select(DecisionEpisodeRow).order_by(DecisionEpisodeRow.id))
+            rows = session.scalars(
+                select(DecisionEpisodeRow)
+                .where(DecisionEpisodeRow.superseded_at.is_(None))
+                .order_by(DecisionEpisodeRow.id)
+            )
             return [row.payload for row in rows if row.payload["person_id"] == str(person_id)]
 
 

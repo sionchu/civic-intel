@@ -162,22 +162,41 @@ def _controversy_entries(
 
 def _decision_episode_entries(
     decision_episodes: Sequence[dict[str, Any]],
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
 ) -> list[dict[str, Any]]:
+    claims_by_id = {str(claim.id): claim for claim in claims}
     entries: list[dict[str, Any]] = []
     for episode in decision_episodes:
-        entries.append(
+        claim_id = episode.get("claim_id")
+        raw_evidence_ids = [str(item) for item in episode.get("evidence_ids", [])]
+        if not claim_id or not raw_evidence_ids or len(set(raw_evidence_ids)) != len(
+            raw_evidence_ids
+        ):
+            continue
+        claim = claims_by_id.get(str(claim_id))
+        if claim is None or claim.publication_status.value != "PUBLISHED":
+            continue
+
+        evidence_by_id = {
+            str(item.id): item for item in evidence_by_claim.get(claim.id, ())
+        }
+        selected_evidence = tuple(
+            evidence_by_id[item_id]
+            for item_id in raw_evidence_ids
+            if item_id in evidence_by_id
+        )
+        if len(selected_evidence) != len(raw_evidence_ids):
+            continue
+
+        entry = _claim_entry(claim, {claim.id: selected_evidence})
+        entry.update(
             {
                 "id": f"episode:{episode['id']}",
                 "kind": "DECISION_EPISODE",
                 "title": episode["description"],
-                "epistemic_status": EpistemicStatus.FACT.value,
-                "claim_id": None,
-                "evidence_ids": [],
-                "source_ids": _ordered_unique(
-                    [str(item) for item in episode.get("source_ids", [])]
-                ),
-                "date": None,
-                "details": {
+                "details": entry["details"]
+                | {
                     "action": episode.get("action"),
                     "target": episode.get("target"),
                     "outcome": episode.get("outcome"),
@@ -187,6 +206,7 @@ def _decision_episode_entries(
                 },
             }
         )
+        entries.append(entry)
     return entries
 
 
@@ -273,7 +293,7 @@ def build_profile_projection(
     appointment_logic_entries = _claim_entries_for(
         claims, evidence_by_claim, APPOINTMENT_LOGIC_PREDICATES
     )
-    episode_entries = _decision_episode_entries(decision_episodes)
+    episode_entries = _decision_episode_entries(decision_episodes, claims, evidence_by_claim)
     stakeholder_entries = _relationship_entries(relationships, evidence_by_claim)
     controversy_entries = _controversy_entries(claims, evidence_by_claim)
 

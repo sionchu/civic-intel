@@ -11,7 +11,11 @@ from packages.rendering.profile_projection import build_profile_projection
 from packages.verification.claims import validate_claim_publication
 
 
-def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI:
+def create_app(
+    target_repository: SqlAlchemyRepository | None = None,
+    *,
+    enable_review_surface: bool = False,
+) -> FastAPI:
     target = target_repository or repository
 
     @asynccontextmanager
@@ -79,7 +83,7 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
     @app.get("/people/{person_id}")
     def person(person_id: UUID) -> dict:
         item = person_or_404(person_id, public=True)
-        published_claims = target.claims(person_id, True)
+        published_claims = target.claims(person_id, True, current_only=True)
         evidence_by_claim = {
             claim.id: target.evidence_for(claim.id) for claim in published_claims
         }
@@ -105,7 +109,7 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
     @app.get("/people/{person_id}/claims")
     def claims(person_id: UUID) -> list[dict]:
         person_or_404(person_id, public=True)
-        return [claim_payload(item) for item in target.claims(person_id, True)]
+        return [claim_payload(item) for item in target.claims(person_id, True, current_only=True)]
 
     @app.get("/people/{person_id}/relationships")
     def relationships(person_id: UUID) -> list[dict]:
@@ -196,38 +200,42 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
             "resolution_note": item.resolution_note,
         }
 
-    @app.get("/admin/review")
-    def review_report() -> dict:
-        unresolved = [
-            str(item.id)
-            for item in target.people()
-            if item.identity_status != IdentityStatus.RESOLVED
-        ]
-        unpublishable: list[str] = []
-        contradictions: list[str] = []
-        for claim in target.claims(published_only=True):
-            evidence = target.evidence_for(claim.id)
-            sources = target.sources(item.source_id for item in evidence)
-            policies = target.policies(source.policy_id for source in sources.values())
-            gate = validate_claim_publication(
-                claim, person_or_404(claim.person_id), evidence, sources, policies
-            )
-            if not gate.publishable:
-                unpublishable.append(str(claim.id))
-            if {item.stance.value for item in evidence} >= {"SUPPORT", "REFUTE"}:
-                contradictions.append(str(claim.id))
-        return {
-            "unresolved_identities": unresolved,
-            "unpublishable_claims": unpublishable,
-            "origin_candidates": [],
-            "contradictions": contradictions,
-            "source_policy_blocks": [
+    if enable_review_surface:
+
+        @app.get("/admin/review")
+        def review_report() -> dict:
+            unresolved = [
                 str(item.id)
-                for item in target.policies().values()
-                if item.collection_mode.value in {"BLOCKED", "DISCOVERY_ONLY"}
-            ],
-            "review_items": [review_item_payload(item) for item in target.identity_review_items()],
-        }
+                for item in target.people()
+                if item.identity_status != IdentityStatus.RESOLVED
+            ]
+            unpublishable: list[str] = []
+            contradictions: list[str] = []
+            for claim in target.claims(published_only=True):
+                evidence = target.evidence_for(claim.id)
+                sources = target.sources(item.source_id for item in evidence)
+                policies = target.policies(source.policy_id for source in sources.values())
+                gate = validate_claim_publication(
+                    claim, person_or_404(claim.person_id), evidence, sources, policies
+                )
+                if not gate.publishable:
+                    unpublishable.append(str(claim.id))
+                if {item.stance.value for item in evidence} >= {"SUPPORT", "REFUTE"}:
+                    contradictions.append(str(claim.id))
+            return {
+                "unresolved_identities": unresolved,
+                "unpublishable_claims": unpublishable,
+                "origin_candidates": [],
+                "contradictions": contradictions,
+                "source_policy_blocks": [
+                    str(item.id)
+                    for item in target.policies().values()
+                    if item.collection_mode.value in {"BLOCKED", "DISCOVERY_ONLY"}
+                ],
+                "review_items": [
+                    review_item_payload(item) for item in target.identity_review_items()
+                ],
+            }
 
     return app
 
