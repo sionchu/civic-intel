@@ -5,6 +5,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from math import ceil
+from uuid import UUID
 
 from packages.connectors.open_assembly import (
     AssemblyApiError,
@@ -13,9 +14,10 @@ from packages.connectors.open_assembly import (
     national_assembly_member_policy,
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
-from packages.domain.enums import SourceRunStatus
+from packages.domain.enums import MaterializationAction, SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
+from packages.verification.materialization import MaterializationError, MaterializationResult
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
 
@@ -92,6 +94,19 @@ class AssemblyEnumerationResult:
     run: SourceRun
     pages_committed: int
     unique_records: int
+    observation_ids: tuple[UUID, ...] = ()
+
+
+@dataclass(frozen=True)
+class AssemblyRosterMaterializationResult:
+    enumeration: AssemblyEnumerationResult
+    materializations: tuple[MaterializationResult, ...]
+
+    def outcome_counts(self) -> dict[str, int]:
+        counts = {action.value: 0 for action in MaterializationAction}
+        for result in self.materializations:
+            counts[result.decision.action.value] += 1
+        return counts
 
 
 def normalized_assembly_member(record: AssemblyMemberRecord) -> dict[str, object]:
@@ -138,6 +153,32 @@ class AssemblyRosterEnumerator:
         self.repository = repository
         self.policy = policy or national_assembly_member_policy()
 
+    def _checkpoint_observation_ids(
+        self, seen_hashes: dict[str, str]
+    ) -> dict[str, UUID]:
+        if not seen_hashes:
+            return {}
+        current: dict[str, UUID] = {}
+        for observation in self.repository.feeder_observations(self.FEEDER, self.SCOPE_KEY):
+            expected_hash = seen_hashes.get(observation.provider_record_key)
+            if (
+                expected_hash is None
+                or expected_hash != observation.content_hash
+                or observation.semantic_scope != self.SEMANTIC_SCOPE
+            ):
+                continue
+            existing = current.get(observation.provider_record_key)
+            if existing is not None and existing != observation.id:
+                raise AssemblyCoverageError(
+                    "checkpoint provider identity maps to multiple observations"
+                )
+            current[observation.provider_record_key] = observation.id
+        if set(current) != set(seen_hashes):
+            raise AssemblyCoverageError(
+                "checkpoint observations do not match the committed provider manifest"
+            )
+        return current
+
     def enumerate(self, *, resume: bool = False) -> AssemblyEnumerationResult:
         if any((self.connector.name, self.connector.party, self.connector.district)):
             raise AssemblyCoverageError("L3 roster enumeration must be unfiltered")
@@ -160,6 +201,7 @@ class AssemblyRosterEnumerator:
             expected_pages: int | None = None
             seen_hashes: dict[str, str] = {}
             page_fingerprints: list[str] = []
+            current_observation_ids: dict[str, UUID] = {}
             if resume and prior_checkpoint is not None:
                 if prior_checkpoint.cursor is None:
                     raise AssemblyCoverageError("resume checkpoint lacks a page cursor")
@@ -173,6 +215,7 @@ class AssemblyRosterEnumerator:
                     raise AssemblyCoverageError("resume checkpoint metadata is invalid") from None
                 if start_page > expected_pages:
                     raise AssemblyCoverageError("resume checkpoint already covers the full roster")
+                current_observation_ids = self._checkpoint_observation_ids(seen_hashes)
 
             page_index = start_page
             while True:
@@ -276,7 +319,7 @@ class AssemblyRosterEnumerator:
                     "seen_provider_hashes": next_seen_hashes,
                     "page_fingerprints": next_page_fingerprints,
                 }
-                self.repository.commit_source_page(
+                commit_result = self.repository.commit_source_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -285,6 +328,14 @@ class AssemblyRosterEnumerator:
                     cursor=str(page_index),
                     checkpoint_metadata=checkpoint_metadata,
                 )
+                if len(commit_result.observation_ids) != len(members):
+                    raise AssemblyCoverageError(
+                        "National Assembly page persistence returned incomplete observations"
+                    )
+                for member, observation_id in zip(
+                    members, commit_result.observation_ids, strict=True
+                ):
+                    current_observation_ids[member.member_code] = observation_id
                 pages_committed += 1
                 seen_hashes = next_seen_hashes
                 page_fingerprints = next_page_fingerprints
@@ -294,11 +345,20 @@ class AssemblyRosterEnumerator:
                         raise AssemblyCoverageError(
                             "National Assembly unique record coverage is incomplete"
                         )
+                    if set(current_observation_ids) != set(seen_hashes):
+                        raise AssemblyCoverageError(
+                            "National Assembly observation coverage is incomplete"
+                        )
                     break
                 page_index += 1
 
             completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
-            return AssemblyEnumerationResult(completed, pages_committed, len(seen_hashes))
+            return AssemblyEnumerationResult(
+                completed,
+                pages_committed,
+                len(seen_hashes),
+                tuple(current_observation_ids[key] for key in sorted(current_observation_ids)),
+            )
         except Exception as exc:
             status = (
                 SourceRunStatus.PARTIAL if pages_committed else SourceRunStatus.FAILED
@@ -310,6 +370,39 @@ class AssemblyRosterEnumerator:
                 error_summary="Assembly enumeration did not complete",
             )
             raise
+
+    def enumerate_and_materialize(
+        self, *, resume: bool = False
+    ) -> AssemblyRosterMaterializationResult:
+        enumeration = self.enumerate(resume=resume)
+        if enumeration.run.status != SourceRunStatus.SUCCESS:
+            raise AssemblyCoverageError("only a successful full roster may be materialized")
+        if (
+            len(enumeration.observation_ids) != enumeration.unique_records
+            or len(set(enumeration.observation_ids)) != enumeration.unique_records
+        ):
+            raise AssemblyCoverageError(
+                "successful Assembly enumeration lacks a deterministic observation set"
+            )
+        for observation_id in enumeration.observation_ids:
+            observation = self.repository.feeder_observation(observation_id)
+            if observation is None:
+                raise AssemblyCoverageError(
+                    "successful Assembly enumeration references a missing observation"
+                )
+            if (
+                observation.feeder != self.FEEDER
+                or observation.scope_key != self.SCOPE_KEY
+                or observation.semantic_scope != self.SEMANTIC_SCOPE
+            ):
+                raise AssemblyCoverageError(
+                    "successful Assembly enumeration references an incompatible observation"
+                )
+        materializations = tuple(
+            self.repository.materialize_feeder_observation(observation_id)
+            for observation_id in enumeration.observation_ids
+        )
+        return AssemblyRosterMaterializationResult(enumeration, materializations)
 
 
 def render_staged_json(items: list[StagedAssemblyMember]) -> str:
@@ -340,6 +433,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Resume full enumeration from the last committed page.",
     )
+    parser.add_argument(
+        "--materialize",
+        action="store_true",
+        help="Materialize the exact current roster after a successful full enumeration.",
+    )
     parser.add_argument("--database-url")
     return parser
 
@@ -347,6 +445,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.materialize and not (args.enumerate or args.resume):
+        parser.error("--materialize requires --enumerate or --resume")
     connector = OpenAssemblyMemberConnector(
         page_index=args.page_index,
         page_size=args.page_size,
@@ -356,18 +456,28 @@ def main(argv: list[str] | None = None) -> int:
     )
     try:
         if args.enumerate or args.resume:
-            result = AssemblyRosterEnumerator(
+            enumerator = AssemblyRosterEnumerator(
                 connector,
                 SqlAlchemyRepository(args.database_url),
-            ).enumerate(resume=args.resume)
+            )
+            materialization_outcomes: dict[str, int] | None = None
+            if args.materialize:
+                materialized = enumerator.enumerate_and_materialize(resume=args.resume)
+                enumeration = materialized.enumeration
+                materialization_outcomes = materialized.outcome_counts()
+            else:
+                enumeration = enumerator.enumerate(resume=args.resume)
+            payload: dict[str, object] = {
+                "run_id": str(enumeration.run.id),
+                "status": enumeration.run.status.value,
+                "pages_committed": enumeration.pages_committed,
+                "unique_records": enumeration.unique_records,
+            }
+            if materialization_outcomes is not None:
+                payload["materialization_outcomes"] = materialization_outcomes
             print(
                 json.dumps(
-                    {
-                        "run_id": str(result.run.id),
-                        "status": result.run.status.value,
-                        "pages_committed": result.pages_committed,
-                        "unique_records": result.unique_records,
-                    },
+                    payload,
                     ensure_ascii=False,
                     indent=2,
                     sort_keys=True,
@@ -375,7 +485,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         staged = AssemblyRosterStager(connector).stage()
-    except (AssemblyApiError, PolicyDenied, ValueError) as exc:
+    except (AssemblyApiError, MaterializationError, PolicyDenied, ValueError) as exc:
         parser.error(str(exc))
     print(render_staged_json(staged))
     return 0

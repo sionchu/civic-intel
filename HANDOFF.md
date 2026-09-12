@@ -33,8 +33,9 @@ migration, feeder, search infrastructure, or new persistence abstraction.
 
 ## Completed
 
-- Confirmed baseline before implementation: `master` and `origin/master` both at
-  `f8b36706103d6562252b730ee8d7892c539e7ddd`; the worktree was clean.
+- Confirmed the Assembly-to-Evidence Directory milestone baseline before implementation:
+  `master` and `origin/master` were both at `f2d2e7e8516f3de33c75aa3641911ec21738fff0`;
+  the worktree was clean. The remote remained at that revision after fetch.
 - Read the repository governing documents, active execution plans, public-official-profiler and
   batch-ingestion guidance, then inspected the actual domain contracts, SQLAlchemy repository,
   profile projection, API, web app and regression fixtures.
@@ -61,6 +62,14 @@ migration, feeder, search infrastructure, or new persistence abstraction.
   servers and manually inspected the roster, resolved profile, conflict profile, populated review
   queue and blocked review-identity route in the in-app browser. Temporary review observations,
   identities, servers and database were removed after inspection.
+- Connected the existing National Assembly L3 enumerator to the existing Assembly materialization
+  transaction through a source-specific `enumerate_and_materialize()` path. Successful runs carry
+  the exact committed observation IDs; resumed runs restore prior page IDs from the checkpoint's
+  provider-key/hash manifest before materializing newly committed pages.
+- Added deterministic Assembly-to-Evidence Directory regressions for first materialization,
+  unchanged reruns, changed provider versions, same-name review, birth-date hard conflict,
+  publication rollback, resume coverage and public `/people`/profile provenance. No other feeder,
+  schema, migration, dependency or UI path changed.
 
 ## Current checkpoint
 
@@ -142,7 +151,7 @@ downloaded, normalized or stored; the legal lane remains L1 and L2 is not claime
 
 ## Verification evidence
 
-Executed locally on 2026-09-12:
+Executed locally on 2026-09-12 and 2026-09-13:
 
 - `.venv\Scripts\python.exe -m pytest -o addopts='' tests/test_api.py tests/test_profile_projection.py -q`:
   21 passed, 2 warnings.
@@ -200,6 +209,16 @@ Executed locally on 2026-09-12:
 - Confirmed the MOJ post `602956` attachment manifest and page-level `공공누리 2유형` against
   the official KOGL type-2 terms. The packet remained offline because the repository policy still
   denies fetch and the exact attachment rights boundary was not closed.
+- Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_assembly_evidence_directory.py
+  -q`: 6 passed; full `.venv\\Scripts\\python.exe -m pytest -o addopts='' -q`: 282 passed.
+- Re-ran `.venv\\Scripts\\python.exe -m ruff check apps packages workers
+  tests/test_assembly_evidence_directory.py`: passed, and `.venv\\Scripts\\python.exe -m mypy
+  packages workers apps/api`: success for 51 source files.
+- Re-ran `.venv\\Scripts\\python.exe -m packages.verification.quality`: `passed: true`; all
+  Golden Set checks passed. Web lint, typecheck, UI tests (4 passed) and production build passed.
+- Alembic upgrade/downgrade/upgrade round-trip passed on a temporary SQLite database. `make verify`
+  remained runner-unavailable because GNU Make is not installed; constituent checks were run
+  directly and no GitHub Actions result was claimed locally.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -245,11 +264,14 @@ enumerator; the first MOJ packet is still pending packet-specific rights clearan
 - `docs/architecture/LABOR_LEADERSHIP_FEEDER.md`
 - `docs/architecture/LEGAL_CAREER_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
+- `docs/architecture/IDENTITY_RESOLUTION.md`
+- `docs/INDEX.md`
+- `docs/exec-plans/active/assembly-roster-evidence-directory.md`
+- `workers/assembly_roster.py`
+- `tests/test_assembly_evidence_directory.py`
 - `HANDOFF.md`
 
 ## Next concrete action
 
 Resolve packet-specific rights and third-party ownership for MOJ post `602956` attachments before
-any download or deterministic extraction, while keeping Presidential personnel at
-`L1 CONTRACT_STAGED`, the Lee Won-joo case fixture-only, labor federation/commission lanes at
-their documented human-assisted ceiling, and the legal lane at L1.
+any download or deterministic extraction.

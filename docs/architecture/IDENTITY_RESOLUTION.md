@@ -140,11 +140,17 @@ A same-name observation with no bridge evidence, a birth-date conflict, or any `
 The profiler then consumes this target as structured research context and must still create
 canonical Claim/Evidence/Source records before anything becomes publishable.
 
-### Reviewed Person onboarding
+### Reviewed research/profile onboarding
 
 A `ProfileResearchTarget` does not write to the canonical database by itself. A new Person may
 enter the canonical SQLAlchemy store only through an explicit `ReviewedPersonBundle` and
 `SqlAlchemyRepository.import_reviewed_person()` transaction.
+
+This rule governs reviewed research/profile onboarding. It is distinct from authoritative,
+source-bounded batch roster materialization: a reviewed feeder with an explicit provider identity
+rule may use the deterministic `AUTO_CREATE` / `AUTO_LINK` / `REVIEW_REQUIRED` /
+`HARD_CONFLICT` gate in the batch architecture. The current approved automatic example is the
+National Assembly roster's exact `MONA_CD` rule; other feeders do not inherit it automatically.
 
 The import gate:
 
@@ -158,3 +164,12 @@ The import gate:
 
 Discovery reason, talent-pool inclusion and appointment-target relevance remain research context
 only and never become publishable claims through onboarding.
+
+### Authoritative batch roster materialization
+
+The batch path is not a `ProfileResearchTarget` or `ReviewedPersonBundle` shortcut. After a
+source-specific successful enumeration, the existing materialization gate may create or link a
+canonical Person only under its reviewed provider-identity rule. The materialization transaction
+must create the Person, observation link and evidence-backed claim together, then pass the existing
+publication validator. Ambiguous names and exact contradictions remain review items or fail
+closed, and the resulting public profile still uses the normal Claim/Evidence projection.
