@@ -1,6 +1,6 @@
 # Government Public Ethics Committee retired-public-official employment review L3
 
-Status: source-contract review complete - L1 retained; L3 promotion blocked as of 2026-09-12.
+Status: source-contract review and single-packet rights preflight complete - L1 retained; L3 promotion blocked as of 2026-09-12.
 
 Methodology follow-up (2026-09-12): the source acquisition playbook in
 `docs/architecture/FEEDER_SOURCE_COVERAGE.md` separates this automated-L3 stop condition from
@@ -42,8 +42,8 @@ Verified on 2026-09-12 before this documentation change:
 ```text
 repository: sionchu/civic-intel
 branch: master
-HEAD: 64ebba32f4ad2b44e1b5fa85c547cbd560729f9f
-origin/master: 64ebba32f4ad2b44e1b5fa85c547cbd560729f9f
+HEAD: 64b9e9b43de81bcf81bc82496682957a10452a34
+origin/master: 64b9e9b43de81bcf81bc82496682957a10452a34
 tracked tree: clean
 Alembic head: 0004
 L3 feeders: National Assembly roster, Gwanbo personnel, NEC winners,
@@ -184,6 +184,40 @@ but technical reachability is not permission to store or republish the attachmen
 internal JSON call is likewise not an advertised public API merely because the public page
 invokes it.
 
+## Single-packet human-assisted L1 preflight
+
+The 2026-09-12 preflight was bounded to one current MPM result packet. It recorded packet
+metadata and a future fixed provenance locator, but did not enumerate the board, call PETI's
+internal routes, or import any row.
+
+Packet manifest observed from the official detail page:
+
+```text
+origin detail: https://www.mpm.go.kr/mpm/info/infoEthics/BizEthicsBoard/?boardId=bbs_0000000000000123&cntId=422&mode=view
+boardId: bbs_0000000000000123
+cntId: 422
+title: 2026년 8윌 퇴직공직자 취업심사 결과 공개
+author: 취업심사과
+created: 2026-08-27
+attachment: 2026년 8월 퇴직공직자 취업심사 결과 공개_홈페이지 게시용.pdf
+attachment reference: FILE_000000100071689 / dc82f280b85355598
+```
+
+The fixed locator for a future reviewed value is the tuple
+`{origin detail URL, boardId, cntId, attachment reference, page number, packet-local row ordinal}`.
+It is a packet/version provenance locator only. It is not a stable case or row identity and must
+not become an `EmploymentReviewEvent.provider_record_key` without a provider identity/version
+statement. The existing packet-shape review identified four pages and 94 packet-local rows;
+the preflight records that shape without copying or normalizing their values.
+
+The direct public attachment response was inspected in memory only to confirm that the download
+route returns an octet-stream document. No PDF bytes, fulltext, normalized row, `SourceSnapshot`,
+`SourceRun`, `SourceCheckpoint` or `FeederObservation` was written or retained. No deterministic
+extraction or human comparison was run because the current attachment detail has no item-level
+KOGL mark or reuse grant, and the MPM copyright policy requires prior agreement for unmarked
+materials. Accordingly, the human-assisted path remains conditional L1 utility, not L2 import,
+and the lane remains `L1 CONTRACT_STAGED; L3 promotion blocked`.
+
 ## Reuse boundary if the gate later passes
 
 Only after the source owner publishes or grants the missing contract may the automated L3
@@ -212,13 +246,13 @@ Observed repository and test evidence:
 
 ```text
 git fetch --prune origin master
-  origin/master remained 64ebba32f4ad2b44e1b5fa85c547cbd560729f9f
+  origin/master remained 64b9e9b43de81bcf81bc82496682957a10452a34
 git rev-parse HEAD
-  64ebba32f4ad2b44e1b5fa85c547cbd560729f9f
+  64b9e9b43de81bcf81bc82496682957a10452a34
 git status --short --branch
   ## master...origin/master (before this documentation change)
 git ls-remote origin refs/heads/master
-  64ebba32f4ad2b44e1b5fa85c547cbd560729f9f
+  64b9e9b43de81bcf81bc82496682957a10452a34
 pytest tests/test_civil_service_feeder.py -q
   10 passed
 .venv\Scripts\python.exe -m pytest -q --disable-warnings
@@ -246,11 +280,15 @@ Source probes:
   attachment component.
 - MPM `robots.txt`: current disallowed paths recorded above.
 - MPM copyright policy: item-level KOGL mark or prior agreement requirement recorded above.
+- MPM `cntId=422` detail and direct attachment route: packet manifest, attachment reference and
+  in-memory MIME probe recorded above; no attachment was written to disk.
 
 ## Not executed
 
 - no live source connector, PDF parser, worker, migration or scheduled job was added;
 - no production or full-history collection was attempted;
+- no deterministic packet extraction or human comparison was run because packet-specific reuse
+  permission is absent;
 - no source attachment was copied into the repository; and
 - no L3 `SourceRun` or `SourceCheckpoint` was created for this lane;
 - `make verify` was not invoked because GNU Make is unavailable in this Windows environment;
