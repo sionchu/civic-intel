@@ -433,8 +433,8 @@ unique `apbaId`. The disclosure-bound `disclosureNo:row ordinal` key is an obser
 not a stable Person identifier, so the existing materialization gate keeps every ALIO row in
 `REVIEW_REQUIRED`. Raw report HTML, gender and disclosure-staff contacts are excluded.
 
-CleanEye local-public-institution executives remain `L0 RESEARCHED;
-HTML_COLLECTION_REVIEW_REQUIRED`, not an L3 feeder. The official REST catalog currently has
+CleanEye local-public-institution executives remain `L0 RESEARCHED; BLOCKED`, not an L3 feeder.
+The official REST catalog currently has
 no named-executive dataset, but the official HTML disclosures do expose named executive rows.
 The current all-path `robots.txt` instruction and absence of route-specific automated-access,
 rate-limit and coverage documentation require a source-specific collection review before any

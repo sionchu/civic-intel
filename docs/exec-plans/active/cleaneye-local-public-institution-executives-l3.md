@@ -1,6 +1,6 @@
 # CleanEye local-public-institution executives L3
 
-Status: research complete — `L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED` as of 2026-08-31; L3 was not implemented.
+Status: research complete — `L0 RESEARCHED; BLOCKED` as of 2026-08-31; L3 was not implemented.
 
 ## Objective
 
@@ -31,7 +31,7 @@ local/origin HEAD: 782a3068ca8d9418cb0b8a1ebdff305a8ae29184
 tracked tree: clean
 Alembic head: 0004
 CleanEye connector/contracts/tests: none
-actual CleanEye maturity: L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED
+actual CleanEye maturity: L0 RESEARCHED; BLOCKED
 ```
 
 Six existing source-specific L3 feeders remain implemented on the canonical repository:
@@ -255,8 +255,8 @@ and a usable disclosure-time/version contract, and the implementation proves ato
 resume, idempotency and REVIEW_REQUIRED identity isolation.
 
 If the official catalog still lacks that contract and the known named-executive HTML routes have
-no approved source-specific automated-access basis, retain `L0 RESEARCHED;
-HTML_COLLECTION_REVIEW_REQUIRED` without connector code, without a guessed endpoint/field and
+no approved source-specific automated-access basis, retain `L0 RESEARCHED; BLOCKED` without
+connector code, without a guessed endpoint/field and
 without promoting the maturity beyond L0.
 
 That review-required branch is the observed result. The L3 implementation stop condition is

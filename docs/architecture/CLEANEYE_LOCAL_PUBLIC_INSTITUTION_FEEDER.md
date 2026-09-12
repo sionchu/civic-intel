@@ -10,7 +10,7 @@ institution heads and the executive/director/auditor roles the provider itself d
 - local-government invested institutions; and
 - local-government contributed institutions.
 
-The lane is currently `L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED`. The official REST
+The lane is currently `L0 RESEARCHED; BLOCKED`. The official REST
 catalog does not expose named executive status, but the official HTML disclosures do expose
 named executive rows. A source-specific automated-access review must resolve the current
 all-path robots instruction and the route-level contract before a repeated HTML collector is
@@ -130,8 +130,8 @@ routes. Limits stated for REST datasets apply only to those operations and must 
 for HTML enumeration.
 
 Therefore current implementation stops at finite contract review. Full or repeated automated
-HTML enumeration is `HTML_COLLECTION_REVIEW_REQUIRED`, not a conclusion that the feeder itself
-is permanently blocked. A live L3 worker requires one of:
+HTML enumeration is blocked pending a permitted source-specific contract. A live L3 worker
+requires one of:
 
 1. an official machine-readable named-executive dataset with complete contract documentation;
 2. a changed official automated-access policy that permits the exact source-bounded routes; or
@@ -161,7 +161,7 @@ create zero Persons automatically.
 ## Maturity decision
 
 ```text
-L0 RESEARCHED; HTML_COLLECTION_REVIEW_REQUIRED
+L0 RESEARCHED; BLOCKED
 ```
 
 Public pages establish the source strategy and named-executive disclosure shape, but no

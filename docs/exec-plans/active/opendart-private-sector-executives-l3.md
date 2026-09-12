@@ -40,8 +40,8 @@ The repository has six source-specific L3 feeders:
 5. NEC local-election candidates
 6. ALIO public-institution executives
 
-CleanEye local-public-institution executives remain `L0 RESEARCHED;
-HTML_COLLECTION_REVIEW_REQUIRED` and are outside this plan.
+CleanEye local-public-institution executives remain `L0 RESEARCHED; BLOCKED` and are outside
+this plan.
 
 Existing OpenDART artifacts to preserve:
 
@@ -305,6 +305,7 @@ immutability and review isolation pass locally, so this plan closes at L3.
 
 ## Next Best Action
 
-Promote the official Government Public Ethics Committee retired-public-official employment-
-review lane from L1 by first fixing its exact published universe, decision-record identifier,
-coverage/version semantics and permitted structured access contract.
+The Government Public Ethics Committee retired-public-official employment-review lane is now
+tracked by [the source-gate plan](government-public-ethics-employment-review-l3.md). It remains
+L1 until the exact published universe, decision-record identifier, coverage/version semantics
+and permitted structured access contract are established.

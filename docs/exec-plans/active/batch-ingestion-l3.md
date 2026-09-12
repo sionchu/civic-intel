@@ -454,6 +454,7 @@ Then propose exactly one next feeder as Next Best Action.
 
 ## Next Best Action
 
-Promote the NEC local elected-office winner roster from L2 to L3, bounded by election code and
-office class, using the existing official connector and `huboid` identity anchor on the same
-run/checkpoint/observation foundation.
+The next source-contract review is [the Government Public Ethics Committee retired-public-
+official employment-review L3 plan](government-public-ethics-employment-review-l3.md). It must
+remain at L1 unless the official result universe, row identity, correction/version semantics,
+and permitted structured access contract are all established.
