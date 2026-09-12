@@ -70,6 +70,14 @@ def test_executive_staging_preserves_term_selection_and_reported_career_semantic
     assert "02-1111-1111" not in rendered
 
 
+def test_non_standing_institution_head_keeps_a_distinct_executive_kind() -> None:
+    row = {**fixture()["executives"][0], "직위": "비상임기관장", "성명": "비상임기관장"}
+
+    records = parse_executive_rows([row])
+
+    assert records[0].executive_kind == PublicInstitutionExecutiveKind.NON_STANDING_HEAD
+
+
 def test_compensation_is_role_category_disclosure_not_personal_wealth() -> None:
     records = parse_compensation_rows(fixture()["compensation"])
     assert records[0].executive_kind == PublicInstitutionExecutiveKind.INSTITUTION_HEAD

@@ -70,6 +70,7 @@ _CLASSIFICATION_MAP = {
 _EXECUTIVE_KIND_MAP = {
     "상임기관장": PublicInstitutionExecutiveKind.INSTITUTION_HEAD,
     "기관장": PublicInstitutionExecutiveKind.INSTITUTION_HEAD,
+    "비상임기관장": PublicInstitutionExecutiveKind.NON_STANDING_HEAD,
     "상임감사": PublicInstitutionExecutiveKind.STANDING_AUDITOR,
     "상임감사위원": PublicInstitutionExecutiveKind.STANDING_AUDITOR,
     "상임이사": PublicInstitutionExecutiveKind.STANDING_DIRECTOR,
@@ -99,11 +100,11 @@ class AlioExecutiveRecord:
     institution_name: str
     classification: PublicInstitutionClassification
     classification_text: str
-    person_name: str
+    person_name: str | None
     position_text: str
-    title: str
+    title: str | None
     executive_kind: PublicInstitutionExecutiveKind
-    term_start: date
+    term_start: date | None
     term_end: date | None
     reported_careers: tuple[str, ...]
     selection_procedure: str | None
@@ -165,6 +166,7 @@ class AlioExecutiveDisclosure:
     institution_code: str
     report_form_no: str
     disclosure_date: date
+    title: str | None = None
 
 
 @dataclass(frozen=True)
@@ -234,7 +236,9 @@ def _classification_text(text: str) -> tuple[PublicInstitutionClassification, st
 
 def _executive_kind(value: str) -> PublicInstitutionExecutiveKind:
     normalized = value.strip()
-    if normalized.startswith("상임기관장"):
+    if normalized.startswith("비상임기관장"):
+        normalized = "비상임기관장"
+    elif normalized.startswith("상임기관장"):
         normalized = "상임기관장"
     elif normalized.startswith("상임감사위원"):
         normalized = "상임감사위원"
@@ -304,12 +308,13 @@ def parse_executive_rows(rows: list[dict]) -> list[AlioExecutiveRecord]:
         classification, classification_text = _classification(row)
         position = _required(row, "직위")
         person_name = _public_name(_required(row, "성명"))
-        if person_name is None:
-            raise AlioRecordError("masked executive name cannot create an executive candidate")
-        term_start = _date_value(row, "임기_시작일")
+        term_start = _date_value(row, "임기_시작일", required=person_name is not None)
         term_end = _date_value(row, "임기_종료일", required=False)
         as_of = _date_value(row, "기준일")
-        assert term_start is not None and as_of is not None
+        title = _optional(row, "직책")
+        if person_name is not None and title is None:
+            raise AlioRecordError("named ALIO executive lacks title")
+        assert as_of is not None
         records.append(
             AlioExecutiveRecord(
                 record_id=_required(row, "record_id"),
@@ -319,7 +324,7 @@ def parse_executive_rows(rows: list[dict]) -> list[AlioExecutiveRecord]:
                 classification_text=classification_text,
                 person_name=person_name,
                 position_text=position,
-                title=_required(row, "직책"),
+                title=title,
                 executive_kind=_executive_kind(position),
                 term_start=term_start,
                 term_end=term_end,
@@ -729,12 +734,18 @@ class AlioExecutiveDisclosureConnector(Connector):
             total_pages = int(page["totalPage"])
         except (KeyError, TypeError, ValueError):
             raise AlioRecordError("ALIO report pagination is unavailable") from None
-        if page_no != requested_page or page_size != cls.REPORT_PAGE_SIZE:
+        if page_size != cls.REPORT_PAGE_SIZE:
             raise AlioRecordError("ALIO report pagination is inconsistent")
         expected_pages = ceil(total_count / page_size) if total_count else 0
         if total_count < 0 or total_pages != expected_pages:
             raise AlioRecordError("ALIO report total-page coverage is inconsistent")
         expected_rows = min(page_size, max(total_count - ((page_no - 1) * page_size), 0))
+        if total_count == 0:
+            if page_no != 0 or rows:
+                raise AlioRecordError("ALIO empty report page is inconsistent")
+            return AlioExecutiveDisclosurePage((), page_no, page_size, total_count, total_pages)
+        if page_no != requested_page:
+            raise AlioRecordError("ALIO report pagination is inconsistent")
         if len(rows) != expected_rows:
             raise AlioRecordError("ALIO report page row count is incomplete")
 
@@ -768,6 +779,7 @@ class AlioExecutiveDisclosureConnector(Connector):
                     institution_code=institution_code,
                     report_form_no=cls.REPORT_FORM_NO,
                     disclosure_date=_report_date(_required(raw, "idate"), "idate"),
+                    title=_optional(raw, "title"),
                 )
             )
         return AlioExecutiveDisclosurePage(
@@ -775,7 +787,13 @@ class AlioExecutiveDisclosureConnector(Connector):
         )
 
     @classmethod
-    def current_disclosure(cls, page: AlioExecutiveDisclosurePage) -> AlioExecutiveDisclosure:
+    def current_disclosure(
+        cls, page: AlioExecutiveDisclosurePage
+    ) -> AlioExecutiveDisclosure | None:
+        if page.total_count == 0:
+            if page.page_no != 0 or page.total_pages != 0 or page.disclosures:
+                raise AlioRecordError("ALIO empty current disclosure is inconsistent")
+            return None
         current = [item for item in page.disclosures if item.rank == 1]
         if page.page_no != 1 or len(current) != 1:
             raise AlioRecordError("ALIO current item 4 disclosure is unavailable")
@@ -814,8 +832,6 @@ class AlioExecutiveDisclosureConnector(Connector):
             if position is None or person_value is None:
                 raise AlioRecordError("ALIO executive table lacks position or name")
             person_name = _public_name(person_value)
-            if person_name is None:
-                raise AlioRecordError("masked or vacant ALIO executive cannot be enumerated")
             title: str | None = None
             term_start_value: str | None = None
             term_end_value: str | None = None
@@ -833,7 +849,12 @@ class AlioExecutiveDisclosureConnector(Connector):
                     )
                 selection_procedure = selection_procedure or _row_value(row, "선임절차")
                 selection_rule = selection_rule or _row_value(row, "선임절차규정")
-            if title is None or term_start_value is None:
+            term_start = (
+                _report_date(term_start_value, "임기 시작일")
+                if term_start_value is not None
+                else None
+            )
+            if person_name is not None and (title is None or term_start is None):
                 raise AlioRecordError("ALIO executive table lacks title or term start")
             ordinal = len(records) + 1
             records.append(
@@ -847,7 +868,7 @@ class AlioExecutiveDisclosureConnector(Connector):
                     position_text=position,
                     title=title,
                     executive_kind=_executive_kind(position),
-                    term_start=_report_date(term_start_value, "임기 시작일"),
+                    term_start=term_start,
                     term_end=_optional_report_date(term_end_value, "임기 종료일"),
                     reported_careers=careers,
                     selection_procedure=selection_procedure,
@@ -856,6 +877,9 @@ class AlioExecutiveDisclosureConnector(Connector):
                     source_ref=disclosure.disclosure_no,
                 )
             )
-        if not records:
+        if not records and not (
+            disclosure.title is not None
+            and any(marker in disclosure.title for marker in ("수정", "정정"))
+        ):
             raise AlioRecordError("ALIO report has no supported executive rows")
         return records

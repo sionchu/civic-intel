@@ -1,6 +1,7 @@
 # ALIO public-institution executives L3
 
-Status: completed — stop condition met locally on 2026-08-31.
+Status: completed — source-bounded full current-roster enumeration completed on 2026-09-13;
+provider-declared missingness and correction-only coverage remain explicit.
 
 ## Objective
 
@@ -30,10 +31,11 @@ regressions:
 4. National Assembly bill participation
 5. NEC local election candidates
 
-ALIO is the next P0 because it already has a reviewed public-interest boundary,
+ALIO was selected because it already had a reviewed public-interest boundary,
 `AlioInstitutionRecord` / `AlioExecutiveRecord` contracts, deterministic fixture parsers,
-identity staging and privacy tests. Actual code is still L1: `can_fetch=False`, no live
-connector, no SourceRun, no SourceCheckpoint and no FeederObservation path.
+identity staging and privacy tests. The source-specific connector and enumerator now use the
+canonical SourceRun, SourceCheckpoint and FeederObservation path; automatic Person
+materialization remains review-only.
 
 ## Governing official contract
 
@@ -132,12 +134,11 @@ and the L3 contract needs only normalized executive metadata.
 
 ```text
 branch: master
-local/origin HEAD: 173ed8a47ded963ed9907368a3fe5daefc4a4b0f
-tracked tree: clean
+local/origin HEAD before this hardening: 3027f8cb0ae8c1e3567ebbc9b6b8d94e923cac50
 Alembic head: 0004
-five L3 targeted tests: 55 passed, 1 pytest-cache warning
+existing L3 feeder regressions: 55 passed, 1 pytest-cache warning
 existing ALIO tests: 7 passed, 1 pytest-cache warning
-actual ALIO maturity: L1 CONTRACT_STAGED
+actual ALIO maturity before this hardening: L3 FULL_ENUMERATION with provider-declared gaps
 live contract probes: official item/directory/report/document/copyright/robots surfaces returned 200
 ```
 
@@ -151,7 +152,9 @@ live contract probes: official item/directory/report/document/copyright/robots s
 - [x] validate page number, size, totals, result rank and report/institution identifiers
 - [x] follow only the exact report-document path embedded by the official report page
 - [x] parse only existing `AlioExecutiveRecord` fields from item 4 executive tables
-- [x] fail closed on malformed, masked or unsupported executive rows
+- [x] fail closed on malformed or unsupported executive rows
+- [x] preserve explicit masked/vacant seats as missing-name observations and exclude them from
+  identity-candidate staging
 - [x] exclude gender, contacts, staff identities, attachments and raw HTML
 
 ## Milestone B — Current-roster L3 enumeration
@@ -207,10 +210,47 @@ sample current report: 7 supported executive rows
 report form: 20305
 ```
 
-The live probe exercised one institution through the production connector. A 355-institution
-live persistence run was not executed because ALIO publishes no request-rate limit; complete
-enumeration, coverage, atomicity, resume and idempotency were exercised with deterministic
-multi-institution transports.
+The live probe exercised one institution through the production connector. The original
+implementation then kept the 355-institution persistence proof offline because ALIO publishes
+no request-rate limit; complete enumeration, coverage, atomicity, resume and idempotency were
+exercised with deterministic multi-institution transports. The 2026-09-13 live run below is the
+later source-bounded operational completion of that proof.
+
+### Live full-enumeration hardening (2026-09-13)
+
+The first source-bounded run used the official unfiltered directory and found 355 institutions.
+It committed the directory plus four institutions and 32 named executive observations before the
+fifth institution exposed a supported `상임기관장` seat published as `공석` without a title or
+term-start value. The prior parser correctly failed closed for a person candidate, but that
+behavior prevented complete institution coverage. No raw report HTML was retained.
+
+The parser/observation path now preserves this source-declared vacancy as an explicit
+`MASKED_OR_VACANT` missing-name observation, leaves unpublished title/term fields null, and keeps
+the row out of identity staging. The partial run was resumable from cursor `4` in the local
+ignored `civic_intel.db` and was subsequently completed with the source-specific resume path.
+
+The resumed run then encountered the official position label `비상임기관장`. The canonical
+executive-kind enum now preserves it as `NON_STANDING_HEAD`; it is not folded into standing
+institution-head semantics or treated as a Person identifier.
+
+The next resume boundary exposed a provider-declared no-current-report response for an
+institution (`totalCount=0`, `currPage=0`, `totalPage=0`). The connector now records that empty
+report-list snapshot, advances the institution checkpoint and creates no executive observation;
+the explicit no-data result is distinct from a failed request or an invented vacant person.
+
+The next source variation was a provider-ranked `임원현황(수시공시) 수정공시` with no supported
+executive table and a `frstSubmissionNo` in the list response. The current route does not expose
+the original filing as a directly usable report document through that value. The enumerator now
+preserves one `CORRECTION_ONLY` report observation with no Person candidate and continues the
+institution coverage; it does not infer the corrected roster from a prior filing. Full named-row
+coverage for such a correction remains a separately bounded source-contract gap.
+
+The resumed live run completed with `SUCCESS`: the directory covered 355 institutions, 347 had a
+provider-ranked current disclosure, and 8 returned the explicit no-current sentinel. It committed
+3,797 disclosure-row observations plus one correction-only report observation. Of the row
+observations, 3,624 carried public names and 173 carried `MASKED_OR_VACANT` missingness. The
+current disclosure observation scope therefore met its L3 full-enumeration stop condition; these
+counts do not imply a named Person exists for every institution or seat.
 
 Implementation:
 
@@ -236,8 +276,30 @@ apps/web build: PASS
 
 `make verify` itself is runner-unavailable because GNU Make is not installed on this Windows
 host. Every command in the Makefile's verify path was executed directly. Repository-wide
-`ruff format --check` remains non-passing on 47 pre-existing files; all four Python files
+`ruff format --check` remains non-passing on 47 pre-existing files; all five Python files
 touched by this implementation were formatted and pass targeted format-check.
+
+Post-hardening verification on 2026-09-13:
+
+```text
+ALIO targeted tests: 26 passed
+full Python tests: 287 passed, 4 warnings
+ruff check apps packages workers tests: passed
+mypy packages workers apps/api: success, 51 source files
+packages.verification.quality: passed=true
+ruff format --check: five touched Python files passed
+apps/web lint: passed
+apps/web typecheck: passed
+apps/web tests: 5 passed
+apps/web build: passed
+```
+
+The live command `.venv\Scripts\python.exe -m workers.public_institutions --resume
+--database-url sqlite:///./civic_intel.db` returned `SUCCESS` at checkpoint cursor `355` with
+`unique_records=3797`. Read-only QA found 355 directory institutions, 347 current disclosures,
+8 no-current sentinels, 3,798 observations including one correction-only report, 3,624
+public-name rows and 173 explicit masked/vacant rows. No migration was needed because the
+canonical Alembic head remains `0004`.
 
 Migration verification:
 
@@ -282,4 +344,6 @@ Stop when the unfiltered ALIO item 4 current executive roster has:
 6. private/contact/staff fields and raw report HTML absent from persistence;
 7. existing ALIO fixture staging preserved;
 8. full local verification and Alembic roundtrip completed;
-9. no migration, second repository, raw truth store, generic framework or publication bypass.
+9. explicit provider-declared no-current, masked/vacant and correction-only outcomes are
+   represented without inventing named rows;
+10. no migration, second repository, raw truth store, generic framework or publication bypass.

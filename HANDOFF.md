@@ -150,6 +150,14 @@ invested/contributed institutions, both dated 2026-06-30; the official REST cata
 `HEAD 405 / Allow: GET, POST` under a current `robots.txt` of `Disallow: /`. Those results provide
 no route permission, request-pacing, complete-coverage, version or storage contract. CleanEye
 remains `L0 RESEARCHED; BLOCKED`; no HTML collector, source request, payload or schema was added.
+The same-day ALIO operational run completed the unfiltered item-4 current-disclosure scope: 355
+directory institutions were covered, 347 had a provider-ranked current disclosure and 8 returned
+the official no-current sentinel. The canonical batch foundation now retains 3,797 disclosure-row
+observations and one `CORRECTION_ONLY` report observation; 3,624 rows have public names and 173
+retain `MASKED_OR_VACANT` missingness. No name was invented for an empty or correction-only
+source result, masked/vacant rows were kept out of identity staging, and no Person was created.
+The ALIO lane remains L3 for current-disclosure observation enumeration, while named-row
+completeness is explicitly bounded by those source-declared outcomes.
 
 ## Decisions and reasons
 
@@ -195,6 +203,10 @@ remains `L0 RESEARCHED; BLOCKED`; no HTML collector, source request, payload or 
   research lane. The 2026-09-13 all-path robots and method revalidation does not grant collection
   permission or fill the missing coverage/version contract; only a permitted finite packet may
   proceed through conditional human review, with no disclosure-row-to-Person promotion.
+- ALIO item 4 is the next completed source-bounded full-enumeration proof. Its `apbaId` directory,
+  current `disclosureNo` and disclosure-row ordinal remain provider/source keys, not Person
+  authority; empty current reports, masked/vacant seats and correction-only reports are explicit
+  observation states.
 
 ## Verification evidence
 
@@ -310,15 +322,32 @@ Executed locally on 2026-09-12 and 2026-09-13:
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
   was needed because decision links remain in the existing JSON temporal payload.
+- `.venv\Scripts\python.exe -m pytest -o addopts='' tests/test_alio_public_institutions.py
+  tests/test_batch_alio_executives.py -q`: 26 passed.
+- `.venv\Scripts\python.exe -m ruff check packages\connectors\alio_disclosures.py
+  packages\domain\enums.py workers\public_institutions.py tests\test_alio_public_institutions.py
+  tests\test_batch_alio_executives.py`: passed; `.venv\Scripts\python.exe -m mypy packages
+  workers apps/api`: success for 51 source files.
+- `.venv\Scripts\python.exe -m workers.public_institutions --resume
+  --database-url sqlite:///./civic_intel.db`: official ALIO run returned `SUCCESS`, checkpoint
+  cursor `355`, and `unique_records=3797` for the resumed run. Read-only QA of the ignored local
+  database found 355 directory codes, 347 current disclosures, 8 no-current sentinels, 3,798
+  observations including one correction-only report, 3,624 public-name rows and 173 explicit
+  masked/vacant rows.
+- No Alembic migration was added; the ALIO hardening reuses revision `0004` and the canonical
+  SourceRun/SourceCheckpoint/FeederObservation transaction.
 
 ## Not executed
 
-No feeder implementation, labor federation/commission acquisition, MOJ/Supreme Court legal
-personnel acquisition, KDI institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
+No additional feeder implementation beyond the ALIO source-specific hardening, labor
+federation/commission acquisition, MOJ/Supreme Court legal personnel acquisition, KDI
+institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
 provider payload browser, schema change, migration file, dependency install, admin write action,
 authenticated operator system or production deployment was performed. No official labor or
 legal attachment was downloaded or retained. The public review route remains intentionally
-unavailable until an operator access boundary is designed.
+unavailable until an operator access boundary is designed. Assembly, NEC and OpenDART full-list
+runs were not started because their runtime credentials are absent; no Gwanbo date window was
+selected because that lane requires an explicit bounded interval.
 
 ## Blockers
 
@@ -332,7 +361,10 @@ enumerator; the first MOJ packet is still pending packet-specific rights clearan
 government-funded research-career lane remains L0 for the KDI candidate because the current
 profile routes lack a complete declared universe, stable record/version contract and
 profile-specific reuse permission; a finite rights-approved packet remains the only possible
-human-assisted path.
+human-assisted path. ALIO's L3 observation scope is complete, but its 8 no-current institutions,
+173 masked/vacant rows and one correction-only report are not converted into named People. The
+remaining full-list lanes require their exact source credentials and, for Gwanbo, an explicit
+date window.
 
 ## Modified files
 
@@ -371,7 +403,20 @@ human-assisted path.
 - `docs/exec-plans/active/cleaneye-local-public-institution-executives-l3.md`
 - `HANDOFF.md`
 
+Latest ALIO full-enumeration hardening also touched:
+
+- `docs/architecture/BATCH_INGESTION.md`
+- `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
+- `docs/architecture/PUBLIC_INSTITUTION_FEEDER.md`
+- `docs/exec-plans/active/alio-public-institution-executives-l3.md`
+- `packages/connectors/alio_disclosures.py`
+- `packages/domain/enums.py`
+- `tests/test_alio_public_institutions.py`
+- `tests/test_batch_alio_executives.py`
+- `workers/public_institutions.py`
+
 ## Next concrete action
 
-Obtain and record an official packet-specific rights/third-party-ownership decision for MOJ post
-`602956` attachments before any body request or deterministic extraction.
+Run the next source-bounded full list: the unfiltered National Assembly roster with an
+operator-injected `ASSEMBLY_API_KEY`, keeping materialization disabled until the committed
+observation coverage is reviewed.

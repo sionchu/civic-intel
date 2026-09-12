@@ -23,7 +23,7 @@ from packages.domain.enums import (
 )
 from packages.persistence import SqlAlchemyRepository
 from packages.verification.policy import PolicyDenied
-from workers.public_institutions import AlioExecutiveEnumerator
+from workers.public_institutions import AlioExecutiveEnumerator, stage_executive_rows
 
 STAFF_NAME = "수집금지담당자"
 STAFF_PHONE = "02-9999-9999"
@@ -48,6 +48,17 @@ def executive_table(
         <tr><td>주요경력</td><td>{career}<br/>테스트청장</td></tr>
         <tr><td>선임절차</td><td>임원추천위원회 추천 후 임명</td></tr>
         <tr><td>선임절차규정</td><td>기관 정관</td></tr>
+      </tbody>
+    </table>
+    """
+
+
+def vacant_executive_table(*, position: str = "상임기관장") -> str:
+    return f"""
+    <table border="1">
+      <tbody>
+        <tr><td>직위</td><td>{position}</td><td>성명</td><td>공석</td></tr>
+        <tr><td>선임절차</td><td>임원추천위원회 추천 후 임명</td></tr>
       </tbody>
     </table>
     """
@@ -90,6 +101,10 @@ class FakeAlioProvider:
             "C0001": "2026083100000001",
             "C0002": "2026083100000002",
         }
+        self.report_titles: dict[str, str] = {
+            "C0001": "임원현황",
+            "C0002": "임원현황",
+        }
         self.documents = {
             "2026083100000001": report_html(
                 executive_table("김기관"),
@@ -102,6 +117,7 @@ class FakeAlioProvider:
             ),
         }
         self.fail_once_for: str | None = None
+        self.no_disclosure_for: set[str] = set()
         self.requests: list[tuple[str, str, dict | None]] = []
 
     def handle(self, request: httpx.Request) -> httpx.Response:
@@ -131,6 +147,22 @@ class FakeAlioProvider:
             assert payload["pageNo"] == 1
             assert payload["reportFormRootNo"] == "20305"
             assert payload["search_word"] == ""
+            if institution_code in self.no_disclosure_for:
+                return httpx.Response(
+                    200,
+                    json={
+                        "status": "success",
+                        "data": {
+                            "result": [],
+                            "page": {
+                                "currPage": 0,
+                                "unitPage": 10,
+                                "totalCount": 0,
+                                "totalPage": 0,
+                            },
+                        },
+                    },
+                )
             if self.fail_once_for == institution_code:
                 self.fail_once_for = None
                 return httpx.Response(503)
@@ -148,6 +180,7 @@ class FakeAlioProvider:
                                 "apbaId": institution_code,
                                 "reportGbn": "Y",
                                 "idate": "2026.08.31",
+                                "title": self.report_titles[institution_code],
                             }
                         ],
                         "page": {
@@ -431,7 +464,7 @@ def test_report_pagination_failures_are_rejected(page_update: dict, message: str
         )
 
 
-def test_missing_current_rank_and_masked_executive_fail_closed() -> None:
+def test_missing_current_rank_fails_closed_and_vacancy_is_explicit_missingness() -> None:
     provider = FakeAlioProvider()
     connector = provider.connector()
     directory_document = connector.fetch(connector.discover()[0])
@@ -451,10 +484,129 @@ def test_missing_current_rank_and_masked_executive_fail_closed() -> None:
         connector.current_disclosure(missing_current)
 
     disclosure = connector.current_disclosure(page)
-    provider.documents[disclosure.disclosure_no] = report_html(executive_table("○○○"))
+    provider.documents[disclosure.disclosure_no] = report_html(vacant_executive_table())
     report = connector.fetch(connector.report_url(disclosure))
-    with pytest.raises(AlioRecordError, match="masked or vacant"):
-        connector.parse_executives(report, institution=institution, disclosure=disclosure)
+    records = connector.parse_executives(report, institution=institution, disclosure=disclosure)
+    assert len(records) == 1
+    assert records[0].person_name is None
+    assert records[0].title is None
+    assert records[0].term_start is None
+
+
+def test_empty_current_report_page_is_an_explicit_no_data_result() -> None:
+    provider = FakeAlioProvider()
+    provider.no_disclosure_for.add("C0001")
+    connector = provider.connector()
+    directory = connector.parse_directory_body(connector.fetch(connector.discover()[0]).body)
+
+    document = connector.fetch(connector.report_list_url(directory.institutions[0]))
+    page = connector.parse_report_page_body(
+        document.body, institution_code="C0001", requested_page=1
+    )
+
+    assert page.page_no == 0
+    assert page.total_count == 0
+    assert connector.current_disclosure(page) is None
+
+
+def test_vacancy_row_is_persisted_but_not_staged_as_a_person_candidate(tmp_path: Path) -> None:
+    provider = FakeAlioProvider()
+    disclosure = provider.disclosures["C0001"]
+    provider.documents[disclosure] = report_html(
+        vacant_executive_table(),
+        executive_table("김기관"),
+    )
+    repository = migrated_repository(tmp_path / "vacancy.db")
+
+    result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
+
+    assert result.run.status == SourceRunStatus.SUCCESS
+    assert result.unique_records == 3
+    observations = repository.feeder_observations(
+        AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
+    )
+    vacancy = next(item for item in observations if item.provider_record_key.endswith(":1"))
+    assert vacancy.normalized["name_status"] == "MASKED_OR_VACANT"
+    assert vacancy.normalized["canonical_name"] is None
+    assert vacancy.normalized["term_start"] is None
+    assert vacancy.identity_hints["canonical_name"] is None
+    assert (
+        stage_executive_rows(
+            [
+                {
+                    "record_id": "vacant",
+                    "기관코드": "ALIO-C001",
+                    "기관명": "테스트공기업",
+                    "기관분류": "공기업(준시장형)",
+                    "직위": "상임기관장",
+                    "성명": "공석",
+                    "기준일": "2026-08-31",
+                    "source_ref": "vacant-source",
+                }
+            ]
+        )
+        == []
+    )
+
+
+def test_institution_without_current_report_is_covered_without_a_person_row(tmp_path: Path) -> None:
+    provider = FakeAlioProvider()
+    provider.no_disclosure_for.add("C0002")
+    repository = migrated_repository(tmp_path / "no-current.db")
+
+    result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
+
+    assert result.run.status == SourceRunStatus.SUCCESS
+    assert result.institutions_committed == 2
+    assert result.unique_records == 2
+    checkpoint = repository.source_checkpoint(
+        AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
+    )
+    assert checkpoint is not None
+    assert checkpoint.cursor == "2"
+    assert checkpoint.metadata["no_current_disclosures"] == ["C0002"]
+    assert (
+        len(
+            repository.feeder_observations(
+                AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
+            )
+        )
+        == 2
+    )
+
+
+def test_correction_only_report_is_an_explicit_non_person_observation(tmp_path: Path) -> None:
+    provider = FakeAlioProvider()
+    disclosure = provider.disclosures["C0001"]
+    provider.report_titles["C0001"] = "임원현황(수시공시) 수정공시"
+    provider.documents[disclosure] = report_html()
+    repository = migrated_repository(tmp_path / "correction-only.db")
+
+    result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
+
+    assert result.run.status == SourceRunStatus.SUCCESS
+    assert result.institutions_committed == 2
+    assert result.unique_records == 1
+    observation = next(
+        item
+        for item in repository.feeder_observations(
+            AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
+        )
+        if item.provider_record_key.endswith(":report")
+    )
+    assert observation.normalized["report_status"] == "CORRECTION_ONLY"
+    assert observation.normalized["report_title"] == "임원현황(수시공시) 수정공시"
+    assert "canonical_name" not in observation.normalized
+    assert observation.identity_hints["canonical_name"] is None
+    assert observation.identity_hints["name_status"] == "NOT_PUBLISHED"
+    assert (
+        len(
+            repository.feeder_observations(
+                AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
+            )
+        )
+        == 2
+    )
 
 
 def replace_rank(item, rank: int):

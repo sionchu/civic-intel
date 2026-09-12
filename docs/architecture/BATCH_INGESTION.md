@@ -445,7 +445,10 @@ ALIO public-institution executives are the sixth L3 feeder. The bounded universe
 unfiltered item 4 institution directory and the provider-ranked current disclosure for each
 unique `apbaId`. The disclosure-bound `disclosureNo:row ordinal` key is an observation identity,
 not a stable Person identifier, so the existing materialization gate keeps every ALIO row in
-`REVIEW_REQUIRED`. Raw report HTML, gender and disclosure-staff contacts are excluded.
+`REVIEW_REQUIRED`. An explicit provider no-current sentinel is covered by an empty snapshot;
+masked/vacant seats remain observations with no identity candidate, and correction-only reports
+remain report-level observations without a fabricated roster. Raw report HTML, gender and
+disclosure-staff contacts are excluded.
 
 CleanEye local-public-institution executives remain `L0 RESEARCHED; BLOCKED`, not an L3 feeder.
 The official REST catalog currently has

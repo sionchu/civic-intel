@@ -47,7 +47,9 @@ class StagedPublicInstitutionExecutive:
                 "kind": self.record.executive_kind.value,
                 "position_text": self.record.position_text,
                 "title": self.record.title,
-                "term_start": self.record.term_start.isoformat(),
+                "term_start": (
+                    self.record.term_start.isoformat() if self.record.term_start else None
+                ),
                 "term_end": self.record.term_end.isoformat() if self.record.term_end else None,
                 "reported_careers": list(self.record.reported_careers),
                 "reported_careers_semantics": (
@@ -101,13 +103,16 @@ class StagedPublicInstitutionReemployment:
 
 
 def executive_to_identity(record: AlioExecutiveRecord) -> IdentityCandidate:
+    if record.person_name is None:
+        raise ValueError("masked or vacant ALIO executive has no identity candidate")
     anchors = [
         f"alio_institution_code:{record.institution_code}",
         f"alio_executive_record:{record.record_id}",
         f"public_institution_classification:{record.classification.value}",
         f"executive_kind:{record.executive_kind.value}",
-        f"term_start:{record.term_start.isoformat()}",
     ]
+    if record.term_start is not None:
+        anchors.append(f"term_start:{record.term_start.isoformat()}")
     return IdentityCandidate(
         canonical_name=record.person_name,
         office=record.title,
@@ -132,10 +137,11 @@ def reemployment_to_identity(record: AlioReemploymentRecord) -> IdentityCandidat
 
 
 def stage_executive_rows(rows: list[dict]) -> list[StagedPublicInstitutionExecutive]:
-    return [
-        StagedPublicInstitutionExecutive(executive_to_identity(record), record)
-        for record in parse_executive_rows(rows)
-    ]
+    staged: list[StagedPublicInstitutionExecutive] = []
+    for record in parse_executive_rows(rows):
+        if record.person_name is not None:
+            staged.append(StagedPublicInstitutionExecutive(executive_to_identity(record), record))
+    return staged
 
 
 def stage_reemployment_rows(rows: list[dict]) -> list[StagedPublicInstitutionReemployment]:
@@ -209,11 +215,12 @@ def normalized_alio_executive(record: AlioExecutiveRecord) -> dict[str, object]:
         "classification_text": record.classification_text,
         "disclosure_no": record.source_ref,
         "executive_row_key": record.record_id,
+        "name_status": "PUBLIC" if record.person_name is not None else "MASKED_OR_VACANT",
         "canonical_name": record.person_name,
         "position_text": record.position_text,
         "title": record.title,
         "executive_kind": record.executive_kind.value,
-        "term_start": record.term_start.isoformat(),
+        "term_start": record.term_start.isoformat() if record.term_start else None,
         "term_end": record.term_end.isoformat() if record.term_end else None,
         "reported_careers": list(record.reported_careers),
         "reported_careers_semantics": "institution_disclosed_not_independently_verified",
@@ -291,6 +298,7 @@ class AlioExecutiveEnumerator:
             start_index = 0
             seen_hashes: dict[str, str] = {}
             seen_disclosures: dict[str, str] = {}
+            no_current_disclosures: set[str] = set()
 
             if resume:
                 assert prior_checkpoint is not None
@@ -303,6 +311,9 @@ class AlioExecutiveEnumerator:
                     checkpoint_codes = list(prior_checkpoint.metadata["institution_codes"])
                     seen_hashes = dict(prior_checkpoint.metadata["seen_provider_hashes"])
                     seen_disclosures = dict(prior_checkpoint.metadata["seen_current_disclosures"])
+                    no_current_disclosures = set(
+                        prior_checkpoint.metadata.get("no_current_disclosures", [])
+                    )
                 except (KeyError, TypeError, ValueError):
                     raise AlioRecordError("ALIO resume checkpoint metadata is invalid") from None
                 if (
@@ -331,6 +342,7 @@ class AlioExecutiveEnumerator:
                         "institution_codes": institution_codes,
                         "seen_provider_hashes": {},
                         "seen_current_disclosures": {},
+                        "no_current_disclosures": [],
                     },
                 )
                 chunks_committed += 1
@@ -347,6 +359,39 @@ class AlioExecutiveEnumerator:
                     requested_page=1,
                 )
                 disclosure = self.connector.current_disclosure(report_page)
+                if disclosure is None:
+                    if institution.institution_code in no_current_disclosures:
+                        raise AlioRecordError("duplicate ALIO no-current disclosure")
+                    ingestion = IngestionPipeline(self.connector).ingest_document(
+                        list_document, self.policy
+                    )
+                    next_no_current_disclosures = no_current_disclosures | {
+                        institution.institution_code
+                    }
+                    self.repository.commit_source_page(
+                        run_id=run.id,
+                        policy=self.policy,
+                        source=ingestion.source,
+                        snapshot=ingestion.snapshot,
+                        observations=[],
+                        cursor=str(index),
+                        checkpoint_metadata={
+                            "source_contract": self.SOURCE_CONTRACT,
+                            "directory_fingerprint": directory_fingerprint,
+                            "institution_total": directory.total_count,
+                            "institution_codes": institution_codes,
+                            "last_institution_code": institution.institution_code,
+                            "report_page_size": report_page.page_size,
+                            "report_total_count": report_page.total_count,
+                            "seen_provider_hashes": seen_hashes,
+                            "seen_current_disclosures": seen_disclosures,
+                            "no_current_disclosures": sorted(next_no_current_disclosures),
+                        },
+                    )
+                    institutions_committed += 1
+                    chunks_committed += 1
+                    no_current_disclosures = next_no_current_disclosures
+                    continue
                 prior_institution = seen_disclosures.get(disclosure.disclosure_no)
                 if prior_institution is not None:
                     if prior_institution != institution.institution_code:
@@ -356,26 +401,99 @@ class AlioExecutiveEnumerator:
                     raise AlioRecordError("duplicate ALIO current disclosure")
 
                 report_document = self.connector.fetch(self.connector.report_url(disclosure))
+                report_metadata = {
+                    **report_document.metadata,
+                    "institution_code": institution.institution_code,
+                    "institution_name": institution.institution_name,
+                    "institution_type_code": institution.institution_type_code,
+                    "classification": institution.classification.value,
+                    "classification_text": institution.classification_text,
+                    "disclosure_date": disclosure.disclosure_date.isoformat(),
+                }
+                if disclosure.title is not None:
+                    report_metadata["report_title"] = disclosure.title
                 report_document = replace(
                     report_document,
                     published_at=datetime.combine(
                         disclosure.disclosure_date, datetime.min.time(), tzinfo=UTC
                     ),
-                    metadata={
-                        **report_document.metadata,
-                        "institution_code": institution.institution_code,
-                        "institution_name": institution.institution_name,
-                        "institution_type_code": institution.institution_type_code,
-                        "classification": institution.classification.value,
-                        "classification_text": institution.classification_text,
-                        "disclosure_date": disclosure.disclosure_date.isoformat(),
-                    },
+                    metadata=report_metadata,
                 )
                 records = self.connector.parse_executives(
                     report_document,
                     institution=institution,
                     disclosure=disclosure,
                 )
+                if not records:
+                    correction_normalized: dict[str, object] = {
+                        "institution_code": institution.institution_code,
+                        "institution_name": institution.institution_name,
+                        "classification": institution.classification.value,
+                        "classification_text": institution.classification_text,
+                        "disclosure_no": disclosure.disclosure_no,
+                        "executive_row_key": f"{disclosure.disclosure_no}:report",
+                        "report_status": "CORRECTION_ONLY",
+                        "report_title": disclosure.title,
+                        "disclosure_date": disclosure.disclosure_date.isoformat(),
+                    }
+                    correction_content_hash = alio_executive_content_hash(correction_normalized)
+                    ingestion = IngestionPipeline(self.connector).ingest_document(
+                        report_document, self.policy
+                    )
+                    next_seen_disclosures = {
+                        **seen_disclosures,
+                        disclosure.disclosure_no: institution.institution_code,
+                    }
+                    correction_identity_hints: dict[str, object] = {
+                        "canonical_name": None,
+                        "name_status": "NOT_PUBLISHED",
+                        "institution_code": institution.institution_code,
+                        "organization": institution.institution_name,
+                        "office": None,
+                        "position_text": None,
+                        "term_start": None,
+                        "disclosure_no": disclosure.disclosure_no,
+                        "report_status": "CORRECTION_ONLY",
+                        "provider_person_id": None,
+                    }
+                    observation = FeederObservation(
+                        feeder=self.FEEDER,
+                        scope_key=self.SCOPE_KEY,
+                        provider_record_key=f"{disclosure.disclosure_no}:report",
+                        snapshot_id=ingestion.snapshot.id,
+                        run_id=run.id,
+                        provider_observed_at=datetime.combine(
+                            disclosure.disclosure_date, datetime.min.time(), tzinfo=UTC
+                        ),
+                        semantic_scope=self.SEMANTIC_SCOPE,
+                        identity_hints=correction_identity_hints,
+                        normalized=correction_normalized,
+                        content_hash=correction_content_hash,
+                    )
+                    self.repository.commit_source_page(
+                        run_id=run.id,
+                        policy=self.policy,
+                        source=ingestion.source,
+                        snapshot=ingestion.snapshot,
+                        observations=[observation],
+                        cursor=str(index),
+                        checkpoint_metadata={
+                            "source_contract": self.SOURCE_CONTRACT,
+                            "directory_fingerprint": directory_fingerprint,
+                            "institution_total": directory.total_count,
+                            "institution_codes": institution_codes,
+                            "last_institution_code": institution.institution_code,
+                            "report_page_size": report_page.page_size,
+                            "report_total_count": report_page.total_count,
+                            "seen_provider_hashes": seen_hashes,
+                            "seen_current_disclosures": next_seen_disclosures,
+                            "no_current_disclosures": sorted(no_current_disclosures),
+                        },
+                    )
+                    institutions_committed += 1
+                    chunks_committed += 1
+                    seen_disclosures = next_seen_disclosures
+                    continue
                 page_hashes: dict[str, str] = {}
                 normalized_by_key: dict[str, dict[str, object]] = {}
                 for record in records:
@@ -406,11 +524,16 @@ class AlioExecutiveEnumerator:
                         semantic_scope=self.SEMANTIC_SCOPE,
                         identity_hints={
                             "canonical_name": record.person_name,
+                            "name_status": (
+                                "PUBLIC" if record.person_name is not None else "MASKED_OR_VACANT"
+                            ),
                             "institution_code": record.institution_code,
                             "organization": record.institution_name,
                             "office": record.title,
                             "position_text": record.position_text,
-                            "term_start": record.term_start.isoformat(),
+                            "term_start": (
+                                record.term_start.isoformat() if record.term_start else None
+                            ),
                             "disclosure_no": disclosure.disclosure_no,
                             "provider_person_id": None,
                         },
@@ -441,6 +564,7 @@ class AlioExecutiveEnumerator:
                         "report_page_size": report_page.page_size,
                         "seen_provider_hashes": next_seen_hashes,
                         "seen_current_disclosures": next_seen_disclosures,
+                        "no_current_disclosures": sorted(no_current_disclosures),
                     },
                 )
                 institutions_committed += 1
@@ -452,7 +576,9 @@ class AlioExecutiveEnumerator:
             if (
                 checkpoint is None
                 or checkpoint.cursor != str(directory.total_count)
-                or len(seen_disclosures) != directory.total_count
+                or (set(seen_disclosures.values()) | no_current_disclosures)
+                != set(institution_codes)
+                or set(seen_disclosures.values()) & no_current_disclosures
             ):
                 raise AlioRecordError("ALIO current executive roster coverage is incomplete")
             completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)

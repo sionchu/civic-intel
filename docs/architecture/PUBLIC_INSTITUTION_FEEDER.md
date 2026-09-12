@@ -45,7 +45,16 @@ The directory total must equal its complete row set and `apbaId` values must be 
 The official report list is page-based with `pageNo`, `currPage`, `unitPage`, `totalCount` and
 `totalPage`. Current-roster enumeration requests page 1 and validates the provider page size,
 total-page calculation, exact expected row count, institution/report identity and current rank.
-Historical disclosure pages are outside this scope.
+When the provider returns the explicit empty sentinel (`totalCount=0`, `currPage=0`,
+`totalPage=0`), the institution remains covered by an empty source snapshot and no executive
+observation is fabricated. Historical disclosure pages are outside this scope.
+
+The current provider-ranked report may instead be a correction-only report such as
+`임원현황(수시공시) 수정공시`. If its official report title indicates `수정` or `정정` and the
+document contains no supported executive table, preserve one report-level observation with
+`report_status: CORRECTION_ONLY` and no name. Do not treat the correction as a complete named
+roster or invent continuity from an earlier filing; resolving the corrected base report is a
+separate source-contract task.
 
 The report page itself supplies the exact `/upload/disclosure/.../doc.html` path. The connector
 follows only that embedded path; it does not derive or crawl report locations.
@@ -77,6 +86,7 @@ ALIO executive-status reports can expose:
 Supported person-scope roles:
 
 - institution head
+- non-standing institution head
 - standing auditor/audit commissioner
 - standing director
 - non-standing director
@@ -88,6 +98,13 @@ The current report exposes no stable executive-person identifier. L3 therefore u
 `disclosureNo:one-based executive table ordinal` only as a disclosure-row observation key.
 It is not an external Person identity. Automatic Person creation/linking/merging is not enabled;
 the existing deterministic materialization gate returns `REVIEW_REQUIRED` for ALIO observations.
+
+An item-4 report may explicitly mark a supported seat as `공석` or use a masked name. Preserve
+that row as an observation with `canonical_name: null`, `name_status: MASKED_OR_VACANT` and any
+other fields the source actually publishes. Missing title or term fields remain null. The row is
+excluded from `IdentityCandidate` staging and never creates a Person; it is not silently dropped,
+so an institution-level full-enumeration checkpoint can still represent the complete report shape.
+The disclosure-bound ordinal is assigned across named and unnamed supported seats alike.
 
 ### Selection-procedure rule
 
