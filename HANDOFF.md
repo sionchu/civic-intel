@@ -49,6 +49,10 @@ migration, feeder, search infrastructure, or new persistence abstraction.
   new unsupported asset/vote/score UI was added.
 - Added deterministic API and UI regressions for identity filtering, epistemic/provenance trace,
   conflict visibility, review actions, payload minimization and directory scope.
+- Connected the migrated Golden fixture database to the local FastAPI and Next.js development
+  servers and manually inspected the roster, resolved profile, conflict profile, populated review
+  queue and blocked review-identity route in the in-app browser. Temporary review observations,
+  identities, servers and database were removed after inspection.
 
 ## Current checkpoint
 
@@ -86,6 +90,13 @@ Executed locally on 2026-09-12:
 - `npm --prefix apps/web test`: 4 passed.
 - `npm --prefix apps/web run build`: passed; `/`, `/admin/review` and `/people/[id]` built.
 - Temporary-database Alembic `upgrade head -> downgrade -1 -> upgrade head`: passed.
+- Connected runtime smoke review: API returned the Golden roster, a 12-section resolved profile,
+  and populated `REVIEW_REQUIRED`/`HARD_CONFLICT` review items with source provenance; the public
+  roster omitted inserted `REVIEW`/`UNRESOLVED` identities and their profile routes returned 404.
+  Browser inspection showed `SOURCE CONFLICT` with both `SUPPORT` and `REFUTE`, compact policy
+  summaries, collapsed audit details and no approval/merge/publish controls.
+- Temporary runtime cleanup: `.tmp-evidence-directory.db` and sidecar files removed; local API/Web
+  development servers stopped.
 - `git diff --check`: passed before final documentation update; rerun after commit staging.
 - `make verify`: runner-unavailable because GNU Make is not installed; every constituent command
   was run directly. No GitHub Actions result was claimed locally.
@@ -121,5 +132,5 @@ before any promotion.
 
 ## Next concrete action
 
-Commit and push the Evidence Directory v0 vertical slice, then verify local `HEAD == origin/master`
-and a clean worktree.
+Request an independent review of the Evidence Directory v0 read surface and the next source-gate
+milestone before implementing another feeder.
