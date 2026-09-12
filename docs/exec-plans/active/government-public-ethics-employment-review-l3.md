@@ -42,8 +42,8 @@ Verified on 2026-09-12 before this documentation change:
 ```text
 repository: sionchu/civic-intel
 branch: master
-HEAD: 64b9e9b43de81bcf81bc82496682957a10452a34
-origin/master: 64b9e9b43de81bcf81bc82496682957a10452a34
+HEAD: 7b3c98e85575e603b6bb6449d9796fa83aedc3bb
+origin/master: 7b3c98e85575e603b6bb6449d9796fa83aedc3bb
 tracked tree: clean
 Alembic head: 0004
 L3 feeders: National Assembly roster, Gwanbo personnel, NEC winners,
@@ -184,6 +184,17 @@ but technical reachability is not permission to store or republish the attachmen
 internal JSON call is likewise not an advertised public API merely because the public page
 invokes it.
 
+### Permission-request route
+
+The official MPM organization page
+(`https://www.mpm.go.kr/mpm/about/aboutorg/orgEthics4/?pageIdx=1`) identifies `취업심사과` as
+the team responsible for employment review and lists public office contacts including
+`044-201-8477` and `044-201-8471`. The MPM copyright policy separately lists its content
+department, 데이터정보담당관, at `044-201-8189`.
+These are source-owner inquiry leads only; none is an authorization to retain or republish the
+`cntId=422` attachment. A future request must obtain a written answer that names the packet and
+permits the intended parsing, storage, attribution and redistribution boundary.
+
 ## Single-packet human-assisted L1 preflight
 
 The 2026-09-12 preflight was bounded to one current MPM result packet. It recorded packet
@@ -246,13 +257,13 @@ Observed repository and test evidence:
 
 ```text
 git fetch --prune origin master
-  origin/master remained 64b9e9b43de81bcf81bc82496682957a10452a34
+  origin/master remained 7b3c98e85575e603b6bb6449d9796fa83aedc3bb
 git rev-parse HEAD
-  64b9e9b43de81bcf81bc82496682957a10452a34
+  7b3c98e85575e603b6bb6449d9796fa83aedc3bb
 git status --short --branch
   ## master...origin/master (before this documentation change)
 git ls-remote origin refs/heads/master
-  64b9e9b43de81bcf81bc82496682957a10452a34
+  7b3c98e85575e603b6bb6449d9796fa83aedc3bb
 pytest tests/test_civil_service_feeder.py -q
   10 passed
 .venv\Scripts\python.exe -m pytest -q --disable-warnings
@@ -282,6 +293,8 @@ Source probes:
 - MPM copyright policy: item-level KOGL mark or prior agreement requirement recorded above.
 - MPM `cntId=422` detail and direct attachment route: packet manifest, attachment reference and
   in-memory MIME probe recorded above; no attachment was written to disk.
+- MPM organization and copyright pages: official `취업심사과` and copyright-policy contact leads
+  were identified; no permission request was submitted and no authorization was inferred.
 
 ## Not executed
 
@@ -289,6 +302,7 @@ Source probes:
 - no production or full-history collection was attempted;
 - no deterministic packet extraction or human comparison was run because packet-specific reuse
   permission is absent;
+- no source-owner permission request or response exists for this packet;
 - no source attachment was copied into the repository; and
 - no L3 `SourceRun` or `SourceCheckpoint` was created for this lane;
 - `make verify` was not invoked because GNU Make is unavailable in this Windows environment;

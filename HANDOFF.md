@@ -17,7 +17,7 @@ blocks from conditional human-assisted L1/L2 utility; preserve actual code/matur
 ## Completed
 
 - Fetched latest master; baseline local/origin HEAD matched
-  `64b9e9b43de81bcf81bc82496682957a10452a34`; worktree was clean.
+  `7b3c98e85575e603b6bb6449d9796fa83aedc3bb`; worktree was clean.
 - Read governing documents and actual Source/Policy/Snapshot/Observation/Run/Claim contracts,
   shared repository transaction, materialization and EmploymentReviewEvent requirements.
 - Inspected official OpenWatch field dictionaries, information-request methodology, information
@@ -30,6 +30,8 @@ blocks from conditional human-assisted L1/L2 utility; preserve actual code/matur
   the fixed `{detail URL, boardId, cntId, attachment reference, page, packet-local row}`
   provenance locator. The attachment had no item-level KOGL/reuse grant, so no bytes, fulltext or
   normalized row were persisted and the extraction/review phase did not start.
+- Rechecked the official MPM organization and copyright pages; public `취업심사과` and copyright
+  policy contact leads are now recorded as inquiry routes only, not as a rights grant.
 
 ## Current checkpoint
 
@@ -54,6 +56,8 @@ past packet metadata/provenance recording.
 - Public reachability and an attachment download control do not authorize packet persistence;
   an unmarked MPM attachment requires source-owner agreement before deterministic extraction or
   normalized reuse.
+- The official contact routes reduce discovery uncertainty but do not satisfy the required
+  packet-specific written permission or storage/republication boundary.
 
 ## Verification evidence
 
@@ -76,7 +80,8 @@ Executed locally on 2026-09-12:
 ## Not executed
 
 No persistent dataset download or QA, deterministic packet extraction, official response request,
-provider contact, ogk install/login/run, schema change, migration, importer or Person creation.
+provider contact, permission request/response, ogk install/login/run, schema change, migration,
+importer or Person creation.
 The public MPM attachment response was fetched in memory for a bounded MIME probe only and was
 not retained.
 Firecrawl CLI was unavailable; standard web/read-only HTTP tools inspected public methodology
@@ -85,8 +90,8 @@ and source code instead. chatgpt2codex reported no registered civic project; loc
 ## Blockers
 
 The selected packet still requires exact acquisition/storage permission before bytes or normalized
-values can be retained. A human review cannot supply absent identity or dates. L3 gates remain
-unchanged.
+values can be retained. Official inquiry routes are known, but no permission request or source-owner
+response exists. A human review cannot supply absent identity or dates. L3 gates remain unchanged.
 
 ## Modified files
 
@@ -95,6 +100,6 @@ dependency manifests changed.
 
 ## Next concrete action
 
-Obtain written MPM permission or an explicit item-level reuse license for the recorded `cntId=422`
-packet, then run the deterministic anonymous-row extraction and human comparison without creating
-Persons, inventing review dates or claiming L3.
+Request written MPM permission or an explicit item-level reuse license for the recorded `cntId=422`
+packet through the documented source-owner routes, then run the deterministic anonymous-row
+extraction and human comparison without creating Persons, inventing review dates or claiming L3.
