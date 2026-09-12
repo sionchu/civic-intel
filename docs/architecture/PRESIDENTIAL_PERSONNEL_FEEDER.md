@@ -43,6 +43,38 @@ An official personnel announcement can establish a dated public personnel action
 
 The action wording is part of the fact and must not be normalized away.
 
+## Current source-route gate — 2026-09-12
+
+The official [Presidential Office briefing list](https://www.president.go.kr/briefings) is a
+published HTML index. The browser-rendered list reported 923 briefings, ten entries per page,
+and title/content search with `sSearchGbn`, `sSearchTxt` and `pageNo` parameters. A title search
+for `인사` returned 41 results and `인선` returned 11 results. These keyword counts are search
+results, not a complete personnel universe: personnel actions can be described under other
+titles, and one briefing can contain several actions.
+
+Each detail page has a stable-looking `/briefings/{id}` path, title, registration date and
+written body. The path ID is a provider record key only. It identifies the briefing page, not an
+individual action, appointment term or Person. An action-level observation therefore requires
+the page ID plus a reviewed action locator/ordinal; the provider has not published an action ID,
+correction link, replacement rule or updated-at/version field in this route.
+
+The current [organization page](https://www.president.go.kr/organization) publishes the office
+structure and role names, but it is a current organizational snapshot rather than a dated
+occupancy roster. It may support the existence and scope of an office; it cannot populate a
+person or historical tenure without a separate official personnel record.
+
+The [Presidential Office copyright policy](https://www.president.go.kr/copyright-policy) states
+that marked works use KOGL type 4 (attribution, noncommercial use and no modification), while
+unmarked material requires prior consultation. The existing metadata-only policy therefore
+remains `can_fetch=False`, with no fulltext, excerpt, AI or commercial use. A page being publicly
+reachable is not a reuse or automated-collection grant.
+
+The route is suitable for an exact, rights-approved briefing packet reviewed by a human. Such a
+packet can be normalized into the existing `PresidentialPersonnelRecord` fixture shape while
+preserving the official page and the analyst-normalized representation as separate provenance
+layers. It does not authorize keyword crawling, automatic FACT promotion, Person creation or
+conversion of reported prior careers into independently verified CareerEpisodes.
+
 ## Action semantics
 
 V0 preserves:

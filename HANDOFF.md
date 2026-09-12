@@ -77,6 +77,10 @@ matches across 7 pages and current 2026-54, 2025-51, 2024-107 and 2024-36 public
 That confirms publication-level origin candidates only; asset disclosure/item keys,
 correction/republication semantics, complete curated-to-origin reconciliation and a permitted
 automated route remain unresolved. The asset lane remains `L0 RESEARCHED; BLOCKED`.
+The 2026-09-12 Presidential Office route review found a 923-item briefing index with bounded
+search/page navigation and stable-looking detail IDs, but no typed personnel universe,
+action-level version contract or blanket reuse permission. Presidential personnel remains
+`L1 CONTRACT_STAGED`; live collection is disabled pending route- and rights-specific approval.
 
 ## Decisions and reasons
 
@@ -134,6 +138,9 @@ Executed locally on 2026-09-12:
 - Re-opened the official National Assembly Gazette index with the `재산` title filter and
   inspected the publication pagination, dates, preview/download controls and recent origin
   candidates; no asset row or raw Gazette file was retained.
+- Re-opened the official Presidential Office briefing list, title-filtered personnel searches,
+  a multi-action detail page, the organization page and the copyright-policy page; no live page
+  body or raw provider payload was retained.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -173,7 +180,6 @@ before any promotion.
 
 ## Next concrete action
 
-Keep the National Assembly asset lane at `L0 RESEARCHED; BLOCKED` and reopen it only when a
-versioned release manifest, row-level observation/version rules, exact official-code crosswalk
-and rights-approved bounded route are documented; do not create an asset connector or importer
-before those gates close.
+Keep the Presidential personnel lane at `L1 CONTRACT_STAGED` and use only an exact,
+rights-approved briefing packet until page/action version semantics and the permitted route are
+documented; do not create a keyword crawler, live connector or importer before those gates close.

@@ -22,7 +22,7 @@ _MASK_CHARS = frozenset({"○", "●", "*", "＊", "□", "■"})
 
 
 def presidential_personnel_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 8, 30, tzinfo=UTC)
+    reviewed_at = datetime(2026, 9, 12, tzinfo=UTC)
     return SourcePolicy(
         id=POLICY_ID,
         domain="president.go.kr",
@@ -37,9 +37,12 @@ def presidential_personnel_policy() -> SourcePolicy:
         terms_checked_at=reviewed_at,
         license="No blanket fulltext/commercial reuse right assumed; normalized metadata only",
         policy_note=(
-            "Reviewed 2026-08-30 against the official Presidential Office organization page "
-            "and personnel briefings. V0 accepts normalized public personnel metadata only; "
-            "live page collection requires a source-specific adapter review."
+            "Revalidated 2026-09-12 against the official Presidential Office briefing list, "
+            "personnel briefing detail pages and copyright policy. The list supports bounded "
+            "search/page navigation and detail IDs, but is not a typed personnel universe; "
+            "unmarked material requires prior consultation under the displayed KOGL policy. "
+            "V0 accepts normalized public personnel metadata only; live page collection "
+            "remains disabled pending source-specific route and rights approval."
         ),
     )
 

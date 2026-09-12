@@ -42,4 +42,5 @@ implementation work.
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)
 - [Government Public Ethics Committee retired-public-official employment-review source-gate plan](exec-plans/active/government-public-ethics-employment-review-l3.md)
 - [National Assembly asset-disclosure source-gate plan](exec-plans/active/national-assembly-asset-disclosure-source-gate.md)
+- [Presidential personnel source-route gate](exec-plans/active/presidential-personnel-source-gate.md)
 - [Completed OpenDART disclosed-executives L3 plan](exec-plans/active/opendart-private-sector-executives-l3.md)
