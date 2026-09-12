@@ -79,6 +79,7 @@ def _claim_entry(
     evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
 ) -> dict[str, Any]:
     evidence = tuple(evidence_by_claim.get(claim.id, ()))
+    stances = {item.stance.value for item in evidence}
     return {
         "id": f"claim:{claim.id}",
         "kind": "CLAIM",
@@ -87,6 +88,19 @@ def _claim_entry(
         "claim_id": str(claim.id),
         "evidence_ids": [str(item.id) for item in evidence],
         "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
+        "evidence": [
+            {
+                "id": str(item.id),
+                "stance": item.stance.value,
+                "source_id": str(item.source_id),
+                "snapshot_id": str(item.snapshot_id) if item.snapshot_id else None,
+                "feeder_observation_id": (
+                    str(item.feeder_observation_id) if item.feeder_observation_id else None
+                ),
+            }
+            for item in evidence
+        ],
+        "source_conflict": {"SUPPORT", "REFUTE"} <= stances,
         "date": claim.qualifiers.get("date"),
         "details": {
             "predicate": claim.predicate,

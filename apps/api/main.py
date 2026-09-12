@@ -21,11 +21,35 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
 
     app = FastAPI(title="Civic Intel API", version="0.4.0", lifespan=lifespan)
 
-    def person_or_404(person_id: UUID):
+    def person_or_404(person_id: UUID, *, public: bool = False):
         person = target.person(person_id)
-        if not person:
+        if not person or (
+            public
+            and (
+                person.identity_status != IdentityStatus.RESOLVED
+                or person.superseded_at is not None
+            )
+        ):
             raise HTTPException(404, "person not found")
         return person
+
+    def policy_summary(policy) -> dict[str, str]:
+        collection_permitted = policy.can_fetch and policy.collection_mode.value not in {
+            "BLOCKED",
+            "DISCOVERY_ONLY",
+        }
+        return {
+            "collection": "PERMITTED" if collection_permitted else "NOT_PERMITTED",
+            "metadata_storage": "PERMITTED" if policy.can_store_metadata else "NOT_PERMITTED",
+            "fulltext_storage": "PERMITTED" if policy.can_store_fulltext else "NOT_PERMITTED",
+            "excerpt_display": "PERMITTED" if policy.can_show_excerpt else "NOT_PERMITTED",
+        }
+
+    def source_payload(source, policy) -> dict:
+        return source.model_dump(mode="json") | {
+            "policy": policy.model_dump(mode="json"),
+            "policy_summary": policy_summary(policy),
+        }
 
     def claim_payload(claim, evidence=None) -> dict:
         selected_evidence = target.evidence_for(claim.id) if evidence is None else evidence
@@ -37,9 +61,11 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
         )
         if not gate.publishable:
             raise HTTPException(500, f"publication invariant violated: {gate.failures}")
+        stances = {item.stance.value for item in selected_evidence}
         return claim.model_dump(mode="json") | {
             "evidence": [item.model_dump(mode="json") for item in selected_evidence],
             "source_ids": sorted({str(item.source_id) for item in selected_evidence}),
+            "source_conflict": {"SUPPORT", "REFUTE"} <= stances,
         }
 
     @app.get("/health")
@@ -48,11 +74,11 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
 
     @app.get("/people")
     def people() -> list[dict]:
-        return [item.model_dump(mode="json") for item in target.people()]
+        return [item.model_dump(mode="json") for item in target.public_people()]
 
     @app.get("/people/{person_id}")
     def person(person_id: UUID) -> dict:
-        item = person_or_404(person_id)
+        item = person_or_404(person_id, public=True)
         published_claims = target.claims(person_id, True)
         evidence_by_claim = {
             claim.id: target.evidence_for(claim.id) for claim in published_claims
@@ -78,17 +104,17 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
 
     @app.get("/people/{person_id}/claims")
     def claims(person_id: UUID) -> list[dict]:
-        person_or_404(person_id)
+        person_or_404(person_id, public=True)
         return [claim_payload(item) for item in target.claims(person_id, True)]
 
     @app.get("/people/{person_id}/relationships")
     def relationships(person_id: UUID) -> list[dict]:
-        person_or_404(person_id)
+        person_or_404(person_id, public=True)
         return target.relationships(person_id)
 
     @app.get("/people/{person_id}/assets")
     def assets(person_id: UUID) -> list:
-        person_or_404(person_id)
+        person_or_404(person_id, public=True)
         return []
 
     @app.get("/sources/{source_id}")
@@ -97,7 +123,78 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
         if not source:
             raise HTTPException(404, "source not found")
         policy = target.policies([source.policy_id])[source.policy_id]
-        return source.model_dump(mode="json") | {"policy": policy.model_dump(mode="json")}
+        return source_payload(source, policy)
+
+    def review_item_payload(item) -> dict:
+        observation = target.feeder_observation(item.observation_id)
+        candidate = (
+            target.person(item.candidate_person_id) if item.candidate_person_id else None
+        )
+        provenance = None
+        if observation is not None:
+            snapshot = target.source_snapshot(observation.snapshot_id)
+            if snapshot is not None:
+                source = target.source(snapshot.source_id)
+                if source is not None:
+                    policy = target.policies([source.policy_id])[source.policy_id]
+                    provenance = {
+                        "source": {
+                            "id": str(source.id),
+                            "title": source.title,
+                            "publisher": source.publisher,
+                            "url": str(source.url),
+                            "source_class": policy.source_class,
+                            "license": policy.license,
+                            "policy_summary": policy_summary(policy),
+                        },
+                        "snapshot": {
+                            "id": str(snapshot.id),
+                            "source_id": str(snapshot.source_id),
+                            "fetched_at": snapshot.fetched_at.isoformat(),
+                            "content_hash": snapshot.content_hash,
+                        },
+                    }
+        action = item.details.get("action")
+        if action not in {"REVIEW_REQUIRED", "HARD_CONFLICT"}:
+            action = None
+        return {
+            "id": str(item.id),
+            "status": item.status.value,
+            "action": action,
+            "reason_code": item.reason_code,
+            "reasons": [
+                reason for reason in item.details.get("reasons", []) if isinstance(reason, str)
+            ],
+            "candidate_person": (
+                {
+                    "id": str(candidate.id),
+                    "canonical_name": candidate.canonical_name,
+                    "identity_status": candidate.identity_status.value,
+                }
+                if candidate is not None
+                else None
+            ),
+            "observation": (
+                {
+                    "id": str(observation.id),
+                    "feeder": observation.feeder,
+                    "scope_key": observation.scope_key,
+                    "semantic_scope": observation.semantic_scope,
+                    "provider_record_key": observation.provider_record_key,
+                    "run_id": str(observation.run_id),
+                    "recorded_at": observation.recorded_at.isoformat(),
+                    "provider_observed_at": (
+                        observation.provider_observed_at.isoformat()
+                        if observation.provider_observed_at
+                        else None
+                    ),
+                }
+                if observation is not None
+                else None
+            ),
+            "provenance": provenance,
+            "resolution_note": item.resolution_note,
+        }
 
     @app.get("/admin/review")
     def review_report() -> dict:
@@ -129,6 +226,7 @@ def create_app(target_repository: SqlAlchemyRepository | None = None) -> FastAPI
                 for item in target.policies().values()
                 if item.collection_mode.value in {"BLOCKED", "DISCOVERY_ONLY"}
             ],
+            "review_items": [review_item_payload(item) for item in target.identity_review_items()],
         }
 
     return app

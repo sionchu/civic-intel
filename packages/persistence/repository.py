@@ -308,6 +308,11 @@ class SqlAlchemyRepository:
             rows = session.scalars(statement.order_by(FeederObservationRow.recorded_at))
             return [self._observation(row) for row in rows]
 
+    def feeder_observation(self, observation_id: UUID) -> FeederObservation | None:
+        with self.sessions() as session:
+            row = session.get(FeederObservationRow, str(observation_id))
+            return self._observation(row) if row else None
+
     def person_observation_links(
         self, person_id: UUID | None = None
     ) -> list[PersonObservationLink]:
@@ -1091,6 +1096,20 @@ class SqlAlchemyRepository:
                 for row in session.scalars(select(PersonRow).order_by(PersonRow.id))
             ]
 
+    def public_people(self) -> list[Person]:
+        """Return only current, canonical identities eligible for public publication."""
+
+        statement = (
+            select(PersonRow)
+            .where(
+                PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                PersonRow.superseded_at.is_(None),
+            )
+            .order_by(PersonRow.id)
+        )
+        with self.sessions() as session:
+            return [self._person(row) for row in session.scalars(statement)]
+
     def person(self, person_id: UUID) -> Person | None:
         with self.sessions() as session:
             row = session.get(PersonRow, str(person_id))
@@ -1122,6 +1141,11 @@ class SqlAlchemyRepository:
 
     def source(self, source_id: UUID) -> Source | None:
         return self.sources([source_id]).get(source_id)
+
+    def source_snapshot(self, snapshot_id: UUID) -> SourceSnapshot | None:
+        with self.sessions() as session:
+            row = session.get(SourceSnapshotRow, str(snapshot_id))
+            return self._snapshot(row) if row else None
 
     def policies(self, policy_ids: Iterable[UUID] | None = None) -> dict[UUID, SourcePolicy]:
         statement = select(SourcePolicyRow)

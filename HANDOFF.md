@@ -2,108 +2,124 @@
 
 ## Objective
 
-Improve Civic Intel acquisition methodology using OpenWatch/opengirok as references, not feeders.
+Complete Evidence Directory v0 as a read-only product surface over Civic Intel's existing
+evidence-first contracts. Keep OpenWatch and future feeder expansion out of this milestone.
 
 ## Scope
 
-Architecture-only audit: official composition, document normalization, information requests,
-bounded human review, field provenance, identity, corrections and ogk tooling. No ingestion.
+Public resolved-person roster, evidence-backed person profile, explicit epistemic/stance/conflict
+rendering, source-policy audit projection, and a separate read-only identity review surface.
+Reuse the existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when
+present, `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
+migration, feeder, search infrastructure, or new persistence abstraction.
 
 ## Acceptance criteria
 
-Six acquisition modes with rights/provenance/identity/version/QA gates; distinguish L3 automation
-blocks from conditional human-assisted L1/L2 utility; preserve actual code/maturity and verify DoD.
+- Public `/people` and person-related public routes expose only current `RESOLVED` identities.
+- Profile sections keep `AVAILABLE`/`PARTIAL`/`UNKNOWN`; claims show existing epistemic status and
+  evidence stance without inventing truth, confidence, or scoring semantics.
+- A claim containing both `SUPPORT` and `REFUTE` is visibly marked `SOURCE CONFLICT` without
+  downgrading or deleting the claim.
+- Profile and source cards expose human-readable provenance/policy summaries while placing UUIDs
+  and snapshot/observation references in audit details.
+- `/admin/review` is read-only and exposes existing review actions, observations, candidates and
+  source/snapshot provenance without normalized payload or fulltext leakage.
+- Existing Golden Set, batch materialization and reviewed-person behavior remains intact.
 
 ## Completed
 
-- Fetched latest master for this continuation; local/origin HEAD matched
-  `7ba40eb361f136b76fc58ab6490ee97d4301eac1`; worktree was clean.
-- Read governing documents and actual Source/Policy/Snapshot/Observation/Run/Claim contracts,
-  shared repository transaction, materialization and EmploymentReviewEvent requirements.
-- Inspected official OpenWatch field dictionaries, information-request methodology, information
-  center's bounded citizen project, localcouncil catalog/correction notes and ogk code at
-  `7d2295323a8970b2d7a9a60c10fb9665638bf1a1`.
-- Integrated the playbook into existing FEEDER_SOURCE_COVERAGE.md; no parallel document.
-- Updated batch/product semantics and three historical source-gate pointers to avoid implying
-  that all L1/L2 work requires an automated full-universe contract.
-- Ran a bounded MPM `cntId=422` rights preflight and recorded its official packet manifest plus
-  the fixed `{detail URL, boardId, cntId, attachment reference, page, packet-local row}`
-  provenance locator. The attachment had no item-level KOGL/reuse grant, so no bytes, fulltext or
-  normalized row were persisted and the extraction/review phase did not start.
-- Performed read-only reconnaissance of the official National Assembly plenary roll-call
-  service and data.go.kr catalog. The published pages expose a bounded historical headline
-  (22nd Assembly table; file/API 20th Assembly onward), XML/catalog and attribution metadata,
-  but not a complete row, pagination, identity-key or correction contract. No data was fetched
-  or retained.
+- Confirmed baseline before implementation: `master` and `origin/master` both at
+  `f8b36706103d6562252b730ee8d7892c539e7ddd`; the worktree was clean.
+- Read the repository governing documents, active execution plans, public-official-profiler and
+  batch-ingestion guidance, then inspected the actual domain contracts, SQLAlchemy repository,
+  profile projection, API, web app and regression fixtures.
+- Added repository read helpers for current public people, a single feeder observation and its
+  source snapshot; no model/table/migration was added.
+- Added the public API boundary that filters `RESOLVED` and non-superseded people and returns 404
+  for unresolved/review identities on person, claims, relationships and assets routes.
+- Extended the existing profile projection and claim payload with evidence stance plus exact
+  snapshot/feeder-observation references and a derived support/refute conflict marker.
+- Added a source-policy summary projection for source cards and preserved the canonical raw
+  `SourcePolicy` response for audit compatibility.
+- Added `/admin/review` read-only projections over existing `IdentityReviewItem`,
+  `FeederObservation`, `SourceSnapshot` and `Source` records. No approval, merge or publication
+  action is available.
+- Updated the Next.js roster/profile UI and added the read-only review route. Main content uses
+  names, labels and source titles; UUIDs and hashes are behind audit details. No OpenWatch data or
+  new unsupported asset/vote/score UI was added.
+- Added deterministic API and UI regressions for identity filtering, epistemic/provenance trace,
+  conflict visibility, review actions, payload minimization and directory scope.
 
 ## Current checkpoint
 
-Methodology audit and the MPM single-packet rights preflight are complete. MPM remains
-L1 CONTRACT_STAGED with L3 blocked; assets, CleanEye and the documentation-only roll-call
-candidate remain L0 RESEARCHED; BLOCKED. Seven existing L3 rows are unchanged. The human-assisted
-path is rights-gated and was not exercised past packet metadata/provenance recording.
+Implementation is complete in the working tree and all direct verification commands pass. The
+only runner limitation is that GNU Make is unavailable on this Windows host, so the Makefile's
+constituent commands were executed directly. The seven existing L3 feeders and the blocked MPM,
+National Assembly asset, CleanEye and roll-call source gates are unchanged.
 
 ## Decisions and reasons
 
-- Field authority and time matter more than the aggregator's brand; retain official origin and
-  analyst-normalized representation separately.
-- L2 human-assisted status requires a permitted reproducible packet import with fixtures,
-  human comparison, provenance, shared persistence and idempotency proof, not a download.
-- Unknown/missing/refused/not-held states stay distinct; own dataset IDs are not Person authority.
-- No new source-mode enum, schema, importer, dependency, raw store or per-person main path.
-- Current HttpUrl, per-domain policy and single-snapshot constraints are explicit design gates.
-- ogk's request inventory/status/attachment stages are useful references; its remote upload,
-  database and account workflow are not adopted. Code MIT does not license response data.
-- Exact dataset rights differ: the localcouncil catalog/project notice has noncommercial terms;
-  do not substitute OpenWatch's general data license.
-- Public reachability and an attachment download control do not authorize packet persistence;
-  an unmarked MPM attachment requires source-owner agreement before deterministic extraction or
-  normalized reuse.
-- A source gate must close from a published source contract or an already-permitted bounded
-  packet; this workflow does not create a separate source-owner inquiry step.
+- `public_people()` is the API/read-side boundary; the web page does not merely hide unresolved
+  identities.
+- Existing profile projection and publication validation remain canonical. `source_conflict` is a
+  derived read-model flag from existing evidence stances, not a new epistemic or database field.
+- Source cards expose a compact policy summary; raw policy fields remain available from the
+  existing source endpoint and are shown only in audit-oriented detail where appropriate.
+- Review items expose identifiers and provenance needed for human review but deliberately omit
+  `FeederObservation.normalized`, source snapshot metadata and fulltext from the review payload.
+- No `ReviewedPersonBundle` main path, generic evidence graph, shadow review model, provider
+  ingestion, OpenWatch integration or dependency was introduced.
 
 ## Verification evidence
 
 Executed locally on 2026-09-12:
 
-- `.venv\Scripts\python.exe -m pytest -o addopts='' -q`: 266 passed, 4 warnings, 88.69s.
+- `.venv\Scripts\python.exe -m pytest -o addopts='' tests/test_api.py tests/test_profile_projection.py -q`:
+  17 passed, 2 warnings.
+- `.venv\Scripts\python.exe -m pytest -o addopts='' --disable-warnings`: 269 passed.
 - `.venv\Scripts\python.exe -m ruff check apps packages workers tests`: passed.
-- `.venv\Scripts\python.exe -m mypy packages workers apps/api`: 51 files, no issues.
-- `.venv\Scripts\python.exe -m packages.verification.quality`: all Golden Set checks passed.
-- `npm --prefix apps/web run lint`, `typecheck`, `test`, `build`: passed; 2 tests.
-- PowerShell assertions: six mode headings present, local Markdown targets exist, diff is
-  documentation-only, seven L3 matrix rows exactly equal the baseline.
-- Read-only MPM probes: official `cntId=422` detail returned the packet title, publication date,
-  attachment filename and `FILE_...`/storage reference; the direct attachment response was
-  inspected in memory for MIME only and was not written to disk.
-- `git diff --check`: passed. Final diff reviewed for maturity, rights and implementation drift.
-- GNU Make unavailable; Makefile constituent commands were executed directly.
-  Local evidence only, not GitHub CI. Existing deprecation/parent-lockfile warnings remain.
+- `.venv\Scripts\python.exe -m mypy packages workers apps/api`: success, 51 source files.
+- `.venv\Scripts\python.exe -m packages.verification.quality`: passed=true; all Golden Set
+  checks passed.
+- `npm --prefix apps/web run lint`: passed.
+- `npm --prefix apps/web run typecheck`: passed.
+- `npm --prefix apps/web test`: 4 passed.
+- `npm --prefix apps/web run build`: passed; `/`, `/admin/review` and `/people/[id]` built.
+- Temporary-database Alembic `upgrade head -> downgrade -1 -> upgrade head`: passed.
+- `git diff --check`: passed before final documentation update; rerun after commit staging.
+- `make verify`: runner-unavailable because GNU Make is not installed; every constituent command
+  was run directly. No GitHub Actions result was claimed locally.
 
 ## Not executed
 
-No persistent dataset download or QA, deterministic packet extraction, ogk install/login/run,
-schema change, migration, importer or Person creation.
-The public MPM attachment response was fetched in memory for a bounded MIME probe only and was
-not retained.
-Firecrawl CLI was unavailable; standard web/read-only HTTP tools inspected public methodology
-and source code instead. chatgpt2codex reported no registered civic project; local tools used.
+No feeder implementation, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
+provider payload browser, schema change, migration file, dependency install, admin write action or
+production deployment was performed.
 
 ## Blockers
 
-The selected MPM packet still lacks a published attachment reuse/storage basis for retaining bytes or
-normalized values. A human review cannot supply absent identity or dates. The roll-call candidate
-also lacks a published complete operation, identity-key and correction/version contract. L3 gates
-remain unchanged.
+None for Evidence Directory v0 implementation. Existing source-gate maturity decisions remain
+unchanged: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
+CleanEye remain L0 RESEARCHED; BLOCKED. Those lanes require their own source-contract evidence
+before any promotion.
 
 ## Modified files
 
-The active MPM source-gate plan, the source-coverage artifact, the asset-disclosure candidate
-record and this HANDOFF only. No product code, tests, dataset files or dependency manifests
-changed.
+- `apps/api/main.py`
+- `apps/web/app/admin/review/page.tsx`
+- `apps/web/app/data.ts`
+- `apps/web/app/layout.tsx`
+- `apps/web/app/page.tsx`
+- `apps/web/app/people/[id]/page.tsx`
+- `apps/web/app/styles.css`
+- `apps/web/app/types.ts`
+- `apps/web/tests/ui.test.mjs`
+- `packages/persistence/repository.py`
+- `packages/rendering/profile_projection.py`
+- `tests/test_api.py`
+- `HANDOFF.md`
 
 ## Next concrete action
 
-Run one bounded offline QA on a publicly downloadable official National Assembly roll-call packet
-under its published source terms, retaining source-level provenance and keeping the lane below L3
-until the complete operation, identity-key and correction/version contract is proven.
+Commit and push the Evidence Directory v0 vertical slice, then verify local `HEAD == origin/master`
+and a clean worktree.

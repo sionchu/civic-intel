@@ -7,7 +7,7 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /person\.profile\.sections\.map/);
   assert.match(page, /section\.status/);
   assert.match(page, /entry\.epistemic_status/);
-  assert.match(page, /entry\.evidence_ids/);
+  assert.match(page, /entry\.evidence/);
   assert.match(page, /entry\.source_ids/);
   assert.match(page, /UNKNOWN/);
   assert.match(page, /Evidence & audit/);
@@ -20,4 +20,27 @@ test("UI does not implement publication decisions", async () => {
     ),
   );
   assert.ok(files.every((body) => !body.includes("validate_claim_publication")));
+});
+
+test("UI exposes explicit provenance and a read-only review surface", async () => {
+  const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const review = await readFile(new URL("../app/admin/review/page.tsx", import.meta.url), "utf8");
+  assert.match(profile, /SOURCE CONFLICT/);
+  assert.match(profile, /trace\.stance/);
+  assert.match(profile, /snapshot_id/);
+  assert.match(profile, /policy_summary/);
+  assert.match(review, /getReviewReport/);
+  assert.match(review, /item\.action/);
+  assert.match(review, /item\.status/);
+  assert.doesNotMatch(review, /<button|onClick/);
+});
+
+test("UI stays within the directory scope", async () => {
+  const files = await Promise.all(
+    ["../app/page.tsx", "../app/people/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
+      readFile(new URL(path, import.meta.url), "utf8"),
+    ),
+  );
+  const unsupportedSurface = /confidence|faction|influence|probability|OpenWatch|roll-call|asset dashboard/i;
+  assert.ok(files.every((body) => !unsupportedSurface.test(body)));
 });

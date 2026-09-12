@@ -1,4 +1,4 @@
-import type { Person, Source } from "./types";
+import type { Person, ReviewReport, Source } from "./types";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -15,3 +15,4 @@ async function getJson<T>(path: string, fallback: T): Promise<T> {
 export function getPeople(): Promise<Person[]> { return getJson("/people", []); }
 export function getPerson(id: string): Promise<Person | null> { return getJson(`/people/${id}`, null); }
 export function getSource(id: string): Promise<Source | null> { return getJson(`/sources/${id}`, null); }
+export function getReviewReport(): Promise<ReviewReport | null> { return getJson("/admin/review", null); }
