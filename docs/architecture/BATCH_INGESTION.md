@@ -457,3 +457,11 @@ The concrete feeders now demonstrate the shared repository transaction while ret
 source contracts, coverage rules and semantic boundaries. Any future helper must remain small and
 must be earned by verified duplication; a generic crawler or universal page runner is still not
 justified.
+
+National Assembly asset disclosure remains `L0 RESEARCHED; BLOCKED`. See
+`NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md` for the source-contract and actual-model audit.
+OpenWatch is a dataset-specific curated secondary layer, not a universal canonical feeder.
+Origin Gazette and curated transformations must keep distinct Sources/SourcePolicies and exact
+snapshot provenance. This research decision does not authorize a live secondary-source runner
+or any new Person materialization. A later approved slice reuses SourceRun, SourceCheckpoint,
+FeederObservation and the canonical repository; QA spreadsheets never replace those stores.

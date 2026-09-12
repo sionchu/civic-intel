@@ -15,6 +15,7 @@ implementation work.
 - [Batch ingestion](architecture/BATCH_INGESTION.md)
 - [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
+- [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
 - [NEC local candidate feeder](architecture/NEC_LOCAL_CANDIDATE_FEEDER.md)
@@ -39,4 +40,5 @@ implementation work.
 - [Completed ALIO public-institution executives L3 plan](exec-plans/active/alio-public-institution-executives-l3.md)
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)
 - [Government Public Ethics Committee retired-public-official employment-review source-gate plan](exec-plans/active/government-public-ethics-employment-review-l3.md)
+- [National Assembly asset-disclosure source-gate plan](exec-plans/active/national-assembly-asset-disclosure-source-gate.md)
 - [Completed OpenDART disclosed-executives L3 plan](exec-plans/active/opendart-private-sector-executives-l3.md)

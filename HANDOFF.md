@@ -1,99 +1,78 @@
 # HANDOFF
 
-## Objective
+## Objective and scope
 
-Continue `sionchu/civic-intel` from the current `master` and decide whether the Government Public
-Ethics Committee / MPM retired-public-official employment-review feeder can safely reach L3.
+Complete the employment-review source-gate publication, then evaluate National Assembly
+asset disclosure as the first independent OpenWatch/opengirok curated-source lane.
+Do not implement other lanes or create family/staff/donor Persons.
 
-## Scope
+## Completed checkpoints
 
-Source-contract validation only: official universe, pagination/coverage, record identity,
-attachments, date and correction semantics, use conditions and automated collection. Do not do
-person-by-person enrichment or add parallel persistence abstractions.
+- Employment-review nine-file diff reviewed with no unrelated changes, committed as
+  `1ac20dcadb8257af354b3e48a04a9a8eec6b00de` and pushed to master.
+  Local HEAD, origin/master and live remote matched; worktree was clean before asset research.
+- Read current governing docs and actual canonical asset contracts, SQLAlchemy tables,
+  repository, materialization gate, API and tests.
+- Completed OpenWatch/opengirok/Gazette reconnaissance and aggregate-only QA:
+  thirteen opengirok workbooks, three recent OpenWatch asset workbooks and one member workbook.
+- Added `docs/architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md`, linked source-gate plan,
+  finite research helper/tests and aggregate evidence. No raw workbook or personal row saved.
+- Seven existing L3 feeders preserved.
 
-## Acceptance criteria
+## Current decision
 
-- latest `master` is confirmed before work;
-- governing repository and batch-ingestion documents are read;
-- the seven existing L3 feeders and CleanEye blocked baseline are preserved;
-- the official employment-review source is either implemented through the canonical batch path or
-  its exact blockers are documented; and
-- observed tests and non-executed work are separated.
+National Assembly asset disclosure: **L0 RESEARCHED; BLOCKED**.
+Employment review: **L1 CONTRACT_STAGED; L3 promotion blocked**.
+CleanEye: **L0 RESEARCHED; BLOCKED**.
 
-## Completed
+Public bulk data and positive curator data-use language exist. L3 is blocked by unreconciled
+release/origin coverage, inadequate disclosure/item correction semantics and an unvalidated
+permitted complete machine-access route. OpenWatch's August 2024 link aliases March 2024;
+its current directory includes 2026 while the asset docs and opengirok catalog stop at 2025.
+Current-value zero was counted as present, not missing, in final QA. Ordinals hide repeated
+contents; byte-hash churn on XLSX export is not proof of data corrections.
 
-- Confirmed `HEAD` and `origin/master` at `64ebba32f4ad2b44e1b5fa85c547cbd560729f9f`.
-- Reconstructed the existing offline employment-review parser/stager and canonical batch
-  persistence boundary.
-- Reviewed current MPM board, MPM attachments, PETI result index/detail flow, robots and MPM
-  copyright policy.
-- Determined that the source contract is insufficient for L3; no live code or migration was
-  added.
-- Added the source-gate ExecPlan at
-  `docs/exec-plans/active/government-public-ethics-employment-review-l3.md`.
+## Architecture decisions
 
-## Current checkpoint
+- AssetDisclosure/AssetItem and their DB tables already exist, but asset persistence/
+  materialization and the empty API projection are not a working feeder.
+- Preserve separate Gazette origin and opengirok/OpenWatch curated Sources and policies,
+  then exact snapshot provenance into Civic Intel observations and ClaimEvidence.
+- Reuse SourceRun/SourceCheckpoint/FeederObservation and the shared repository if reopened.
+- Prefer official assembly_mona_cd anchors; curator ID/crosswalk presence is not canonical
+  Person authority. No name-only links, asset-row Person IDs or private-family materialization.
+- No persistent model/migration or runtime dependency is justified at this blocked gate.
+- Future votes/local-council/contribution lanes are documented only.
 
-The lane remains `L1 CONTRACT_STAGED; L3 promotion blocked`. The MPM `취업` category is a mixed
-125-post, 9-page board; PETI is a mixed 315-post, 32-page result index. MPM result PDFs expose
-packet-local numbered rows without a provider case identifier or per-row review date. Correction
-and reuse terms are not sufficient for automated normalized storage.
+## Executed local verification — 2026-09-12
 
-## Decisions and reasons
-
-- Keep `EmploymentReviewEvent`, `SourceRun`, `SourceCheckpoint` and `FeederObservation` as the
-  only future implementation path.
-- Do not use `cntId:attachment:row ordinal` as an L3 identity until the provider confirms row
-  stability across corrections.
-- Do not treat technical reachability, the PETI internal AJAX call or the MPM RSS feed as a
-  permission or complete source contract.
-- Keep CleanEye at `L0 RESEARCHED; BLOCKED`.
-
-## Verification evidence
-
-- `git fetch --prune origin master`: remote remained at the expected SHA.
-- Final read-only `git ls-remote origin refs/heads/master` also returned
-  `64ebba32f4ad2b44e1b5fa85c547cbd560729f9f`; a later fetch refresh could not write
-  `.git/FETCH_HEAD`, so no local ref update was needed.
-- `pytest tests/test_civil_service_feeder.py -q`: `10 passed`.
-- `.venv\Scripts\python.exe -m pytest -q --disable-warnings`: 266 collected tests reached
-  `[100%]` and exited 0.
-- `.venv\Scripts\python.exe -m ruff check packages workers apps tests`: passed.
-- `.venv\Scripts\python.exe -m mypy packages workers apps/api`: no issues in 51 source files.
-- `.venv\Scripts\python.exe -m packages.verification.quality`: all quality checks passed.
-- `npm --prefix apps/web run lint`, `typecheck`, `test`, and `build`: all exited 0; the UI
-  test suite passed 2 tests and the production build completed.
-- MPM August and July result PDFs were rendered and visually inspected; the August packet has
-  four pages and 94 numbered rows.
+- `.venv\Scripts\python.exe -m ruff check apps packages workers tests docs/research`: passed.
+- `.venv\Scripts\python.exe -m mypy packages workers apps/api`: passed, 51 source files.
+- `.venv\Scripts\python.exe -m pytest -o addopts='' -q`: **266 passed**, 4 deprecation
+  warnings, 95.46 seconds. Existing migration regressions are included.
+- `.venv\Scripts\python.exe -m packages.verification.quality`: passed; exact ten-person
+  Golden Set, evidence traceability, identity and privacy gates intact.
+- Bundled analysis Python `-m unittest discover -s docs/research -p 'test_*.py' -v`:
+  **3 passed**; zero/missing, ordinal-hidden duplicates and exact-code crosswalk.
+- `npm --prefix apps/web run lint`, `typecheck`, `test`, `build`: passed;
+  **2 web tests**, production build complete. Next.js noted an ignored parent pnpm lockfile;
+  no parent/workspace configuration was changed.
+- Finite workbook QA exited 0 for all seventeen sources; aggregate report carries source
+  URLs, timestamps and hashes. Immediate 2026 row-content repeat was stable.
+- `git diff --check`: passed before final staging; final staged diff audited.
+- GNU Make unavailable: its constituent verify commands above were run directly.
+  These are local results, not a claim of GitHub CI status.
 
 ## Not executed
 
-- no live employment-review enumerator or parser;
-- no database migration or batch run;
-- `make verify` itself was not executable because GNU Make is unavailable in this Windows
-  environment; its lint, typecheck, test, quality and web verification commands were run
-  directly with the project runtimes.
-
-## Blockers
-
-The official source must provide or authorize a typed complete result universe, stable case/row
-identity, per-row date semantics, correction/version behavior, machine-readable or licensed
-attachment use, request pacing and storage/reuse terms.
-
-## Modified files
-
-- `HANDOFF.md`
-- `docs/INDEX.md`
-- `docs/architecture/BATCH_INGESTION.md`
-- `docs/architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md`
-- `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
-- `docs/exec-plans/active/batch-ingestion-l3.md`
-- `docs/exec-plans/active/cleaneye-local-public-institution-executives-l3.md`
-- `docs/exec-plans/active/government-public-ethics-employment-review-l3.md`
-- `docs/exec-plans/active/opendart-private-sector-executives-l3.md`
+No live production feeder, canonical batch ingestion, Person link, migration, provider contact,
+raw-data redistribution or implementation of subsequent lanes. No full annual Gazette-PDF
+reconciliation; no historical amendment-rate measurement. No generic crawler or Firecrawl
+runtime dependency.
 
 ## Next concrete action
 
-Obtain the official MPM/PETI source-owner contract response. If it covers every stop condition,
-implement one source-specific connector on the existing batch foundation; otherwise retain L1
-and do not add a live feeder.
+Obtain one bounded source-contract response/release specification from OpenWatch/opengirok
+covering corrected per-release origin manifest and counts, disclosure/item version rules,
+official-code crosswalk provenance and permitted bulk reuse. Reopen only when the source-gate
+criteria are met; otherwise keep this lane blocked.

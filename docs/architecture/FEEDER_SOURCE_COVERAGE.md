@@ -24,6 +24,9 @@ authoritative public source
 A feeder discovers people. It does not assert appointment probability, ideology,
 partisan desirability or hidden influence.
 
+The matrix also records explicitly labeled enrichment-only lanes. Such lanes do not expand
+the Person discovery universe; their observations still use the same policy/evidence gates.
+
 ## Maturity legend
 
 - `L0 RESEARCHED`: source and policy strategy are documented.
@@ -43,6 +46,7 @@ L3.
 | Feeder | Public person scope | Strongest source lane | Mode | Identity anchor | Career / ontology destination | Maturity |
 |---|---|---|---|---|---|---|
 | National Assembly members | elected National Assembly members | 열린국회정보 member API | API | `MONA_CD` | Legislative | L3 FULL_ENUMERATION |
+| National Assembly asset disclosure (enrichment only) | existing officially anchored Assembly members; no family or staff discovery | National Assembly Gazette origin → opengirok/OpenWatch separate curated transformation sources | STRUCTURED_DISCLOSURE; source gate only | official `MONA_CD` preferred; curator IDs/row ordinals are not Person authority | existing AssetDisclosure/AssetItem and Claim/Evidence semantics; no new schema | L0 RESEARCHED; BLOCKED — release coverage, revision/key semantics and permitted route contract unresolved |
 | Gwanbo personnel notices | official personnel-notice metadata in an explicit publication-date window | 대한민국 전자관보 인사 API | OFFICIAL_WEB | notice `cntntSeqNo`; no Person anchor at list stage | Public Service notice discovery | L3 FULL_ENUMERATION; metadata only, no Person creation |
 | National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | L3 FULL_ENUMERATION; multi-person event observations, no Person creation |
 | National Assembly proposal-reason / major-content text | official full `제안이유` / 주요내용 | no verified structured Open Assembly source found in 2026-08-30 review | BLOCKED | bill ID/detail link only | Legislative text evidence | L0 RESEARCHED; BLOCKED, no HTML scraping |
