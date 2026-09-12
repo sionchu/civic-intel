@@ -150,5 +150,51 @@ The first implementation is deliberately staging-only:
 - no automatic DB upsert/publication;
 - no broad legal-professional crawler.
 
-The next best source-specific step is to add one reviewed live official personnel adapter
-while retaining these same normalized semantics.
+## MOJ / Supreme Court source-contract gate (2026-09-12)
+
+The existing legal-personnel lane remains `L1 CONTRACT_STAGED`. Its normalized
+`LegalPersonnelRecord`, `LegalCareerEpisode`, identity staging and privacy regressions are
+usable, while both live policies remain fail-closed. The two official lanes below must not be
+combined into one personnel universe.
+
+| Lane | Official source contract | Gate result |
+|---|---|---|
+| 법무부 검찰 인사 | The [2026 상반기 검사 인사](https://www.moj.go.kr/bbs/moj/182/602956/artclView.do) detail page identifies the publication date, responsible department, a `공공누리 2유형` label and six linked PDF/HWPX/HWP attachments. It states 569 고검검사급 and 358 일반검사 전보 with separate effective dates. The detail/attachment route is a bounded personnel-round packet, not a published unfiltered prosecutor universe or documented API. The inspected route exposes no provider Person ID, row-level key, replacement history or complete correction contract. | `L1 CONTRACT_STAGED`. One exact rights-approved release packet can support human-reviewed L2 staging; no L3 promotion. |
+| 대법원 법관 / 법원행정 | The [2026-01-30 personnel release](https://www.scourt.go.kr/portal/news/NewsViewAction.work?gubun=6&seqnum=2927) describes several effective dates and links release PDFs. The [2026-02-15 Court Gazette](https://www.scourt.go.kr/upload/gongbo/Scourt08460/20260215.pdf) exposes machine-readable tables with issue/order headings, names, previous positions and orders. Later [2026-03-15 Gazette](https://www.scourt.go.kr/upload/gongbo/Scourt08500/20260315.pdf) includes a `발령변경` entry that corrects an earlier order date. The Gazette is an issue/document stream containing multiple order types, not one declared current roster; an exhaustive issue manifest, pagination/cursor contract and row ID are not published in the inspected route. | `L1 CONTRACT_STAGED`. A single rights-reviewed issue or release packet can support human-reviewed L2 staging; no L3 promotion. |
+
+### Reusable contract if a legal lane reopens
+
+- **Authority and boundary:** the issuing institution's release or Court Gazette order is
+  authoritative for the named appointment, transfer, assignment, effective date and explicitly
+  stated previous office. A release summary does not establish personal responsibility for every
+  case handled by an office. Fix the personnel-round, Gazette issue, order type and date scope
+  before collection; do not treat the archive as an implicit full roster.
+- **Normalization and provenance:** preserve the official detail page and exact attachment or
+  Gazette issue as the origin Source/Snapshot. Normalize only name, organization, title, previous
+  office/title, event type, effective/event date and public assignment domain when explicit. A
+  PDF/HWPX/HWP table is deterministically extracted and human-compared; the analyst value remains
+  a separate representation with page/table/row locator and parser/review revision.
+- **Identity:** post IDs, attachment IDs, Gazette issue/order numbers and source-derived row
+  ordinals identify a source packet, not a canonical Person. A future record key may be
+  `{post_or_issue}:{attachment_or_order}:{row_ordinal}` within the captured scope. Existing
+  official identity anchors take priority; name-only linking, office proximity and case
+  co-mention cannot resolve a Person.
+- **Version and correction:** keep publication/registration, effective/event and capture times
+  separate. A replacement attachment or later Gazette correction creates a new SourceSnapshot and
+  immutable observation with an explicit replacement/correction relation. The 2026 Gazette
+  `발령변경` pattern must be tested as a correction, not silently merged into the earlier order.
+- **Rights and storage:** the MOJ page's `공공누리 2유형` still requires source attribution and
+  restricts commercial use; it does not require retaining full attachments for this product. The
+  [Court copyright policy](https://www.scourt.go.kr/portal/popup/jeojak_pop.html) permits free use
+  only where the Court owns all copyright, with specific source attribution, and asks users to
+  consult the Court for other material. Keep current metadata-only/fulltext-disabled policies
+  until the exact packet and storage purpose are reviewed.
+- **Maturity ceiling:** a rights-approved finite release/issue packet may be a human-assisted L2
+  source observation path. L3 requires a declared complete universe, issue/page coverage, stable
+  record semantics, correction/withdrawal behavior, permitted route and offline multi-page
+  regression. No scheduler, broad legal-professional crawl or generic document importer is
+  implied.
+
+No live adapter, attachment downloader, migration or new legal schema was added by this gate. If
+the next packet is approved, reuse `LegalPersonnelRecord`, `SourceRun`, `SourceCheckpoint` and
+`FeederObservation`, then publish only through the existing identity and Claim/Evidence gates.

@@ -98,6 +98,11 @@ footprint as independent lanes. The aggregate labor standard-data path remains
 `DISCOVERY_ONLY` with no stable universal roster, row identity, correction/version or reuse
 contract sufficient for L3. A finite, rights-approved source packet may still support human-
 assisted staging under the playbook.
+The same-day MOJ/Supreme Court gate evaluated official prosecutor personnel releases, Court
+Gazette issue tables and a later Gazette correction entry. Both legal lanes remain
+`L1 CONTRACT_STAGED`: a rights-approved single release/issue packet can support human-reviewed
+L2 staging, but neither route exposes a unified complete personnel universe, row-level Person key
+or sufficient automated coverage contract for L3.
 
 ## Decisions and reasons
 
@@ -124,6 +129,9 @@ assisted staging under the playbook.
 - The labor source gate uses the existing `Claim`/`ClaimEvidence` and
   `CommitteeMembershipEpisode` semantics if a future lane closes. It does not assume or add a
   `LaborLeadershipEpisode`, generic roster schema, crawler or packet importer.
+- MOJ and Supreme Court personnel remain independent source lanes. Release/attachment IDs and
+  Gazette issue/order/row locators identify packets, not Persons; Court Gazette corrections must
+  become explicit immutable observation versions.
 
 ## Verification evidence
 
@@ -175,6 +183,13 @@ Executed locally on 2026-09-12:
 - Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_labor_leadership.py
   tests/test_cross_lane_identity.py -q`: 18 passed, and `.venv\\Scripts\\python.exe -m ruff
   check apps packages workers tests`: passed after the documentation update.
+- Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_legal_careers.py
+  tests/test_labor_leadership.py tests/test_cross_lane_identity.py -q`: 25 passed; Ruff and
+  `git diff --check` also passed after the legal source-gate update.
+- Re-opened official MOJ personnel-release pages and attachments metadata, the Supreme Court
+  personnel release, 2026 Court Gazette issue tables, the later Gazette correction entry and the
+  Court copyright policy. No legal attachment bytes, connector, importer, migration or runtime
+  dependency was added.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -182,11 +197,12 @@ Executed locally on 2026-09-12:
 
 ## Not executed
 
-No feeder implementation, labor federation/commission acquisition, OpenWatch acquisition,
-asset/vote/ideology/graph/search feature, raw provider payload browser, schema change, migration
-file, dependency install, admin write action, authenticated operator system or production
-deployment was performed. No official labor attachment was downloaded or retained. The public
-review route remains intentionally unavailable until an operator access boundary is designed.
+No feeder implementation, labor federation/commission acquisition, MOJ/Supreme Court legal
+personnel acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
+provider payload browser, schema change, migration file, dependency install, admin write action,
+authenticated operator system or production deployment was performed. No official labor or
+legal attachment was downloaded or retained. The public review route remains intentionally
+unavailable until an operator access boundary is designed.
 
 ## Blockers
 
@@ -194,7 +210,9 @@ Evidence Directory v0 has no implementation blocker. Source work remains bounded
 contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
 CleanEye remain L0 RESEARCHED; BLOCKED; and the labor federation/commission lanes lack a complete
 universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
-reopen for a finite reviewed packet only when the playbook gates close.
+reopen for a finite reviewed packet only when the playbook gates close. MOJ/Supreme Court legal
+personnel likewise remain L1 with a conditional human-assisted packet path rather than a live
+enumerator.
 
 ## Modified files
 
@@ -215,11 +233,13 @@ reopen for a finite reviewed packet only when the playbook gates close.
 - `tests/golden/fixtures/profile_target_lee_wonjoo_001.json`
 - `tests/test_profile_target_golden_lee_wonjoo.py`
 - `docs/architecture/LABOR_LEADERSHIP_FEEDER.md`
+- `docs/architecture/LEGAL_CAREER_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `HANDOFF.md`
 
 ## Next concrete action
 
-Evaluate the official MOJ/Supreme Court personnel route as the next independent source-contract
-gate, while keeping Presidential personnel at `L1 CONTRACT_STAGED`, the Lee Won-joo case
-fixture-only, and labor federation/commission lanes at their documented human-assisted ceiling.
+Prepare one rights-approved MOJ personnel-round packet for deterministic extraction/review, while
+keeping Presidential personnel at `L1 CONTRACT_STAGED`, the Lee Won-joo case fixture-only, labor
+federation/commission lanes at their documented human-assisted ceiling, and the legal lane at L1
+until that packet passes its storage/provenance gate.
