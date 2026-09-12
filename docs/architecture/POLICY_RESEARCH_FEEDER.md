@@ -141,6 +141,46 @@ This supports descriptive routes such as:
 
 Historical frequency remains descriptive and is never appointment probability.
 
+## Institute-profile source gate (KDI pilot, 2026-09-13)
+
+The employment-verification lane is separate from NKIS output metadata. The first reviewed
+candidate is the official [KDI researcher directory](https://www.kdi.re.kr/introduce/expert),
+which is an institute profile source listed within the [NKIS institution directory](https://nkis.re.kr/org.do).
+The inspected KDI surface includes the researcher-role views, the [organization tree](https://www.kdi.re.kr/introduce/org)
+with department-level staff selection, and official director/history pages.
+
+The rendered researcher views provide Korean and Romanized names, department/current title and
+research-topic text. This is useful bounded employment and identity evidence, but the inspected
+routes do not publish a complete staff/researcher universe, total coverage statement, documented
+page/cursor contract, effective-date/as-of field, stable profile record key or correction and
+republication semantics. The visible `extp=2` role view is a second directory view, not a
+declared historical or complete-version contract. A name, department or title is therefore not
+a stable identity key.
+
+KDI's [Open API](https://www.kdi.re.kr/share/openAPI) is a separately approved, API-key-gated
+publication-metadata interface; it is not a staff or employment API. KDI's
+[copyright policy](https://www.kdi.re.kr/servicePolicy/copyright) states that KDI works use
+공공누리 제3유형 (출처표시+변경금지), while the inspected pages do not state a
+profile-data-specific right to store, normalize or republish derivative staff records. API or
+page availability is not treated as permission.
+
+Decision:
+
+- NKIS `ResearchOutput` remains `L2 SINGLE_PULL` metadata-only and does not gain an employment
+  inference from KDI's directory.
+- The KDI automated profile path remains `L0 RESEARCHED; BLOCKED`; no live adapter, staff
+  crawler, L3 enumeration or automatic Person materialization is authorized.
+- A finite KDI profile/appointment packet may support a human-assisted L1/L2 lane only after a
+  source-specific storage/normalization/redistribution decision, an exact page or document
+  manifest, dated capture scope, deterministic field mapping and reviewer comparison are all
+  recorded. Original profile/document sources and any analyst-normalized representation must
+  remain separate Sources and snapshots; later bytes or reviewed corrections create new
+  immutable observations rather than overwriting prior values.
+- Any future identity bridge must use an official identity anchor or explicit official career or
+  biography continuity. Name-only linking is prohibited, and an NKIS/KDI row or local join key
+  is never a canonical Person ID. The existing Claim/Evidence/Source/SourcePolicy path remains
+  the publication boundary; no second researcher registry or speculative career schema is added.
+
 ## Quality rules
 
 - research responsibility != employment

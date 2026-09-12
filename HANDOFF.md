@@ -124,6 +124,14 @@ each attachment route; no body, preview or bytes were retrieved. The rights gate
 open/blocking, with no L2 or L3 promotion.
 The post's listed publishing department, `검찰과`, is the official routing signal for a packet-
 specific rights decision; no external inquiry was sent.
+The 2026-09-13 follow-on research-career gate inspected the official KDI researcher directory,
+organization tree and director/history routes as a candidate source for NKIS-discovered
+researchers. KDI exposes bounded current profile views with names, departments, titles and topic
+text, but the inspected routes do not declare a complete staff universe, stable profile key,
+effective/version or correction semantics. KDI's Open API is publication metadata only, and its
+copyright policy states 공공누리 제3유형 (출처표시+변경금지) without a profile-specific
+normalization/storage/republication contract. The KDI automated profile path remains
+`L0 RESEARCHED; BLOCKED`; no staff crawler, adapter, Person materialization or schema was added.
 
 ## Decisions and reasons
 
@@ -156,6 +164,11 @@ specific rights decision; no external inquiry was sent.
 - The MOJ packet candidate is a manifest-only preflight. A page-level KOGL type-2 label is not
   treated as blanket permission for attachment retention, production fetching or redistribution;
   the existing `SourcePolicy` gate remains authoritative.
+- NKIS `ResearchOutput` and institute employment are separate lanes. The KDI directory is not
+  an employment universe or identity authority: a bounded reviewed packet may become an L1/L2
+  human-assisted source observation only after exact scope and profile-data rights are recorded;
+  no name-only identity link, automatic Person materialization or second researcher registry is
+  allowed.
 
 ## Verification evidence
 
@@ -227,6 +240,11 @@ Executed locally on 2026-09-12 and 2026-09-13:
 - Revalidated `moj_prosecution_personnel_policy()` with `terms_checked_at=2026-09-13` while
   keeping fetch, fulltext, AI, excerpt and commercial permissions disabled; targeted legal tests,
   full Python tests and Ruff passed after the policy metadata update.
+- Re-opened the official [NKIS institution directory](https://nkis.re.kr/org.do), [KDI researcher
+  directory](https://www.kdi.re.kr/introduce/expert), [KDI organization tree](https://www.kdi.re.kr/introduce/org),
+  [KDI Open API](https://www.kdi.re.kr/share/openAPI) and [KDI copyright policy](https://www.kdi.re.kr/servicePolicy/copyright).
+  The source-contract result was recorded in `POLICY_RESEARCH_FEEDER.md`; no KDI profile body,
+  contact field, connector, crawler, schema or runtime dependency was added.
 - Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_assembly_evidence_directory.py
   -q`: 6 passed; full `.venv\\Scripts\\python.exe -m pytest -o addopts='' -q`: 282 passed.
 - Re-ran `.venv\\Scripts\\python.exe -m ruff check apps packages workers
@@ -247,7 +265,7 @@ Executed locally on 2026-09-12 and 2026-09-13:
 ## Not executed
 
 No feeder implementation, labor federation/commission acquisition, MOJ/Supreme Court legal
-personnel acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
+personnel acquisition, KDI institute-profile acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
 provider payload browser, schema change, migration file, dependency install, admin write action,
 authenticated operator system or production deployment was performed. No official labor or
 legal attachment was downloaded or retained. The public review route remains intentionally
@@ -261,7 +279,11 @@ CleanEye remain L0 RESEARCHED; BLOCKED; and the labor federation/commission lane
 universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
 reopen for a finite reviewed packet only when the playbook gates close. MOJ/Supreme Court legal
 personnel likewise remain L1 with a conditional human-assisted packet path rather than a live
-enumerator; the first MOJ packet is still pending packet-specific rights clearance.
+enumerator; the first MOJ packet is still pending packet-specific rights clearance. The
+government-funded research-career lane remains L0 for the KDI candidate because the current
+profile routes lack a complete declared universe, stable record/version contract and
+profile-specific reuse permission; a finite rights-approved packet remains the only possible
+human-assisted path.
 
 ## Modified files
 
@@ -284,6 +306,7 @@ enumerator; the first MOJ packet is still pending packet-specific rights clearan
 - `tests/test_profile_target_golden_lee_wonjoo.py`
 - `docs/architecture/LABOR_LEADERSHIP_FEEDER.md`
 - `docs/architecture/LEGAL_CAREER_FEEDER.md`
+- `docs/architecture/POLICY_RESEARCH_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `docs/architecture/IDENTITY_RESOLUTION.md`
 - `docs/INDEX.md`
