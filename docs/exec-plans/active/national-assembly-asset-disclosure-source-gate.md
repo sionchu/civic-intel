@@ -5,6 +5,11 @@
 2026-09-12: research complete; **L0 RESEARCHED; BLOCKED**. This is a source-gate
 record, not an approved L3 implementation plan. Reopening requires the conditions below.
 
+Methodology follow-up (2026-09-12): see the source acquisition playbook in
+`docs/architecture/FEEDER_SOURCE_COVERAGE.md`. This plan's full-universe gates apply to L3;
+a rights-approved official Gazette packet may separately be evaluated for human-assisted L1/L2.
+No OpenWatch ingestion or packet importer is implemented; actual maturity remains L0.
+
 ## Objective and scope
 
 First reconcile and publish the existing employment-review source-gate work. Then evaluate
@@ -60,7 +65,7 @@ manifest (including 2024 August and 2026 origin references), Gazette reconciliat
 disclosure/item keys and amendment rules, official-code crosswalk provenance, and permitted
 bulk access/storage/redistribution. No provider has been contacted by this task.
 
-Only after those gates pass, write an implementation ExecPlan for one minimal staged slice,
+Only after those L3 gates pass, write an automated implementation ExecPlan for one staged slice,
 then prove full bounded enumeration, transactionally committed checkpoints, resume,
 idempotency/corrections, privacy and publication tests on the existing batch foundation.
 Until then, stop safely without implementing another candidate feeder.

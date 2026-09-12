@@ -257,8 +257,11 @@ semantic scope only; this proposal does not widen it.
 4. Validate exact MONA_CD crosswalk provenance and coverage against the official roster;
    quarantine unmatched/conflicting rows. Never fill gaps by name.
 
-Until those gates are met, no SourceRun, checkpoint advancement, materialization or scheduler
-is authorized. A later L3 ExecPlan must prove unfiltered bounded enumeration, transactional
+Until those L3 gates are met, no automated enumeration run or scheduler is authorized.
+A separately rights-approved official packet may be evaluated for human-assisted L1/L2 under
+the [source acquisition playbook](FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook), without
+ingesting OpenWatch or creating Persons. No such importer exists at this checkpoint.
+A later L3 ExecPlan must prove unfiltered bounded enumeration, transactional
 snapshot/observation commit before checkpoints, resume, idempotency, corrected-release handling,
 privacy, publication gates and full DoD using the existing foundation.
 

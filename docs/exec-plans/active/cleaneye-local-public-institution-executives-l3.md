@@ -2,6 +2,11 @@
 
 Status: research complete — `L0 RESEARCHED; BLOCKED` as of 2026-08-31; L3 was not implemented.
 
+Methodology follow-up (2026-09-12): the source acquisition playbook in
+`docs/architecture/FEEDER_SOURCE_COVERAGE.md` permits evaluating one rights-approved official
+institution packet/response for human-assisted L1/L2 independently of these automated-L3 gates.
+The recorded robots restriction is not bypassed; no importer or maturity promotion is claimed.
+
 ## Objective
 
 Evaluate and, only if the official source contract permits it, promote the CleanEye local

@@ -10,7 +10,8 @@ This document is not a second SourcePolicy registry. `SourcePolicy` remains auth
 for collection, storage, AI-use, excerpt and commercialization rights. This matrix only
 tracks product coverage and source strategy.
 
-Every feeder ends in the same flow:
+Person-discovery lanes may proceed through this downstream flow after the relevant gates;
+source-level observations can stop before identity. Profiling remains optional:
 
 ```text
 authoritative public source
@@ -21,7 +22,7 @@ authoritative public source
  -> Public Official Profiler
 ```
 
-A feeder discovers people. It does not assert appointment probability, ideology,
+A person-discovery feeder discovers candidates. It does not assert appointment probability, ideology,
 partisan desirability or hidden influence.
 
 The matrix also records explicitly labeled enrichment-only lanes. Such lanes do not expand
@@ -31,15 +32,16 @@ the Person discovery universe; their observations still use the same policy/evid
 
 - `L0 RESEARCHED`: source and policy strategy are documented.
 - `L1 CONTRACT_STAGED`: canonical/staging contracts and deterministic fixtures exist.
-- `L2 SINGLE_PULL`: a reviewed source-specific connector can fetch one page or entity.
+- `L2 SINGLE_PULL`: a reviewed source-specific connector can fetch one page/entity, or a
+  rights-approved human-assisted packet import proves the equivalent single-packet boundary.
 - `L3 FULL_ENUMERATION`: the bounded source universe has validated coverage, persistent runs,
   committed checkpoints, resume and idempotent observation tests.
 - `L4 PRODUCTION_SYNC`: scheduled or incremental refresh, freshness, reconciliation and
   operational monitoring exist.
 
-`BLOCKED` may qualify an L0 lane whose current collection path is prohibited or too ambiguous;
-it is not a substitute for a maturity level. Code or fixtures alone do not promote a feeder to
-L3.
+`BLOCKED` qualifies the blocked path, not the usefulness of every possible acquisition route.
+Keep actual maturity, automation ceiling and conditional human-assisted path separate. Code,
+fixtures, manual row counts or a successful packet import alone do not promote a feeder to L3.
 
 ## Coverage matrix
 
@@ -83,29 +85,218 @@ L3.
 | Financial-market institutions | KRX/KSD/payment/clearing leaders; financial-holding/bank executives and outside directors | ALIO where applicable; OpenDART/company governance otherwise | STRUCTURED_DISCLOSURE / API | org/corp code + person + board role | Institutional Governance / Corporate | L1 CONTRACT_STAGED through ALIO/OpenDART |
 | Science/technology/medical public experts | national-lab/hospital/technical-society leaders and publicly named advisers relevant to appointments | institution/committee official sources | OFFICIAL_WEB | person + institution/body + role | Academic/Technical/Public Advisory | L0 RESEARCHED |
 
-## Source-mode rules
+## Source acquisition playbook
+
+This section governs acquisition strategy; it does not add runtime collection modes or approve
+a particular source. It extends the existing coverage artifact instead of creating a parallel
+playbook. Audit date: 2026-09-12. OpenWatch/opengirok are **methodology references**, not a
+requested feeder or a source of automatic truth.
+
+### Observed methodology and Civic Intel adaptation
+
+| Observed pattern / primary documentation | Adopt | Do not inherit |
+|---|---|---|
+| [Assembly composition](https://docs.openwatch.kr/data/national-assembly): current/historical Assembly APIs plus 헌정회-provided historical API; rows repeat across terms | A field authority map with source namespace, term and as-of time: Assembly supplies monaCode/name/party/district; current-member API supplies committee/role; 헌정회 supplies hjId; OpenWatch research supplies special notes | An Assembly-hosted 헌정회 field is still attributed to that provider. Do not treat all fields as independently government-verified, convert lunar dates implicitly, or retain contacts/staff |
+| [Document normalization](https://docs.openwatch.kr/data/national-assembly/asset-disclosure): Gazette PDFs become Google Sheets through 정보공개센터 | Reproducible document-to-row extraction with exact page/table/row locator, units and separate original/analyst provenance | A cleaned amount is not the official file, true market wealth or an independently verified claim |
+| [Extra jobs](https://docs.openwatch.kr/data/local-council/extra-job): request-acquired disclosures and separately attributed SBS material; latest filing selection | Identify request batch, responding institution, filing date and selected attachment | Latest selection must not erase previous filings; availability is not blanket reuse permission |
+| [Former activity](https://docs.openwatch.kr/data/local-council/former-career): regional groups request submitted records in two rounds; non-disclosure and nonexistence responses differ | Request/response/attachment provenance, separate rounds and explicit response status | Nonresponse, withheld or record-not-held cannot become “no activity” |
+| [Contribution documentation](https://docs.openwatch.kr/data/political-contributions/national-assembly): NEC information-request route; totals and donor detail are separate | Use the acquisition pattern for bounded annual aggregate questions | No donor dataset download, donor identity discovery or implied permission to redistribute response files |
+| [Bounded citizen work](https://cfoi.or.kr/19321): named council universe, fixed collection period, website review and further requests | Assign institutions/packets to reviewers, retain scope and unresolved fields; escalate gaps to evidence acquisition | Curator commentary or media context must not silently alter official values or create wrongdoing claims |
+| [Field dictionary](https://docs.openwatch.kr/data/local-council): own member code, MOIS area code, NEC election fields, website-researched current party and explicit 정보없음 | Trace each field independently; election-time party and later website party are different dated statements | One row-level “official” label is insufficient; MOIS area code is not a Person identifier |
+| [Public project catalog](https://github.com/opengirok/localcouncil): current/prior Sheets, collection notes and comment-based corrections | Publish permitted methodology, release manifest, QA and correction rationale | A Git commit pins catalog text, not mutable linked Sheets. Public collaboration does not prove exhaustive peer review or immutable row history |
+
+These are documented practices, not a claim that OpenWatch already has Civic Intel's immutable
+observation, field-lineage validator or automated QA architecture. The localcouncil catalog also
+mentions phone verification and Wikipedia/search-derived context: those cannot independently
+authorize canonical identity or facts here. Preserve provenance and seek an attributable official
+record rather than infer a missing value. No new dataset was downloaded for this methodology
+audit; earlier asset QA remains dated evidence, not a fresh measurement.
+
+OpenWatch's own member/contribution codes serve its dataset joins, not canonical Person
+authority. MONA_CD, hjId, NEC candidate IDs and MOIS area codes retain different namespaces
+and meanings. Adopt only source-backed crosswalks; matching names or similar ID strings is not
+a bridge. Field precedence must be explicit for the relevant date; preserve disagreements
+rather than choose whichever source was fetched last.
+
+### Shared gates for every acquisition mode
+
+Before collection, define the public-interest question, finite source/packet inventory,
+field authority and allowed fields; evaluate SourcePolicy access, metadata/fulltext retention,
+AI processing, excerpts, commercial use, attribution and redistribution separately.
+Manual collection and information requests are not rights bypasses. A disclosed file is not
+automatically licensed for every downstream use. In particular, the localcouncil catalog and
+[2026 project notice](https://cfoi.or.kr/19321) prohibit commercial reuse, unlike OpenWatch's
+general CC BY-SA statement: evaluate the exact dataset/edition and original rights, not the
+brand. Do not relabel third-party data as the repository's code license.
+
+The modes below are architecture vocabulary. Actual SourceCollectionMode currently contains
+API, RSS, HTTP, BROWSER, DISCOVERY_ONLY and BLOCKED; it does **not** contain the other labels.
+Use the actual permitted transport and reviewed policy notes/source class where supported.
+Do not invent enum values, fake domains, URLs or a new registry to make the design executable.
+The matrix's existing OFFICIAL_WEB label is an umbrella for official-document or bounded
+manual-page acquisition; it is not a new transport or permission to crawl.
+
+**Maturity and usefulness are separate.** L1 requires a source-specific staged contract and
+deterministic fixtures. L2 may be one reviewed live pull **or one reproducible, rights-approved
+human-assisted source-packet import**, as defined in BATCH_INGESTION.md. Neither proves L3.
+An unread or merely downloaded packet is not L2. L3 still requires full declared source-universe
+coverage, transactional runs/checkpoints, resume, immutable changes and idempotent regressions.
+Do not rename a convenient sample as the full universe to claim L3. L4 remains deferred.
 
 ### API
 
-Use when a reviewed official API has stable fields and a SourcePolicy. Credentials must be
-injected only at request time and never persisted in discovered URLs, metadata, errors or
-snapshots.
+- **Authority / boundary:** issuing provider for its documented fields; exact endpoint,
+  filters, period and page inventory, including declared no-data responses.
+- **Normalization / provenance:** deterministic typed mapping; provider record ID plus
+  Source/SourceSnapshot, request scope (without credentials), field origin and parser revision.
+- **Identity / version:** official namespace anchors only under existing materialization rules;
+  stable key plus semantic hash; preserve corrections, changed snapshots and declared tombstones.
+- **Ceiling:** L2 single pull; L3 only after full-coverage tests; no L4 scheduling in this scope.
+- **Rights / QA:** API terms, limits and field retention permissions; page totals, unique keys,
+  drift, partial failures, retry/resume, missingness and secret exclusion.
 
 ### STRUCTURED_DISCLOSURE
 
-Use official filings, gazette tables, ALIO/OpenDART/KRX disclosures and published ethics
-review results. Preserve disclosure date and reporting semantics.
+- **Authority / boundary:** filing issuer and exact report/release inventory, not the download host;
+  distinguish reporting entities, disclosure types and periods.
+- **Normalization / provenance:** table/CSV/XLSX mapping with units and source locators;
+  official filing and any curator representation remain distinct Sources/snapshots.
+- **Identity / version:** filing/item keys are not Person IDs; snapshot-scoped ordinals require
+  a justified rule; preserve release replacements rather than infer cross-release item continuity.
+- **Ceiling:** L1 fixtures; L2 reviewed packet or pull; L3 only with a complete contracted universe.
+- **Rights / QA:** origin and transformation licenses, fulltext/excerpt/redistribution separately;
+  duplicates excluding ordinals, row/subtotal cardinality, field gaps, totals and amendment tests.
 
-### OFFICIAL_WEB
+### OFFICIAL_DOCUMENT
 
-Use named personnel announcements, official biographies, organization/board pages and
-appointment releases. Do not introduce a generic crawler simply because no API exists;
-prefer source-specific parsers and deterministic fixtures first.
+- **Authority / boundary:** issuing institution's named notice/response packet, exact attachments,
+  edition and page range; no archive-wide crawling.
+- **Normalization / provenance:** deterministic PDF/table extraction plus human comparison;
+  OCR is a candidate transcription, never authority. Pin byte hash, page/row/field locator,
+  parser revision and reviewer decisions; separate official file from analyst-normalized Source.
+- **Identity / version:** retain absent names/dates; no Person/event invention. Document+snapshot+
+  locator may identify a packet observation, not a permanent case; new bytes/review corrections
+  create new versions with explicit replacement reason, never overwrite.
+- **Ceiling:** human-assisted L1/L2. Automated L3 needs a separately validated complete document
+  manifest and all normal enumeration gates; PDF format alone neither enables nor forbids L3.
+- **Rights / QA:** document-specific storage, parsing, redaction and reuse basis; page/row coverage,
+  multi-line cells, dates/units, unknown tokens and visual review of every accepted pilot row.
+
+### INFORMATION_REQUEST
+
+- **Authority / boundary:** responding institution for the actual response, not the requester or
+  portal tool; approved question, institution list, date window and request round.
+- **Normalization / provenance:** request → response/decision → attachment → reviewed extraction.
+  Keep safe request reference, institution, request/response dates, response status, attachment
+  identifier/hash/page locator and amendment relations; exclude requester credentials/contacts.
+- **Identity / version:** request IDs identify requests, never Persons. Separate rounds,
+  supplemental responses, appeals and replacement attachments; no identity inferred from a name.
+- **Ceiling:** L1/L2 human-assisted packets. A completed request batch does not prove a national
+  source universe or authorize L3; reconsider only with a separately proven official contract.
+- **Rights / QA:** sending requests, costs and account access need task-specific authority;
+  receiving is not redistribution permission. Reconcile expected institutions, unanswered,
+  transferred, partially disclosed, refused and not-held cases; check attachment completeness.
+
+### BOUNDED_MANUAL_CURATION
+
+- **Authority / boundary:** exact official institution page/packet for each field; analyst only
+  attests transcription. Assign a finite institution/URL list, time window and reviewer.
+- **Normalization / provenance:** fixed field dictionary and deterministic normalization;
+  keep origin snapshot/locator, analyst representation, review date and correction rationale.
+- **Identity / version:** no name-only linkage; curator join IDs remain local namespaces.
+  Freeze each capture/review edition and retain prior values; never silently fill from another date.
+- **Ceiling:** L1 staged fixture; L2 reviewed reproducible packet import, never L3 by manual row count.
+- **Rights / QA:** respect source terms and data minimization, not robots evasion by outsourcing
+  automation to people. Check all accepted pilot fields against origin; record explicit 정보없음,
+  unreadable, withheld, not-collected and not-applicable separately from zero/none.
 
 ### DISCOVERY_ONLY
 
-News and search may discover a candidate fact or person, but cannot silently become the
-canonical evidence source when a stronger public record should exist.
+- **Authority / boundary:** no truth/identity authority; finite search or route reconnaissance
+  for a stated question, including Firecrawl when available.
+- **Normalization / provenance:** candidate URL, publisher and discovery reason only where
+  policy permits; resolve to the actual origin before extracting supporting observations.
+- **Identity / version:** no automatic links; discovery timestamp/version describes the lead,
+  not the person's attributes or a source record.
+- **Ceiling:** L0 source strategy; discovery results do not earn L1/L2 ingestion maturity.
+- **Rights / QA:** check tool and target terms, no bypass/private payload; verify primary route,
+  remove duplicate origins and distinguish stale/error/challenge pages from source no-data.
+
+### Source-level reviewed observation import — design only
+
+This is an acquisition boundary, **not** a new bundle, table, framework or implemented command.
+It does not restore ReviewedPersonBundle as the main ingestion path.
+
+1. Review an exact packet manifest and policies before any processing. Record permitted
+   metadata/locators, publication/filing dates separately from capture time, and excluded fields.
+2. Normalize with a pinned deterministic rule; have a reviewer compare accepted fields with
+   the original. Preserve unresolved values explicitly; reviewer agreement is not FACT status.
+3. Keep original response/document and analyst representation as different Sources/snapshots.
+   Existing SourceOriginCluster prevents counting copies as independent corroboration; it is
+   not a field-lineage graph. Split observations by source and atomic claims by field authority.
+   If a composed representation is needed, require exact per-field source/snapshot/locator
+   references and transformation provenance; no generic metadata “official” stamp.
+4. Future implementation must validate all references, rights, duplicate keys and provenance
+   before using the shared repository; record only policy-permitted normalized observations.
+   Packet SUCCESS means that manifest was processed, not that all public records were acquired.
+   Commit observations before/with the packet checkpoint and prove unchanged-rerun idempotency.
+5. Separate byte identity from semantic changes and corrections. An unchanged semantic value
+   with changed origin lineage must not silently reuse old provenance. Pin packet/edition scope
+   and test lineage-sensitive identity or hashing; the current observation dedup key does not
+   automatically preserve every later sighting. Never mutate an old normalized observation.
+6. No automatic Person or FACT promotion. Unresolved identities remain observations; reviewed
+   identity and Claim/Evidence publication checks remain independent downstream gates.
+
+Actual-code constraints checked at master 2332755: Source.url is HttpUrl; a private local file
+is not a valid new Source URL. SourcePolicy is currently bound uniquely by domain, so
+per-attachment decisions cannot be implemented as conflicting same-domain policies. Do not
+weaken a domain policy to accommodate one packet. SourceSnapshot has one source_id and
+FeederObservation one snapshot_id; commit_source_page enforces one supplied snapshot per chunk.
+Metadata references are not validated lineage FKs or a ready-made reviewed import API.
+A packet lacking representable provenance/rights stays offline pending a narrowly scoped design;
+no fake public URL, shadow archive or schema expansion is authorized by this audit.
+
+EmploymentReviewEvent requires person/organization IDs and review_date; anonymous packet rows
+must not be forced into it. Existing AssetDisclosure/AssetItem are skeletal contracts/tables,
+not a working asset importer. Neither current materialization nor Claim.person_id permits
+inventing a Person to store an anonymous official result.
+
+### ogk tooling reference
+
+[ogk README](https://github.com/opengirok/ogk) describes account-scoped request listing,
+date/page selection, response-file download and status synchronization. Its “bills” are
+information requests, not legislative bills. Inspected source revision:
+[7d2295323a8970b2d7a9a60c10fb9665638bf1a1](https://github.com/opengirok/ogk/tree/7d2295323a8970b2d7a9a60c10fb9665638bf1a1).
+
+The separate fetch/download/sync commands suggest useful acquisition stages. Source inspection
+of [download.rs](https://github.com/opengirok/ogk/blob/7d2295323a8970b2d7a9a60c10fb9665638bf1a1/src/commands/download.rs)
+also shows remote-repository synchronization/upload; it is not necessarily a local-only download.
+[sync.rs](https://github.com/opengirok/ogk/blob/7d2295323a8970b2d7a9a60c10fb9665638bf1a1/src/commands/sync.rs)
+uses a configured external database and refreshes pending requests when dates are omitted.
+Adopt the separation of request inventory, status and attachments, not its storage, logging,
+bulk request sizing, concurrency or remote upload behavior as a Civic Intel contract.
+
+The [MIT license](https://github.com/opengirok/ogk/blob/7d2295323a8970b2d7a9a60c10fb9665638bf1a1/LICENSE)
+covers the tool's code, not portal response data. No installation, login, request submission,
+file download/sync, remote upload or integration was run. ogk is not an official API guarantee
+or a runtime dependency. Firecrawl is route reconnaissance only; analysis tools are downloaded
+dataset QA only. Neither supplies production truth.
+
+### Blocked-lane reassessment
+
+These are architecture classifications from the existing dated source gates, not new live
+probes, permissions or maturity promotions. Human-assisted paths are conditional, not available
+import commands. They need only a justified **packet** contract, not every L3 automation gate.
+
+| Lane / unchanged maturity | Current automation ceiling | Human-assisted usable path | Reopen condition |
+|---|---|---|---|
+| Government Public Ethics / MPM — L1 CONTRACT_STAGED; L3 blocked | Existing offline stager only; no reviewed live L2 connector | One rights-approved named publication packet, deterministic extraction and full row review; source-level anonymous observations, no EmploymentReviewEvent requiring fabricated Person/review_date | Human L1/L2: packet permission, locators, typed dates/missingness and reviewed reproducibility. L3: separate complete result universe, correction/coverage and permitted route contract |
+| National Assembly assets — L0 RESEARCHED; BLOCKED | No asset connector/import; earlier QA is not L2 | One official Gazette packet, minimized declared-value extraction and reviewer comparison, original/analyst Sources distinct; no OpenWatch ingestion or family Persons | Human L1/L2: rights-approved packet, units/type/period, safe keys/provenance and fixtures/import proof. L3: original-to-release completeness, revision reconciliation and permitted bulk contract |
+| CleanEye — L0 RESEARCHED; BLOCKED | No repeated HTML collector under recorded robots/route gate | One institution's permitted official executive packet or supplied response; minimized named-role observations, REVIEW_REQUIRED, no name-only merge | Human L1/L2: approved finite acquisition/retention, exact institution/edition and reviewed fixture/import. L3: permitted named-executive route, institution universe, coverage and version contract |
+
+An absent permanent Person/case ID does not destroy packet-level research value. Conversely,
+human review cannot cure forbidden storage, missing original provenance or an unidentified
+person. The detailed source gates remain authoritative for L3 and their historical evidence.
 
 ## Public-interest roster boundary
 

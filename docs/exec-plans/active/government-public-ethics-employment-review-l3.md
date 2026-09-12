@@ -2,6 +2,11 @@
 
 Status: source-contract review complete - L1 retained; L3 promotion blocked as of 2026-09-12.
 
+Methodology follow-up (2026-09-12): the source acquisition playbook in
+`docs/architecture/FEEDER_SOURCE_COVERAGE.md` separates this automated-L3 stop condition from
+a conditional rights-approved human-assisted packet path. Existing maturity remains L1;
+no packet importer exists. Anonymous rows stay observations, not fabricated person-linked events.
+
 ## Objective
 
 Evaluate the official Government Public Ethics Committee / Ministry of Personnel Management
@@ -181,8 +186,9 @@ invokes it.
 
 ## Reuse boundary if the gate later passes
 
-Only after the source owner publishes or grants the missing contract may one implementation
-milestone start. It must:
+Only after the source owner publishes or grants the missing contract may the automated L3
+implementation milestone start. A separate bounded packet need not satisfy full-universe gates,
+but still requires packet-specific rights, provenance and deterministic review. L3 must:
 
 - use the existing `EmploymentReviewEvent` semantics and no parallel event abstraction;
 - start every fetch with `SourcePolicy` and persist the source-level `SourceSnapshot`;

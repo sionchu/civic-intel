@@ -1,78 +1,87 @@
 # HANDOFF
 
-## Objective and scope
+## Objective
 
-Complete the employment-review source-gate publication, then evaluate National Assembly
-asset disclosure as the first independent OpenWatch/opengirok curated-source lane.
-Do not implement other lanes or create family/staff/donor Persons.
+Improve Civic Intel acquisition methodology using OpenWatch/opengirok as references, not feeders.
 
-## Completed checkpoints
+## Scope
 
-- Employment-review nine-file diff reviewed with no unrelated changes, committed as
-  `1ac20dcadb8257af354b3e48a04a9a8eec6b00de` and pushed to master.
-  Local HEAD, origin/master and live remote matched; worktree was clean before asset research.
-- Read current governing docs and actual canonical asset contracts, SQLAlchemy tables,
-  repository, materialization gate, API and tests.
-- Completed OpenWatch/opengirok/Gazette reconnaissance and aggregate-only QA:
-  thirteen opengirok workbooks, three recent OpenWatch asset workbooks and one member workbook.
-- Added `docs/architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md`, linked source-gate plan,
-  finite research helper/tests and aggregate evidence. No raw workbook or personal row saved.
-- Seven existing L3 feeders preserved.
+Architecture-only audit: official composition, document normalization, information requests,
+bounded human review, field provenance, identity, corrections and ogk tooling. No ingestion.
 
-## Current decision
+## Acceptance criteria
 
-National Assembly asset disclosure: **L0 RESEARCHED; BLOCKED**.
-Employment review: **L1 CONTRACT_STAGED; L3 promotion blocked**.
-CleanEye: **L0 RESEARCHED; BLOCKED**.
+Six acquisition modes with rights/provenance/identity/version/QA gates; distinguish L3 automation
+blocks from conditional human-assisted L1/L2 utility; preserve actual code/maturity and verify DoD.
 
-Public bulk data and positive curator data-use language exist. L3 is blocked by unreconciled
-release/origin coverage, inadequate disclosure/item correction semantics and an unvalidated
-permitted complete machine-access route. OpenWatch's August 2024 link aliases March 2024;
-its current directory includes 2026 while the asset docs and opengirok catalog stop at 2025.
-Current-value zero was counted as present, not missing, in final QA. Ordinals hide repeated
-contents; byte-hash churn on XLSX export is not proof of data corrections.
+## Completed
 
-## Architecture decisions
+- Fetched latest master; baseline local/origin HEAD matched
+  `2332755777e94eef398831646fe3dc7507d5a6bb`; worktree was clean.
+- Read governing documents and actual Source/Policy/Snapshot/Observation/Run/Claim contracts,
+  shared repository transaction, materialization and EmploymentReviewEvent requirements.
+- Inspected official OpenWatch field dictionaries, information-request methodology, information
+  center's bounded citizen project, localcouncil catalog/correction notes and ogk code at
+  `7d2295323a8970b2d7a9a60c10fb9665638bf1a1`.
+- Integrated the playbook into existing FEEDER_SOURCE_COVERAGE.md; no parallel document.
+- Updated batch/product semantics and three historical source-gate pointers to avoid implying
+  that all L1/L2 work requires an automated full-universe contract.
 
-- AssetDisclosure/AssetItem and their DB tables already exist, but asset persistence/
-  materialization and the empty API projection are not a working feeder.
-- Preserve separate Gazette origin and opengirok/OpenWatch curated Sources and policies,
-  then exact snapshot provenance into Civic Intel observations and ClaimEvidence.
-- Reuse SourceRun/SourceCheckpoint/FeederObservation and the shared repository if reopened.
-- Prefer official assembly_mona_cd anchors; curator ID/crosswalk presence is not canonical
-  Person authority. No name-only links, asset-row Person IDs or private-family materialization.
-- No persistent model/migration or runtime dependency is justified at this blocked gate.
-- Future votes/local-council/contribution lanes are documented only.
+## Current checkpoint
 
-## Executed local verification — 2026-09-12
+Methodology audit complete. MPM remains L1 CONTRACT_STAGED with L3 blocked; assets and CleanEye
+remain L0 RESEARCHED; BLOCKED. Seven existing L3 rows are unchanged. Conditional human-assisted
+paths are designed, not implemented or exercised.
 
-- `.venv\Scripts\python.exe -m ruff check apps packages workers tests docs/research`: passed.
-- `.venv\Scripts\python.exe -m mypy packages workers apps/api`: passed, 51 source files.
-- `.venv\Scripts\python.exe -m pytest -o addopts='' -q`: **266 passed**, 4 deprecation
-  warnings, 95.46 seconds. Existing migration regressions are included.
-- `.venv\Scripts\python.exe -m packages.verification.quality`: passed; exact ten-person
-  Golden Set, evidence traceability, identity and privacy gates intact.
-- Bundled analysis Python `-m unittest discover -s docs/research -p 'test_*.py' -v`:
-  **3 passed**; zero/missing, ordinal-hidden duplicates and exact-code crosswalk.
-- `npm --prefix apps/web run lint`, `typecheck`, `test`, `build`: passed;
-  **2 web tests**, production build complete. Next.js noted an ignored parent pnpm lockfile;
-  no parent/workspace configuration was changed.
-- Finite workbook QA exited 0 for all seventeen sources; aggregate report carries source
-  URLs, timestamps and hashes. Immediate 2026 row-content repeat was stable.
-- `git diff --check`: passed before final staging; final staged diff audited.
-- GNU Make unavailable: its constituent verify commands above were run directly.
-  These are local results, not a claim of GitHub CI status.
+## Decisions and reasons
+
+- Field authority and time matter more than the aggregator's brand; retain official origin and
+  analyst-normalized representation separately.
+- L2 human-assisted status requires a permitted reproducible packet import with fixtures,
+  human comparison, provenance, shared persistence and idempotency proof, not a download.
+- Unknown/missing/refused/not-held states stay distinct; own dataset IDs are not Person authority.
+- No new source-mode enum, schema, importer, dependency, raw store or per-person main path.
+- Current HttpUrl, per-domain policy and single-snapshot constraints are explicit design gates.
+- ogk's request inventory/status/attachment stages are useful references; its remote upload,
+  database and account workflow are not adopted. Code MIT does not license response data.
+- Exact dataset rights differ: the localcouncil catalog/project notice has noncommercial terms;
+  do not substitute OpenWatch's general data license.
+
+## Verification evidence
+
+Executed locally on 2026-09-12:
+
+- `.venv\Scripts\python.exe -m pytest -o addopts='' -q`: 266 passed, 4 warnings, 88.69s.
+- `.venv\Scripts\python.exe -m ruff check apps packages workers tests`: passed.
+- `.venv\Scripts\python.exe -m mypy packages workers apps/api`: 51 files, no issues.
+- `.venv\Scripts\python.exe -m packages.verification.quality`: all Golden Set checks passed.
+- `npm --prefix apps/web run lint`, `typecheck`, `test`, `build`: passed; 2 tests.
+- PowerShell assertions: six mode headings present, local Markdown targets exist, diff is
+  documentation-only, seven L3 matrix rows exactly equal the baseline.
+- `git diff --check`: passed. Final diff reviewed for maturity, rights and implementation drift.
+- GNU Make unavailable; Makefile constituent commands were executed directly.
+  Local evidence only, not GitHub CI. Existing deprecation/parent-lockfile warnings remain.
 
 ## Not executed
 
-No live production feeder, canonical batch ingestion, Person link, migration, provider contact,
-raw-data redistribution or implementation of subsequent lanes. No full annual Gazette-PDF
-reconciliation; no historical amendment-rate measurement. No generic crawler or Firecrawl
-runtime dependency.
+No fresh dataset QA/download, official response retrieval, request submission, provider contact,
+ogk install/login/run, schema change, migration, importer or Person creation.
+Firecrawl CLI was unavailable; standard web/read-only HTTP tools inspected public methodology
+and source code instead. chatgpt2codex reported no registered civic project; local tools used.
+
+## Blockers
+
+Future packet use still requires exact acquisition/storage permission and representable origin
+provenance. A human review cannot supply absent identity or dates. L3 gates remain unchanged.
+
+## Modified files
+
+FEEDER_SOURCE_COVERAGE.md (playbook), BATCH_INGESTION.md, V0_SCOPE.md, INDEX.md,
+asset/CleanEye source-gate documents, the three active source-gate plans and this HANDOFF.
+No product code, tests, dataset files or dependency manifests changed.
 
 ## Next concrete action
 
-Obtain one bounded source-contract response/release specification from OpenWatch/opengirok
-covering corrected per-release origin manifest and counts, disclosure/item version rules,
-official-code crosswalk provenance and permitted bulk reuse. Reopen only when the source-gate
-criteria are met; otherwise keep this lane blocked.
+Run one human-assisted L1 pilot for a single MPM result packet: first record packet-specific
+rights and fixed page/row provenance, then deterministic anonymous-row extraction and human
+comparison; do not create Persons, invent review dates or claim L3.

@@ -87,6 +87,13 @@ Canonical/staging contract plus deterministic offline fixtures exist.
 
 A reviewed live-capable source-specific connector can fetch a single page/entity.
 
+Alternatively, a rights-approved human-assisted source-packet import can qualify as
+`L2 SINGLE_PULL` only after a source-specific L1 contract/fixture, fixed packet manifest,
+deterministic extraction, field-by-field human review, exact original/normalized provenance,
+shared-repository persistence and unchanged-rerun regression are demonstrated. A download or
+manual spreadsheet alone is not L2. No such generic import command currently exists.
+Label the human-assisted route explicitly; it does not establish automatic enumeration.
+
 ### L3
 
 The bounded source universe can be completely enumerated with:
@@ -342,6 +349,13 @@ materialization transaction.
 - complex or contested cases.
 
 It is not the required normal path for every feeder-discovered person.
+
+Source-level review is distinct from ReviewedPersonBundle: a rights-approved bounded packet
+may produce reviewed observations without creating any Person. See the
+[source acquisition playbook](FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook) for
+mode-specific policy, provenance, missingness and version requirements. L3 automation blocks
+do not prohibit a separately reviewed L1/L2 packet path; unresolved rights still block storage.
+This is an architecture allowance, not an implemented importer or a publication bypass.
 
 ---
 

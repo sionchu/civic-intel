@@ -167,3 +167,9 @@ L0 RESEARCHED; BLOCKED
 Public pages establish the source strategy and named-executive disclosure shape, but no
 source-specific automated-collection contract currently satisfies L1/L2/L3. No connector,
 guessed field, generic crawler or ALIO/CleanEye abstraction is authorized by this review.
+
+This automation block does not exclude a conditional human-assisted packet path. Under the
+[source acquisition playbook](FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook), one
+permitted institution disclosure or official response can be evaluated for L1 fixtures and
+L2 reviewed import independently of nationwide enumeration. Rights and provenance must pass;
+every identity remains REVIEW_REQUIRED. No packet import or maturity promotion occurred.

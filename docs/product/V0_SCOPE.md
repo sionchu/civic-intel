@@ -21,6 +21,12 @@ not required for every safely materialized batch identity. The public-official-p
 optional deep-evidence enrichment consumer after canonical identity, not the normal batch
 ingestion path.
 
+Source acquisition may also use rights-approved bounded official packets with deterministic
+extraction and human review at L1/L2, governed by the source acquisition playbook in
+`docs/architecture/FEEDER_SOURCE_COVERAGE.md`. This permits source-level observation design,
+not generic crawling, automatic FACT/Person creation or a return to per-person bundles as the
+main path. A packet import does not prove L3; this methodology audit adds no importer/schema.
+
 Private-family discovery, precise residence, paywall bypass, payments, alerts, broad
 crawling, Neo4j, Elasticsearch, Kafka, and Kubernetes are prohibited. Raw search results
 and workers cannot publish profile content.

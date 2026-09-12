@@ -12,6 +12,7 @@ implementation work.
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
+- [Source acquisition playbook and human-assisted packet gates](architecture/FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook)
 - [Batch ingestion](architecture/BATCH_INGESTION.md)
 - [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
