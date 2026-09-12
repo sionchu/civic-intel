@@ -58,6 +58,11 @@ individual action, appointment term or Person. An action-level observation there
 the page ID plus a reviewed action locator/ordinal; the provider has not published an action ID,
 correction link, replacement rule or updated-at/version field in this route.
 
+The inspected `qGTHgnQ8` page makes this boundary concrete: one narrative contains ten action
+subjects—six minister nominees, one committee vice-chair nominee, two adviser designations and
+one special-adviser appointment—without row-level action keys. A human-reviewed locator/ordinal
+is therefore snapshot-scoped provenance, not a provider-issued stable identity.
+
 The current [organization page](https://www.president.go.kr/organization) publishes the office
 structure and role names, but it is a current organizational snapshot rather than a dated
 occupancy roster. It may support the existence and scope of an office; it cannot populate a

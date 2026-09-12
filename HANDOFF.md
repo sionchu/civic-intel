@@ -82,8 +82,10 @@ search/page navigation and stable-looking detail IDs, but no typed personnel uni
 action-level version contract or blanket reuse permission. The inspected detail page also rendered
 the page-level KOGL type 4 notice (attribution, noncommercial use, no modification), which does
 not by itself authorize Civic Intel fulltext retention, derivative normalization, automated
-enumeration or commercial republication. Presidential personnel remains `L1 CONTRACT_STAGED`;
-live collection is disabled pending route- and rights-specific approval.
+enumeration or commercial republication. The same page contains ten action subjects in one
+narrative and no row-level action keys, so a reviewed ordinal would remain snapshot-scoped only.
+Presidential personnel remains `L1 CONTRACT_STAGED`; live collection is disabled pending route-
+and rights-specific approval.
 
 ## Decisions and reasons
 

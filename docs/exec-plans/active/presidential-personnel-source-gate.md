@@ -21,7 +21,9 @@ influence or inferred relationships.
   `인선` returned 11 rows. Search terms are not a declared personnel universe.
 - A detail route such as
   [qGTHgnQ8](https://www.president.go.kr/briefings/qGTHgnQ8) exposes a page ID, title,
-  registration date and written body. The page describes multiple actions in one narrative.
+  registration date and written body. The inspected page describes ten action subjects in one
+  narrative: six minister nominees, one committee vice-chair nominee, two adviser designations
+  and one special-adviser appointment. The page exposes no row-level action keys.
 - The [organization page](https://www.president.go.kr/organization) describes current offices and
   role structure but is not a dated occupancy roster.
 - The [copyright policy](https://www.president.go.kr/copyright-policy) describes marked works as
@@ -36,9 +38,10 @@ influence or inferred relationships.
 
 The briefing path supplies a useful official record key candidate at page level, but it does not
 publish an action ID, typed personnel dataset, updated-at/version field, correction link,
-replacement rule or complete personnel inventory. A page ID is not a Person ID. An action-level
-observation needs the page ID plus a reviewed locator/ordinal, and a later page or explicit source
-correction must create a new observation rather than silently replace the old one.
+replacement rule or complete personnel inventory. The inspected ten-action page demonstrates the
+row-level gap: a page ID is not an action ID and is not a Person ID. An action-level observation
+needs the page ID plus a reviewed locator/ordinal, and a later page or explicit source correction
+must create a new observation rather than silently replace the old one.
 
 The existing `presidential_personnel_policy()` remains metadata-only with `can_fetch=False`, no
 fulltext/excerpt/AI/commercial use, and no automated list traversal. The page-level KOGL notice
