@@ -198,3 +198,20 @@ combined into one personnel universe.
 No live adapter, attachment downloader, migration or new legal schema was added by this gate. If
 the next packet is approved, reuse `LegalPersonnelRecord`, `SourceRun`, `SourceCheckpoint` and
 `FeederObservation`, then publish only through the existing identity and Claim/Evidence gates.
+
+### MOJ packet preflight (2026-09-12)
+
+The first bounded packet candidate is the official post `602956`, “2026년 상반기 검사 인사”.
+Its page exposes six attachment references (`490100`–`490105`): a PDF/HWPX release pair and
+four HWP movement tables. The page labels the work `공공누리 2유형`; the [official type-2
+terms](https://www.kogl.or.kr/info/licenseType2.do) allow attribution and non-commercial use,
+but exact attachment ownership and any third-party material still require the packet-specific
+rights check.
+
+This is a candidate manifest, not an acquired packet. The current MOJ `SourcePolicy` keeps
+`can_fetch=False`, `can_store_fulltext=False` and `can_commercialize=False`, so the download,
+Synap preview and attachment bytes were not accessed or retained. The L2 gate therefore remains
+closed until the exact attachment set, permitted storage/normalization purpose, attribution and
+third-party-rights boundary are represented in a reviewed policy decision. A page-level license
+label alone does not authorize an automatic production adapter or public redistribution of the
+attachments.

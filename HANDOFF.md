@@ -103,6 +103,10 @@ Gazette issue tables and a later Gazette correction entry. Both legal lanes rema
 `L1 CONTRACT_STAGED`: a rights-approved single release/issue packet can support human-reviewed
 L2 staging, but neither route exposes a unified complete personnel universe, row-level Person key
 or sufficient automated coverage contract for L3.
+The first MOJ packet preflight identified post `602956` with six attachment references (`490100`–
+`490105`) and a page-level `공공누리 2유형` label. Because the current MOJ policy still denies
+fetch and the exact attachment/third-party-rights boundary is not represented, no attachment was
+downloaded, normalized or stored; the legal lane remains L1 and L2 is not claimed.
 
 ## Decisions and reasons
 
@@ -132,6 +136,9 @@ or sufficient automated coverage contract for L3.
 - MOJ and Supreme Court personnel remain independent source lanes. Release/attachment IDs and
   Gazette issue/order/row locators identify packets, not Persons; Court Gazette corrections must
   become explicit immutable observation versions.
+- The MOJ packet candidate is a manifest-only preflight. A page-level KOGL type-2 label is not
+  treated as blanket permission for attachment retention, production fetching or redistribution;
+  the existing `SourcePolicy` gate remains authoritative.
 
 ## Verification evidence
 
@@ -190,6 +197,9 @@ Executed locally on 2026-09-12:
   personnel release, 2026 Court Gazette issue tables, the later Gazette correction entry and the
   Court copyright policy. No legal attachment bytes, connector, importer, migration or runtime
   dependency was added.
+- Confirmed the MOJ post `602956` attachment manifest and page-level `공공누리 2유형` against
+  the official KOGL type-2 terms. The packet remained offline because the repository policy still
+  denies fetch and the exact attachment rights boundary was not closed.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -212,7 +222,7 @@ CleanEye remain L0 RESEARCHED; BLOCKED; and the labor federation/commission lane
 universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
 reopen for a finite reviewed packet only when the playbook gates close. MOJ/Supreme Court legal
 personnel likewise remain L1 with a conditional human-assisted packet path rather than a live
-enumerator.
+enumerator; the first MOJ packet is still pending packet-specific rights clearance.
 
 ## Modified files
 
@@ -239,7 +249,7 @@ enumerator.
 
 ## Next concrete action
 
-Prepare one rights-approved MOJ personnel-round packet for deterministic extraction/review, while
-keeping Presidential personnel at `L1 CONTRACT_STAGED`, the Lee Won-joo case fixture-only, labor
-federation/commission lanes at their documented human-assisted ceiling, and the legal lane at L1
-until that packet passes its storage/provenance gate.
+Resolve packet-specific rights and third-party ownership for MOJ post `602956` attachments before
+any download or deterministic extraction, while keeping Presidential personnel at
+`L1 CONTRACT_STAGED`, the Lee Won-joo case fixture-only, labor federation/commission lanes at
+their documented human-assisted ceiling, and the legal lane at L1.
