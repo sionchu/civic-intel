@@ -16,8 +16,8 @@ blocks from conditional human-assisted L1/L2 utility; preserve actual code/matur
 
 ## Completed
 
-- Fetched latest master; baseline local/origin HEAD matched
-  `7b3c98e85575e603b6bb6449d9796fa83aedc3bb`; worktree was clean.
+- Fetched latest master for this continuation; local/origin HEAD matched
+  `7ba40eb361f136b76fc58ab6490ee97d4301eac1`; worktree was clean.
 - Read governing documents and actual Source/Policy/Snapshot/Observation/Run/Claim contracts,
   shared repository transaction, materialization and EmploymentReviewEvent requirements.
 - Inspected official OpenWatch field dictionaries, information-request methodology, information
@@ -30,15 +30,18 @@ blocks from conditional human-assisted L1/L2 utility; preserve actual code/matur
   the fixed `{detail URL, boardId, cntId, attachment reference, page, packet-local row}`
   provenance locator. The attachment had no item-level KOGL/reuse grant, so no bytes, fulltext or
   normalized row were persisted and the extraction/review phase did not start.
-- Rechecked the official MPM organization and copyright pages; public `취업심사과` and copyright
-  policy contact leads are now recorded as inquiry routes only, not as a rights grant.
+- Performed read-only reconnaissance of the official National Assembly plenary roll-call
+  service and data.go.kr catalog. The published pages expose a bounded historical headline
+  (22nd Assembly table; file/API 20th Assembly onward), XML/catalog and attribution metadata,
+  but not a complete row, pagination, identity-key or correction contract. No data was fetched
+  or retained.
 
 ## Current checkpoint
 
 Methodology audit and the MPM single-packet rights preflight are complete. MPM remains
-L1 CONTRACT_STAGED with L3 blocked; assets and CleanEye remain L0 RESEARCHED; BLOCKED. Seven
-existing L3 rows are unchanged. The human-assisted path is rights-gated and was not exercised
-past packet metadata/provenance recording.
+L1 CONTRACT_STAGED with L3 blocked; assets, CleanEye and the documentation-only roll-call
+candidate remain L0 RESEARCHED; BLOCKED. Seven existing L3 rows are unchanged. The human-assisted
+path is rights-gated and was not exercised past packet metadata/provenance recording.
 
 ## Decisions and reasons
 
@@ -56,8 +59,8 @@ past packet metadata/provenance recording.
 - Public reachability and an attachment download control do not authorize packet persistence;
   an unmarked MPM attachment requires source-owner agreement before deterministic extraction or
   normalized reuse.
-- The official contact routes reduce discovery uncertainty but do not satisfy the required
-  packet-specific written permission or storage/republication boundary.
+- A source gate must close from a published source contract or an already-permitted bounded
+  packet; this workflow does not create a separate source-owner inquiry step.
 
 ## Verification evidence
 
@@ -79,9 +82,8 @@ Executed locally on 2026-09-12:
 
 ## Not executed
 
-No persistent dataset download or QA, deterministic packet extraction, official response request,
-provider contact, permission request/response, ogk install/login/run, schema change, migration,
-importer or Person creation.
+No persistent dataset download or QA, deterministic packet extraction, ogk install/login/run,
+schema change, migration, importer or Person creation.
 The public MPM attachment response was fetched in memory for a bounded MIME probe only and was
 not retained.
 Firecrawl CLI was unavailable; standard web/read-only HTTP tools inspected public methodology
@@ -89,17 +91,19 @@ and source code instead. chatgpt2codex reported no registered civic project; loc
 
 ## Blockers
 
-The selected packet still requires exact acquisition/storage permission before bytes or normalized
-values can be retained. Official inquiry routes are known, but no permission request or source-owner
-response exists. A human review cannot supply absent identity or dates. L3 gates remain unchanged.
+The selected MPM packet still lacks a published attachment reuse/storage basis for retaining bytes or
+normalized values. A human review cannot supply absent identity or dates. The roll-call candidate
+also lacks a published complete operation, identity-key and correction/version contract. L3 gates
+remain unchanged.
 
 ## Modified files
 
-The active MPM source-gate plan and this HANDOFF only. No product code, tests, dataset files or
-dependency manifests changed.
+The active MPM source-gate plan, the source-coverage artifact, the asset-disclosure candidate
+record and this HANDOFF only. No product code, tests, dataset files or dependency manifests
+changed.
 
 ## Next concrete action
 
-Request written MPM permission or an explicit item-level reuse license for the recorded `cntId=422`
-packet through the documented source-owner routes, then run the deterministic anonymous-row
-extraction and human comparison without creating Persons, inventing review dates or claiming L3.
+Run one bounded offline QA on a publicly downloadable official National Assembly roll-call packet
+under its published source terms, retaining source-level provenance and keeping the lane below L3
+until the complete operation, identity-key and correction/version contract is proven.

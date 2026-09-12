@@ -184,17 +184,6 @@ but technical reachability is not permission to store or republish the attachmen
 internal JSON call is likewise not an advertised public API merely because the public page
 invokes it.
 
-### Permission-request route
-
-The official MPM organization page
-(`https://www.mpm.go.kr/mpm/about/aboutorg/orgEthics4/?pageIdx=1`) identifies `취업심사과` as
-the team responsible for employment review and lists public office contacts including
-`044-201-8477` and `044-201-8471`. The MPM copyright policy separately lists its content
-department, 데이터정보담당관, at `044-201-8189`.
-These are source-owner inquiry leads only; none is an authorization to retain or republish the
-`cntId=422` attachment. A future request must obtain a written answer that names the packet and
-permits the intended parsing, storage, attribution and redistribution boundary.
-
 ## Single-packet human-assisted L1 preflight
 
 The 2026-09-12 preflight was bounded to one current MPM result packet. It recorded packet
@@ -293,8 +282,6 @@ Source probes:
 - MPM copyright policy: item-level KOGL mark or prior agreement requirement recorded above.
 - MPM `cntId=422` detail and direct attachment route: packet manifest, attachment reference and
   in-memory MIME probe recorded above; no attachment was written to disk.
-- MPM organization and copyright pages: official `취업심사과` and copyright-policy contact leads
-  were identified; no permission request was submitted and no authorization was inferred.
 
 ## Not executed
 
@@ -302,7 +289,6 @@ Source probes:
 - no production or full-history collection was attempted;
 - no deterministic packet extraction or human comparison was run because packet-specific reuse
   permission is absent;
-- no source-owner permission request or response exists for this packet;
 - no source attachment was copied into the repository; and
 - no L3 `SourceRun` or `SourceCheckpoint` was created for this lane;
 - `make verify` was not invoked because GNU Make is unavailable in this Windows environment;
@@ -323,7 +309,6 @@ an explicitly authorized public-data contract:
 
 ## Next Best Action
 
-Obtain an official MPM/PETI source-owner response or published data contract covering the seven
-stop-condition items. Reopen implementation only after that response is recorded; otherwise
-leave this lane at L1 and keep the existing offline civil-service fixture path as the only
-implemented employment-review behavior.
+Leave this lane at `L1 CONTRACT_STAGED; L3 promotion blocked` and continue only with the next
+published-contract source-gate; do not create an MPM connector, importer or separate source-owner
+inquiry workflow unless the official public contract itself closes all seven stop-condition items.

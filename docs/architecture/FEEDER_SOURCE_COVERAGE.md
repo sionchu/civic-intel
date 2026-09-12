@@ -293,6 +293,36 @@ import commands. They need only a justified **packet** contract, not every L3 au
 | Government Public Ethics / MPM — L1 CONTRACT_STAGED; L3 blocked | Existing offline stager only; no reviewed live L2 connector | One rights-approved named publication packet, deterministic extraction and full row review; source-level anonymous observations, no EmploymentReviewEvent requiring fabricated Person/review_date | Human L1/L2: packet permission, locators, typed dates/missingness and reviewed reproducibility. L3: separate complete result universe, correction/coverage and permitted route contract |
 | National Assembly assets — L0 RESEARCHED; BLOCKED | No asset connector/import; earlier QA is not L2 | One official Gazette packet, minimized declared-value extraction and reviewer comparison, original/analyst Sources distinct; no OpenWatch ingestion or family Persons | Human L1/L2: rights-approved packet, units/type/period, safe keys/provenance and fixtures/import proof. L3: original-to-release completeness, revision reconciliation and permitted bulk contract |
 | CleanEye — L0 RESEARCHED; BLOCKED | No repeated HTML collector under recorded robots/route gate | One institution's permitted official executive packet or supplied response; minimized named-role observations, REVIEW_REQUIRED, no name-only merge | Human L1/L2: approved finite acquisition/retention, exact institution/edition and reviewed fixture/import. L3: permitted named-executive route, institution universe, coverage and version contract |
+| National Assembly roll-call votes — L0 RESEARCHED; BLOCKED | No vote connector; official catalog/service metadata gives only a partial scope and license/attribution surface, not a complete operation contract | One finite official file/packet under its published terms, with bill/session/member anchors and source-level review; no OpenWatch ingestion, ideology inference or automatic FACT promotion | Reopen: published operation/schema, 20th+ coverage proof, pagination/total, stable vote/member/bill keys, correction/version behavior, route limits and QA evidence |
+
+### National Assembly roll-call votes — documentation-only source gate (2026-09-12)
+
+This candidate is not a feeder implementation and is not promoted above `L0 RESEARCHED; BLOCKED`.
+The [official Open Assembly service](https://open.assembly.go.kr/portal/data/service/selectServicePage.do/OPR1MQ000998LC12535)
+describes member plenary results as 찬성, 반대 and 기권, states that its table view provides 22nd
+Assembly information and that file/API access provides 20th Assembly and later information, and
+identifies the origin system as the bill-information-system voting records. The page displays a
+Public Use source-attribution notice. The [data.go.kr catalog](https://www.data.go.kr/data/15125948/openapi.do)
+lists the same provider/service family as XML and marks its use range `이용허락범위 제한 없음`.
+These are official distribution/origin metadata, not a complete row contract.
+
+The inspected public pages do not publish an unfiltered vote universe or counts, endpoint
+parameters, page/cursor contract, request limits, a stable vote-record key, the exact member/bill/
+session/date field mapping (including a published `MONA_CD` field), or correction, withdrawal,
+replacement and republication semantics. The Open API portal requires an authentication-key
+application workflow, and its public Q&A list includes a title reporting a request to check missing
+member records across multiple bills. That title is a QA lead, not a measured completeness defect.
+The official [API-service shutdown notice](https://www.data.go.kr/bbs/ntc/selectNotice.do?atchFileId=&nttApiYn=Y&originId=NOTICE_0000000004011&pageIndex=1&searchCondition2=2&searchKeyword1=)
+also shows that adjacent Assembly APIs can be retired or replaced during system changes, so a
+service label alone cannot establish version continuity.
+
+Identity remains anchored to the official Assembly roster when an official member identifier is
+published. Any OpenWatch identifier is a provider/crosswalk key only; it cannot authorize a
+Person merge, and name-only linking is prohibited. A future finite official packet could be
+reviewed as a human-assisted source-level lane under the playbook, with original and analyst
+representations kept as separate Sources and no automatic FACT or Person materialization. No
+canonical vote model, migration, connector, downloaded packet or runtime OpenWatch dependency is
+introduced by this gate.
 
 An absent permanent Person/case ID does not destroy packet-level research value. Conversely,
 human review cannot cure forbidden storage, missing original provenance or an unidentified
