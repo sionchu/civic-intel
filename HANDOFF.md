@@ -68,7 +68,10 @@ Evidence Directory v0 and its post-review hardening are complete in the working 
 direct verification commands pass. The only runner limitation is that GNU Make is unavailable on
 this Windows host, so the Makefile's constituent commands were executed directly. The seven
 existing L3 feeders and the blocked MPM, National Assembly asset, CleanEye and roll-call source
-gates are unchanged.
+gates are unchanged. The 2026-09-12 official MPM revalidation confirmed 125 mixed `취업` board
+posts over 9 pages, 405 mixed ethics-board posts over 27 pages, bundled historical PDF posts,
+and no published row identity, correction/version or attachment reuse contract. MPM remains
+`L1 CONTRACT_STAGED; L3 promotion blocked`.
 
 ## Decisions and reasons
 
@@ -120,6 +123,9 @@ Executed locally on 2026-09-12:
 - Independent Sol review completed read-only; it identified one provenance bypass and two public
   exposure/temporal-read risks, all rechecked against the repository and covered by the hardening
   tests.
+- Re-opened the official MPM filtered/full board, historical page, current result detail and
+  copyright-policy pages; the source-contract decision remained blocked and no MPM bytes, rows,
+  connector, importer or runtime dependency were added.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -159,6 +165,7 @@ before any promotion.
 
 ## Next concrete action
 
-Begin the next source-contract reconnaissance for the Government Public Ethics Committee / MPM
-employment-review lane, keeping it at L1 until its official universe, coverage, identity and rights
-contract passes the source gate.
+Keep the Government Public Ethics Committee / MPM employment-review lane at
+`L1 CONTRACT_STAGED; L3 promotion blocked` and evaluate the next published-contract source gate;
+do not create an MPM connector or importer unless the official contract closes the documented
+stop conditions.

@@ -37,13 +37,14 @@ prove the source contract needed to make a repeated full enumeration safe and re
 
 ## Baseline
 
-Verified on 2026-09-12 before this documentation change:
+Verified on 2026-09-12 against the current local `master` tracking state before this
+documentation change:
 
 ```text
 repository: sionchu/civic-intel
 branch: master
-HEAD: 7b3c98e85575e603b6bb6449d9796fa83aedc3bb
-origin/master: 7b3c98e85575e603b6bb6449d9796fa83aedc3bb
+HEAD: ce377e066b48d5d64b8931154f5fa189fbe3d86f
+origin/master: ce377e066b48d5d64b8931154f5fa189fbe3d86f
 tracked tree: clean
 Alembic head: 0004
 L3 feeders: National Assembly roster, Gwanbo personnel, NEC winners,
@@ -242,7 +243,9 @@ snapshot-local diagnostic key only, never as an L3 identity contract.
 
 ## Evidence
 
-Observed repository and test evidence:
+Observed repository and test evidence from the initial source-gate pass. The repository commit
+lines in this historical block predate the Evidence Directory hardening; the current commit
+baseline is recorded above, and the current official-page revalidation is recorded below.
 
 ```text
 git fetch --prune origin master
@@ -272,14 +275,24 @@ npm --prefix apps/web run build
 
 Source probes:
 
-- MPM `취업` list and current August 2026 detail page: post pagination, attachment reference,
-  publication metadata and mixed-post universe.
+- [MPM `취업` list](https://www.mpm.go.kr/mpm/info/infoEthics/BizEthicsBoard/?boardId=bbs_0000000000000123&category=%EC%B7%A8%EC%97%85&mode=list)
+  was re-opened on 2026-09-12: it reports 125 posts over 9 pages; the first page mixes the
+  2026 monthly result posts with the 2026 employment-history disclosure and a form post.
+- [MPM full board](https://www.mpm.go.kr/mpm/info/infoEthics/BizEthicsBoard/?boardId=bbs_0000000000000123&category=&mode=list&pageIdx=)
+  was re-opened on 2026-09-12: it reports 405 mixed posts over 27 pages. [Page 2](https://www.mpm.go.kr/mpm/info/infoEthics/BizEthicsBoard/?boardId=bbs_0000000000000123&category=&mode=list&pageIdx=2)
+  contains 2026 result, approval and history posts; [page 27](https://www.mpm.go.kr/mpm/info/infoEthics/BizEthicsBoard/?boardId=bbs_0000000000000123&category=&mode=list&pageIdx=27)
+  contains the bundled 2015 January-June and 2014 July-December result posts. These are
+  board-post counts, not typed result-row counts.
+- [Current August 2026 result detail](https://www.mpm.go.kr/mpm/info/infoEthics/BizEthicsBoard/?boardId=bbs_0000000000000123&cntId=422&mode=view)
+  was re-opened on 2026-09-12: it still exposes `cntId`, publication metadata and one PDF
+  attachment, but no row identifier or correction/version relationship.
 - MPM August and July 2026 result PDFs: visual table review and local text extraction; August
   packet has 4 pages and 94 numbered rows.
 - PETI result index and detail page: mixed 315-post grid, internal list/detail route and
   attachment component.
 - MPM `robots.txt`: current disallowed paths recorded above.
-- MPM copyright policy: item-level KOGL mark or prior agreement requirement recorded above.
+- [MPM copyright policy](https://www.mpm.go.kr/mpm/useinfo/copyrightPolicy/): item-level KOGL
+  mark or prior agreement requirement recorded above.
 - MPM `cntId=422` detail and direct attachment route: packet manifest, attachment reference and
   in-memory MIME probe recorded above; no attachment was written to disk.
 
