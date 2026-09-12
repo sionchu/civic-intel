@@ -33,6 +33,10 @@ create private-family/staff/donor Persons, or build a financial framework.
   and missing asset persistence/materialization workflow. No missing model was invented.
 - [x] Document three-layer provenance, limited-family semantics, exact-code identity boundary
   and subsequent lanes as documentation only.
+- [x] Revalidate the official National Assembly Gazette index with the `재산` title filter:
+  61 matching publications across 7 pages, including the 2026-54, 2025-51, 2024-107 and
+  2024-36 origin candidates. This confirms publication-level availability only and does not
+  close row identity, correction/version or rights-route gates.
 
 ## Results and evidence
 

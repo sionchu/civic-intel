@@ -28,6 +28,11 @@ Other datasets require independent scope, origin, policy, identity and completen
   README only, latest commit dated 2025-09-24; six catalog commits inspected.
 - [2025 official Gazette detail](https://www.assembly.go.kr/portal/cnts/cntsCont/dataA.do?cntsDivCd=NAMGZN&menuNo=601019&pdfClsCd=CPR&pdfId=379578):
   normal browser displays 제2025-51호(정기재산공개), 2025-03-27, PDF viewer/download.
+- [Official Gazette index](https://www.assembly.go.kr/portal/cnts/cntsNamgzn/gongbo.do?cntsDivCd=NAMGZN&pdfClsCd=CPR&menuNo=601019):
+  a browser title search for `재산` returned 61 matching publications across 7 pages; the
+  unfiltered catalog showed 4,640 publications across 464 pages. Results expose publication
+  title/date plus preview/download controls, including 2026-54 (2026-03-26), 2025-51
+  (2025-03-27), 2024-107 (2024-08-29) and 2024-36 (2024-03-28).
 - [Assembly robots](https://www.assembly.go.kr/robots.txt): observed
   `User-agent: * / Disallow: / / Allow: /$`. No repeated origin enumeration was attempted
   after observing this restriction.
@@ -54,6 +59,11 @@ Annual populations must not be compared to a fixed 300-seat denominator. Regular
 new registration, reregistration and retirement are distinct publication types; a filing
 period, valuation/as-of date and publication date are not interchangeable.
 
+The official catalog revalidation establishes a page-based publication index and confirms
+publication-level origin candidates for the 2026 March and recent curated releases. It does
+not reconcile each curated row to a Gazette page/item, establish a correction or republication
+chain, or turn the publication count into a complete asset-disclosure universe.
+
 | Release | Gazette date / issue as cataloged | opengirok named detail rows | Diagnostic name-role groups | Duplicate excess excluding ordinal |
 |---|---|---:|---:|---:|
 | 2016-03 | 2016-03-25 / 2016-23 | 6,422 | 328 | 6 |
@@ -74,7 +84,9 @@ The dates/issues above are catalog provenance, not independently reconciled orig
 Every year's **origin-relative completeness remains unproven**. The older eight entries have
 textual Gazette citations rather than direct origin links. Later links identify 2022
 `nttId=1707818`, 2023 `nttId=2184625`, 2024 March `pdfId=379354`, August
-`pdfId=379431`, and 2025 March `pdfId=379578`. No 2026 original issue was established.
+`pdfId=379431`, and 2025 March `pdfId=379578`. The official index now lists 2026 March as
+`국회공보 제2026-54호(정기재산공개)` dated 2026-03-26, but the exact origin artifact
+identifier and row-level reconciliation are still absent from the release manifest.
 The 2016 March catalog's descriptive new-member wording conflicts with its regular-release
 label; do not infer a type from that prose.
 
@@ -151,6 +163,9 @@ Git catalog commits do not version mutable Google Sheet contents.
 - No stable disclosure-level ID, cross-release item ID, amendment link, deletion/tombstone
   rule or republication precedence was established. Row ordinals and API integers alone
   do not supply those semantics. New/reregistered/retired are not correction types.
+- The official Gazette index's pagination and attachment links identify publication artifacts,
+  not disclosure or item versions. The revalidation observed no correction, amendment,
+  replacement or republication semantics in the catalog contract.
 
 A justified source-derived snapshot-scoped observation key is allowed by the batch architecture;
 a provider-generated permanent ID is not universally mandatory. Here no validated reconciliation

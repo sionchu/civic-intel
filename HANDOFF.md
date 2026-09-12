@@ -72,6 +72,11 @@ gates are unchanged. The 2026-09-12 official MPM revalidation confirmed 125 mixe
 posts over 9 pages, 405 mixed ethics-board posts over 27 pages, bundled historical PDF posts,
 and no published row identity, correction/version or attachment reuse contract. MPM remains
 `L1 CONTRACT_STAGED; L3 promotion blocked`.
+The same-day National Assembly revalidation found a page-based Gazette catalog with 61 `재산`
+matches across 7 pages and current 2026-54, 2025-51, 2024-107 and 2024-36 publication entries.
+That confirms publication-level origin candidates only; asset disclosure/item keys,
+correction/republication semantics, complete curated-to-origin reconciliation and a permitted
+automated route remain unresolved. The asset lane remains `L0 RESEARCHED; BLOCKED`.
 
 ## Decisions and reasons
 
@@ -126,6 +131,9 @@ Executed locally on 2026-09-12:
 - Re-opened the official MPM filtered/full board, historical page, current result detail and
   copyright-policy pages; the source-contract decision remained blocked and no MPM bytes, rows,
   connector, importer or runtime dependency were added.
+- Re-opened the official National Assembly Gazette index with the `재산` title filter and
+  inspected the publication pagination, dates, preview/download controls and recent origin
+  candidates; no asset row or raw Gazette file was retained.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -165,7 +173,7 @@ before any promotion.
 
 ## Next concrete action
 
-Keep the Government Public Ethics Committee / MPM employment-review lane at
-`L1 CONTRACT_STAGED; L3 promotion blocked` and evaluate the next published-contract source gate;
-do not create an MPM connector or importer unless the official contract closes the documented
-stop conditions.
+Keep the National Assembly asset lane at `L0 RESEARCHED; BLOCKED` and reopen it only when a
+versioned release manifest, row-level observation/version rules, exact official-code crosswalk
+and rights-approved bounded route are documented; do not create an asset connector or importer
+before those gates close.
