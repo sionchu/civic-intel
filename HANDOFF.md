@@ -218,7 +218,9 @@ Executed locally on 2026-09-12 and 2026-09-13:
   Golden Set checks passed. Web lint, typecheck, UI tests (4 passed) and production build passed.
 - Alembic upgrade/downgrade/upgrade round-trip passed on a temporary SQLite database. `make verify`
   remained runner-unavailable because GNU Make is not installed; constituent checks were run
-  directly and no GitHub Actions result was claimed locally.
+  directly. GitHub Actions `Verify` run `34706189559` for commit
+  `339804008bddb5891b6ad84dd894e289c1d32bf3` completed successfully; the `verify` job took 2m33s
+  and passed canonical verification plus the Alembic round trip.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration

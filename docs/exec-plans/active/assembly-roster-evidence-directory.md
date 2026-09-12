@@ -80,4 +80,7 @@ do not claim CI success without an actual green check run.
 - Alembic upgrade/downgrade/upgrade round-trip: passed on a temporary SQLite database.
 - `git diff --check`: passed.
 - `make verify`: runner unavailable because GNU Make is not installed; all constituent checks were
-  executed directly. No GitHub Actions green result is claimed locally.
+  executed directly.
+- GitHub Actions `Verify` run `34706189559` for commit `339804008bddb5891b6ad84dd894e289c1d32bf3`:
+  success; the `verify` job completed in 2m33s, including canonical verification and the Alembic
+  round trip.
