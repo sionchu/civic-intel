@@ -257,6 +257,10 @@ Executed locally on 2026-09-12 and 2026-09-13:
   directly. GitHub Actions `Verify` run `34706189559` for commit
   `339804008bddb5891b6ad84dd894e289c1d32bf3` completed successfully; the `verify` job took 2m33s
   and passed canonical verification plus the Alembic round trip.
+- GitHub Actions `Verify` run `34708727908` for commit
+  `7fb747a3f6a8ef15903c91dfd721bca34c048198` completed successfully; the `verify` job took 1m16s
+  and passed canonical verification plus the Alembic round trip. The only annotation was the
+  existing Node.js 20 deprecation notice.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
