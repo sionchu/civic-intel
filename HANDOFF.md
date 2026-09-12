@@ -91,6 +91,13 @@ briefing explicitly pairs 이원주의 current 기후에너지환경부 에너�
 planned 메가프로젝트 보좌관 designation. The case reuses the existing profile-target and
 cross-lane identity contracts, preserves the exact briefing reference on both observations, and
 does not create a Person, CareerEpisode or publishable FACT.
+The 2026-09-12 labor source-contract gate then evaluated 민주노총 current/history leadership pages,
+경사노위 structure and dated committee posts/attachments, and the fragmented 한국노총 official
+footprint as independent lanes. The aggregate labor standard-data path remains
+`L1 CONTRACT_STAGED`; the federation/commission lanes remain `L0 RESEARCHED` or
+`DISCOVERY_ONLY` with no stable universal roster, row identity, correction/version or reuse
+contract sufficient for L3. A finite, rights-approved source packet may still support human-
+assisted staging under the playbook.
 
 ## Decisions and reasons
 
@@ -111,6 +118,12 @@ does not create a Person, CareerEpisode or publishable FACT.
   rows remain persistence data rather than current public profile content.
 - No `ReviewedPersonBundle` main path, generic evidence graph, shadow review model, provider
   ingestion, OpenWatch integration or dependency was introduced.
+- Labor federation, social-dialogue and affiliate pages are separate source lanes. `record_id`,
+  page/post IDs and local crosswalk keys are not canonical Person authority; official identity
+  anchors remain primary and name-only linking is prohibited.
+- The labor source gate uses the existing `Claim`/`ClaimEvidence` and
+  `CommitteeMembershipEpisode` semantics if a future lane closes. It does not assume or add a
+  `LaborLeadershipEpisode`, generic roster schema, crawler or packet importer.
 
 ## Verification evidence
 
@@ -155,6 +168,13 @@ Executed locally on 2026-09-12:
 - Added and verified the fixture-only civil-service -> Presidential personnel cross-lane case for
   이원주; no live Presidential adapter, source fetch, Person materialization or schema change was
   introduced.
+- Re-opened and compared the official 민주노총 current/history leadership pages, 한국노총 official
+  subsite/publication/affiliate footprint, and 경사노위 structure, board and dated committee-post
+  pages. The result was an independent source-contract gate; no labor page/attachment bytes,
+  connector, importer, migration or runtime dependency was added.
+- Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_labor_leadership.py
+  tests/test_cross_lane_identity.py -q`: 18 passed, and `.venv\\Scripts\\python.exe -m ruff
+  check apps packages workers tests`: passed after the documentation update.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -162,17 +182,19 @@ Executed locally on 2026-09-12:
 
 ## Not executed
 
-No feeder implementation, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
-provider payload browser, schema change, migration file, dependency install, admin write action,
-authenticated operator system or production deployment was performed. The public review route
-remains intentionally unavailable until an operator access boundary is designed.
+No feeder implementation, labor federation/commission acquisition, OpenWatch acquisition,
+asset/vote/ideology/graph/search feature, raw provider payload browser, schema change, migration
+file, dependency install, admin write action, authenticated operator system or production
+deployment was performed. No official labor attachment was downloaded or retained. The public
+review route remains intentionally unavailable until an operator access boundary is designed.
 
 ## Blockers
 
-None for Evidence Directory v0 implementation. Existing source-gate maturity decisions remain
-unchanged: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
-CleanEye remain L0 RESEARCHED; BLOCKED. Those lanes require their own source-contract evidence
-before any promotion.
+Evidence Directory v0 has no implementation blocker. Source work remains bounded by rights and
+contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
+CleanEye remain L0 RESEARCHED; BLOCKED; and the labor federation/commission lanes lack a complete
+universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
+reopen for a finite reviewed packet only when the playbook gates close.
 
 ## Modified files
 
@@ -192,12 +214,12 @@ before any promotion.
 - `tests/test_api.py`
 - `tests/golden/fixtures/profile_target_lee_wonjoo_001.json`
 - `tests/test_profile_target_golden_lee_wonjoo.py`
+- `docs/architecture/LABOR_LEADERSHIP_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `HANDOFF.md`
 
 ## Next concrete action
 
-Evaluate federation/social-dialogue public leadership as its own source-contract gate, while
-keeping Presidential personnel at `L1 CONTRACT_STAGED` and the Lee Won-joo case fixture-only; do
-not create a live Presidential adapter until route, rights and page/action version semantics
-close the existing gate.
+Evaluate the official MOJ/Supreme Court personnel route as the next independent source-contract
+gate, while keeping Presidential personnel at `L1 CONTRACT_STAGED`, the Lee Won-joo case
+fixture-only, and labor federation/commission lanes at their documented human-assisted ceiling.

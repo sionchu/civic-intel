@@ -11,7 +11,7 @@ compile or infer ordinary union membership.
  -> LaborOrganizationRecord
  -> explicit public representative only
  -> IdentityCandidate
- -> verified LaborLeadershipEpisode
+ -> existing Claim / ClaimEvidence or CommitteeMembershipEpisode
  -> public commission / party / elected-office links
  -> AppointmentPath / TalentPoolEntry
  -> Public Official Profiler
@@ -128,6 +128,56 @@ Historical frequency is descriptive and never appointment probability.
 - no federation-site crawler;
 - no inference of ordinary membership, ideology, party or faction.
 
-The next best labor-specific step is to verify a small set of publicly consequential
-federation/commission leadership roles from their own official sources without expanding
-into a general membership directory.
+## Federation and social-dialogue source-contract gate (2026-09-12)
+
+The nationwide standard-data lane remains `L1 CONTRACT_STAGED`: its existing contract and
+privacy-safe fixture cover organization metadata and an explicitly public representative, but
+there is no live collection or persistent feeder path. The following official routes were
+evaluated as independent source lanes. They are not one combined labor-leadership roster.
+
+| Source lane | Official boundary and observed contract | Gate result |
+|---|---|---|
+| 민주노총 current / historical leadership | [`staff_now`](https://nodong.org/staff_now) is a finite current-leadership page labelled `11기 14대`; [`staff_history`](https://nodong.org/staff_history) lists prior terms and interim periods. The pages expose names, roles and some term-period text, but no API, pagination, stable person/row IDs, explicit effective/as-of timestamps, or correction/republication contract. Terms and privacy links are visible, but a reuse license was not identified in the inspected pages. | `L0 RESEARCHED` source lane. A finite, rights-reviewed page packet could support human-assisted staging; no automatic L3 path. |
+| 경사노위 committee / appointment posts | The official [committee structure](https://www.eslc.go.kr/ibuilder.do?menu_idx=2230) defines bodies and composition. The official [2026-03-19 launch post](https://www.eslc.go.kr/bbs/data/view.do?bbs_mst_idx=BM0000000412&data_idx=BD0000000001&menu_idx=2264) and [regional-dialogue support-group post](https://www.eslc.go.kr/bbs/data/view.do?SC_KEY=&SC_KEYWORD=&bbs_mst_idx=BM0000000217&data_idx=BD0000001000&memberAuth=Y&menu_idx=2286&pageIndex=1&per_menu_idx=2074&root_yn=Y&stype=&submenu_idx=&tabCnt=2) are dated posts with attachments, including HWP. The board is page-based and post-level `data_idx` identifies a post, not a member row. No single current/historical member universe, member-row IDs, or correction/republication contract was found. The site states all-rights-reserved copyright; no reuse license was identified. | `L0 RESEARCHED` source lane. A single rights-approved post/attachment packet could support human-assisted staging; it does not establish L3. |
+| 한국노총 official footprint | Official central, publication and affiliate subdomains expose organization identity, event articles and bounded local-election/affiliate facts, but the inspected pages do not expose a central stable leadership roster. Fragmented site boundaries, article-level references and the absence of a central pagination/key/version contract prevent universal enumeration. | `DISCOVERY_ONLY` for central-roster acquisition. A named, bounded official event or appointment page may be cited independently after review; no feeder promotion. |
+
+### Contract if a lane reopens
+
+- **Authoritative source and boundary:** 민주노총 supplies only the leadership stated on its own
+  current/history pages; 경사노위 supplies only the dated committee or appointment event stated by
+  the responding official post and its exact attachment; 한국노총 pages remain bounded event or
+  affiliate evidence until a central roster is published. Do not use the nationwide dataset's
+  `소속연합단체명` to create a person-level federation link.
+- **Normalization:** use a fixed minimal dictionary of public name, public role, organization/body,
+  term or event date when explicitly stated, source URL, and page/post/attachment locator. HWP,
+  PDF or HTML extraction is analyst-reviewed transcription, not an authority upgrade. Preserve
+  explicit missingness such as `정보없음`, unreadable, withheld and not-collected; do not infer a
+  date, role or leadership continuity.
+- **Provenance:** retain the official page/post/attachment as the origin Source/Snapshot and any
+  analyst-normalized representation as a separate Source/Snapshot. A post ID or attachment name
+  is a packet locator, not a Person ID. Fulltext or attachment retention requires a separate
+  SourcePolicy rights decision; no raw payload was added by this gate.
+- **Identity:** official Civic Intel identity anchors take priority. Dataset/page-local IDs and the
+  standard-data `record_id` are provider or crosswalk keys only. Name-only linking, event
+  co-mention, organization proximity and inferred union membership cannot resolve a Person.
+  Family members and ordinary union members are outside the discovery universe.
+- **Version and correction:** capture date, publication/registration date and stated term/event
+  date separately. A new page or attachment byte set creates a new source snapshot; a changed
+  normalized value creates a new immutable observation with an explicit replacement/correction
+  reason. No old observation is overwritten, and an absent provider row key cannot be promoted to
+  a permanent identity key.
+- **Maturity ceiling:** the aggregate labor lane remains `L1 CONTRACT_STAGED`. These federation and
+  committee lanes have an automation ceiling of bounded human-assisted L1/L2 only after rights,
+  manifest and reviewer gates close. They remain blocked from L3 until a complete declared
+  universe, deterministic pagination or document manifest, stable record semantics, correction
+  behavior, permitted route and offline coverage tests exist.
+- **Privacy and publication:** retain only public senior leadership or named committee appointment
+  facts needed for the public-interest question. Do not retain ordinary member rosters, sensitive
+  affiliation, private contact/location fields, unnecessary biographies or photos. Human review
+  does not make an unresolved observation an automatic FACT or authorize Person materialization.
+
+No live adapter, crawler, importer, fixture, migration or new labor leadership persistent model
+was added by this gate. If a source contract later closes, reuse the existing
+`SourceRun`/`SourceCheckpoint`/`FeederObservation` foundation, `LaborOrganizationRecord` staging,
+and the existing Claim/Evidence or `CommitteeMembershipEpisode` semantics. Do not create a new
+`LaborLeadershipEpisode` or generic roster abstraction merely to represent these pages.
