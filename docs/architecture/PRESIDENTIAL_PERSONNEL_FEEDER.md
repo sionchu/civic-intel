@@ -69,6 +69,12 @@ unmarked material requires prior consultation. The existing metadata-only policy
 remains `can_fetch=False`, with no fulltext, excerpt, AI or commercial use. A page being publicly
 reachable is not a reuse or automated-collection grant.
 
+The inspected [qGTHgnQ8 detail page](https://www.president.go.kr/briefings/qGTHgnQ8) also renders
+the KOGL type 4 notice on the page itself. That is evidence of the page-level condition presented
+to readers, not a packet-specific authorization for fulltext retention, derivative normalization,
+AI use, automated enumeration or commercial republication. The metadata-only policy and the
+source-route gate therefore remain unchanged.
+
 The route is suitable for an exact, rights-approved briefing packet reviewed by a human. Such a
 packet can be normalized into the existing `PresidentialPersonnelRecord` fixture shape while
 preserving the official page and the analyst-normalized representation as separate provenance

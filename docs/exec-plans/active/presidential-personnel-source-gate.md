@@ -27,6 +27,10 @@ influence or inferred relationships.
 - The [copyright policy](https://www.president.go.kr/copyright-policy) describes marked works as
   KOGL type 4 (attribution, noncommercial use and no modification) and directs prior consultation
   for unmarked material.
+- The inspected [qGTHgnQ8 detail page](https://www.president.go.kr/briefings/qGTHgnQ8) itself
+  renders the same KOGL type 4 notice. This confirms the page-level condition shown to a reader,
+  but it does not grant fulltext retention, excerpting, derivative normalization, AI use,
+  automated enumeration or commercial republication for Civic Intel.
 
 ## Contract decision
 
@@ -37,9 +41,10 @@ observation needs the page ID plus a reviewed locator/ordinal, and a later page 
 correction must create a new observation rather than silently replace the old one.
 
 The existing `presidential_personnel_policy()` remains metadata-only with `can_fetch=False`, no
-fulltext/excerpt/AI/commercial use, and no automated list traversal. Public reachability is not a
-reuse or collection grant. No live connector, importer, scheduler, raw page capture or migration
-is authorized by this gate.
+fulltext/excerpt/AI/commercial use, and no automated list traversal. The page-level KOGL notice
+narrowly describes the displayed reuse condition; it is not a packet-specific authorization for
+Civic Intel's storage or publication path. Public reachability is not a reuse or collection grant.
+No live connector, importer, scheduler, raw page capture or migration is authorized by this gate.
 
 ## Human-assisted usable path
 

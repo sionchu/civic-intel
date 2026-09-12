@@ -79,8 +79,11 @@ correction/republication semantics, complete curated-to-origin reconciliation an
 automated route remain unresolved. The asset lane remains `L0 RESEARCHED; BLOCKED`.
 The 2026-09-12 Presidential Office route review found a 923-item briefing index with bounded
 search/page navigation and stable-looking detail IDs, but no typed personnel universe,
-action-level version contract or blanket reuse permission. Presidential personnel remains
-`L1 CONTRACT_STAGED`; live collection is disabled pending route- and rights-specific approval.
+action-level version contract or blanket reuse permission. The inspected detail page also rendered
+the page-level KOGL type 4 notice (attribution, noncommercial use, no modification), which does
+not by itself authorize Civic Intel fulltext retention, derivative normalization, automated
+enumeration or commercial republication. Presidential personnel remains `L1 CONTRACT_STAGED`;
+live collection is disabled pending route- and rights-specific approval.
 
 ## Decisions and reasons
 
@@ -139,8 +142,9 @@ Executed locally on 2026-09-12:
   inspected the publication pagination, dates, preview/download controls and recent origin
   candidates; no asset row or raw Gazette file was retained.
 - Re-opened the official Presidential Office briefing list, title-filtered personnel searches,
-  a multi-action detail page, the organization page and the copyright-policy page; no live page
-  body or raw provider payload was retained.
+  a multi-action detail page, the organization page and the copyright-policy page; the detail page
+  visibly rendered the KOGL type 4 notice, and no live page body or raw provider payload was
+  retained.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
