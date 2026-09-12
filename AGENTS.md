@@ -6,6 +6,9 @@ matching the work, `docs/workflows/CHANGE_CONTROL.md`,
 `docs/workflows/DEFINITION_OF_DONE.md`, and any active execution plan before changing
 behavior.
 
+For web UI changes, read the root `DESIGN.md` first and treat its semantic tokens and existing
+components as the visual contract.
+
 For batch/full-enumeration work also read:
 
 - `docs/architecture/BATCH_INGESTION.md`

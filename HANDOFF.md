@@ -2,14 +2,16 @@
 
 ## Objective
 
-Complete Evidence Directory v0 as a read-only product surface over Civic Intel's existing
-evidence-first contracts. Keep OpenWatch and future feeder expansion out of this milestone.
+Complete Evidence Directory v0 and its site v1 read-only product surface over Civic Intel's
+existing evidence-first contracts. Keep OpenWatch and future feeder expansion out of this
+milestone.
 
 ## Scope
 
 Public resolved-person roster, evidence-backed person profile, explicit epistemic/stance/conflict
-rendering, source-policy audit projection, and a separate read-only identity review surface that
-is unavailable from the public API unless an internal/test caller explicitly enables it.
+rendering, source-policy audit projection, responsive site shell, and a separate read-only identity
+review surface that is unavailable from the public API unless an internal/test caller explicitly
+enables it.
 Reuse the existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when
 present, `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
 migration, feeder, search infrastructure, or new persistence abstraction.
@@ -53,6 +55,10 @@ migration, feeder, search infrastructure, or new persistence abstraction.
 - Updated the Next.js roster/profile UI and added the read-only review route. Main content uses
   names, labels and source titles; UUIDs and hashes are behind audit details. No OpenWatch data or
   new unsupported asset/vote/score UI was added.
+- Completed the Evidence Directory site v1 pass with the repository `DESIGN.md` visual contract,
+  Korean-first responsive shell, client-side displayed-name roster filter, profile map/coverage
+  navigation, source-policy cards and a visually explicit read-only review surface. The site uses
+  only the existing API and domain contracts; no feeder, source, schema or persistence path changed.
 - Added deterministic API and UI regressions for identity filtering, epistemic/provenance trace,
   conflict visibility, review actions, payload minimization and directory scope.
 - Completed an independent read-only review and hardened the three findings: unlinked decision
@@ -81,6 +87,12 @@ gates are unchanged. The 2026-09-12 official MPM revalidation confirmed 125 mixe
 posts over 9 pages, 405 mixed ethics-board posts over 27 pages, bundled historical PDF posts,
 and no published row identity, correction/version or attachment reuse contract. MPM remains
 `L1 CONTRACT_STAGED; L3 promotion blocked`.
+On 2026-09-13 the site v1 milestone completed locally. The public home now presents the 10
+resolved identities, filters only the displayed canonical name in the browser, and routes to the
+existing evidence-backed profile/source projection. Profile section coverage, epistemic status,
+conflict markers, audit details and source-policy summaries remain visible. The internal review
+route is still unlinked and read-only; with the default API it renders the existing unavailable
+state because `/admin/review` is not registered without explicit internal/test opt-in.
 The same-day National Assembly revalidation found a page-based Gazette catalog with 61 `재산`
 matches across 7 pages and current 2026-54, 2025-51, 2024-107 and 2024-36 publication entries.
 That confirms publication-level origin candidates only; asset disclosure/item keys,
@@ -152,6 +164,10 @@ remains `L0 RESEARCHED; BLOCKED`; no HTML collector, source request, payload or 
 - V0 has no authenticated operator boundary, so `create_app()` does not register `/admin/review`
   unless the caller explicitly opts into the internal/test surface; public navigation does not
   advertise it.
+- Site v1 treats `DESIGN.md` as the visual contract: restrained semantic tokens, Korean-first
+  hierarchy, visible UNKNOWN/PARTIAL/conflict states and evidence paths, and no decorative claim
+  beyond the existing data. The roster filter is a display-only canonical-name filter and never
+  performs identity resolution.
 - A decision episode's raw `source_ids` are not sufficient publication evidence. Its projection
   derives evidence and source IDs from an explicitly linked published Claim and ClaimEvidence.
 - Public temporal reads use non-superseded claims, relationships and decision episodes; historical
@@ -194,8 +210,16 @@ Executed locally on 2026-09-12 and 2026-09-13:
   checks passed.
 - `npm --prefix apps/web run lint`: passed.
 - `npm --prefix apps/web run typecheck`: passed.
-- `npm --prefix apps/web test`: 4 passed.
+- `npm --prefix apps/web test`: 5 passed.
 - `npm --prefix apps/web run build`: passed; `/`, `/admin/review` and `/people/[id]` built.
+- Site v1 final runtime review used the disposable Golden database with the local API and Next
+  server. The in-app browser rendered the 10-person roster, reduced the displayed roster to one
+  result for `이원주`, followed a profile link, and showed the default read-only/unavailable review
+  state without approval, merge or publication controls.
+- Direct desktop captures of the home roster, profile and review surface were opened and
+  inspected. A 390x844 emulation capture of the home and profile showed no horizontal overflow;
+  the profile layout measured 350px and the source grid collapsed to one column after the final
+  responsive adjustment. No Next error overlay appeared during these route checks.
 - Temporary-database Alembic `upgrade head -> downgrade -1 -> upgrade head`: passed.
 - Connected runtime smoke review: API returned the Golden roster, a 12-section resolved profile,
   and populated `REVIEW_REQUIRED`/`HARD_CONFLICT` review items with source provenance; the public
@@ -312,9 +336,13 @@ human-assisted path.
 
 ## Modified files
 
+- `AGENTS.md`
+- `DESIGN.md`
+- `docs/exec-plans/active/evidence-directory-site-v1.md`
 - `ARCHITECTURE.md`
 - `apps/api/main.py`
 - `apps/web/app/admin/review/page.tsx`
+- `apps/web/app/components/roster-grid.tsx`
 - `apps/web/app/data.ts`
 - `apps/web/app/layout.tsx`
 - `apps/web/app/page.tsx`

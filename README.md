@@ -43,6 +43,15 @@ make verify        # all required checks
 
 On Windows without `make`, run the commands shown in `Makefile` directly.
 
+## Evidence Directory web surface
+
+`make web-dev` serves the read-only site at `http://localhost:3000`. The home route shows the
+current resolved-person roster, `/people/{id}` shows an evidence-backed profile with section
+coverage and source-policy provenance, and `/admin/review` is an unlinked internal read surface
+that remains unavailable unless the API is explicitly started with its test/internal opt-in.
+The roster search filters only the displayed canonical names in the browser; it is not an
+identity-resolution or discovery mechanism.
+
 ## Career facets
 
 People are not assigned one permanent occupation type. Legislative, local-elected,

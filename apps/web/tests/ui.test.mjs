@@ -4,7 +4,7 @@ import test from "node:test";
 
 test("profile renders section coverage and evidence traceability", async () => {
   const page = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
-  assert.match(page, /person\.profile\.sections\.map/);
+  assert.match(page, /profile\.sections\.map/);
   assert.match(page, /section\.status/);
   assert.match(page, /entry\.epistemic_status/);
   assert.match(page, /entry\.evidence/);
@@ -20,6 +20,18 @@ test("UI does not implement publication decisions", async () => {
     ),
   );
   assert.ok(files.every((body) => !body.includes("validate_claim_publication")));
+});
+
+test("public roster keeps name filtering client-side and identity-scoped", async () => {
+  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.match(page, /<RosterGrid people=\{people\} \/>/);
+  assert.match(roster, /type=\"search\"/);
+  assert.match(roster, /canonical_name/);
+  assert.match(roster, /href=\{`\/people\/\$\{person\.id\}`\}/);
+  assert.match(layout, /lang=\"ko\"/);
+  assert.match(layout, /skip-link/);
 });
 
 test("UI exposes explicit provenance and a read-only review surface", async () => {
