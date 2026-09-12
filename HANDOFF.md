@@ -116,6 +116,12 @@ The first MOJ packet preflight identified post `602956` with six attachment refe
 `490105`) and a page-level `공공누리 2유형` label. Because the current MOJ policy still denies
 fetch and the exact attachment/third-party-rights boundary is not represented, no attachment was
 downloaded, normalized or stored; the legal lane remains L1 and L2 is not claimed.
+The 2026-09-13 rights revalidation also checked the official KOGL type-2 terms and MOJ copyright
+policy: type 2 permits attributed non-commercial sharing/derivatives, while MOJ requires a
+work-level rights check and consultation for unmarked material. The inspected page did not expose
+per-attachment ownership or third-party scope, and a metadata-only HEAD probe self-redirected for
+each attachment route; no body, preview or bytes were retrieved. The rights gate therefore remains
+open/blocking, with no L2 or L3 promotion.
 
 ## Decisions and reasons
 
@@ -209,6 +215,11 @@ Executed locally on 2026-09-12 and 2026-09-13:
 - Confirmed the MOJ post `602956` attachment manifest and page-level `공공누리 2유형` against
   the official KOGL type-2 terms. The packet remained offline because the repository policy still
   denies fetch and the exact attachment rights boundary was not closed.
+- Revalidated the official [MOJ packet](https://www.moj.go.kr/bbs/moj/182/602956/artclView.do),
+  [KOGL type-2 terms](https://www.kogl.or.kr/info/licenseType2.do) and [MOJ copyright policy](https://www.moj.go.kr/moj/129/subview.do).
+  The six attachment routes were probed with HEAD only and self-redirected without usable metadata;
+  no attachment body, preview or bytes were retrieved or retained. The source policy and L1 decision
+  were left unchanged.
 - Re-ran `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_assembly_evidence_directory.py
   -q`: 6 passed; full `.venv\\Scripts\\python.exe -m pytest -o addopts='' -q`: 282 passed.
 - Re-ran `.venv\\Scripts\\python.exe -m ruff check apps packages workers
@@ -275,5 +286,5 @@ enumerator; the first MOJ packet is still pending packet-specific rights clearan
 
 ## Next concrete action
 
-Resolve packet-specific rights and third-party ownership for MOJ post `602956` attachments before
-any download or deterministic extraction.
+Obtain and record an official packet-specific rights/third-party-ownership decision for MOJ post
+`602956` attachments before any body request or deterministic extraction.

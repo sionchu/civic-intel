@@ -215,3 +215,26 @@ closed until the exact attachment set, permitted storage/normalization purpose, 
 third-party-rights boundary are represented in a reviewed policy decision. A page-level license
 label alone does not authorize an automatic production adapter or public redistribution of the
 attachments.
+
+### MOJ packet rights revalidation (2026-09-13)
+
+The official detail page was re-opened and still exposes the same six attachment references and
+the explicit `공공누리 2유형` work label. The [official type-2 terms](https://www.kogl.or.kr/info/licenseType2.do)
+permit sharing and derivative use with attribution, but restrict that permission to non-commercial
+use. The [MOJ copyright policy](https://www.moj.go.kr/moj/129/subview.do) separately states that
+unrestricted use applies to works for which the Ministry holds all economic rights, that each work's
+KOGL mark must be checked, and that unmarked material requires consultation with the responsible
+staff.
+
+The inspected detail page did not state per-attachment ownership, third-party material or a
+storage/normalization/redistribution scope. A metadata-only `HEAD` probe of each attachment route
+returned a self-redirect and no usable content metadata; no response body, preview or attachment
+bytes were retrieved. The route behavior is an access limitation, not evidence of a rights denial,
+and does not close the rights gate.
+
+**Decision:** keep the existing MOJ `SourcePolicy` fail-closed (`can_fetch=False`,
+`can_store_fulltext=False`, `can_commercialize=False`) and keep this lane at `L1 CONTRACT_STAGED`.
+No L2 packet staging or L3 promotion is authorized. Reopen only after an official, packet-specific
+rights decision (or clear per-attachment license/ownership record) covers the exact files, the
+intended non-commercial storage and normalization purpose, attribution, and any third-party-rights
+boundary. Until then, do not request the attachment body or add a downloader/extractor.
