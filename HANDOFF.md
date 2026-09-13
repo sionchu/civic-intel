@@ -195,7 +195,7 @@ registry was added.
 The current rolling three-year Gwanbo window `2023-09-13:2026-09-13` was also registered with
 `SUCCESS`, one page and zero notices. As with the shorter window, this is a bounded current
 response and does not establish that the source has no historical personnel notices.
-The latest remote master for this handoff is `5ca7be86a0d938631f83250e5e68b12ba7d474b2`, which
+The latest remote master for this handoff is `04565b95f7ef15e195ecd3a74ee8e959b0801ca4`, which
 contains the North Star document. The local Assembly proposer automatic accumulation candidate
 from the separate review checkout is not part of this shipped state; its local run receipts and
 SQLite counts must not be used as product coverage.
