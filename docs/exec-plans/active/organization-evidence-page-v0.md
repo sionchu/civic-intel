@@ -114,6 +114,34 @@ The organization page must not:
   removed or restored when they were unrelated to the change; the local ignored database and
   provider credentials remain outside the commit.
 
+## Deployment review — 2026-09-14
+
+- The repository contains local API/web commands and CI verification workflows, but no hosting
+  manifest, production API URL, deployment workflow or deployment database configuration. The
+  web build uses `output: "standalone"`; the API is a separate runtime and requires an existing
+  database at the current Alembic head.
+- `.env.example` documents a localhost `NEXT_PUBLIC_API_URL` for local use. An operational web
+  deployment therefore needs an explicitly configured API origin and a separately provisioned,
+  migrated database containing reviewed canonical Organization/Claim rows. Runtime startup
+  checks the schema and does not create tables, migrate or seed data.
+- GitHub Verify completed successfully for this commit (`8aefe74ddead6eb0afde7708114424899713a602`,
+  run `34777130619`). This proves CI verification only; GitHub reports zero environments and zero
+  deployments for this repository.
+- The local `alio_item12_live.db` and its reviewed C0908 rows are ignored runtime material, not a
+  deployment artifact. The page is therefore locally runnable and directly inspectable, but its
+  operational public coverage remains unverified.
+
+### Deployment decision
+
+The direct-ID page is safe to keep as a read-only product surface, but deployment readiness is
+blocked on an approved hosting/API/DB target. The usable human-assisted path is an operator-supplied
+canonical Organization UUID whose current Organization and published Claims already exist in that
+runtime database. No public enumeration, automatic binding or data seeding is implied.
+
+Reopen this review when the hosting target, API origin, migrated database/data-loading procedure and
+public source-rights decision are specified; then run a host-level route, unavailable-state and
+provenance smoke against that actual deployment.
+
 ## Acceptance criteria
 
 1. An explicit organization ID renders current organization claims from the existing API only.
@@ -136,5 +164,5 @@ claim. The page is a read-only consumer of already published canonical records.
 
 ## Next concrete action
 
-Perform a product/deployment review of the direct-ID Organization page against the deployment
-database before adding further Organization coverage or identity-binding behavior.
+Define an approved hosting/API/DB target and data-loading procedure, then run the first host-level
+direct-ID route smoke before adding further Organization coverage or identity-binding behavior.

@@ -939,5 +939,31 @@ the page does not change feeder maturity.
 
 ## Next concrete action
 
-Perform a product/deployment review of the direct-ID Organization page against the deployment
-database before adding further Organization coverage or identity-binding behavior.
+Define an approved hosting/API/DB target and data-loading procedure, then run the first host-level
+direct-ID route smoke before adding further Organization coverage or identity-binding behavior.
+
+## Deployment review checkpoint — Organization Evidence page v0 (2026-09-14)
+
+### Findings
+
+- The repository has local API/web commands and CI verification, but no hosting manifest,
+  production API URL, deployment workflow or deployment database configuration. The web build is
+  standalone while the API requires a separately migrated database at the current Alembic head.
+- `.env.example` points `NEXT_PUBLIC_API_URL` at localhost for local use. The ignored
+  `alio_item12_live.db` contains the reviewed C0908 sample, but it is not a Git or deployment
+  artifact and must not be treated as public coverage.
+- GitHub Verify succeeded for `8aefe74ddead6eb0afde7708114424899713a602` in run `34777130619`;
+  GitHub reported zero environments and zero deployments.
+
+### Decision
+
+The page is locally buildable and safe as a direct-ID, read-only surface. Operational deployment
+readiness is blocked until an approved hosting/API/DB target, data-loading procedure and public
+source-rights decision exist. The permitted interim path is an operator-supplied canonical
+Organization UUID backed by existing published Claims; no enumeration, automatic binding or data
+seeding is introduced.
+
+## Next concrete action
+
+Define an approved hosting/API/DB target and data-loading procedure, then run the first host-level
+direct-ID route smoke before adding further Organization coverage or identity-binding behavior.
