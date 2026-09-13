@@ -1,0 +1,159 @@
+name: Assembly Roster Observation Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: assembly-roster-observation-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: sqlite:///./assembly-roster-audit.db
+      CIVIC_HTTP_USER_AGENT: CivicIntel/0.1 (+https://github.com/sionchu/civic-intel)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Require Assembly API credential
+        env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+        run: |
+          if [ -z "${ASSEMBLY_API_KEY:-}" ]; then
+            echo "::error::Repository secret ASSEMBLY_API_KEY is not configured."
+            exit 1
+          fi
+
+      - name: Prepare disposable database
+        run: |
+          rm -f assembly-roster-audit.db
+          python -m alembic upgrade head
+
+      - name: Enumerate unfiltered roster observations
+        env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+        run: |
+          civic-stage-assembly \
+            --enumerate \
+            --page-size 100 \
+            --database-url "$DATABASE_URL" \
+            > assembly-roster-run.json
+
+      - name: Build current coverage report
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from packages.persistence import SqlAlchemyRepository
+          from workers.assembly_roster import AssemblyRosterEnumerator
+
+          repository = SqlAlchemyRepository(os.environ["DATABASE_URL"])
+          feeder = AssemblyRosterEnumerator.FEEDER
+          scope_key = AssemblyRosterEnumerator.SCOPE_KEY
+          semantic_scope = AssemblyRosterEnumerator.SEMANTIC_SCOPE
+
+          run_summary = json.loads(Path("assembly-roster-run.json").read_text(encoding="utf-8"))
+          if run_summary.get("status") != "SUCCESS":
+              raise RuntimeError("Assembly roster enumeration did not finish successfully")
+
+          checkpoint = repository.source_checkpoint(feeder, scope_key)
+          if checkpoint is None:
+              raise RuntimeError("Assembly roster checkpoint is missing after enumeration")
+
+          metadata = checkpoint.metadata
+          seen_hashes = dict(metadata.get("seen_provider_hashes") or {})
+          expected_total = int(metadata["list_total_count"])
+          expected_pages = int(metadata["expected_pages"])
+          if not seen_hashes:
+              raise RuntimeError("Assembly roster provider manifest is empty")
+
+          current = {}
+          for observation in repository.feeder_observations(feeder, scope_key):
+              expected_hash = seen_hashes.get(observation.provider_record_key)
+              if (
+                  expected_hash is None
+                  or expected_hash != observation.content_hash
+                  or observation.semantic_scope != semantic_scope
+              ):
+                  continue
+              if observation.provider_record_key in current:
+                  raise RuntimeError("Current provider key maps to multiple observations")
+              current[observation.provider_record_key] = observation
+
+          if set(current) != set(seen_hashes):
+              raise RuntimeError("Current observations do not match the checkpoint provider manifest")
+          if len(current) != expected_total:
+              raise RuntimeError("Current observation coverage does not match provider total count")
+          if int(run_summary.get("unique_records", -1)) != expected_total:
+              raise RuntimeError("Run summary unique-record count does not match provider total count")
+
+          rows = []
+          for provider_key in sorted(current):
+              observation = current[provider_key]
+              normalized = observation.normalized
+              rows.append(
+                  {
+                      "provider_record_key": provider_key,
+                      "observation_id": str(observation.id),
+                      "snapshot_id": str(observation.snapshot_id),
+                      "content_hash": observation.content_hash,
+                      "canonical_name": normalized.get("canonical_name"),
+                      "aliases": normalized.get("aliases") or [],
+                      "birth_date": normalized.get("birth_date"),
+                      "party": normalized.get("party"),
+                      "district": normalized.get("district"),
+                      "reelection": normalized.get("reelection"),
+                      "election_type": normalized.get("election_type"),
+                      "committees": normalized.get("committees"),
+                  }
+              )
+
+          report = {
+              "feeder": feeder,
+              "scope_key": scope_key,
+              "semantic_scope": semantic_scope,
+              "run_id": run_summary["run_id"],
+              "status": run_summary["status"],
+              "pages_committed": run_summary["pages_committed"],
+              "expected_pages": expected_pages,
+              "provider_total_count": expected_total,
+              "current_observation_count": len(rows),
+              "checkpoint_cursor": checkpoint.cursor,
+              "materialization_performed": False,
+              "rows": rows,
+          }
+          Path("assembly-roster-coverage.json").write_text(
+              json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True),
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload observation audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: assembly-roster-observation-audit
+          path: |
+            assembly-roster-run.json
+            assembly-roster-coverage.json
+          if-no-files-found: error
+          retention-days: 7
