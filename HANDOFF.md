@@ -805,16 +805,18 @@ data.
 
 ### Result
 
-- A read-only inspection of `alio_item12_live.db` found schema head `0004`, 15 normalized Item 12
-  observations, four ALIO Sources/Snapshots and one ALIO SourcePolicy. The observations cover
-  `C0019`, `C0129` and `C0908`, one row per institution for each fiscal year from 2021 through
+- A read-only inspection of `alio_item12_live.db` initially found schema head `0004`, 15 normalized
+  Item 12 observations, four ALIO Sources/Snapshots and one ALIO SourcePolicy. The observations
+  cover `C0019`, `C0129` and `C0908`, one row per institution for each fiscal year from 2021 through
   2025.
 - The database contains zero `Organization` rows and zero Claims. No existing canonical
   Organization is therefore available for a reviewed `apbaId` binding or annual Claim import.
 - The provider codes remain source-scoped identifiers. No organization was created, no binding was
-  inferred, no Claim was imported, and no database migration or live route exercise was performed.
-- The normal `0005` migration must be applied before an approved binding can use the organization
-  Claim importer; this audit did not mutate the database.
+  inferred and no Claim was imported. The ordinary `0005` migration was then applied to this local
+  ignored runtime database, and a read-only recheck verified schema head `0005`, the
+  `claims.organization_id` column and the unchanged zero Organization/Claim counts.
+- No live route exercise was performed because the canonical Organization subject and annual Claims
+  do not exist.
 
 ### Decision
 
@@ -825,6 +827,6 @@ name, `apbaId` or source row.
 
 ## Next concrete action
 
-Authorize one manually reviewed ALIO `apbaId` to an existing canonical Organization, then apply
-the ordinary `0005` migration and import exactly two annual Item 12 Claims through the canonical
-importer before exercising the route with live data.
+Authorize one manually reviewed ALIO `apbaId` to an existing canonical Organization, then import
+exactly two annual Item 12 Claims through the canonical importer before exercising the route with
+live data.
