@@ -159,15 +159,17 @@ connector, parser, shared persistence, exact provenance and unchanged rerun are 
 the live run and regressions. It is not L3: the full 355-institution annual-row scope, long-term
 correction/replacement semantics and operational sync contract have not been established or
 selected. The observation-only MONEY result remains blocked; the follow-on read-only route has no
-live output until a reviewed canonical Organization binding is supplied and annual organization
-Claims are imported.
+automatic ALIO binding or organization-wide Claim run. A separate operator-approved local C0908
+runtime slice now exercises the Claim-backed route with two annual Claims; this is not a shipped or
+public coverage claim.
 
 ## Not executed
 
 No full-directory annual-row enumeration, attachment download, XLS/XLSX bulk ingestion, Person
-lookup/materialization, organization binding, generic financial abstraction, generic crawler or
-scheduled sync was added in this Item 12 slice. Its bounded worker still publishes no Claim or
-public FACT; the separate organization subject contract is not a live ALIO binding.
+lookup/materialization, automatic organization binding, generic financial abstraction, generic
+crawler or scheduled sync was added in this Item 12 slice. Its bounded worker still publishes no
+Claim or public FACT; the separate reviewed C0908 runtime binding is an operator-approved local
+validation only.
 
 ## Next concrete action
 

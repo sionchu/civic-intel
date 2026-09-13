@@ -830,3 +830,40 @@ name, `apbaId` or source row.
 Authorize one manually reviewed ALIO `apbaId` to an existing canonical Organization, then import
 exactly two annual Item 12 Claims through the canonical importer before exercising the route with
 live data.
+
+## Current checkpoint — reviewed C0908 Claim-backed runtime slice (2026-09-14)
+
+### Completed
+
+- After explicit operator approval, the bounded known-positive ALIO `C0908` institution was
+  manually bound to `정보통신기획평가원` with canonical Organization ID
+  `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11`. This was an operator action against the ignored local
+  runtime database, not automatic `apbaId` materialization.
+- Exactly two annual Claims were imported through the existing organization Claim importer: the
+  2024 observation key `2026041303154117:2024` and the 2025 key `2026041303154117:2025`. Both are
+  `PUBLISHED` `FACT` Claims with one `SUPPORT` ClaimEvidence item and exact ALIO
+  SourcePolicy → Source → SourceSnapshot → FeederObservation provenance.
+- The actual API check returned `200` / `AVAILABLE` from the organization MONEY route. The
+  derived comparison was `-2,162,000 KRW` and `-14.39%`, with both Claim and Evidence IDs
+  preserved in the response.
+- No other institution or year was imported. The worker remains observation-only, the lane remains
+  `L2 SINGLE_PULL`, and the local database is not a Git or deployment artifact.
+
+### Verification
+
+- Read-only database recheck: schema head `0005`, one Organization, two Claims, two
+  ClaimEvidence rows and 15 Item 12 observations.
+- The source-specific Item 12 regression remains `20 passed, 2 warnings`; the manual import and
+  route check completed without changing repository code.
+
+### Decision
+
+The existing Claim-backed route now has one reviewed local Organization slice. This does not
+authorize automatic institution binding, full-directory Claim publication, scheduled sync, L3
+promotion, or a public UI. Keep any further institution or year outside this slice until a separate
+execution plan defines the review and publication boundary.
+
+## Next concrete action
+
+Create a separate execution plan for an explicit operator-facing Organization binding workflow
+before adding any further ALIO institution Claims or a public organization page.

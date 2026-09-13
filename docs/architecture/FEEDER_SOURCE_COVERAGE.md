@@ -303,9 +303,10 @@ connector therefore fails closed on changed/duplicate identity conditions and ne
 replacement or latest value. The canonical Claim contract now has an organization branch, but
 publication still requires an existing reviewed Organization binding and an exact immutable
 observation version. A narrow read-only organization MONEY route now consumes only published
-annual organization Claims and exact ClaimEvidence/observation provenance; it has no live output
-until a reviewed Organization binding and annual Claim import exist. The bounded observation
-worker remains L2 and is not promoted to L3 by this route.
+annual organization Claims and exact ClaimEvidence/observation provenance. One operator-approved
+C0908 local runtime slice exercises that route; this is not shipped/public coverage, and
+organizations without the reviewed binding and annual Claim import still have no MONEY result.
+The bounded observation worker remains L2 and is not promoted to L3 by this route.
 
 ### Blocked-lane reassessment
 

@@ -57,7 +57,9 @@ the bounded worker remains observation-only.
   derived read result with `epistemic_status: null`, both Claim IDs, serialized ClaimEvidence and
   source/snapshot/observation provenance.
 - Updated the organization Claim, Item 12 feeder, source-semantics, North Star, index and
-  handoff documentation. No migration or persistent model changed.
+  handoff documentation. No additional migration or persistent financial model was added; the
+  existing `0005` subject migration was applied only to the local ignored runtime database for
+  the reviewed slice below.
 
 ## Verification evidence
 
@@ -71,16 +73,29 @@ the bounded worker remains observation-only.
 - `git diff --check`: passed. `make verify` was attempted but `make` is unavailable on this
   Windows host; its constituent commands passed directly.
 
+## Reviewed local runtime slice — 2026-09-14
+
+After explicit operator approval, one bounded binding was recorded for the known-positive ALIO
+institution `C0908` (`정보통신기획평가원`). The local ignored runtime database contains one
+current canonical Organization row and exactly two annual organization Claims for 2024 and 2025,
+each imported through `SqlAlchemyRepository.import_organization_claim()` with the existing
+ClaimEvidence → SourceSnapshot → FeederObservation provenance chain.
+
+The actual route check returned `200` / `AVAILABLE` for
+`GET /organizations/{organization_id}/money?earlier_fiscal_year=2024&later_fiscal_year=2025`,
+with an absolute delta of `-2,162,000 KRW` and `-14.39%`. The database was not committed to Git
+and this local runtime proof is not a deployment or a public-coverage claim.
+
 ## Maturity decision and not executed
 
-The projection contract is complete, but ALIO Item 12 remains `L2 SINGLE_PULL` for the three
-known-positive institution observation proof. This milestone does not promote the feeder to L3,
-enumerate the full directory, bind `apbaId` automatically, run scheduled sync or publish live
-annual organization Claims. Without a reviewed canonical Organization binding and imported annual
-Claims, the public route returns no MONEY result.
+ALIO Item 12 remains `L2 SINGLE_PULL` for the three known-positive institution observation proof.
+The reviewed C0908 Claim-backed route is a bounded runtime validation of the existing contract; it
+does not promote the feeder to L3, enumerate the full directory, bind `apbaId` automatically, run
+scheduled sync or authorize a full annual organization Claim run. Organizations without an
+explicit reviewed binding and imported annual Claims still produce no MONEY result.
 
 ## Next concrete action
 
-Authorize one manually reviewed ALIO `apbaId` to existing-Organization binding and import exactly
-two annual Item 12 Claims through the canonical importer before exercising the route with live
-data.
+Keep the C0908 result as a bounded runtime proof and create a separate execution plan before
+adding any operator-facing Organization binding workflow, additional institution Claims or a
+public organization page.
