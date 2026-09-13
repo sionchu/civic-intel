@@ -196,6 +196,11 @@ The input gate found one eligible role Claim in the Golden public seed (zero pai
 reviewed Kim Hyun-ji fixture has four eligible Claims and four cross-date proof pairs. The
 fixture's metadata-only DISCOVERY_ONLY policies support rule regression, not live acquisition or
 public coverage. CHANGE implementation is therefore paused at Milestone A.
+The 2026-09-13 official Assembly historical-member API gate found a documented former-member
+service with pagination and a live sample pair for provider code `XQ98168F` across the 19th and
+20th terms. Its current-member exclusion, missing complete term-code mapping, absent correction
+fields and service-specific rights gap keep it at `L1 CONTRACT_STAGED`; this is source evidence,
+not a canonical Person/Claim or public CHANGE input.
 
 ## Decisions and reasons
 
@@ -412,7 +417,9 @@ not selected because that lane requires an explicit bounded interval.
 
 ## Blockers
 
-Evidence Directory v0 has no implementation blocker. Source work remains bounded by rights and
+Evidence Directory v0 has no implementation blocker. CHANGE remains blocked at the public-input
+gate until a source-approved pair is published as canonical Claim/Evidence for a resolved Person.
+Source work remains bounded by rights and
 contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
 CleanEye remain L0 RESEARCHED; BLOCKED after the 2026-09-13 route/robots revalidation; and the labor federation/commission lanes lack a complete
 universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
@@ -488,5 +495,6 @@ Latest ALIO full-enumeration hardening also touched:
 ## Next concrete action
 
 Run one source-contract gate for an official, rights-approved personnel-history source that can
-supply at least two dated role records for one resolved Person; reopen the CHANGE input gate only
-if that pair is actually present.
+Close the service-specific rights and finite coverage contract for the Assembly historical-member
+API, including its term-code manifest and correction rule; only then publish a canonical pair and
+reopen the CHANGE input gate.

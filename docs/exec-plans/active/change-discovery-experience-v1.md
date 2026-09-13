@@ -71,6 +71,72 @@ no real-world change occurred.
   source-bounded public input supplies at least two eligible dated Claims for one resolved
   Person.
 
+## Source-contract gate — National Assembly historical member-history API
+
+The official Open API catalog exposes a separate `역대 국회의원 의원이력` service, distinct from
+the current-member API already used by the Assembly roster feeder:
+
+- The [service contract](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OD21030011944P19666)
+  names the endpoint `nfzegpkvaclgtscxt`, describes the data as historical member careers, and
+  explicitly excludes current members. It declares `pIndex`/`pSize` pagination and accepts
+  `HG_NM`, `PROFILE_SJ`, `MONA_CD`, and required `PROFILE_UNIT_CD` filters.
+- Its output includes `HG_NM`, `HJ_NM`, `FRTO_DATE`, `PROFILE_SJ`, `MONA_CD`,
+  `PROFILE_UNIT_CD`, and `PROFILE_UNIT_NM`. The sample response for
+  `PROFILE_UNIT_CD=100020` returned `list_total_count=248`; a bounded query for
+  `MONA_CD=XQ98168F` returned one `강길부` row for 2016-05-30–2020-05-29, and the same provider
+  code returned one row for 2012-05-30–2016-05-29 with `PROFILE_UNIT_CD=100019`.
+- The separate [official term-inventory service](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OLFZV7001148O518934)
+  exposes `ERACO`, election date, `TERM_BG`, `TERM_ED`, and related term metadata; its sample
+  reports `list_total_count=55`. The inspected contract does not publish a complete mapping from
+  those term labels to every historical `PROFILE_UNIT_CD` used by the member-history service.
+
+The historical service can therefore produce a bounded, dated pair at the provider-record level,
+but it is not yet a closed Civic Intel input lane:
+
+- **Field authority:** the historical service is authoritative only for the historical term
+  fields it publishes; the current-member API remains a separate authority for current roster
+  fields; the term-inventory service is authoritative for Assembly term boundaries. Do not merge
+  these into one Source or treat a copied field as independently corroborated.
+- **Identity:** `MONA_CD` is an official Assembly provider/crosswalk namespace and
+  `PROFILE_UNIT_CD` is a source term key. Neither is a canonical Person ID. Existing accepted
+  Assembly `MONA_CD` anchors take priority; a historical row still requires an exact source-backed
+  bridge to a resolved Person and never a name-only link.
+- **Coverage:** pagination and `list_total_count` are present, but the history service's
+  current-member exclusion, the missing term-code manifest, and the unproved combined
+  current/former universe prevent an L3 coverage claim. Full term/page duplicate and boundary
+  tests have not been run.
+- **Version:** the response exposes no updated-at, correction, replacement, withdrawal, or
+  tombstone field. A later changed row cannot be classified as a correction from the response
+  alone; any future capture must use new SourceSnapshots and immutable observations with an
+  explicit review decision.
+- **Rights:** the [Open API terms](https://open.assembly.go.kr/portal/policy/openUserAgreementPage.do)
+  require an issued key and source attribution and prohibit unauthorized access and copyright
+  violations. The [copyright policy](https://open.assembly.go.kr/portal/policy/copyRightPage.do)
+  grants free use without separate permission only for material fully owned by the Assembly and
+  marked KOGL type 1; unmarked or other KOGL types require prior consultation. The data.go.kr
+  no-restriction label for the current integrated API is not automatically extended to this
+  separate historical service.
+
+**Decision:** route/pair proof passes, but the service-specific rights and complete coverage
+contract do not. Keep this lane at `L1 CONTRACT_STAGED`; the automation ceiling remains below L3.
+A finite rights-approved packet may support a human-assisted source observation path, but the
+existing public CHANGE surface remains blocked until the pair is imported as canonical,
+published Claim/Evidence for a resolved Person. No connector, importer, API route, migration, or
+new source policy was added by this gate.
+
+### Reopen conditions
+
+1. Record a service-specific SourcePolicy decision covering API access, normalized metadata,
+   storage, attribution, and any downstream republication; do not inherit the current-roster
+   policy by hostname alone.
+2. Pin the finite term-code manifest and current/former composition, then prove page totals,
+   unique `{MONA_CD}:{PROFILE_UNIT_CD}` keys, boundary cases, and unchanged reruns.
+3. Obtain correction/version behavior or retain a documented fail-closed rule with fixtures for
+   changed, withdrawn, and late-corrected term rows.
+4. Resolve one provider code to an existing canonical Person through an accepted official bridge,
+   publish the two input Claims through existing ClaimEvidence/Source gates, and rerun the
+   CHANGE input gate.
+
 ## Deterministic comparison rule
 
 For one Person, order eligible Claims by `(qualifiers.date, claim_id)`. A candidate pair requires:
