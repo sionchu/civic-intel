@@ -20,13 +20,79 @@ export type EvidenceTrace = {
 
 export type Claim = {
   id: string;
+  person_id?: string | null;
+  organization_id?: string | null;
   proposition: string;
   epistemic_status: Status;
   publication_status: "DRAFT" | "REVIEW" | "PUBLISHED" | "WITHHELD";
   asserted_as_true: boolean;
   resolution_note: string | null;
+  qualifiers: Record<string, string>;
   evidence: Evidence[];
   source_ids: string[];
+};
+
+export type Organization = {
+  id: string;
+  name: string;
+  valid_from: string;
+  valid_to: string | null;
+  recorded_at: string;
+  superseded_at: string | null;
+  claims: Claim[];
+};
+
+export type MoneyInput = {
+  fiscal_year: number;
+  amount_thousand_krw: number;
+  amount_krw: number;
+  report_period: string;
+  as_of_date: string;
+  submission_date: string;
+  disclosure_no: string;
+  observation_id: string;
+  snapshot_id: string;
+  source_id: string;
+  claim_id?: string;
+  evidence_ids?: string[];
+};
+
+export type MoneyProjection = {
+  id: string;
+  kind: "MONEY";
+  method_version: string;
+  availability: "AVAILABLE";
+  epistemic_status: null;
+  claim_ids: string[];
+  evidence_ids: string[];
+  evidence: Evidence[];
+  source_ids: string[];
+  snapshot_ids: string[];
+  observation_ids: string[];
+  details: {
+    organization: {
+      id: string;
+      name: string;
+      code: string;
+      role_scope: string;
+    };
+    earlier: MoneyInput;
+    later: MoneyInput;
+    absolute_delta_krw: number;
+    percent_change: string | null;
+    coverage: {
+      input_claim_count: number;
+      compared_fiscal_years: number[];
+      semantic_scope: string;
+    };
+    limitations: string[];
+    input_scope: {
+      source_contract: string;
+      required_publication: string;
+      correction_semantics: string;
+      identity_rule: string;
+    };
+  };
 };
 
 export type ProfileEntry = {

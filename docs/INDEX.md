@@ -27,6 +27,7 @@ implementation work.
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
 - [Organization-scoped Claim and Evidence publication](architecture/ORGANIZATION_CLAIM_PUBLICATION.md)
 - [ALIO reviewed Organization binding workflow v0](exec-plans/active/alio-reviewed-organization-binding-workflow-v0.md)
+- [Organization Evidence page v0](exec-plans/active/organization-evidence-page-v0.md)
 - [CleanEye local public institution feeder](architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)
 - [Legal career feeder](architecture/LEGAL_CAREER_FEEDER.md)

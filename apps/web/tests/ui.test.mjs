@@ -53,9 +53,31 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.doesNotMatch(layout, /admin\/review/);
 });
 
+test("organization page consumes the existing direct-ID evidence contract", async () => {
+  const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
+  assert.match(page, /getOrganization\(id\)/);
+  assert.match(page, /getOrganizationMoney\(id\)/);
+  assert.match(page, /Published claims/);
+  assert.match(page, /DERIVED · MONEY/);
+  assert.match(page, /Claim-backed comparison is unavailable/);
+  assert.match(page, /SourceSnapshot/);
+  assert.match(page, /FeederObservation/);
+  assert.match(page, /policy_summary/);
+  assert.match(data, /organizations\/\$\{id\}/);
+  assert.match(data, /earlier_fiscal_year/);
+});
+
+test("organization page does not add binding or organization enumeration controls", async () => {
+  const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(page, /<button|onClick|create|bind|enumerate/i);
+  assert.doesNotMatch(layout, /organizations/);
+});
+
 test("UI stays within the directory scope", async () => {
   const files = await Promise.all(
-    ["../app/page.tsx", "../app/people/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
+    ["../app/page.tsx", "../app/people/[id]/page.tsx", "../app/organizations/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
       readFile(new URL(path, import.meta.url), "utf8"),
     ),
   );

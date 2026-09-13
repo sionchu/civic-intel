@@ -89,6 +89,11 @@ route is read-only, requires an existing current Organization and returns only w
 years can be derived from published annual organization Claims. The bounded worker still creates
 observations only; it does not bind ALIO institutions or publish annual Claims.
 
+The public web may render an explicit `/organizations/{organization_id}` record page using these
+existing reads. That page is a direct-ID read surface only: it does not add organization search or
+enumeration, a slug registry, a binding action, or a new publication path. An unavailable derived
+MONEY result remains unavailable in the UI and is never replaced with observation-only data.
+
 ## Derived MONEY boundary
 
 `money.alio-head-expense-yoy.v1` remains a separate descriptive derived result. The read-only

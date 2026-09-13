@@ -903,3 +903,41 @@ institution Claims or scheduled sync under this plan.
 ## Next concrete action
 
 Create a new execution plan before adding further institution Claims or a public organization page.
+
+## Current checkpoint — Organization Evidence page v0 (2026-09-14)
+
+### Completed
+
+- Added [`organization-evidence-page-v0.md`](docs/exec-plans/active/organization-evidence-page-v0.md)
+  and implemented `apps/web/app/organizations/[id]/page.tsx` as a bounded, direct-ID public
+  read surface for existing canonical Organization Claims.
+- Reused the existing Organization, Claim, ClaimEvidence, Source, SourcePolicy and Claim-backed
+  MONEY API reads. The page shows published organization Claims, exact evidence/source traces and
+  an explicitly separate derived MONEY view when available.
+- Added typed web contracts/data reads, design-system-consistent styles and seven deterministic UI
+  tests. No organization list, binding action, API route, migration, feeder, raw-payload store or
+  publication logic was added.
+
+### Verification
+
+- Web lint, typecheck, UI tests (`7 passed`) and production build passed; the build includes
+  `/organizations/[id]`.
+- Full Python suite: `321 passed, 4 warnings`; Ruff passed; mypy passed for 56 source files;
+  Golden quality verification passed.
+- Local C0908 runtime proof returned `200` / `AVAILABLE`, two Claims and derived
+  `-2,162,000 KRW` / `-14.39%`. This remains local runtime evidence, not deployment-wide coverage.
+- Desktop and 390px browser inspection showed the Claim/Evidence/source trace and MONEY card;
+  browser error/warning logs were empty and narrow-layout horizontal overflow was false.
+- Markdown/link and diff checks passed. Generated Next files were cleaned/restored; ignored local
+  database and credentials were not included.
+
+### Decision
+
+The page is a read-only consumer of already published canonical records. ALIO Item 12 remains
+`L2 SINGLE_PULL`; there is still no automatic Organization enumeration or `apbaId` binding, and
+the page does not change feeder maturity.
+
+## Next concrete action
+
+Perform a product/deployment review of the direct-ID Organization page against the deployment
+database before adding further Organization coverage or identity-binding behavior.
