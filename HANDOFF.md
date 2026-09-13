@@ -949,6 +949,12 @@ direct-ID route smoke before adding further Organization coverage or identity-bi
 - The repository has local API/web commands and CI verification, but no hosting manifest,
   production API URL, deployment workflow or deployment database configuration. The web build is
   standalone while the API requires a separately migrated database at the current Alembic head.
+- The local production probe reproduced the warning that `next start` is incompatible with
+  standalone output. Updated `apps/web/package.json` so `npm run start` invokes
+  `node .next/standalone/server.js`, then exercised that corrected path against the local API.
+- Corrected production-host smoke returned `200` for C0908 with the organization, derived MONEY
+  and SourceSnapshot/FeederObservation trace; an unknown UUID returned `404`, and the direct
+  MONEY API returned `200` / `AVAILABLE`.
 - `.env.example` points `NEXT_PUBLIC_API_URL` at localhost for local use. The ignored
   `alio_item12_live.db` contains the reviewed C0908 sample, but it is not a Git or deployment
   artifact and must not be treated as public coverage.

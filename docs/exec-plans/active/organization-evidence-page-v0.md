@@ -119,7 +119,8 @@ The organization page must not:
 - The repository contains local API/web commands and CI verification workflows, but no hosting
   manifest, production API URL, deployment workflow or deployment database configuration. The
   web build uses `output: "standalone"`; the API is a separate runtime and requires an existing
-  database at the current Alembic head.
+  database at the current Alembic head. The production `start` script now invokes the generated
+  standalone server directly.
 - `.env.example` documents a localhost `NEXT_PUBLIC_API_URL` for local use. An operational web
   deployment therefore needs an explicitly configured API origin and a separately provisioned,
   migrated database containing reviewed canonical Organization/Claim rows. Runtime startup
@@ -130,6 +131,13 @@ The organization page must not:
 - The local `alio_item12_live.db` and its reviewed C0908 rows are ignored runtime material, not a
   deployment artifact. The page is therefore locally runnable and directly inspectable, but its
   operational public coverage remains unverified.
+- A local probe of the prior `next start` command reproduced Next.js's standalone-output warning;
+  the package script was corrected to `node .next/standalone/server.js`, and the corrected npm
+  start path was exercised against the local API.
+- The corrected production-host smoke returned HTTP `200` for the reviewed C0908 direct-ID page
+  with the organization name, `DERIVED · MONEY` and `SourceSnapshot`/`FeederObservation` trace;
+  an unknown organization UUID returned `404`, and the direct MONEY API returned `200` with
+  `AVAILABLE`.
 
 ### Deployment decision
 
