@@ -78,20 +78,71 @@ the current-member API already used by the Assembly roster feeder:
 
 - The [service contract](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OD21030011944P19666)
   names the endpoint `nfzegpkvaclgtscxt`, describes the data as historical member careers, and
-  explicitly excludes current members. It declares `pIndex`/`pSize` pagination and accepts
-  `HG_NM`, `PROFILE_SJ`, `MONA_CD`, and required `PROFILE_UNIT_CD` filters.
+  explicitly excludes current members. It labels the service version `1 (21-01-08)`, declares
+  `pIndex`/`pSize` pagination and “제한없음” request limits, and accepts `HG_NM`, `PROFILE_SJ`,
+  `MONA_CD`, and required `PROFILE_UNIT_CD` filters. A request without that filter returned the
+  documented `ERROR-300` missing-parameter response; `100000` and `100023` returned `INFO-200`
+  no-data responses.
 - Its output includes `HG_NM`, `HJ_NM`, `FRTO_DATE`, `PROFILE_SJ`, `MONA_CD`,
-  `PROFILE_UNIT_CD`, and `PROFILE_UNIT_NM`. The sample response for
-  `PROFILE_UNIT_CD=100020` returned `list_total_count=248`; a bounded query for
-  `MONA_CD=XQ98168F` returned one `강길부` row for 2016-05-30–2020-05-29, and the same provider
-  code returned one row for 2012-05-30–2016-05-29 with `PROFILE_UNIT_CD=100019`.
-- The separate [official term-inventory service](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OLFZV7001148O518934)
-  exposes `ERACO`, election date, `TERM_BG`, `TERM_ED`, and related term metadata; its sample
-  reports `list_total_count=55`. The inspected contract does not publish a complete mapping from
-  those term labels to every historical `PROFILE_UNIT_CD` used by the member-history service.
+  `PROFILE_UNIT_CD`, and `PROFILE_UNIT_NM`. A read-only page-by-page probe on 2026-09-13
+  fetched each observed code from `100001` through `100022` at `pSize=100`: every page reported
+  a stable `list_total_count`, and the responses contained 5,467 rows in total. The observed
+  response map was:
 
-The historical service can therefore produce a bounded, dated pair at the provider-record level,
-but it is not yet a closed Civic Intel input lane:
+  | `PROFILE_UNIT_CD` | provider label | rows | pages | relation declared by service |
+  |---|---|---:|---:|---|
+  | `100001` | 제헌 | 209 | 3 | historical service; current excluded |
+  | `100002` | 제2대 | 218 | 3 | historical service; current excluded |
+  | `100003` | 제3대 | 208 | 3 | historical service; current excluded |
+  | `100004` | 제4대 | 245 | 3 | historical service; current excluded |
+  | `100005` | 제5대 | 305 | 4 | historical service; current excluded |
+  | `100006` | 제6대 | 190 | 2 | historical service; current excluded |
+  | `100007` | 제7대 | 186 | 2 | historical service; current excluded |
+  | `100008` | 제8대 | 207 | 3 | historical service; current excluded |
+  | `100009` | 제9대 | 251 | 3 | historical service; current excluded |
+  | `100010` | 제10대 | 235 | 3 | historical service; current excluded |
+  | `100011` | 제11대 | 285 | 3 | historical service; current excluded |
+  | `100012` | 제12대 | 288 | 3 | historical service; current excluded |
+  | `100013` | 제13대 | 308 | 4 | historical service; current excluded |
+  | `100014` | 제14대 | 341 | 4 | historical service; current excluded |
+  | `100015` | 제15대 | 333 | 4 | historical service; current excluded |
+  | `100016` | 제16대 | 310 | 4 | historical service; current excluded |
+  | `100017` | 제17대 | 304 | 4 | historical service; current excluded |
+  | `100018` | 제18대 | 311 | 4 | historical service; current excluded |
+  | `100019` | 제19대 | 287 | 3 | historical service; current excluded |
+  | `100020` | 제20대 | 248 | 3 | historical service; current excluded |
+  | `100021` | 제21대 | 176 | 2 | historical service; current excluded |
+  | `100022` | 제22대 | 22 | 1 | historical service; current excluded |
+
+  This is an observed response map, not a provider-declared finite manifest. The service page
+  publishes no code list, lower/upper bound or code-to-term registry. The `100022` response
+  contains 22 rows, while the separate current roster response contained 299 rows; the observed
+  `MONA_CD` intersection was zero. That supports the service's current-member exclusion, but
+  does not prove a complete current-plus-former composition.
+- The separate [official term-inventory service](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OLFZV7001148O518934)
+  exposes `ERACO`, election date, `TERM_BG`, `TERM_ED`, and related term metadata. Its response
+  reports `list_total_count=55` and 22 distinct `ERACO` labels, but has repeated exact rows and
+  formatting variants (2 exact-duplicate groups, 4 rows in those groups) and no stable row ID or
+  revision field. The inspected contract does not publish a mapping from those term labels to
+  every historical `PROFILE_UNIT_CD` used by the member-history service.
+
+The historical service can therefore produce bounded, dated source observations, but it is not
+yet a closed Civic Intel input lane. The probe found 17 duplicate `{MONA_CD}:{PROFILE_UNIT_CD}`
+groups among the 5,467 rows. For example, `0P85685J:100015` has two rows for `이회창` with
+different `FRTO_DATE` periods and different composite `PROFILE_SJ` values within the same
+term. The combination is a person/term grouping value, not a sufficient source-record key; a
+row ordinal is not permanent without a provider ordering/identity contract.
+
+Positive controls from the same bounded probe are source-level only:
+
+- `XQ98168F` returns consecutive `제19대` and `제20대` rows. Its composite `PROFILE_SJ` changes
+  from `새누리당 울산 울주군` to `무소속 울산 울주군`.
+- `0135473I` returns consecutive `제17대` through `제20대` rows.
+- `0767470D` returns a nonconsecutive sequence (`제16대`–`제19대`, then `제21대`).
+- The service has no separate party, district or role-title columns; those changes are only
+  visible, when present, inside the display string `PROFILE_SJ`.
+- No current-plus-history positive control exists in the observed union: the current roster and
+  all observed history rows have zero `MONA_CD` overlap, consistent with the published exclusion.
 
 This gate is also the worked source-hierarchy and parser-boundary case in
 [Source parsing and semantics](../../architecture/SOURCE_PARSING_AND_SEMANTICS.md). It remains a
@@ -106,40 +157,46 @@ from the example.
   `PROFILE_UNIT_CD` is a source term key. Neither is a canonical Person ID. Existing accepted
   Assembly `MONA_CD` anchors take priority; a historical row still requires an exact source-backed
   bridge to a resolved Person and never a name-only link.
-- **Coverage:** pagination and `list_total_count` are present, but the history service's
-  current-member exclusion, the missing term-code manifest, and the unproved combined
-  current/former universe prevent an L3 coverage claim. Full term/page duplicate and boundary
-  tests have not been run.
+- **Coverage:** pagination and `list_total_count` are present and the observed 22-code probe had
+  stable totals, but the history service's current-member exclusion, missing provider code
+  manifest, unproved complete current/former composition and 17 duplicate term-group keys prevent
+  an L3 coverage claim. The current term inventory is a 55-row metadata response, not the missing
+  row manifest.
 - **Version:** the response exposes no updated-at, correction, replacement, withdrawal, or
-  tombstone field. A later changed row cannot be classified as a correction from the response
-  alone; any future capture must use new SourceSnapshots and immutable observations with an
-  explicit review decision.
+  tombstone field, and the service version label is not a data-version history. A later changed
+  row cannot be classified as a correction from the response alone; a future capture must use new
+  SourceSnapshots and immutable observations with an explicit review decision. There is no
+  provider-declared old/new representation, deletion marker or replacement chain.
 - **Rights:** the [Open API terms](https://open.assembly.go.kr/portal/policy/openUserAgreementPage.do)
   require an issued key and source attribution and prohibit unauthorized access and copyright
   violations. The [copyright policy](https://open.assembly.go.kr/portal/policy/copyRightPage.do)
   grants free use without separate permission only for material fully owned by the Assembly and
-  marked KOGL type 1; unmarked or other KOGL types require prior consultation. The data.go.kr
-  no-restriction label for the current integrated API is not automatically extended to this
-  separate historical service.
+  marked KOGL type 1; unmarked or other KOGL types require prior consultation. The historical
+  service page did not expose a dataset-specific KOGL marker or explicit storage/normalization/
+  republication permission. The data.go.kr no-restriction label for the current integrated API is
+  not automatically extended to this separate historical service; the page's “제한없음” is a
+  request-limit display, not a rights grant.
 
-**Decision:** route/pair proof passes, but the service-specific rights and complete coverage
-contract do not. Keep this lane at `L1 CONTRACT_STAGED`; the automation ceiling remains below L3.
-A finite rights-approved packet may support a human-assisted source observation path, but the
-existing public CHANGE surface remains blocked until the pair is imported as canonical,
-published Claim/Evidence for a resolved Person. No connector, importer, API route, migration, or
-new source policy was added by this gate.
+**Decision: KEEP L1.** The automation ceiling remains below L3. A finite, rights-approved source
+packet may support a human-assisted source observation path, but human review cannot turn a
+provider group key into a stable row key or make an unlicensed representation reusable. The
+existing public CHANGE surface remains blocked until two dated role Claims are separately
+imported as canonical, published Claim/Evidence for a resolved Person. No connector, importer,
+API route, migration, or new source policy was added by this gate.
 
 ### Reopen conditions
 
 1. Record a service-specific SourcePolicy decision covering API access, normalized metadata,
    storage, attribution, and any downstream republication; do not inherit the current-roster
    policy by hostname alone.
-2. Pin the finite term-code manifest and current/former composition, then prove page totals,
-   unique `{MONA_CD}:{PROFILE_UNIT_CD}` keys, boundary cases, and unchanged reruns.
+2. Obtain a provider-published finite `PROFILE_UNIT_CD` manifest and current/former composition;
+   then prove page totals, a stable row-level key or explicitly packet-local row boundary,
+   boundary cases and unchanged reruns. The observed 17 duplicate term-group keys must be handled
+   by the source-specific contract, not discarded as duplicates.
 3. Obtain correction/version behavior or retain a documented fail-closed rule with fixtures for
-   changed, withdrawn, and late-corrected term rows.
+   changed, withdrawn, deleted and late-corrected term rows.
 4. Resolve one provider code to an existing canonical Person through an accepted official bridge,
-   publish the two input Claims through existing ClaimEvidence/Source gates, and rerun the
+   publish two dated role Claims through existing ClaimEvidence/Source gates, and rerun the
    CHANGE input gate.
 
 ## Deterministic comparison rule

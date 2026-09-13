@@ -93,12 +93,21 @@ path.
 
 The official [historical member-career service contract](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OD21030011944P19666)
 is the concrete validation case for this document. It is a separate service from the current
-National Assembly roster API; the catalog names its endpoint `nfzegpkvaclgtscxt` and requires a
-term-scoped `PROFILE_UNIT_CD` query. The active [CHANGE plan's source gate](../exec-plans/active/change-discovery-experience-v1.md)
-records the current L1 result: pagination and a live term-scoped sample exist, but complete
-term-code coverage, correction semantics and the service-specific rights decision do not close
-the L3 contract. Its separate term-inventory service publishes `ERACO` and term boundary fields,
-but the inspected contract does not map every historical `PROFILE_UNIT_CD` to that inventory.
+National Assembly roster API; the catalog names its endpoint `nfzegpkvaclgtscxt`, requires a
+term-scoped `PROFILE_UNIT_CD` query, labels the service version `1 (21-01-08)`, and reports no
+request limit. The active [CHANGE plan's source gate](../exec-plans/active/change-discovery-experience-v1.md)
+records the read-only 2026-09-13 contract probe: pages were complete for the observed code
+range, but the provider does not publish a finite code manifest, stable row key, correction
+semantics or service-specific reuse decision. Its separate term-inventory service publishes
+`ERACO` and term boundary fields, but its 55 response rows do not map every historical
+`PROFILE_UNIT_CD` to that inventory.
+
+The same probe fetched `PROFILE_UNIT_CD=100001..100022` page by page. The responses label those
+codes `제헌` through `제22대` and contain 5,467 rows in total; the current roster response
+contained 299 rows, with zero `MONA_CD` overlap across the observed historical rows. This is
+consistent with the service's “재직자 미포함” description, not evidence that the two services
+form a complete current-plus-former universe. `100000` and `100023` returned the provider's
+no-data response, but those probes do not establish an upper bound or a permanent manifest.
 
 This case is documentation-only. No historical-career connector, worker, source policy, database
 change, L3 promotion or CHANGE publication is authorized by this example.
@@ -110,18 +119,21 @@ change, L3 promotion or CHANGE publication is authorized by this example.
 | `MONA_CD` (for example `XQ98168F`) | Official Assembly provider identity/crosswalk value in the Assembly namespace; it can be an input to a later accepted bridge | Not `Person.id`, not proof of a canonical merge by itself, and not a term/history record key by itself |
 | `PROFILE_UNIT_CD` (for example `100019` or `100020`) | Provider term/history scope for the career row; `PROFILE_UNIT_NM` is its provider label | Not a person identifier, not an election-to-Person mapping, and not a real-world date interval |
 | `FRTO_DATE` (for example a source-reported `2012-05-30–2016-05-29` interval) | Temporal field published by this service for the source row; retain its source spelling/parse result and scope | Not capture time, not automatic proof of continuity or termination, and not permission to infer a later CHANGE |
-| `{MONA_CD}:{PROFILE_UNIT_CD}` | A possible source-scoped observation key if this lane is later persisted and the provider contract proves the combination unique | Not a canonical Person key, not a permanent global record ID, and not implemented by this milestone |
+| `{MONA_CD}:{PROFILE_UNIT_CD}` | A provider-person/term grouping value that identifies the observed scope | Not a source-record key: the probe found 17 duplicate groups among 5,467 rows, including two different periods for `0P85685J:100015`; not a canonical Person key, permanent global record ID or implemented identifier |
 | term/history scope | The declared query and coverage boundary: former-member service, selected term codes and pages | Not a complete current-plus-former universe until the provider manifest and composition are established |
 | canonical `Person` | Existing accepted Assembly identity object reached only through the downstream identity/materialization rules | Not created by parsing a row, matching a name, or concatenating provider fields |
 
 The historical service publishes fields such as `HG_NM`, `HJ_NM`, `PROFILE_SJ`, `MONA_CD`,
-`PROFILE_UNIT_CD`, `PROFILE_UNIT_NM` and `FRTO_DATE`. A future typed source record may retain
-those fields only under a reviewed policy and declared source scope. A normalized observation
-would remain attributable to the historical service and its snapshot. The current Assembly
-roster API remains a separate field authority for current roster fields; the official term
-inventory remains a separate source for the term boundaries it publishes. These sources must
-not be merged into one Source or treated as independent corroboration merely because their
-records contain the same provider code.
+`PROFILE_UNIT_CD`, `PROFILE_UNIT_NM` and `FRTO_DATE`. `PROFILE_SJ` is a composite display string;
+the service does not publish separate party, district or title columns. The probe nevertheless
+shows source-level changes: `XQ98168F` moves from `제19대 새누리당 울산 울주군` to `제20대 무소속
+울산 울주군`, and `0P85685J:100015` has two dated periods within one term. A future typed source
+record may retain these fields only under a reviewed policy and declared source scope. A
+normalized observation would remain attributable to the historical service and its snapshot.
+The current Assembly roster API remains a separate field authority for current roster fields;
+the official term inventory remains a separate source for the term boundaries it publishes.
+These sources must not be merged into one Source or treated as independent corroboration merely
+because their records contain the same provider code.
 
 If a later gate closes, an exact `MONA_CD` bridge to an existing resolved Person may support a
 downstream identity decision. That decision would still be separate from parsing, and any

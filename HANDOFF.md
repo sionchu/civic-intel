@@ -195,8 +195,8 @@ registry was added.
 The current rolling three-year Gwanbo window `2023-09-13:2026-09-13` was also registered with
 `SUCCESS`, one page and zero notices. As with the shorter window, this is a bounded current
 response and does not establish that the source has no historical personnel notices.
-The latest remote master for this handoff is `04565b95f7ef15e195ecd3a74ee8e959b0801ca4`, which
-contains the North Star document. The local Assembly proposer automatic accumulation candidate
+The previous shipped documentation baseline for this handoff was `9b94f2149ffd62c9b90206989d94908a003d68f5`.
+The local Assembly proposer automatic accumulation candidate
 from the separate review checkout is not part of this shipped state; its local run receipts and
 SQLite counts must not be used as product coverage.
 The next documentation milestone is now the active CHANGE plan. It must use only existing
@@ -207,9 +207,14 @@ fixture's metadata-only DISCOVERY_ONLY policies support rule regression, not liv
 public coverage. CHANGE implementation is therefore paused at Milestone A.
 The 2026-09-13 official Assembly historical-member API gate found a documented former-member
 service with pagination and a live sample pair for provider code `XQ98168F` across the 19th and
-20th terms. Its current-member exclusion, missing complete term-code mapping, absent correction
-fields and service-specific rights gap keep it at `L1 CONTRACT_STAGED`; this is source evidence,
-not a canonical Person/Claim or public CHANGE input.
+20th terms. A read-only page-by-page probe of the observed `PROFILE_UNIT_CD=100001..100022`
+range returned 5,467 rows with stable page totals; the current roster returned 299 rows and had
+zero `MONA_CD` overlap with those history rows. Seventeen `{MONA_CD}:{PROFILE_UNIT_CD}` groups
+were duplicated within a term, including multiple dated periods for one provider/person-term
+group. The service page does not publish a finite code manifest, row-level key, correction/version
+chain or dataset-specific reuse permission. Its current-member exclusion, incomplete coverage
+contract and rights/version gaps keep it at `L1 CONTRACT_STAGED`; this is source evidence, not a
+canonical Person/Claim or public CHANGE input.
 The follow-on documentation audit fixed the post-acquisition hierarchy and parser boundary using
 that gate as a worked example. It preserves separate official/curated Sources, keeps locators and
 revision metadata in the existing source/run/observation structures where sufficient, and leaves
@@ -326,6 +331,16 @@ Executed locally on 2026-09-12 and 2026-09-13:
 - Re-opened the official National Assembly Gazette index with the `재산` title filter and
   inspected the publication pagination, dates, preview/download controls and recent origin
   candidates; no asset row or raw Gazette file was retained.
+- Re-opened the official [Assembly historical member-career service](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OD21030011944P19666),
+  [term-inventory service](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OLFZV7001148O518934),
+  [Open API terms](https://open.assembly.go.kr/portal/policy/openUserAgreementPage.do) and
+  [copyright policy](https://open.assembly.go.kr/portal/policy/copyRightPage.do). The pages
+  expose the former-member boundary, required term filter, version label, pagination, request
+  limit display and rights conditions; the history and term responses were queried read-only with
+  the existing local credential, never persisted, and never printed. The observed 22-code map,
+  current/history zero-overlap, 17 duplicate term-group keys, consecutive/nonconsecutive career
+  controls and composite `PROFILE_SJ` changes were recorded in the active source gate. No
+  historical connector, worker, fixture, source policy, database row or CHANGE input was added.
 - Re-opened the official Presidential Office briefing list, title-filtered personnel searches,
   a multi-action detail page, the organization page and the copyright-policy page; the detail page
   visibly rendered the KOGL type 4 notice, and no live page body or raw provider payload was
@@ -440,7 +455,8 @@ Executed locally on 2026-09-12 and 2026-09-13:
 
 No CHANGE implementation, new Derived Intelligence model, recommendation algorithm, community
 feature, API/MCP extension or new feeder was executed. The Assembly historical-member API had no
-live fetch, parser, worker, fixture, migration, L3 run or CHANGE publication in this milestone.
+persisted feeder fetch, parser, worker, fixture, migration, L3 run or CHANGE publication in this
+milestone; only a read-only source-contract probe was run for coverage evidence.
 No additional feeder implementation beyond the ALIO source-specific hardening, labor
 federation/commission acquisition, MOJ/Supreme Court legal personnel acquisition, KDI
 institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
@@ -457,8 +473,11 @@ not selected because that lane requires an explicit bounded interval.
 Evidence Directory v0 has no implementation blocker. CHANGE remains blocked at the public-input
 gate until a source-approved pair is published as canonical Claim/Evidence for a resolved Person.
 Source work remains bounded by rights and
-contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; National Assembly asset disclosure and
-CleanEye remain L0 RESEARCHED; BLOCKED after the 2026-09-13 route/robots revalidation; and the labor federation/commission lanes lack a complete
+contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; the National Assembly historical-member
+career lane is L1 CONTRACT_STAGED with L3 blocked because its provider code manifest, row identity,
+correction/version and service-specific reuse contract remain open; National Assembly asset
+disclosure and CleanEye remain L0 RESEARCHED; BLOCKED after the 2026-09-13 route/robots
+revalidation; and the labor federation/commission lanes lack a complete
 universe, stable row identity, correction/version semantics and reuse contract. Those lanes can
 reopen for a finite reviewed packet only when the playbook gates close. MOJ/Supreme Court legal
 personnel likewise remain L1 with a conditional human-assisted packet path rather than a live
@@ -542,6 +561,6 @@ Latest ALIO full-enumeration hardening also touched:
 ## Next concrete action
 
 Keep the Assembly historical-member API at `L1 CONTRACT_STAGED; L3 promotion blocked` until one
-source-specific decision closes its rights, finite term-code/current-former coverage manifest,
-page/key QA and correction/version rule; only then may a separately approved implementation
-reconsider a canonical pair for the CHANGE input gate.
+source-specific decision closes its rights, provider-published finite term-code/current-former
+coverage manifest, row-level identity/version rule and page/key QA; only then may a separately
+approved implementation reconsider a canonical pair for the CHANGE input gate.
