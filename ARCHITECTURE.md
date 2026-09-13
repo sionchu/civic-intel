@@ -52,5 +52,6 @@ contact fields that are unnecessary for identity resolution.
 
 Cross-source hierarchy, typed source-record parsing, normalization, locator and revision
 semantics are defined in [Source parsing and semantics](docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md).
-The document is a boundary reference for future source-specific work; it does not add a parser
-framework, source, feeder or persistent model.
+The document is a boundary reference for future source-specific work; it does not add a live
+source/feeder, parser framework or persistent model. A narrow source-specific parser may be used
+for a bounded reviewed packet without changing the L3 boundary.

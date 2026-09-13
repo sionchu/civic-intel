@@ -83,21 +83,64 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   {section.entries.length === 0 ? (
                     <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 검토된 항목이 없습니다.</p>
                   ) : (
-                    section.entries.map((entry) => (
-                      <article className="claim" key={entry.id}>
+                    section.entries.map((entry) => {
+                      const changeDetails = entry.kind === "CHANGE" ? entry.details as {
+                        method_version?: string;
+                        derived_reason?: string;
+                        earlier?: { claim_id?: string; date?: string; predicate?: string; role_text?: string };
+                        later?: { claim_id?: string; date?: string; predicate?: string; role_text?: string };
+                        input_scope?: { correction_semantics?: string; provider_record_identity?: string };
+                        coverage?: { eligible_claim_count?: number; comparison?: string };
+                        limitations?: string[];
+                      } : null;
+                      return (
+                      <article className={`claim${changeDetails ? " change-card" : ""}`} key={entry.id}>
                         <div className="claim-heading">
-                          <span className="claim-kind">{entry.kind}</span>
+                          <span className="claim-kind">{changeDetails ? "DERIVED · CHANGE" : entry.kind}</span>
                           {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{entry.epistemic_status}</span>}
                         </div>
-                        {entry.source_conflict && (
+                        {!changeDetails && entry.source_conflict && (
                           <div className="conflict-note">
                             <span className="status CONFLICT">SOURCE CONFLICT</span>
                             <span>서로 다른 근거가 상충하며 자동으로 어느 한쪽을 진실로 판정하지 않습니다.</span>
                           </div>
                         )}
-                        <p className="claim-title">{entry.title}</p>
-                        {entry.date && <small className="claim-date">Date / {entry.date}</small>}
-                        {typeof entry.details.resolution_note === "string" && entry.details.resolution_note && (
+                        {changeDetails ? (
+                          <>
+                            <p className="claim-title">{entry.title}</p>
+                            <div className="change-sequence" aria-label="Compared dated sequence">
+                              <div className="change-point">
+                                <span className="micro-label">EARLIER · {changeDetails.earlier?.date ?? "UNKNOWN"}</span>
+                                <strong>{changeDetails.earlier?.role_text ?? "표시값 없음"}</strong>
+                                <small>{changeDetails.earlier?.predicate ?? "UNKNOWN"} · Claim {changeDetails.earlier?.claim_id ?? "UNKNOWN"}</small>
+                              </div>
+                              <span className="change-arrow" aria-hidden="true">→</span>
+                              <div className="change-point later">
+                                <span className="micro-label">LATER · {changeDetails.later?.date ?? "UNKNOWN"}</span>
+                                <strong>{changeDetails.later?.role_text ?? "표시값 없음"}</strong>
+                                <small>{changeDetails.later?.predicate ?? "UNKNOWN"} · Claim {changeDetails.later?.claim_id ?? "UNKNOWN"}</small>
+                              </div>
+                            </div>
+                            {changeDetails.derived_reason && <p className="change-reason">{changeDetails.derived_reason}</p>}
+                            <details className="audit-details">
+                              <summary>Methodology & coverage</summary>
+                              <small>
+                                Method {changeDetails.method_version ?? "UNKNOWN"}<br />
+                                Scope {changeDetails.input_scope?.provider_record_identity ?? "UNKNOWN"}<br />
+                                Correction semantics {changeDetails.input_scope?.correction_semantics ?? "UNKNOWN"}<br />
+                                Eligible inputs {changeDetails.coverage?.eligible_claim_count ?? "UNKNOWN"}<br />
+                                {changeDetails.coverage?.comparison ?? "Comparison rule unavailable"}<br />
+                                {(changeDetails.limitations ?? []).map((item) => <span key={item}>{item}<br /></span>)}
+                              </small>
+                            </details>
+                          </>
+                        ) : (
+                          <>
+                            <p className="claim-title">{entry.title}</p>
+                            {entry.date && <small className="claim-date">Date / {entry.date}</small>}
+                          </>
+                        )}
+                        {!changeDetails && typeof entry.details.resolution_note === "string" && entry.details.resolution_note && (
                           <p className="resolution">{entry.details.resolution_note}</p>
                         )}
                         {entry.evidence && entry.evidence.length > 0 ? (
@@ -133,7 +176,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                           </div>
                         ) : null}
                       </article>
-                    ))
+                      );
+                    })
                   )}
                 </section>
               ))}

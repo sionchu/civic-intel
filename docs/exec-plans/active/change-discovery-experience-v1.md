@@ -1,16 +1,17 @@
 # CHANGE discovery experience v1
 
-Status: active plan — input gate complete; public CHANGE surface blocked pending an eligible
-canonical input. Implementation has not started.
+Status: active plan — bounded Assembly reviewed-packet vertical slice implemented; live/L3
+promotion remains blocked.
 
 Date: 2026-09-13
 
 ## Objective
 
-Prove one small, profile-scoped `ROLE_SEQUENCE_CHANGE` experience from existing dated,
-published role Claims. The first implementation, if the input gate is satisfied, will be a
-read-only projection that compares two eligible Claims deterministically and presents a
-`DERIVED / CHANGE` result with an exact Claim → ClaimEvidence → Source trace.
+Prove one small, profile-scoped `ROLE_SEQUENCE_CHANGE` experience from an explicit bounded,
+reviewed Assembly historical-career packet whose dated Claims pass the existing publication
+gates. The implementation is a read-only projection that compares two eligible Claims
+deterministically and presents a `DERIVED / CHANGE` result with an exact Claim → ClaimEvidence →
+Source → SourceSnapshot → FeederObservation trace.
 
 This is a product projection, not a new truth layer. It does not create a global change feed,
 fetch a new source, add a feeder, introduce a persistent model, or promote a derived result to
@@ -18,7 +19,7 @@ fetch a new source, add a feeder, introduce a persistent model, or promote a der
 
 ## Baseline and boundaries
 
-- Baseline is `origin/master` at `5ca7be86a0d938631f83250e5e68b12ba7d474b2`.
+- Baseline is `origin/master` at `9f31b4b5ce84899e76cf97b10fa607a613756955`.
 - The root checkout's local Assembly proposer candidate is outside this plan and is not shipped
   or evidence for the public product baseline.
 - The existing `Claim`, `ClaimEvidence`, `Source`, `SourcePolicy`, `SourceSnapshot`,
@@ -145,9 +146,9 @@ Positive controls from the same bounded probe are source-level only:
   all observed history rows have zero `MONA_CD` overlap, consistent with the published exclusion.
 
 This gate is also the worked source-hierarchy and parser-boundary case in
-[Source parsing and semantics](../../architecture/SOURCE_PARSING_AND_SEMANTICS.md). It remains a
-documentation reference only: no implementation, L3 promotion or CHANGE publication follows
-from the example.
+[Source parsing and semantics](../../architecture/SOURCE_PARSING_AND_SEMANTICS.md). The live source
+gate remains documentation-only: the bounded packet proof below does not promote L3, authorize
+live acquisition or establish public source coverage.
 
 - **Field authority:** the historical service is authoritative only for the historical term
   fields it publishes; the current-member API remains a separate authority for current roster
@@ -180,9 +181,44 @@ from the example.
 **Decision: KEEP L1.** The automation ceiling remains below L3. A finite, rights-approved source
 packet may support a human-assisted source observation path, but human review cannot turn a
 provider group key into a stable row key or make an unlicensed representation reusable. The
-existing public CHANGE surface remains blocked until two dated role Claims are separately
-imported as canonical, published Claim/Evidence for a resolved Person. No connector, importer,
-API route, migration, or new source policy was added by this gate.
+existing public CHANGE surface remains blocked for live/public coverage until two dated role
+Claims are separately imported as canonical, published Claim/Evidence for a resolved Person. No
+live connector, worker, API route, migration, or new source policy was added by this gate.
+
+## Implementation result — bounded reviewed packet vertical slice (2026-09-13)
+
+The already verified source-level positive control for `MONA_CD=XQ98168F` is represented by the
+bounded fixture `tests/fixtures/assembly_historical_known_positive_001.json`: one resolved
+reviewed Person (`강길부`) with `PROFILE_UNIT_CD=100019` / `제19대` and `100020` / `제20대` records.
+The fixture is not a complete history universe, a live authorization or an automatic Person
+discovery input.
+
+The slice is deliberately source-specific and packet-only:
+
+- `packages/connectors/open_assembly_historical.py` parses only a supplied, bounded response
+  packet. It preserves `MONA_CD`, `PROFILE_UNIT_CD`, `FRTO_DATE`, `PROFILE_SJ`, source fields and
+  normalization hashes, while marking provider row identity unavailable. Repeated provider
+  person/term groups are rejected rather than assigned a fabricated row key.
+- Existing `SourceRun`, `SourceCheckpoint`, `SourceSnapshot` and `FeederObservation` persistence
+  is reused. Each packet record remains attached to its exact immutable snapshot and run; a changed
+  value under the same provider group is a new observation. No live fetch, checkpoint worker or L3
+  enumeration was added.
+- `packages/verification/assembly_historical_review.py` creates the reviewed Claim candidate only
+  after the bounded packet is parsed. The repository now retains the exact
+  `feeder_observation_id` on `ClaimEvidence` and validates its snapshot/source chain; the reviewed
+  bundle remains a fixture/manual path, not the batch main path.
+- `packages/rendering/profile_projection.py` compares only published FACT Claims carrying the
+  explicit `assembly_historical_reviewed_packet` scope, exact observation provenance, explicit
+  dates and the `PROVIDER_ROW_ID_UNAVAILABLE` marker. A same-provider-term pair is excluded, so a
+  changed value cannot be mislabeled as a provider correction or role transition.
+- The profile API and UI expose the result as `DERIVED · CHANGE` with the earlier/later Claim and
+  evidence traces, method version, packet coverage and immutable-snapshot-only correction
+  semantics. The result is not persisted as a new fact, does not create Persons, and does not
+  assert termination, motive, causation or a separate party/district change.
+
+This proves the smallest human-reviewed source-specific path while retaining the source lane at
+`L1 CONTRACT_STAGED; L3 promotion blocked`. It does not close the source rights, finite-universe,
+row-identity or provider correction gates.
 
 ### Reopen conditions
 
@@ -266,30 +302,32 @@ redistributed.
 
 ## Milestones
 
-### A. Input gate and proof
+### A. Input gate and proof — completed
 
 - Record the public-payload/fixture inventory and eligible-pair outcome.
 - Implement or test the pure comparison rule with positive, same-date, repeated-role, missing
   date, conflict, non-FACT, superseded, and unsupported-input cases.
 - Preserve Golden Set and reviewed-person regressions.
-- Stop the surface implementation if the real public corpus has no eligible pair; retain the
-  deterministic fixture proof and explicit unavailable state.
+- Keep the live/public corpus gate closed; use the bounded Assembly packet only as a reviewed
+  vertical-slice proof with explicit source scope and immutable-snapshot-only semantics.
 
-### B. Read-only projection/API
+### B. Read-only projection/API — completed
 
 - Extend the smallest existing profile response needed for the section.
 - Reuse repository reads and existing Claim/Evidence publication gates.
 - Return exact references for both input Claims; do not fetch or reinterpret a source.
 - Keep the projection absent from the Claim/FACT persistence model and from batch checkpoints.
+- Pass the source/policy maps into the projection so a derived card cannot appear without permitted
+  source provenance.
 
-### C. Profile UI
+### C. Profile UI — completed
 
 - Render the section/card with Korean-first labels and the FACT-versus-DERIVED distinction.
 - Reuse existing evidence/source cards and policy/audit details.
 - Verify desktop, mobile, keyboard focus, overflow, empty/partial, and unavailable states.
 - Do not add ranking, scoring, alerts, ideology/influence inference, or an all-people feed.
 
-### D. Verification and delivery
+### D. Verification and delivery — completed locally; push verification pending
 
 - Run focused projection, API, profile, and UI checks, then the repository DoD checks.
 - Run `ruff`, `mypy`, quality verification, web lint/typecheck/test/build, and `make verify` as
@@ -301,8 +339,8 @@ redistributed.
 
 ## Acceptance criteria
 
-1. The input gate reports a reproducible eligible pair or an explicit no-input state using only
-   existing canonical records and deterministic fixtures.
+1. The input gate reports a reproducible eligible Assembly packet pair or an explicit no-input
+   state using only existing canonical records and a bounded deterministic fixture.
 2. The result is reproducible from `method_version`, ordered Claim IDs, and a pinned input scope.
 3. Both inputs trace through ClaimEvidence and permitted Source/SourcePolicy, retaining exact
    Snapshot/FeederObservation references when available.
@@ -313,8 +351,9 @@ redistributed.
    faction, or wrongdoing claim.
 7. Source corrections and timestamps follow the stated v1 rules without mutating canonical
    claims or using `superseded_at` as an event end date.
-8. No new feeder, raw store, persistent model, migration, dependency, global feed, rank, alert,
-   recommendation, or community feature is introduced.
+8. No live feeder, raw store, persistent model, migration, dependency, global feed, rank, alert,
+   recommendation, or community feature is introduced; the packet-only parser remains source-
+   specific and does not change the L3 boundary.
 9. Existing Clean-v0 publication, identity, privacy, source-policy, and regression boundaries
    remain intact.
 10. Verification distinguishes local results, CI results, visual checks, and not-executed work;
@@ -329,6 +368,23 @@ recommendations, community/moderation, and MCP extensions are not part of this p
 
 ## Delivery note
 
-This document defines the gate and contract; it does not claim that the CHANGE surface already
-exists. On implementation, append the actual files, commands, test results, visual evidence,
-commit, and any blocker to the active plan and `HANDOFF.md`.
+This document records both the source gate and the bounded proof. The live Assembly historical
+source remains L1 with L3 promotion blocked. Append the final commands, test results, commit and
+worktree/push evidence here and in `HANDOFF.md` after delivery verification.
+
+## Delivery evidence — 2026-09-13
+
+- `.venv\\Scripts\\python.exe -m pytest -o addopts='' tests/test_assembly_historical_change.py -q`:
+  7 passed, 2 warnings.
+- `.venv\\Scripts\\python.exe -m pytest -o addopts='' -q`: 296 passed, 4 warnings.
+- `.venv\\Scripts\\python.exe -m ruff check apps packages workers tests`: passed.
+- `.venv\\Scripts\\python.exe -m mypy packages workers apps/api`: success, 53 source files.
+- `.venv\\Scripts\\python.exe -m packages.verification.quality`: passed; all Golden Set checks
+  passed.
+- `npm --prefix apps/web run lint`, `npm --prefix apps/web run typecheck`, `npm --prefix apps/web
+  test` (5 passed), and `npm --prefix apps/web run build`: passed. The build produced `/`,
+  `/admin/review` and `/people/[id]` routes.
+- The local Markdown relative-link check passed for 55 Markdown files. `git diff --check` and the
+  final `HEAD == origin/master` / clean-worktree check remain delivery steps after commit.
+- `make verify` was attempted but GNU Make is not installed on this Windows host; all constituent
+  Python and web commands were run directly. No CI result is inferred.

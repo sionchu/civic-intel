@@ -1,16 +1,31 @@
 from __future__ import annotations
 
+import hashlib
+import re
 from collections.abc import Mapping, Sequence
+from datetime import date
 from typing import Any
 from uuid import UUID
 
-from packages.domain.contracts import Claim, ClaimEvidence, Person
-from packages.domain.enums import EpistemicStatus, IdentityStatus
+from packages.connectors.open_assembly_historical import (
+    HISTORICAL_REVIEWED_INPUT_SCOPE,
+    SOURCE_RECORD_IDENTITY_UNAVAILABLE,
+)
+from packages.domain.contracts import Claim, ClaimEvidence, Person, Source, SourcePolicy
+from packages.domain.enums import (
+    EpistemicStatus,
+    EvidenceStance,
+    IdentityStatus,
+    PublicationStatus,
+)
+
+CHANGE_METHOD_VERSION = "change.role-sequence.v1"
 
 SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("identity", "신원"),
     ("summary", "한눈에 보는 요약"),
     ("career_timeline", "경력 타임라인"),
+    ("recent_changes", "최근 변화"),
     ("current_power_tasks", "현재 권한과 과업"),
     ("appointment_logic", "임명 논리"),
     ("decision_episodes", "의사결정 에피소드"),
@@ -88,18 +103,7 @@ def _claim_entry(
         "claim_id": str(claim.id),
         "evidence_ids": [str(item.id) for item in evidence],
         "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
-        "evidence": [
-            {
-                "id": str(item.id),
-                "stance": item.stance.value,
-                "source_id": str(item.source_id),
-                "snapshot_id": str(item.snapshot_id) if item.snapshot_id else None,
-                "feeder_observation_id": (
-                    str(item.feeder_observation_id) if item.feeder_observation_id else None
-                ),
-            }
-            for item in evidence
-        ],
+        "evidence": [_evidence_trace(item) for item in evidence],
         "source_conflict": {"SUPPORT", "REFUTE"} <= stances,
         "date": claim.qualifiers.get("date"),
         "details": {
@@ -109,6 +113,18 @@ def _claim_entry(
             "asserted_as_true": claim.asserted_as_true,
             "resolution_note": claim.resolution_note,
         },
+    }
+
+
+def _evidence_trace(item: ClaimEvidence) -> dict[str, Any]:
+    return {
+        "id": str(item.id),
+        "stance": item.stance.value,
+        "source_id": str(item.source_id),
+        "snapshot_id": str(item.snapshot_id) if item.snapshot_id else None,
+        "feeder_observation_id": (
+            str(item.feeder_observation_id) if item.feeder_observation_id else None
+        ),
     }
 
 
@@ -258,12 +274,209 @@ def _relationship_entries(
     return entries
 
 
+def _explicit_claim_date(claim: Claim) -> date | None:
+    value = claim.qualifiers.get("date")
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _normalized_role_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def _eligible_assembly_change_claims(
+    person: Person,
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+    sources: Mapping[UUID, Source] | None,
+    policies: Mapping[UUID, SourcePolicy] | None,
+) -> list[tuple[Claim, date, tuple[ClaimEvidence, ...]]]:
+    if person.identity_status != IdentityStatus.RESOLVED:
+        return []
+    if sources is None or policies is None:
+        return []
+
+    eligible: list[tuple[Claim, date, tuple[ClaimEvidence, ...]]] = []
+    for claim in claims:
+        if claim.person_id != person.id:
+            continue
+        if (
+            claim.superseded_at is not None
+            or claim.publication_status != PublicationStatus.PUBLISHED
+            or claim.epistemic_status != EpistemicStatus.FACT
+            or not claim.asserted_as_true
+            or claim.predicate not in {"HELD_ROLE", "APPOINTED_AS"}
+            or not _normalized_role_text(claim.object_text)
+            or claim.qualifiers.get("change_input_scope")
+            != HISTORICAL_REVIEWED_INPUT_SCOPE
+            or claim.qualifiers.get("provider_record_identity")
+            != SOURCE_RECORD_IDENTITY_UNAVAILABLE
+            or not claim.qualifiers.get("mona_cd")
+            or not claim.qualifiers.get("profile_unit_cd")
+            or not claim.qualifiers.get("source_record_fingerprint")
+        ):
+            continue
+        claim_date = _explicit_claim_date(claim)
+        if claim_date is None:
+            continue
+
+        evidence = tuple(evidence_by_claim.get(claim.id, ()))
+        stances = {item.stance for item in evidence}
+        if EvidenceStance.REFUTE in stances:
+            continue
+        supporting = tuple(
+            item
+            for item in evidence
+            if item.stance == EvidenceStance.SUPPORT
+            and item.snapshot_id is not None
+            and item.feeder_observation_id is not None
+        )
+        if not supporting:
+            continue
+        permitted_supporting = tuple(
+            item
+            for item in supporting
+            if (
+                (source := sources.get(item.source_id)) is not None
+                and (policy := policies.get(source.policy_id)) is not None
+                and policy.can_store_metadata
+            )
+        )
+        if not permitted_supporting:
+            continue
+        eligible.append((claim, claim_date, evidence))
+    eligible.sort(key=lambda item: (item[1], str(item[0].id)))
+    return eligible
+
+
+def _same_provider_term(earlier: Claim, later: Claim) -> bool:
+    return (
+        earlier.qualifiers.get("mona_cd") == later.qualifiers.get("mona_cd")
+        and earlier.qualifiers.get("profile_unit_cd")
+        == later.qualifiers.get("profile_unit_cd")
+    )
+
+
+def _change_input(
+    claim: Claim,
+    claim_date: date,
+    evidence: Sequence[ClaimEvidence],
+) -> dict[str, Any]:
+    return {
+        "claim_id": str(claim.id),
+        "date": claim_date.isoformat(),
+        "predicate": claim.predicate,
+        "role_text": claim.object_text,
+        "profile_unit_cd": claim.qualifiers.get("profile_unit_cd"),
+        "profile_unit_nm": claim.qualifiers.get("profile_unit_nm"),
+        "publication_status": claim.publication_status.value,
+        "epistemic_status": claim.epistemic_status.value,
+        "asserted_as_true": claim.asserted_as_true,
+        "evidence_ids": [str(item.id) for item in evidence],
+        "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
+        "evidence": [_evidence_trace(item) for item in evidence],
+    }
+
+
+def _assembly_role_sequence_changes(
+    person: Person,
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+    sources: Mapping[UUID, Source] | None,
+    policies: Mapping[UUID, SourcePolicy] | None,
+) -> tuple[list[dict[str, Any]], int]:
+    eligible = _eligible_assembly_change_claims(
+        person, claims, evidence_by_claim, sources, policies
+    )
+    changes: list[dict[str, Any]] = []
+    for left_index, (earlier, earlier_date, earlier_evidence) in enumerate(eligible):
+        for later, later_date, later_evidence in eligible[left_index + 1 :]:
+            if later_date <= earlier_date:
+                continue
+            if _same_provider_term(earlier, later):
+                continue
+            if earlier.qualifiers.get("mona_cd") != later.qualifiers.get("mona_cd"):
+                continue
+            if _normalized_role_text(earlier.object_text) == _normalized_role_text(
+                later.object_text
+            ):
+                continue
+
+            ordered_claim_ids = f"{earlier.id}|{later.id}"
+            presentation_key = hashlib.sha256(
+                f"{CHANGE_METHOD_VERSION}|{ordered_claim_ids}".encode()
+            ).hexdigest()
+            earlier_input = _change_input(earlier, earlier_date, earlier_evidence)
+            later_input = _change_input(later, later_date, later_evidence)
+            evidence = [*earlier_evidence, *later_evidence]
+            evidence_ids = _ordered_unique([str(item.id) for item in evidence])
+            source_ids = _ordered_unique([str(item.source_id) for item in evidence])
+            changes.append(
+                {
+                    "id": f"change:{presentation_key}",
+                    "kind": "CHANGE",
+                    "title": "국회 이력 표시값의 변화",
+                    "epistemic_status": None,
+                    "claim_id": None,
+                    "evidence_ids": evidence_ids,
+                    "source_ids": source_ids,
+                    "evidence": [_evidence_trace(item) for item in evidence],
+                    "source_conflict": False,
+                    "date": later_date.isoformat(),
+                    "details": {
+                        "presentation_key": presentation_key,
+                        "method_version": CHANGE_METHOD_VERSION,
+                        "person_id": str(person.id),
+                        "derived_type": "ROLE_SEQUENCE_CHANGE",
+                        "earlier": earlier_input,
+                        "later": later_input,
+                        "provider_identity": {
+                            "namespace": "open.assembly.go.kr",
+                            "mona_cd": earlier.qualifiers.get("mona_cd"),
+                        },
+                        "input_scope": {
+                            "mode": HISTORICAL_REVIEWED_INPUT_SCOPE,
+                            "provider_record_identity": SOURCE_RECORD_IDENTITY_UNAVAILABLE,
+                            "term_codes": [
+                                earlier.qualifiers.get("profile_unit_cd"),
+                                later.qualifiers.get("profile_unit_cd"),
+                            ],
+                            "correction_semantics": "IMMUTABLE_SNAPSHOT_ONLY",
+                        },
+                        "coverage": {
+                            "eligible_claim_count": len(eligible),
+                            "comparison": "different explicit dates and different PROFILE_SJ display text",
+                        },
+                        "derived_reason": (
+                            f"{earlier_date.isoformat()} {earlier.qualifiers.get('profile_unit_nm', '')} "
+                            f"PROFILE_SJ '{earlier.object_text}' → "
+                            f"{later_date.isoformat()} {later.qualifiers.get('profile_unit_nm', '')} "
+                            f"PROFILE_SJ '{later.object_text}'"
+                        ).strip(),
+                        "limitations": [
+                            "이 결과는 두 snapshot의 날짜가 있는 PROFILE_SJ 표시값 순서 차이만 나타냅니다.",
+                            "provider row ID와 correction/replacement 의미를 추정하지 않으며, 원래 Claim을 수정하지 않습니다.",
+                            "실제 후속 인사 상태나 배경, 정당·지역구의 별도 변화는 확정하지 않습니다.",
+                        ],
+                    },
+                }
+            )
+    return changes, len(eligible)
+
+
 def build_profile_projection(
     person: Person,
     claims: Sequence[Claim],
     evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
     relationships: Sequence[dict[str, Any]],
     decision_episodes: Sequence[dict[str, Any]],
+    *,
+    sources: Mapping[UUID, Source] | None = None,
+    policies: Mapping[UUID, SourcePolicy] | None = None,
 ) -> dict[str, Any]:
     """Build a deterministic read model without creating new profile truth."""
 
@@ -289,6 +502,9 @@ def build_profile_projection(
 
     summary_entries = _claim_entries_for(claims, evidence_by_claim, SUMMARY_PREDICATES)
     timeline_entries = _claim_entries_for(claims, evidence_by_claim, CAREER_PREDICATES)
+    recent_changes, eligible_change_claim_count = _assembly_role_sequence_changes(
+        person, claims, evidence_by_claim, sources, policies
+    )
     power_entries = _claim_entries_for(claims, evidence_by_claim, POWER_TASK_PREDICATES)
     appointment_logic_entries = _claim_entries_for(
         claims, evidence_by_claim, APPOINTMENT_LOGIC_PREDICATES
@@ -317,6 +533,28 @@ def build_profile_projection(
                 "날짜가 있는 명시적 경력·인선 predicate만 사용합니다."
                 if timeline_entries
                 else "검토된 경력 타임라인 근거가 없습니다."
+            ),
+        ),
+        _section(
+            "recent_changes",
+            "최근 변화",
+            recent_changes,
+            status=(
+                "AVAILABLE"
+                if recent_changes
+                else "PARTIAL"
+                if eligible_change_claim_count >= 2
+                else "UNKNOWN"
+            ),
+            note=(
+                "서로 다른 날짜의 Assembly historical PROFILE_SJ 표시값을 비교한 읽기 전용 결과입니다."
+                if recent_changes
+                else (
+                    "검토된 Assembly historical packet에서 비교 가능한 두 개의 날짜 있는 Claim이 "
+                    "없거나, 같은 provider term·동일 표시값만 있습니다."
+                    if eligible_change_claim_count
+                    else "검토된 Assembly historical packet의 CHANGE 입력 근거가 없습니다."
+                )
             ),
         ),
         _section(

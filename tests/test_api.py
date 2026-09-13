@@ -232,6 +232,7 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
         "identity",
         "summary",
         "career_timeline",
+        "recent_changes",
         "current_power_tasks",
         "appointment_logic",
         "decision_episodes",

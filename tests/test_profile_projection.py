@@ -52,7 +52,7 @@ def section(profile: dict, section_id: str) -> dict:
     return next(item for item in profile["sections"] if item["id"] == section_id)
 
 
-def test_profile_projection_has_stable_twelve_section_contract() -> None:
+def test_profile_projection_has_stable_thirteen_section_contract() -> None:
     claim = nomination_claim()
     evidence = nomination_evidence()
     profile = build_profile_projection(
@@ -64,7 +64,7 @@ def test_profile_projection_has_stable_twelve_section_contract() -> None:
     )
 
     assert profile["section_order"] == [item[0] for item in SECTION_DEFINITIONS]
-    assert len(profile["sections"]) == 12
+    assert len(profile["sections"]) == 13
     assert profile["semantics"] == "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE"
 
 

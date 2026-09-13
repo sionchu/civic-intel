@@ -22,11 +22,27 @@ from .open_assembly_bills import (
     OpenAssemblyBillConnector,
     national_assembly_bill_policy,
 )
+from .open_assembly_historical import (
+    HISTORICAL_API_CODE,
+    HISTORICAL_FEEDER,
+    HISTORICAL_REVIEWED_INPUT_SCOPE,
+    HISTORICAL_SEMANTIC_SCOPE,
+    AssemblyHistoricalCareerError,
+    AssemblyHistoricalCareerRecord,
+    parse_historical_career_records,
+    validate_reviewed_packet,
+)
 
 __all__ = [
+    "HISTORICAL_API_CODE",
+    "HISTORICAL_FEEDER",
+    "HISTORICAL_REVIEWED_INPUT_SCOPE",
+    "HISTORICAL_SEMANTIC_SCOPE",
     "LOCAL_ELECTION_TYPES",
     "AssemblyApiError",
     "AssemblyBillRecord",
+    "AssemblyHistoricalCareerError",
+    "AssemblyHistoricalCareerRecord",
     "AssemblyMemberRecord",
     "Connector",
     "ConnectorDocument",
@@ -43,4 +59,6 @@ __all__ = [
     "national_assembly_bill_policy",
     "national_assembly_member_policy",
     "nec_local_election_policy",
+    "parse_historical_career_records",
+    "validate_reviewed_packet",
 ]

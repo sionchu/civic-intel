@@ -90,6 +90,13 @@ def create_app(
         person_claims = [
             claim_payload(claim, evidence_by_claim[claim.id]) for claim in published_claims
         ]
+        source_ids = {
+            item.source_id
+            for claim_evidence in evidence_by_claim.values()
+            for item in claim_evidence
+        }
+        source_map = target.sources(source_ids)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
         relationships = target.relationships(person_id)
         decision_episodes = target.decision_episodes(person_id)
         profile = build_profile_projection(
@@ -98,6 +105,8 @@ def create_app(
             evidence_by_claim,
             relationships,
             decision_episodes,
+            sources=source_map,
+            policies=policy_map,
         )
         return item.model_dump(mode="json") | {
             "claims": person_claims,

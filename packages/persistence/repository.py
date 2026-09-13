@@ -987,6 +987,36 @@ class SqlAlchemyRepository:
                         )
                     snapshots[snapshot_id] = self._snapshot(snapshot_row)
 
+                for evidence in bundle.evidence:
+                    if evidence.feeder_observation_id is None:
+                        continue
+                    observation_row = session.get(
+                        FeederObservationRow, str(evidence.feeder_observation_id)
+                    )
+                    if observation_row is None:
+                        raise ReviewedPersonImportError(
+                            "reviewed import references missing feeder observation: "
+                            f"{evidence.feeder_observation_id}"
+                        )
+                    if evidence.snapshot_id is None:
+                        raise ReviewedPersonImportError(
+                            "ClaimEvidence with feeder observation requires a snapshot: "
+                            f"{evidence.id}"
+                        )
+                    if str(evidence.snapshot_id) != observation_row.snapshot_id:
+                        raise ReviewedPersonImportError(
+                            "ClaimEvidence snapshot does not match feeder observation: "
+                            f"{evidence.id}"
+                        )
+                    snapshot_row = session.get(
+                        SourceSnapshotRow, str(evidence.snapshot_id)
+                    )
+                    if snapshot_row is None or snapshot_row.source_id != str(evidence.source_id):
+                        raise ReviewedPersonImportError(
+                            "ClaimEvidence source does not match feeder observation snapshot: "
+                            f"{evidence.id}"
+                        )
+
                 evidence_by_claim = {
                     claim.id: [item for item in bundle.evidence if item.claim_id == claim.id]
                     for claim in bundle.claims
@@ -1079,6 +1109,11 @@ class SqlAlchemyRepository:
                             claim_id=str(evidence.claim_id),
                             source_id=str(evidence.source_id),
                             snapshot_id=str(evidence.snapshot_id) if evidence.snapshot_id else None,
+                            feeder_observation_id=(
+                                str(evidence.feeder_observation_id)
+                                if evidence.feeder_observation_id
+                                else None
+                            ),
                             stance=evidence.stance.value,
                             excerpt=evidence.excerpt,
                         )

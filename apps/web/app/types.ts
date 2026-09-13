@@ -31,7 +31,7 @@ export type Claim = {
 
 export type ProfileEntry = {
   id: string;
-  kind: "IDENTITY" | "CLAIM" | "DECISION_EPISODE" | "RELATIONSHIP" | "LIMITATION";
+  kind: "IDENTITY" | "CLAIM" | "CHANGE" | "DECISION_EPISODE" | "RELATIONSHIP" | "LIMITATION";
   title: string;
   epistemic_status: Status | null;
   claim_id: string | null;

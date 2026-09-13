@@ -3,9 +3,10 @@
 ## Objective
 
 Maintain the evidence-first Civic Intel foundation and carry the completed Evidence Directory v0,
-site v1 and North Star into the first small Derived Intelligence product slice. The immediate
-next slice is a source-traceable CHANGE experience over existing canonical Claim/Evidence and
-temporal records. Keep OpenWatch and new feeder expansion outside that slice.
+site v1 and North Star into the first small Derived Intelligence product slice. The current slice
+is a source-traceable CHANGE experience over an explicitly bounded Assembly historical reviewed
+packet, using existing canonical Claim/Evidence and temporal records. Keep live historical
+acquisition, OpenWatch and new feeder expansion outside that slice.
 
 ## Scope
 
@@ -16,7 +17,8 @@ unless an internal/test caller explicitly enables it. The long-term product dire
 canonical `docs/product/CIVIC_INTEL_NORTH_STAR.md`; the immediate CHANGE plan must preserve the
 existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when present,
 `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
-migration, feeder, search infrastructure, recommendation algorithm or new persistence abstraction.
+migration, live feeder, search infrastructure, recommendation algorithm or new persistence
+abstraction.
 
 ## Acceptance criteria
 
@@ -35,8 +37,8 @@ migration, feeder, search infrastructure, recommendation algorithm or new persis
 - Public claim, relationship and episode reads exclude superseded temporal rows.
 - Existing Golden Set, batch materialization and reviewed-person behavior remains intact.
 - A first CHANGE experience has a source-specific input scope, deterministic comparison rule,
-  visible evidence/provenance trace, explicit coverage/limitations and a fixture-first acceptance
-  plan before implementation.
+  visible evidence/provenance trace, explicit coverage/limitations and a bounded reviewed-packet
+  acceptance path.
 - Derived output remains visibly separate from FACT/CLAIM/UNKNOWN and does not add a new
   `EpistemicStatus` or silently alter publication semantics.
 
@@ -93,19 +95,24 @@ migration, feeder, search infrastructure, recommendation algorithm or new persis
 - Added `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md` as the companion governing document
   for source hierarchy, typed source-record parsing, normalization, locators and revision
   semantics. It reuses the existing SourcePolicy/SourceSnapshot/FeederObservation foundation and
-  does not add a parser framework, source, feeder, schema or dependency.
+  does not add a parser framework, live source/feeder, schema or dependency.
 - Used the National Assembly historical member-career API gate as the concrete boundary case:
   `MONA_CD` is a provider identity/crosswalk value, `PROFILE_UNIT_CD` is term/history scope,
   `FRTO_DATE` is a source temporal field, and a possible `{MONA_CD}:{PROFILE_UNIT_CD}` value is
   only a source-scoped observation key. The lane remains `L1 CONTRACT_STAGED; L3 promotion
-  blocked`; no implementation, L3 promotion or CHANGE publication was performed.
+  blocked`; the live source gate did not authorize L3 promotion or live CHANGE coverage.
+- Implemented the bounded Assembly reviewed-packet vertical slice: typed packet parsing, immutable
+  `SourceRun`/`SourceSnapshot`/`FeederObservation` staging, reviewed Claim/Evidence import with
+  exact observation provenance, and a read-only profile `DERIVED · CHANGE` projection/UI for the
+  known-positive `XQ98168F` pair. No live historical fetch, L3 worker, new schema or new feeder was
+  added.
 
 ## Current checkpoint
 
-Evidence Directory v0, site v1 and the North Star documentation milestone are complete in the
-working tree and all
-direct verification commands pass. The only runner limitation is that GNU Make is unavailable on
-this Windows host, so the Makefile's constituent commands were executed directly. The seven
+Evidence Directory v0, site v1, the North Star documentation milestone and the bounded Assembly
+CHANGE proof are complete in the working tree. Direct verification commands pass. The only runner
+limitation is that GNU Make is unavailable on this Windows host, so the Makefile's constituent
+commands were executed directly. The seven
 existing L3 feeders and the blocked MPM, National Assembly asset, CleanEye and roll-call source
 gates are unchanged. The 2026-09-12 official MPM revalidation confirmed 125 mixed `취업` board
 posts over 9 pages, 405 mixed ethics-board posts over 27 pages, bundled historical PDF posts,
@@ -199,12 +206,13 @@ The previous shipped documentation baseline for this handoff was `9b94f2149ffd62
 The local Assembly proposer automatic accumulation candidate
 from the separate review checkout is not part of this shipped state; its local run receipts and
 SQLite counts must not be used as product coverage.
-The next documentation milestone is now the active CHANGE plan. It must use only existing
-published claim/evidence inputs until a source-specific feeder or schema receives its own gate.
+The active CHANGE plan now uses only existing canonical persistence and a bounded reviewed packet;
+it does not require a new feeder or schema.
 The input gate found one eligible role Claim in the Golden public seed (zero pairs), while the
 reviewed Kim Hyun-ji fixture has four eligible Claims and four cross-date proof pairs. The
 fixture's metadata-only DISCOVERY_ONLY policies support rule regression, not live acquisition or
-public coverage. CHANGE implementation is therefore paused at Milestone A.
+public coverage. The Assembly packet proof completed the read-only projection/API and profile UI
+milestones while the live/public input gate remains closed.
 The 2026-09-13 official Assembly historical-member API gate found a documented former-member
 service with pagination and a live sample pair for provider code `XQ98168F` across the 19th and
 20th terms. A read-only page-by-page probe of the observed `PROFILE_UNIT_CD=100001..100022`
@@ -220,6 +228,15 @@ that gate as a worked example. It preserves separate official/curated Sources, k
 revision metadata in the existing source/run/observation structures where sufficient, and leaves
 first-class release/document/field-lineage models as future options only when a real source
 requires them.
+
+The packet proof uses `tests/fixtures/assembly_historical_known_positive_001.json` for one resolved
+reviewed Person (`강길부`, `MONA_CD=XQ98168F`) and the `제19대`/`제20대` records. The parser keeps
+`MONA_CD` and `PROFILE_UNIT_CD` as provider-scoped values, retains `FRTO_DATE` as the source
+temporal field, marks row identity unavailable, and rejects repeated person/term groups. Each
+ClaimEvidence row retains its exact observation and snapshot chain. A same-group changed value is
+stored as another immutable observation and is excluded from CHANGE; only the two dated term
+Claims produce the bounded derived sequence card. This is a reviewed fixture/manual path, not the
+batch main path or a public completeness claim.
 
 ## Decisions and reasons
 
@@ -283,9 +300,10 @@ requires them.
 - Parsing stops at a typed provider record or normalized observation candidate. It preserves source
   authority, scope, field-level provenance and explicit missingness, but cannot merge Persons,
   publish Claims, infer derived CHANGE or repair missing values.
-- The Assembly historical-career API is a documentation/parser-boundary case only. `MONA_CD`,
-  `PROFILE_UNIT_CD` and `FRTO_DATE` must not be conflated with canonical identity, real-world
-  CHANGE time or a permanent record key.
+- The Assembly historical-career API remains a documentation/parser-boundary case for live
+  acquisition. Its bounded reviewed fixture proves a source-scoped derived sequence only:
+  `MONA_CD`, `PROFILE_UNIT_CD` and `FRTO_DATE` must not be conflated with canonical identity,
+  real-world CHANGE time or a permanent record key.
 
 ## Verification evidence
 
@@ -450,13 +468,22 @@ Executed locally on 2026-09-12 and 2026-09-13:
   root build then passed and generated `/`, `/_not-found`, `/admin/review` and `/people/[id]`.
 - `make verify` was not runnable because GNU Make is not installed on this Windows host; the
   constituent Python and web checks above were run directly.
+- Current bounded Assembly CHANGE proof verification: `tests/test_assembly_historical_change.py`
+  passed 7 tests with 2 warnings; the full Python suite passed 296 tests with 4 warnings; Ruff
+  passed; mypy passed for 53 source files; and the Golden quality report passed all checks.
+- Current web verification passed lint, typecheck, 5 UI tests and production build. The build
+  generated `/`, `/_not-found`, `/admin/review` and `/people/[id]` routes. The local Markdown
+  relative-link check passed for 55 Markdown files. `make verify` was attempted in this worktree
+  and remains runner-unavailable because GNU Make is not installed.
+- The new regression covers missing/mismatched observation provenance: a ClaimEvidence item that
+  references a feeder observation must retain its snapshot and matching source chain.
 
 ## Not executed
 
-No CHANGE implementation, new Derived Intelligence model, recommendation algorithm, community
-feature, API/MCP extension or new feeder was executed. The Assembly historical-member API had no
-persisted feeder fetch, parser, worker, fixture, migration, L3 run or CHANGE publication in this
-milestone; only a read-only source-contract probe was run for coverage evidence.
+No live CHANGE acquisition, new Derived Intelligence model, recommendation algorithm, community
+feature, API/MCP extension or new feeder was executed. A packet-only Assembly parser, deterministic
+reviewed fixture and read-only derived profile projection were added for the bounded proof; no
+live historical fetch, worker, migration, L3 run or public CHANGE coverage was added.
 No additional feeder implementation beyond the ALIO source-specific hardening, labor
 federation/commission acquisition, MOJ/Supreme Court legal personnel acquisition, KDI
 institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
@@ -470,8 +497,9 @@ not selected because that lane requires an explicit bounded interval.
 
 ## Blockers
 
-Evidence Directory v0 has no implementation blocker. CHANGE remains blocked at the public-input
-gate until a source-approved pair is published as canonical Claim/Evidence for a resolved Person.
+Evidence Directory v0 has no implementation blocker. The bounded reviewed packet proves the
+read-only CHANGE path for one resolved Person, but live/public CHANGE coverage remains blocked at
+the source-approved input gate.
 Source work remains bounded by rights and
 contract gaps: MPM is L1 CONTRACT_STAGED with L3 blocked; the National Assembly historical-member
 career lane is L1 CONTRACT_STAGED with L3 blocked because its provider code manifest, row identity,
@@ -558,9 +586,25 @@ Latest ALIO full-enumeration hardening also touched:
 - `tests/test_batch_alio_executives.py`
 - `workers/public_institutions.py`
 
+Current bounded Assembly CHANGE proof files:
+
+- `packages/connectors/open_assembly_historical.py`
+- `packages/verification/assembly_historical_review.py`
+- `packages/persistence/repository.py`
+- `packages/rendering/profile_projection.py`
+- `apps/api/main.py`
+- `apps/web/app/people/[id]/page.tsx`
+- `apps/web/app/styles.css`
+- `apps/web/app/types.ts`
+- `apps/web/tests/ui.test.mjs`
+- `tests/fixtures/assembly_historical_known_positive_001.json`
+- `tests/test_assembly_historical_change.py`
+- `tests/test_api.py`
+- `tests/test_profile_projection.py`
+
 ## Next concrete action
 
 Keep the Assembly historical-member API at `L1 CONTRACT_STAGED; L3 promotion blocked` until one
 source-specific decision closes its rights, provider-published finite term-code/current-former
-coverage manifest, row-level identity/version rule and page/key QA; only then may a separately
-approved implementation reconsider a canonical pair for the CHANGE input gate.
+coverage manifest, row-level identity/version rule and page/key QA. Until then, retain the
+packet-only reviewed proof as a bounded regression and do not treat it as live/public coverage.

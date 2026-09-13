@@ -1,9 +1,12 @@
 # Source parsing and semantics
 
-Status: governing architecture reference, documentation-only audit on 2026-09-13.
+Status: governing architecture reference, source-boundary audit and bounded packet proof on
+2026-09-13.
 This document fixes the boundary between source acquisition, parsing, normalized observations,
-canonical records and derived product output. It does not approve a source, add a collection
-mode, create a feeder, change a schema, promote a lane to L3, or publish a CHANGE result.
+canonical records and derived product output. It does not approve a source, add a live collection
+mode, create an L3 feeder, change a schema, or promote a lane to L3. A bounded reviewed packet may
+exercise the existing Claim/Evidence and derived projection path only when its source identity,
+snapshot and policy references remain attached.
 
 The [source acquisition playbook](FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook) remains
 the authority for acquisition modes, maturity ceilings, rights gates and human-assisted packet
@@ -109,8 +112,10 @@ consistent with the service's “재직자 미포함” description, not evidenc
 form a complete current-plus-former universe. `100000` and `100023` returned the provider's
 no-data response, but those probes do not establish an upper bound or a permanent manifest.
 
-This case is documentation-only. No historical-career connector, worker, source policy, database
-change, L3 promotion or CHANGE publication is authorized by this example.
+The source gate remains documentation-only for live acquisition. The repository now contains a
+packet-only typed parser and deterministic reviewed fixture for this case; they do not authorize a
+historical-career connector, worker, source-policy expansion, database change, L3 promotion or
+live CHANGE coverage.
 
 ### Identity, scope, time and record key are different
 
@@ -306,7 +311,7 @@ The following inventory is based on the current repository, not a proposed unive
 |---|---|---|
 | Assembly current roster | `packages/connectors/open_assembly.py`, `workers/assembly_roster.py` | JSON typed records; `MONA_CD` provider key; source-specific L3 enumeration and the only automatic Assembly materialization path |
 | Assembly bill participation | `packages/connectors/open_assembly_bills.py`, `workers/legislative_activity.py` | Code-first bill records keyed by `BILL_ID`; multi-person observation; no Person creation |
-| Assembly historical member career | Active plan source gate only | `L1 CONTRACT_STAGED`; no parser, worker, migration, L3 run or CHANGE publication |
+| Assembly historical member career | `packages/connectors/open_assembly_historical.py`; `packages/verification/assembly_historical_review.py`; bounded fixture in `tests/fixtures/assembly_historical_known_positive_001.json` | Packet-only typed parsing and reviewed Claim/Evidence proof for one resolved Assembly Person; immutable snapshots are required, provider row identity/correction semantics remain unavailable, and no live worker/migration/L3 run exists |
 | Gwanbo personnel notices | `packages/connectors/gwanbo_personnel.py`, `workers/gwanbo_personnel.py` | Bounded HTML/POST notice parser keyed by notice ID; metadata-only observation; no Person |
 | NEC candidates/winners | `packages/connectors/nec_local_elections.py`, `workers/local_elections.py` | Source-specific API parsers keyed by NEC `huboid` within election scope; candidate-submitted semantics preserved |
 | ALIO public-institution executives | `packages/connectors/alio_disclosures.py`, `workers/public_institutions.py` | Directory/report/document/table parsing; `disclosure_no:ordinal` observation keys; vacancies, masks and corrections explicit |
@@ -317,9 +322,10 @@ The following inventory is based on the current repository, not a proposed unive
 | Labor, policy research and company profiles | `packages/connectors/labor_union_records.py`, `nkis_research.py`, `company_official_profiles.py` plus their workers | Bounded/staging parsers with explicit scope and missingness; no generic roster or identity registry |
 | Shared transport/capture | `packages/connectors/http.py`, `workers/ingest.py` | Policy-aware transport and source snapshot capture only; no discovery/parser registry |
 
-The historical Assembly service has no parser-specific regression file in the current tree. Its
-contract facts and blockers live in the active plan and are used here as a boundary case, not as
-evidence that an implementation exists.
+The historical Assembly service has no live connector or parser-driven enumeration in the current
+tree. The parser-specific regression file exercises only a bounded known-positive packet and the
+existing persistence/projection chain; its fixture is not a complete history universe or a live
+source authorization.
 
 ## Storage and PostgreSQL impact
 
@@ -341,6 +347,9 @@ The existing tests are the evidence for the current source-specific architecture
 
 - `test_open_assembly.py` and `test_open_assembly_bills.py` cover policy-first access, key
   separation/redaction, typed fields and metadata-only source boundaries.
+- `test_assembly_historical_change.py` covers source-key separation, bounded historical packet
+  parsing, immutable observation/version behavior, ClaimEvidence provenance and the source-scoped
+  derived CHANGE proof; the historical test does not perform a live fetch.
 - `test_batch_assembly.py`, `test_batch_assembly_bills.py`, `test_batch_gwanbo.py`,
   `test_batch_nec_candidates.py`, `test_batch_nec_winners.py`, `test_batch_alio_executives.py`
   and `test_batch_opendart_executives.py` cover source-specific scope, page totals, duplicate
@@ -351,9 +360,10 @@ The existing tests are the evidence for the current source-specific architecture
 - Staging tests for civil service/MPM, legal, presidential, NEC, ALIO, policy and company lanes
   cover typed normalization, explicit missingness and identity-safe source attribution.
 
-For this documentation milestone, run the repository's existing verification commands and a
-relative-link check. Do not run a live historical-career fetch, add a fixture that implies a
-complete history universe, download a new packet, or claim L3/CHANGE evidence from this document.
+For the source-boundary portion, run the repository's existing verification commands and a
+relative-link check. The packet proof may produce a derived CHANGE in the test fixture only; do
+not run a live historical-career fetch, add a fixture that implies a complete history universe,
+download a new packet, or treat the proof as L3/live coverage.
 
 ## Boundary checklist for a future source
 

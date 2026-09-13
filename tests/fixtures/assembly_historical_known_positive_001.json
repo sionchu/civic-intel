@@ -1,0 +1,29 @@
+{
+  "id": "ASSEMBLY_HISTORICAL_KNOWN_POSITIVE_001",
+  "review_note": "Two previously verified, bounded historical-service rows for one reviewed Person. This is a packet fixture, not a complete term universe or a live acquisition authorization.",
+  "person": {
+    "id": "00000000-0000-0000-0000-000000009301",
+    "canonical_name": "강길부",
+    "birth_date": null,
+    "identity_status": "RESOLVED"
+  },
+  "member_code": "XQ98168F",
+  "records": [
+    {
+      "HG_NM": "강길부",
+      "MONA_CD": "XQ98168F",
+      "PROFILE_UNIT_CD": "100019",
+      "PROFILE_UNIT_NM": "제19대",
+      "FRTO_DATE": "2012.05.30 ~ 2016.05.29",
+      "PROFILE_SJ": "새누리당 울산 울주군"
+    },
+    {
+      "HG_NM": "강길부",
+      "MONA_CD": "XQ98168F",
+      "PROFILE_UNIT_CD": "100020",
+      "PROFILE_UNIT_NM": "제20대",
+      "FRTO_DATE": "2016.05.30 ~ 2020.05.29",
+      "PROFILE_SJ": "무소속 울산 울주군"
+    }
+  ]
+}
