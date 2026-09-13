@@ -1,5 +1,9 @@
 # Architecture
 
+Long-term product direction and the Evidence Core / Derived Intelligence / Product boundary
+are defined in [Civic Intel North Star](docs/product/CIVIC_INTEL_NORTH_STAR.md). Future analysis
+and access layers consume this architecture; they do not alter current canonical contracts or gates.
+
 ## Authority and dependency direction
 
 `packages/domain → packages/verification + packages/connectors → packages/persistence + workers → apps/api → apps/web`

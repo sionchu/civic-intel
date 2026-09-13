@@ -1,5 +1,8 @@
 # V0 scope
 
+[Civic Intel North Star](CIVIC_INTEL_NORTH_STAR.md) defines the long-term direction. Its future
+surfaces do not expand this V0 scope or supersede the current design and source gates.
+
 V0 proves a policy-first pipeline using Golden Set 001: the ten people named in the
 2026-08-30 presidential personnel briefing. The fixture stores manually reviewed source
 metadata, short excerpts, identity anchors, atomic claims, evidence stances, origin

@@ -31,6 +31,7 @@ implementation work.
 - [Corporate talent feeder](architecture/CORPORATE_TALENT_FEEDER.md)
 - [Presidential personnel feeder](architecture/PRESIDENTIAL_PERSONNEL_FEEDER.md)
 - [V0 scope](product/V0_SCOPE.md)
+- [North Star and Derived Intelligence boundaries](product/CIVIC_INTEL_NORTH_STAR.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Batch ingestion agent](roles/BATCH_INGESTION_AGENT.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)
