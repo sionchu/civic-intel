@@ -162,6 +162,8 @@ def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(tm
     ]
     assert [item["epistemic_status"] for item in controversy["entries"]] == ["CLAIM", "FACT"]
     assert all(item["source_ids"] == [CONTROVERSY_SOURCE] for item in controversy["entries"])
+    assert controversy["entries"][0]["details"]["asserted_as_true"] is False
+    assert controversy["entries"][1]["details"]["asserted_as_true"] is True
 
 
 def test_career_enrichment_does_not_infer_transfer_motive_or_older_roles(tmp_path: Path) -> None:
@@ -177,6 +179,7 @@ def test_career_enrichment_does_not_infer_transfer_motive_or_older_roles(tmp_pat
     assert "경기도청 비서관" not in rendered
     assert "가짜뉴스" not in rendered
     assert "debunked" not in rendered
+    assert "팩트체크 결과 거짓" not in rendered
     assert "faction" not in rendered
     assert "loyalty" not in rendered
     assert "influence_score" not in rendered
