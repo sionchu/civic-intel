@@ -2,19 +2,21 @@
 
 ## Objective
 
-Complete Evidence Directory v0 and its site v1 read-only product surface over Civic Intel's
-existing evidence-first contracts. Keep OpenWatch and future feeder expansion out of this
-milestone.
+Maintain the evidence-first Civic Intel foundation and carry the completed Evidence Directory v0,
+site v1 and North Star into the first small Derived Intelligence product slice. The immediate
+next slice is a source-traceable CHANGE experience over existing canonical Claim/Evidence and
+temporal records. Keep OpenWatch and new feeder expansion outside that slice.
 
 ## Scope
 
-Public resolved-person roster, evidence-backed person profile, explicit epistemic/stance/conflict
-rendering, source-policy audit projection, responsive site shell, and a separate read-only identity
-review surface that is unavailable from the public API unless an internal/test caller explicitly
-enables it.
-Reuse the existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when
-present, `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
-migration, feeder, search infrastructure, or new persistence abstraction.
+The current scope includes the public resolved-person roster, evidence-backed person profile,
+explicit epistemic/stance/conflict rendering, source-policy audit projection, responsive site
+shell, and a separate read-only identity review surface that is unavailable from the public API
+unless an internal/test caller explicitly enables it. The long-term product direction is the
+canonical `docs/product/CIVIC_INTEL_NORTH_STAR.md`; the immediate CHANGE plan must preserve the
+existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when present,
+`ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
+migration, feeder, search infrastructure, recommendation algorithm or new persistence abstraction.
 
 ## Acceptance criteria
 
@@ -32,6 +34,11 @@ migration, feeder, search infrastructure, or new persistence abstraction.
   or incomplete episode rows fail closed instead of being rendered as FACT.
 - Public claim, relationship and episode reads exclude superseded temporal rows.
 - Existing Golden Set, batch materialization and reviewed-person behavior remains intact.
+- A first CHANGE experience has a source-specific input scope, deterministic comparison rule,
+  visible evidence/provenance trace, explicit coverage/limitations and a fixture-first acceptance
+  plan before implementation.
+- Derived output remains visibly separate from FACT/CLAIM/UNKNOWN and does not add a new
+  `EpistemicStatus` or silently alter publication semantics.
 
 ## Completed
 
@@ -76,10 +83,18 @@ migration, feeder, search infrastructure, or new persistence abstraction.
   unchanged reruns, changed provider versions, same-name review, birth-date hard conflict,
   publication rollback, resume coverage and public `/people`/profile provenance. No other feeder,
   schema, migration, dependency or UI path changed.
+- Added `docs/product/CIVIC_INTEL_NORTH_STAR.md` as the canonical long-term direction and
+  Derived Intelligence boundary. Linked it from `ARCHITECTURE.md`, `docs/INDEX.md` and
+  `docs/product/V0_SCOPE.md`; no code, schema, migration, feeder or dependency was added.
+- Defined the first CHANGE discovery slice in
+  `docs/exec-plans/active/change-discovery-experience-v1.md`. The plan uses existing temporal
+  Claim/Evidence inputs, requires pinned scope and provenance, and leaves implementation for the
+  next approved vertical slice.
 
 ## Current checkpoint
 
-Evidence Directory v0 and its post-review hardening are complete in the working tree and all
+Evidence Directory v0, site v1 and the North Star documentation milestone are complete in the
+working tree and all
 direct verification commands pass. The only runner limitation is that GNU Make is unavailable on
 this Windows host, so the Makefile's constituent commands were executed directly. The seven
 existing L3 feeders and the blocked MPM, National Assembly asset, CleanEye and roll-call source
@@ -171,6 +186,16 @@ registry was added.
 The current rolling three-year Gwanbo window `2023-09-13:2026-09-13` was also registered with
 `SUCCESS`, one page and zero notices. As with the shorter window, this is a bounded current
 response and does not establish that the source has no historical personnel notices.
+The latest remote master for this handoff is `c2b67fbe16bd7c31b605ad19ecb06ce78ae56e29`, which
+contains the North Star document. The local Assembly proposer automatic accumulation candidate
+from the separate review checkout is not part of this shipped state; its local run receipts and
+SQLite counts must not be used as product coverage.
+The next documentation milestone is now the active CHANGE plan. It must use only existing
+published claim/evidence inputs until a source-specific feeder or schema receives its own gate.
+The input gate found one eligible role Claim in the Golden public seed (zero pairs), while the
+reviewed Kim Hyun-ji fixture has four eligible Claims and four cross-date proof pairs. The
+fixture's metadata-only DISCOVERY_ONLY policies support rule regression, not live acquisition or
+public coverage. CHANGE implementation is therefore paused at Milestone A.
 
 ## Decisions and reasons
 
@@ -220,6 +245,13 @@ response and does not establish that the source has no historical personnel noti
   current `disclosureNo` and disclosure-row ordinal remain provider/source keys, not Person
   authority; empty current reports, masked/vacant seats and correction-only reports are explicit
   observation states.
+- The North Star keeps `Evidence Core`, `Derived Intelligence` and `Public/Product Experience`
+  as conceptual layers without adding database enums or parallel models. `CHANGE`,
+  `CONTRADICTION`, `COMPARISON`, `CONNECTION` and `MONEY` are discovery primitives, not new
+  tables.
+- A CHANGE result must be computed from a declared pair or set of canonical records with valid
+  time, recorded time, source coverage and correction handling. It cannot be inferred from a
+  changed fetch timestamp alone or presented as a FACT.
 
 ## Verification evidence
 
@@ -331,6 +363,11 @@ Executed locally on 2026-09-12 and 2026-09-13:
   `7fb747a3f6a8ef15903c91dfd721bca34c048198` completed successfully; the `verify` job took 1m16s
   and passed canonical verification plus the Alembic round trip. The only annotation was the
   existing Node.js 20 deprecation notice.
+- North Star documentation verification on `c2b67fbe16bd7c31b605ad19ecb06ce78ae56e29`: 47 local
+  relative-document links passed, `git diff --check` passed, Python 289 tests passed with 4
+  warnings, Ruff passed, mypy passed for 51 source files, Golden quality passed, and web lint,
+  typecheck, 5 tests and production build passed. GitHub Actions `Verify` run `34755498332`
+  completed successfully, including canonical verification and Alembic round trip.
 - Public default `create_app()` returns 404 for `/admin/review`; the test/internal opt-in path
   retains the read-only review regression coverage.
 - Hardening Alembic `upgrade head -> downgrade -1 -> upgrade head` round-trip passed; no migration
@@ -360,14 +397,17 @@ Executed locally on 2026-09-12 and 2026-09-13:
 
 ## Not executed
 
-No additional feeder implementation beyond the ALIO source-specific hardening, labor
+No CHANGE implementation, new Derived Intelligence model, recommendation algorithm, community
+feature, API/MCP extension or new feeder was executed. No additional feeder implementation
+beyond the ALIO source-specific hardening, labor
 federation/commission acquisition, MOJ/Supreme Court legal personnel acquisition, KDI
 institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
 provider payload browser, schema change, migration file, dependency install, admin write action,
 authenticated operator system or production deployment was performed. No official labor or
 legal attachment was downloaded or retained. The public review route remains intentionally
 unavailable until an operator access boundary is designed. Assembly, NEC and OpenDART full-list
-runs were not started because their runtime credentials are absent; further Gwanbo windows were
+runs were not started in this shipped checkout because their runtime credentials are absent; the
+separate local review checkout's Assembly proposer run is not shipped. Further Gwanbo windows were
 not selected because that lane requires an explicit bounded interval.
 
 ## Blockers
@@ -425,6 +465,14 @@ produce no name universe.
 - `docs/exec-plans/active/cleaneye-local-public-institution-executives-l3.md`
 - `HANDOFF.md`
 
+North Star documentation milestone:
+
+- `docs/product/CIVIC_INTEL_NORTH_STAR.md`
+- `ARCHITECTURE.md`
+- `docs/INDEX.md`
+- `docs/product/V0_SCOPE.md`
+- `docs/exec-plans/active/change-discovery-experience-v1.md`
+
 Latest ALIO full-enumeration hardening also touched:
 
 - `docs/architecture/BATCH_INGESTION.md`
@@ -439,6 +487,6 @@ Latest ALIO full-enumeration hardening also touched:
 
 ## Next concrete action
 
-Run the next source-bounded full list: the unfiltered National Assembly roster with an
-operator-injected `ASSEMBLY_API_KEY`, keeping materialization disabled until the committed
-observation coverage is reviewed.
+Run one source-contract gate for an official, rights-approved personnel-history source that can
+supply at least two dated role records for one resolved Person; reopen the CHANGE input gate only
+if that pair is actually present.
