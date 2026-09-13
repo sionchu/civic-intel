@@ -1,7 +1,7 @@
 {
   "id": "REVIEWED_PERSON_KIM_HYUNJI_001",
   "as_of": "2026-08-31",
-  "review_note": "Metadata-only neutral fact-profiling fixture. A political allegation and the Presidential Office response are stored as separate epistemic objects; the bundle does not adjudicate the allegation's truth.",
+  "review_note": "Metadata-only neutral fact-profiling fixture. Public career transitions, a political allegation, and the Presidential Office response are stored as separate epistemic objects; the bundle does not adjudicate the allegation's truth or infer motives for personnel moves.",
   "person": {
     "id": "00000000-0000-0000-0000-000000009201",
     "canonical_name": "김현지",
@@ -23,7 +23,9 @@
       },
       "source_refs": [
         "https://www.president.go.kr/information-disclosure/proactive",
-        "https://www.yna.co.kr/view/AKR20251014152700001"
+        "https://www.yna.co.kr/view/AKR20251014152700001",
+        "https://www.yna.co.kr/amp/view/AKR20220622121000001",
+        "https://www.yna.co.kr/view/AKR20250929136351001"
       ],
       "discovery_reasons": [
         "PRESIDENTIAL_OFFICE_FEEDER",
@@ -60,6 +62,20 @@
       "can_commercialize": false,
       "license": null,
       "policy_note": "Reviewed metadata only; the report records an allegation and response but is not treated as independent proof of the underlying allegation."
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000009203",
+      "domain": "yna.co.kr",
+      "source_class": "news_wire_public_career",
+      "collection_mode": "DISCOVERY_ONLY",
+      "can_fetch": false,
+      "can_store_metadata": true,
+      "can_store_fulltext": false,
+      "can_send_to_ai": false,
+      "can_show_excerpt": false,
+      "can_commercialize": false,
+      "license": null,
+      "policy_note": "Reviewed metadata-only career evidence. Secondary-source career facts should be replaceable by stronger original records when available."
     }
   ],
   "sources": [
@@ -80,13 +96,31 @@
       "published_at": "2025-10-14T00:00:00+09:00",
       "policy_id": "10000000-0000-0000-0000-000000009202",
       "origin_cluster_id": null
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000009203",
+      "url": "https://www.yna.co.kr/amp/view/AKR20220622121000001",
+      "title": "이재명 보좌진에 김현지 합류…최측근 경기·성남 라인업 포진",
+      "publisher": "연합뉴스",
+      "published_at": "2022-06-22T15:48:00+09:00",
+      "policy_id": "10000000-0000-0000-0000-000000009203",
+      "origin_cluster_id": null
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000009204",
+      "url": "https://www.yna.co.kr/view/AKR20250929136351001",
+      "title": "김현지 총무비서관, 부속실장으로 이동…공동대변인 김남준 발탁(종합)",
+      "publisher": "연합뉴스",
+      "published_at": "2025-09-29T18:22:00+09:00",
+      "policy_id": "10000000-0000-0000-0000-000000009203",
+      "origin_cluster_id": null
     }
   ],
   "snapshots": [
     {
       "id": "21000000-0000-0000-0000-000000009201",
       "source_id": "20000000-0000-0000-0000-000000009201",
-      "fetched_at": "2026-08-31T01:40:00+09:00",
+      "fetched_at": "2026-08-31T01:20:00+09:00",
       "content_hash": "reviewed-kim-hyunji-current-role-v1",
       "metadata": {
         "capture": "manual_review",
@@ -98,8 +132,31 @@
     {
       "id": "21000000-0000-0000-0000-000000009202",
       "source_id": "20000000-0000-0000-0000-000000009202",
-      "fetched_at": "2026-08-31T01:42:00+09:00",
+      "fetched_at": "2026-08-31T01:22:00+09:00",
       "content_hash": "reviewed-kim-hyunji-allegation-response-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "bundle": "REVIEWED_PERSON_KIM_HYUNJI_001"
+      },
+      "fulltext": null
+    },
+    {
+      "id": "21000000-0000-0000-0000-000000009203",
+      "source_id": "20000000-0000-0000-0000-000000009203",
+      "fetched_at": "2026-08-31T01:24:00+09:00",
+      "content_hash": "reviewed-kim-hyunji-assembly-aide-v1",
+      "metadata": {
+        "capture": "manual_review",
+        "bundle": "REVIEWED_PERSON_KIM_HYUNJI_001",
+        "source_semantics": "Lee Jae-myung side confirmed aide start"
+      },
+      "fulltext": null
+    },
+    {
+      "id": "21000000-0000-0000-0000-000000009204",
+      "source_id": "20000000-0000-0000-0000-000000009204",
+      "fetched_at": "2026-08-31T01:26:00+09:00",
+      "content_hash": "reviewed-kim-hyunji-presidential-transfer-v1",
       "metadata": {
         "capture": "manual_review",
         "bundle": "REVIEWED_PERSON_KIM_HYUNJI_001"
@@ -155,6 +212,51 @@
       "epistemic_status": "FACT",
       "publication_status": "PUBLISHED",
       "asserted_as_true": true
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000009204",
+      "person_id": "00000000-0000-0000-0000-000000009201",
+      "proposition": "김현지는 2022년 6월 22일 이재명 국회의원 보좌관으로 업무를 시작했다.",
+      "subject": "김현지",
+      "predicate": "HELD_ROLE",
+      "object_text": "이재명 국회의원 보좌관",
+      "qualifiers": {
+        "date": "2022-06-22",
+        "source_attribution": "이재명 의원 측"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000009205",
+      "person_id": "00000000-0000-0000-0000-000000009201",
+      "proposition": "김현지는 2025년 9월 29일 대통령실 총무비서관으로 재직 중이었다.",
+      "subject": "김현지",
+      "predicate": "HELD_ROLE",
+      "object_text": "대통령실 총무비서관",
+      "qualifiers": {
+        "date": "2025-09-29",
+        "source_context": "제1부속실장 이동 직전 보직"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000009206",
+      "person_id": "00000000-0000-0000-0000-000000009201",
+      "proposition": "김현지는 2025년 9월 29일 대통령비서실 제1부속실장으로 인사 이동했다.",
+      "subject": "김현지",
+      "predicate": "APPOINTED_AS",
+      "object_text": "대통령비서실 제1부속실장",
+      "qualifiers": {
+        "date": "2025-09-29",
+        "event": "대통령실 인사 및 조직개편"
+      },
+      "epistemic_status": "FACT",
+      "publication_status": "PUBLISHED",
+      "asserted_as_true": true
     }
   ],
   "evidence": [
@@ -179,6 +281,30 @@
       "claim_id": "30000000-0000-0000-0000-000000009203",
       "source_id": "20000000-0000-0000-0000-000000009202",
       "snapshot_id": "21000000-0000-0000-0000-000000009202",
+      "stance": "SUPPORT",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000009204",
+      "claim_id": "30000000-0000-0000-0000-000000009204",
+      "source_id": "20000000-0000-0000-0000-000000009203",
+      "snapshot_id": "21000000-0000-0000-0000-000000009203",
+      "stance": "SUPPORT",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000009205",
+      "claim_id": "30000000-0000-0000-0000-000000009205",
+      "source_id": "20000000-0000-0000-0000-000000009204",
+      "snapshot_id": "21000000-0000-0000-0000-000000009204",
+      "stance": "SUPPORT",
+      "excerpt": null
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000009206",
+      "claim_id": "30000000-0000-0000-0000-000000009206",
+      "source_id": "20000000-0000-0000-0000-000000009204",
+      "snapshot_id": "21000000-0000-0000-0000-000000009204",
       "stance": "SUPPORT",
       "excerpt": null
     }
