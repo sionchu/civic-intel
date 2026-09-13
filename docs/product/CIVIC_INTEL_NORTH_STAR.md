@@ -8,7 +8,7 @@ This document is the canonical long-term product direction and Derived Intellige
 current visual contract. Future features here require their own scoped execution plans and
 source gates. This document neither changes those contracts nor authorizes their implementation.
 
-Baseline inspected on 2026-09-13: remote master `78354c1fd355f2277e4918c3c76e1128856c9dcd`.
+Baseline inspected on 2026-09-13: remote master `5ca7be86a0d938631f83250e5e68b12ba7d474b2`.
 The separate local review checkout started at `a2766da665b3b14870f696af2727b7bc93654ce2`.
 Its Assembly proposer automatic accumulation candidate is not part of this remote baseline.
 A local running capture, observation count or passing test does not establish shipped product

@@ -49,3 +49,8 @@ SourcePolicy before `IngestionPipeline` can fetch. Credentials stay outside disc
 source URLs and persisted metadata. The National Assembly member connector intentionally
 retains metadata only, not raw response fulltext, because the provider rows may contain
 contact fields that are unnecessary for identity resolution.
+
+Cross-source hierarchy, typed source-record parsing, normalization, locator and revision
+semantics are defined in [Source parsing and semantics](docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md).
+The document is a boundary reference for future source-specific work; it does not add a parser
+framework, source, feeder or persistent model.

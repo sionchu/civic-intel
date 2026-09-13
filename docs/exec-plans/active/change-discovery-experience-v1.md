@@ -18,7 +18,7 @@ fetch a new source, add a feeder, introduce a persistent model, or promote a der
 
 ## Baseline and boundaries
 
-- Baseline is `origin/master` at `c2b67fbe16bd7c31b605ad19ecb06ce78ae56e29`.
+- Baseline is `origin/master` at `5ca7be86a0d938631f83250e5e68b12ba7d474b2`.
 - The root checkout's local Assembly proposer candidate is outside this plan and is not shipped
   or evidence for the public product baseline.
 - The existing `Claim`, `ClaimEvidence`, `Source`, `SourcePolicy`, `SourceSnapshot`,
@@ -92,6 +92,11 @@ the current-member API already used by the Assembly roster feeder:
 
 The historical service can therefore produce a bounded, dated pair at the provider-record level,
 but it is not yet a closed Civic Intel input lane:
+
+This gate is also the worked source-hierarchy and parser-boundary case in
+[Source parsing and semantics](../../architecture/SOURCE_PARSING_AND_SEMANTICS.md). It remains a
+documentation reference only: no implementation, L3 promotion or CHANGE publication follows
+from the example.
 
 - **Field authority:** the historical service is authoritative only for the historical term
   fields it publishes; the current-member API remains a separate authority for current roster

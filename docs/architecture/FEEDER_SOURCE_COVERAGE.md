@@ -92,6 +92,10 @@ a particular source. It extends the existing coverage artifact instead of creati
 playbook. Audit date: 2026-09-13. OpenWatch/opengirok are **methodology references**, not a
 requested feeder or a source of automatic truth.
 
+The companion [Source parsing and semantics](SOURCE_PARSING_AND_SEMANTICS.md) document fixes the
+post-acquisition hierarchy, typed source-record boundary, locator vocabulary and revision
+semantics without adding runtime abstractions.
+
 ### Observed methodology and Civic Intel adaptation
 
 | Observed pattern / primary documentation | Adopt | Do not inherit |

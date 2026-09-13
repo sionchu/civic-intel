@@ -13,6 +13,7 @@ implementation work.
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
 - [Source acquisition playbook and human-assisted packet gates](architecture/FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook)
+- [Source parsing and semantics](architecture/SOURCE_PARSING_AND_SEMANTICS.md)
 - [Batch ingestion](architecture/BATCH_INGESTION.md)
 - [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
 - [National Assembly roster to Evidence Directory](exec-plans/active/assembly-roster-evidence-directory.md)

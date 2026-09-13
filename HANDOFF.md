@@ -90,6 +90,15 @@ migration, feeder, search infrastructure, recommendation algorithm or new persis
   `docs/exec-plans/active/change-discovery-experience-v1.md`. The plan uses existing temporal
   Claim/Evidence inputs, requires pinned scope and provenance, and leaves implementation for the
   next approved vertical slice.
+- Added `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md` as the companion governing document
+  for source hierarchy, typed source-record parsing, normalization, locators and revision
+  semantics. It reuses the existing SourcePolicy/SourceSnapshot/FeederObservation foundation and
+  does not add a parser framework, source, feeder, schema or dependency.
+- Used the National Assembly historical member-career API gate as the concrete boundary case:
+  `MONA_CD` is a provider identity/crosswalk value, `PROFILE_UNIT_CD` is term/history scope,
+  `FRTO_DATE` is a source temporal field, and a possible `{MONA_CD}:{PROFILE_UNIT_CD}` value is
+  only a source-scoped observation key. The lane remains `L1 CONTRACT_STAGED; L3 promotion
+  blocked`; no implementation, L3 promotion or CHANGE publication was performed.
 
 ## Current checkpoint
 
@@ -186,7 +195,7 @@ registry was added.
 The current rolling three-year Gwanbo window `2023-09-13:2026-09-13` was also registered with
 `SUCCESS`, one page and zero notices. As with the shorter window, this is a bounded current
 response and does not establish that the source has no historical personnel notices.
-The latest remote master for this handoff is `c2b67fbe16bd7c31b605ad19ecb06ce78ae56e29`, which
+The latest remote master for this handoff is `5ca7be86a0d938631f83250e5e68b12ba7d474b2`, which
 contains the North Star document. The local Assembly proposer automatic accumulation candidate
 from the separate review checkout is not part of this shipped state; its local run receipts and
 SQLite counts must not be used as product coverage.
@@ -201,6 +210,11 @@ service with pagination and a live sample pair for provider code `XQ98168F` acro
 20th terms. Its current-member exclusion, missing complete term-code mapping, absent correction
 fields and service-specific rights gap keep it at `L1 CONTRACT_STAGED`; this is source evidence,
 not a canonical Person/Claim or public CHANGE input.
+The follow-on documentation audit fixed the post-acquisition hierarchy and parser boundary using
+that gate as a worked example. It preserves separate official/curated Sources, keeps locators and
+revision metadata in the existing source/run/observation structures where sufficient, and leaves
+first-class release/document/field-lineage models as future options only when a real source
+requires them.
 
 ## Decisions and reasons
 
@@ -257,6 +271,16 @@ not a canonical Person/Claim or public CHANGE input.
 - A CHANGE result must be computed from a declared pair or set of canonical records with valid
   time, recorded time, source coverage and correction handling. It cannot be inferred from a
   changed fetch timestamp alone or presented as a FACT.
+- Source hierarchy is semantic rather than a mandate for one persistent model per layer. The
+  current Source/SourceSnapshot/FeederObservation chain is the capture boundary; Release,
+  Document, Disclosure, SourceRecord and FieldLocator remain source-specific concepts until a
+  concrete rights or lineage requirement exceeds existing metadata.
+- Parsing stops at a typed provider record or normalized observation candidate. It preserves source
+  authority, scope, field-level provenance and explicit missingness, but cannot merge Persons,
+  publish Claims, infer derived CHANGE or repair missing values.
+- The Assembly historical-career API is a documentation/parser-boundary case only. `MONA_CD`,
+  `PROFILE_UNIT_CD` and `FRTO_DATE` must not be conflated with canonical identity, real-world
+  CHANGE time or a permanent record key.
 
 ## Verification evidence
 
@@ -399,12 +423,25 @@ Executed locally on 2026-09-12 and 2026-09-13:
   --to-date 2026-09-13 --page-size 100 --database-url sqlite:///./civic_intel.db`: the official
   rolling three-year scope returned `SUCCESS`, `pages_committed=1` and `unique_records=0`; its
   separate bounded checkpoint was persisted without Person or name fields.
+- `C:\Users\getch\OneDrive\Documents\ChatGPT\cvic\.venv\Scripts\python.exe -m pytest
+  -o addopts='' -q`: 289 passed, 4 warnings in 130.79s.
+- `ruff check apps packages workers tests`: passed; `mypy packages workers apps/api`: success for
+  51 source files; `packages.verification.quality`: passed with all Golden Set checks true.
+- The documentation relative-link check reported `BROKEN_RELATIVE_LINKS=0` across 54 Markdown
+  files; `git diff --check` passed.
+- Nested worktree web lint, typecheck and UI tests passed (`5` UI tests). Its production build
+  attempt was blocked by Turbopack rejecting the temporary out-of-root dependency junction. The
+  tracked `apps/web` trees at nested `5ca7be8` and root `a2766da` were identical; the canonical
+  root build then passed and generated `/`, `/_not-found`, `/admin/review` and `/people/[id]`.
+- `make verify` was not runnable because GNU Make is not installed on this Windows host; the
+  constituent Python and web checks above were run directly.
 
 ## Not executed
 
 No CHANGE implementation, new Derived Intelligence model, recommendation algorithm, community
-feature, API/MCP extension or new feeder was executed. No additional feeder implementation
-beyond the ALIO source-specific hardening, labor
+feature, API/MCP extension or new feeder was executed. The Assembly historical-member API had no
+live fetch, parser, worker, fixture, migration, L3 run or CHANGE publication in this milestone.
+No additional feeder implementation beyond the ALIO source-specific hardening, labor
 federation/commission acquisition, MOJ/Supreme Court legal personnel acquisition, KDI
 institute-profile acquisition, CleanEye acquisition, OpenWatch acquisition, asset/vote/ideology/graph/search feature, raw
 provider payload browser, schema change, migration file, dependency install, admin write action,
@@ -472,6 +509,16 @@ produce no name universe.
 - `docs/exec-plans/active/cleaneye-local-public-institution-executives-l3.md`
 - `HANDOFF.md`
 
+Source parsing and semantics documentation milestone:
+
+- `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md`
+- `ARCHITECTURE.md`
+- `docs/INDEX.md`
+- `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
+- `docs/exec-plans/active/change-discovery-experience-v1.md`
+- `docs/product/CIVIC_INTEL_NORTH_STAR.md`
+- `HANDOFF.md`
+
 North Star documentation milestone:
 
 - `docs/product/CIVIC_INTEL_NORTH_STAR.md`
@@ -494,7 +541,7 @@ Latest ALIO full-enumeration hardening also touched:
 
 ## Next concrete action
 
-Run one source-contract gate for an official, rights-approved personnel-history source that can
-Close the service-specific rights and finite coverage contract for the Assembly historical-member
-API, including its term-code manifest and correction rule; only then publish a canonical pair and
-reopen the CHANGE input gate.
+Keep the Assembly historical-member API at `L1 CONTRACT_STAGED; L3 promotion blocked` until one
+source-specific decision closes its rights, finite term-code/current-former coverage manifest,
+page/key QA and correction/version rule; only then may a separately approved implementation
+reconsider a canonical pair for the CHANGE input gate.
