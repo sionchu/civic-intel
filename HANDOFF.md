@@ -475,6 +475,8 @@ Executed locally on 2026-09-12 and 2026-09-13:
   generated `/`, `/_not-found`, `/admin/review` and `/people/[id]` routes. The local Markdown
   relative-link check passed for 55 Markdown files. `make verify` was attempted in this worktree
   and remains runner-unavailable because GNU Make is not installed.
+- Implementation commit `0abb7128a5c7ac56b8cb484bc12ffd91e73b3022` was pushed to `origin/master`.
+  Post-push verification recorded `HEAD == origin/master` at that commit and a clean worktree.
 - The new regression covers missing/mismatched observation provenance: a ClaimEvidence item that
   references a feeder observation must retain its snapshot and matching source chain.
 

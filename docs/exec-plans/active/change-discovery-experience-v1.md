@@ -1,7 +1,7 @@
 # CHANGE discovery experience v1
 
-Status: active plan — bounded Assembly reviewed-packet vertical slice implemented; live/L3
-promotion remains blocked.
+Status: completed — bounded Assembly reviewed-packet vertical slice delivered in implementation
+commit `0abb7128a5c7ac56b8cb484bc12ffd91e73b3022`; live/L3 promotion remains blocked.
 
 Date: 2026-09-13
 
@@ -327,7 +327,7 @@ redistributed.
 - Verify desktop, mobile, keyboard focus, overflow, empty/partial, and unavailable states.
 - Do not add ranking, scoring, alerts, ideology/influence inference, or an all-people feed.
 
-### D. Verification and delivery — completed locally; push verification pending
+### D. Verification and delivery — completed
 
 - Run focused projection, API, profile, and UI checks, then the repository DoD checks.
 - Run `ruff`, `mypy`, quality verification, web lint/typecheck/test/build, and `make verify` as
@@ -384,7 +384,9 @@ worktree/push evidence here and in `HANDOFF.md` after delivery verification.
 - `npm --prefix apps/web run lint`, `npm --prefix apps/web run typecheck`, `npm --prefix apps/web
   test` (5 passed), and `npm --prefix apps/web run build`: passed. The build produced `/`,
   `/admin/review` and `/people/[id]` routes.
-- The local Markdown relative-link check passed for 55 Markdown files. `git diff --check` and the
-  final `HEAD == origin/master` / clean-worktree check remain delivery steps after commit.
+- The local Markdown relative-link check passed for 55 Markdown files, and `git diff --check`
+  passed. Implementation commit `0abb7128a5c7ac56b8cb484bc12ffd91e73b3022` was pushed to
+  `origin/master`; the final handoff/documentation update records the post-push equality and
+  clean-worktree check.
 - `make verify` was attempted but GNU Make is not installed on this Windows host; all constituent
   Python and web commands were run directly. No CI result is inferred.
