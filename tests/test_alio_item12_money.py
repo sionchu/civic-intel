@@ -50,6 +50,7 @@ from workers.alio_business_expense import (
     alio_business_expense_content_hash,
     normalized_alio_business_expense,
 )
+from workers.alio_reviewed_claim_import import main as reviewed_claim_import_main
 
 STAFF_NAME = "수집하지않는공시담당자"
 STAFF_PHONE = "02-9999-9999"
@@ -221,6 +222,34 @@ def migrated_repository(database: Path) -> SqlAlchemyRepository:
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
     return SqlAlchemyRepository(database_url)
+
+
+def insert_organization(
+    repository: SqlAlchemyRepository,
+    organization_id: UUID,
+    name: str,
+) -> None:
+    timestamp = datetime.now(UTC)
+    with repository.sessions() as session:
+        session.add(
+            OrganizationRow(
+                id=str(organization_id),
+                name=name,
+                valid_from=timestamp,
+                valid_to=None,
+                recorded_at=timestamp,
+                superseded_at=None,
+            )
+        )
+        session.commit()
+
+
+def seed_reviewed_import_repository(database: Path) -> tuple[SqlAlchemyRepository, str]:
+    provider = FakeAlioMoneyProvider()
+    database_url = f"sqlite:///{database.as_posix()}"
+    repository = migrated_repository(database)
+    AlioBusinessExpenseEnumerator(provider.connector(), repository).enumerate()
+    return repository, database_url
 
 
 def test_item12_parser_reads_five_annual_rows_and_minimizes_contacts() -> None:
@@ -950,3 +979,155 @@ def test_organization_claim_import_does_not_materialize_provider_identity(
 
     assert repository.organization(organization.id) is None
     assert repository.claims(organization_id=organization.id) == []
+
+
+def test_reviewed_claim_import_defaults_to_no_write_dry_run(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000005")
+    insert_organization(repository, organization_id, "테스트정보기관")
+
+    assert (
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+            ]
+        )
+        == 0
+    )
+
+    assert json.loads(capsys.readouterr().out)["status"] == "DRY_RUN"
+    assert repository.claims(organization_id=organization_id) == []
+
+
+def test_reviewed_claim_import_commit_uses_existing_claim_importer(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-commit.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000006")
+    insert_organization(repository, organization_id, "테스트정보기관")
+
+    assert (
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+                "--commit",
+            ]
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "COMMITTED"
+    claims = repository.claims(organization_id=organization_id, published_only=True, current_only=True)
+    assert len(claims) == 2
+    assert {claim.qualifiers["fiscal_year"] for claim in claims} == {"2024", "2025"}
+    evidence = [item for claim in claims for item in repository.evidence_for(claim.id)]
+    assert len(evidence) == 2
+    assert all(item.feeder_observation_id is not None for item in evidence)
+
+
+def test_reviewed_claim_import_fails_before_write_without_existing_organization(
+    tmp_path: Path,
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-missing.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000007")
+
+    with pytest.raises(SystemExit) as error:
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+                "--commit",
+            ]
+        )
+
+    assert error.value.code == 2
+    assert repository.claims(organization_id=organization_id) == []
+
+
+def test_reviewed_claim_import_rejects_binding_name_mismatch_before_write(
+    tmp_path: Path,
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-mismatch.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000009")
+    insert_organization(repository, organization_id, "다른기관")
+
+    with pytest.raises(SystemExit) as error:
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+                "--commit",
+            ]
+        )
+
+    assert error.value.code == 2
+    assert repository.claims(organization_id=organization_id) == []
+
+
+def test_reviewed_claim_import_rejects_existing_provider_key_before_partial_write(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-duplicate.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000008")
+    insert_organization(repository, organization_id, "테스트정보기관")
+    arguments = [
+        "--organization-id",
+        str(organization_id),
+        "--institution-code",
+        "C0908",
+        "--earlier-fiscal-year",
+        "2024",
+        "--later-fiscal-year",
+        "2025",
+        "--database-url",
+        database_url,
+        "--commit",
+    ]
+
+    assert reviewed_claim_import_main(arguments) == 0
+    capsys.readouterr()
+    with pytest.raises(SystemExit) as error:
+        reviewed_claim_import_main(arguments)
+
+    assert error.value.code == 2
+    assert len(repository.claims(organization_id=organization_id)) == 2

@@ -867,3 +867,39 @@ execution plan defines the review and publication boundary.
 
 Create a separate execution plan for an explicit operator-facing Organization binding workflow
 before adding any further ALIO institution Claims or a public organization page.
+
+## Current checkpoint — reviewed ALIO Claim import workflow (2026-09-14)
+
+### Completed
+
+- Added [`alio-reviewed-organization-binding-workflow-v0.md`](docs/exec-plans/active/alio-reviewed-organization-binding-workflow-v0.md)
+  as the separate active plan required before extending the reviewed C0908 slice.
+- Added `workers/alio_reviewed_claim_import.py` and the
+  `civic-import-alio-reviewed-claims` entry point. It requires an existing current canonical
+  Organization ID, one bounded known-positive ALIO code and exactly two fiscal years. It never
+  creates or updates an Organization, performs network fetches or enumerates additional rows.
+- Default execution is a no-write `DRY_RUN`; `--commit` preflights both source-specific Claims
+  and then reuses `SqlAlchemyRepository.import_organization_claim()` for persistence.
+- The local C0908 2024/2025 Claims remain the only live annual organization Claims. A real local
+  dry-run for C0908 2021/2022 returned `DRY_RUN` and left the database at one Organization, two
+  Claims, two ClaimEvidence rows and 15 observations.
+
+### Verification
+
+- Targeted Item 12 and workflow tests: `24 passed, 2 warnings`.
+- Full Python suite: `321 passed, 4 warnings`; Ruff passed; mypy passed for 56 source files;
+  Golden quality passed.
+- Web lint/typecheck/UI tests (`5 passed`)/build passed; Markdown check found 60 files, 74
+  relative links and 0 broken links; `git diff --check` passed.
+- The active plan and this handoff now distinguish the repeatable human-approved import lane from
+  automatic ALIO binding and L3 promotion.
+
+### Decision
+
+The workflow is ready for already-reviewed existing Organization bindings. Keep it source-specific
+and operator-run; do not add a binding table, approval API, public organization page, additional
+institution Claims or scheduled sync under this plan.
+
+## Next concrete action
+
+Create a new execution plan before adding further institution Claims or a public organization page.

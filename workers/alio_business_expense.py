@@ -26,6 +26,12 @@ FEEDER = "alio_institution_head_business_expense"
 SEMANTIC_SCOPE = "institutional_head_business_expense_annual_disclosure"
 
 
+def alio_business_expense_scope_key(institution_codes: Sequence[str]) -> str:
+    return "item_12_current_known_positive:" + ",".join(
+        sorted(set(institution_codes))
+    )
+
+
 def _directory_fingerprint(rows: Sequence[AlioBusinessExpenseDirectoryRow]) -> str:
     payload = [
         {
@@ -116,7 +122,7 @@ class AlioBusinessExpenseEnumerator:
         self.repository = repository
         self.policy = policy or alio_public_institution_policy()
         self.institution_codes = normalized_codes
-        self.scope_key = "item_12_current_known_positive:" + ",".join(normalized_codes)
+        self.scope_key = alio_business_expense_scope_key(normalized_codes)
 
     def _checkpoint_metadata(
         self,
