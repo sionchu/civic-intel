@@ -60,6 +60,7 @@ fixtures, manual row counts or a successful packet import alone do not promote a
 | Central/local civil service | Senior Civil Service, senior local executives, open/competitive appointees, path-relevant named officials | official personnel notices, gazette, 나라일터 route evidence | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | name + agency + title + date + adjacent career anchors | Public Service | L1 CONTRACT_STAGED; live adapter pending |
 | Retired-public-official employment review | published Government Public Ethics Committee review rows with former agency/title and destination organization | MPM / Government Public Ethics Committee result board and PETI result index | STRUCTURED_DISCLOSURE | MPM post/attachment reference; row ordinal is snapshot-local and no Person anchor is published | EmploymentReviewEvent | L1 CONTRACT_STAGED; L3 promotion blocked pending source contract |
 | Public institutions | institution heads, standing executives, relevant directors/auditors | ALIO item 4 current disclosure for every unfiltered directory institution | STRUCTURED_DISCLOSURE | ALIO `apbaId` + `disclosureNo:row ordinal` observation key + name/role/term; no provider Person ID; no-current, masked/vacant and correction-only outcomes remain explicit | Institutional Governance / Public Service | L3 FULL_ENUMERATION for current-disclosure observation coverage; automatic Person materialization remains REVIEW_REQUIRED |
+| Public-institution head business expense | no Person discovery; institution + `INSTITUTION_HEAD` role scope + fiscal-year aggregate | ALIO item 12 `기관장 업무추진비`, `reportFormRootNo=20701` | STRUCTURED_DISCLOSURE | `apbaId` identifies institution; exact `disclosureNo:fiscal_year` identifies a normalized annual row only after report identity and unique fiscal-year validation; never a Person ID | MONEY derived input; organization publication is not currently expressible through person-only Claim/Evidence | L2 SINGLE_PULL for the bounded C0019/C0129/C0908 proof; L3 not attempted; public MONEY surface blocked |
 | Local public institutions | local-public-enterprise and local invested/contributed institution heads and disclosed executives | CleanEye named executive structured disclosures; official REST catalog has no named-executive dataset, and the exact HTML routes remain blocked by the current all-path robots/route contract | OFFICIAL_WEB / STRUCTURED_DISCLOSURE | institution-level `entId` or `insttCode`; no provider Person ID, so all materialization must remain REVIEW_REQUIRED | Institutional Governance / Public Service | L0 RESEARCHED; BLOCKED |
 | Public-institution executive compensation | role-category compensation/annual-pay disclosures | ALIO item 10 | STRUCTURED_DISCLOSURE | institution + executive role category + fiscal year | Institutional Governance | L1 CONTRACT_STAGED; person attribution prohibited |
 | Public-institution reemployment | executive reemployment; employee rows retained only without Person candidate | ALIO item 7-1 | STRUCTURED_DISCLOSURE | institution + executive name when public + dates | Institutional Governance / Reemployment | L1 CONTRACT_STAGED; separate from ethics review |
@@ -90,7 +91,7 @@ fixtures, manual row counts or a successful packet import alone do not promote a
 
 This section governs acquisition strategy; it does not add runtime collection modes or approve
 a particular source. It extends the existing coverage artifact instead of creating a parallel
-playbook. Audit date: 2026-09-13. OpenWatch/opengirok are **methodology references**, not a
+playbook. Audit date: 2026-09-14. OpenWatch/opengirok are **methodology references**, not a
 requested feeder or a source of automatic truth.
 
 The companion [Source parsing and semantics](SOURCE_PARSING_AND_SEMANTICS.md) document fixes the
@@ -287,6 +288,22 @@ file download/sync, remote upload or integration was run. ogk is not an official
 or a runtime dependency. Firecrawl is route reconnaissance only; analysis tools are downloaded
 dataset QA only. Neither supplies production truth.
 
+### Bounded ALIO Item 12 reassessment
+
+The Item 12 directory is a useful source-bounded structured-disclosure route even though the
+complete institution directory has not been promoted to an annual-row L3 universe. The first
+implementation proves one current report packet per explicitly selected known-positive institution:
+the directory pointer, exact report page, embedded official document, normalized aggregate rows,
+source-level snapshots and observation versions are all linked. The four current no-disclosure
+directory rows remain explicit and are not converted into zero expense.
+
+Its automation ceiling is bounded L2. The report exposes a current disclosure pointer and annual
+rows, but no provider-declared correction/replacement chain for an annual row; the item-12
+connector therefore fails closed on changed/duplicate identity conditions and never infers a
+replacement or latest value. The next public step also needs an organization-scoped Claim/Evidence
+contract because the current `Claim` requires `person_id`. Until that contract exists, the MONEY
+projection remains a source-traceable internal derivation with publication blocked.
+
 ### Blocked-lane reassessment
 
 These are architecture classifications from the existing dated source gates, not new live
@@ -447,6 +464,15 @@ ALIO role-category compensation
  -> FACT about institution/role-category compensation disclosure
  -> not automatically a named person's compensation or wealth
 
+ALIO Item 12 institution-head business expense
+ -> source observation of the institution's officially reported aggregate amount for a fiscal year
+ -> preserve `apbaId` as the institution namespace, `disclosureNo` as report identity and
+    `submissionNo`/attachment filename as locator metadata
+ -> `amount_thousand_krw` is the source unit; `amount_krw` is deterministic integer normalization
+ -> a descriptive year-over-year MONEY result is not personal spending, waste, corruption,
+    performance, peer ranking or a named institution-head claim
+ -> no current organization Claim/Evidence route exists, so the public result remains blocked
+
 ALIO reemployment disclosure
  -> FACT of disclosed retirement/reemployment event
  -> not the same event as a Public Ethics Committee employment-review decision
@@ -486,8 +512,10 @@ Current recommended sequence after presidential-personnel staging:
    the lane stays L0 blocked. A stable Person ID is not a collection prerequisite, but it cannot
    authorize automatic materialization;
 8. completed: source-bounded OpenDART executive-status L3 over the official corp-code master;
-9. one reviewed live civil-service/ethics source adapter using the #23 contracts, only after a
+9. completed (2026-09-14): bounded ALIO item 12 institution-head business-expense source slice
+   and descriptive MONEY projection; L2 only, with organization-level publication blocked;
+10. one reviewed live civil-service/ethics source adapter using the #23 contracts, only after a
    permitted source contract closes;
-10. revisit bill proposal-reason text only if a verified official structured source becomes available.
+11. revisit bill proposal-reason text only if a verified official structured source becomes available.
 
 Reorder only when a stronger source dependency or a concrete product target justifies it.

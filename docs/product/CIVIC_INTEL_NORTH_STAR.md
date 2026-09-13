@@ -20,12 +20,14 @@ coverage, public publication or production deployment.
 | CURRENT | Read-only Evidence Directory, profile/evidence projection and REST routes; internal review is opt-in, not an authenticated public operator system |
 | PLANNED | General Derived Intelligence, issue experience, policy-position models, influence metrics, recommendations and community |
 | PLANNED | Broader public API distribution, licensed bulk/change feeds and read-only MCP agent access |
-| NOT IMPLEMENTED AS PRODUCT CAPABILITIES | Asset, roll-call vote and business-expense ingestion; local proposer candidate as a shipped feature; community, MCP and intelligence algorithms |
+| NOT IMPLEMENTED AS PRODUCT CAPABILITIES | Asset, roll-call vote and public-money publication; local proposer candidate as a shipped feature; community, MCP and intelligence algorithms |
 
 Existing `AssetDisclosure`/`AssetItem` contracts and an assets route do not constitute a working
 asset ingestion product. Existing source-conflict projection, hypotheses and temporal contracts
 do not constitute a general analytics platform. CURRENT describes repository implementation,
-not deployment or complete live data acquisition.
+not deployment or complete live data acquisition. The bounded ALIO Item 12 observation and
+in-memory MONEY calculation are source-specific evidence work, not a public money product or
+organization-level Claim/Evidence publication capability.
 
 ## Purpose
 

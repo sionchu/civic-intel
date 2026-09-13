@@ -29,12 +29,14 @@ class AlioRecordError(ValueError):
 
 
 POLICY_ID = UUID("13000000-0000-0000-0000-000000000001")
+ITEM12_REPORT_FORM_NO = "20701"
+ALIO_ITEM12_SOURCE_CONTRACT = "alio_item_12_current_institution_head_business_expense"
 
 
 def alio_public_institution_policy() -> SourcePolicy:
     """Reviewed metadata policy for ALIO public-institution disclosures."""
 
-    reviewed_at = datetime(2026, 8, 31, tzinfo=UTC)
+    reviewed_at = datetime(2026, 9, 14, tzinfo=UTC)
     return SourcePolicy(
         id=POLICY_ID,
         domain="alio.go.kr",
@@ -46,17 +48,23 @@ def alio_public_institution_policy() -> SourcePolicy:
         can_send_to_ai=False,
         can_show_excerpt=False,
         can_commercialize=True,
+        robots_checked_at=reviewed_at,
         terms_checked_at=reviewed_at,
         license=(
             "ALIO 저작권 정책: ALIO가 저작재산권을 전부 보유한 저작물은 별도 허락 "
             "없이 자유이용; 공공데이터는 영리 목적을 포함해 자유 활용"
         ),
-        rate_limit="No published limit; sequential bounded item-4 institution enumeration only",
+        rate_limit=(
+            "No published limit; sequential bounded item-4 current-roster and item-12 "
+            "known-positive report pulls only"
+        ),
         policy_note=(
-            "Reviewed 2026-08-31 against the official ALIO item catalog, item 4 institution "
+            "Reviewed 2026-09-14 against the official ALIO item catalog, item 4 institution "
+            "directory/report/document surfaces, item 12 institution-head business-expense "
             "directory/report/document surfaces, copyright policy and robots.txt. Fetch and "
-            "normalized metadata storage are permitted. Full report HTML, disclosure-staff "
-            "contacts, excerpts and AI transmission remain excluded by data minimization."
+            "normalized metadata storage are permitted for the reviewed source-bounded lanes. "
+            "Full report HTML, disclosure-staff contacts, attachment bytes, excerpts and AI "
+            "transmission remain excluded by data minimization."
         ),
     )
 
@@ -125,6 +133,53 @@ class AlioCompensationRecord:
     total_thousand_krw: int
     as_of: date
     source_ref: str
+
+
+@dataclass(frozen=True)
+class AlioInstitutionHeadBusinessExpenseRecord:
+    """One annual aggregate row from an ALIO item 12 report."""
+
+    institution_code: str
+    institution_name: str
+    classification: PublicInstitutionClassification
+    classification_text: str
+    disclosure_no: str
+    report_period: str
+    report_period_label: str
+    fiscal_year: int
+    amount_thousand_krw: int
+    as_of_date: date
+    submission_date: date
+    detail_attachment_name: str | None
+    detail_attachment_locator: str | None
+    source_ref: str
+
+    @property
+    def amount_krw(self) -> int:
+        return self.amount_thousand_krw * 1000
+
+
+@dataclass(frozen=True)
+class AlioBusinessExpenseDirectoryRow:
+    """The current item 12 report pointer returned for one institution."""
+
+    institution_code: str
+    institution_name: str
+    institution_type_code: str
+    classification: PublicInstitutionClassification
+    classification_text: str
+    report_period: str
+    report_period_label: str
+    report_form_no: str
+    submission_no: str
+    disclosure_no: str | None
+    detail_attachment_names: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class AlioBusinessExpenseDirectory:
+    rows: tuple[AlioBusinessExpenseDirectoryRow, ...]
+    total_count: int
 
 
 @dataclass(frozen=True)
@@ -472,6 +527,246 @@ def _optional_report_date(value: str | None, field: str) -> date | None:
     if value is None or value.strip() in {"", "-", "재직기간", "현재", "해당없음"}:
         return None
     return _report_date(value, field)
+
+
+_ITEM12_PERIOD_RE = re.compile(
+    r"\(?\s*(?P<year>\d{4})년\s*(?P<quarter>[1-4])\s*(?:/4)?\s*분기\s*\)?"
+)
+
+
+def _item12_period(value: str, field: str) -> tuple[str, str]:
+    match = _ITEM12_PERIOD_RE.search(value)
+    if match is None:
+        raise AlioRecordError(f"invalid ALIO item 12 report period: {field}")
+    year = int(match.group("year"))
+    quarter = int(match.group("quarter"))
+    if year < 1900:
+        raise AlioRecordError(f"invalid ALIO item 12 report period: {field}")
+    return f"{year}-Q{quarter}", f"{year}년 {quarter}/4분기"
+
+
+def _item12_period_from_directory(row: dict) -> tuple[str, str]:
+    year_text = _required(row, "critYyyy")
+    quarter_text = _required(row, "critQuar")
+    if not year_text.isdigit() or not quarter_text.isdigit():
+        raise AlioRecordError("ALIO item 12 directory period is invalid")
+    year = int(year_text)
+    quarter = int(quarter_text)
+    if year < 1900 or quarter not in {1, 2, 3, 4}:
+        raise AlioRecordError("ALIO item 12 directory period is invalid")
+    label = _required(row, "quartNa")
+    if not re.fullmatch(rf"{quarter}\s*분기", label):
+        raise AlioRecordError("ALIO item 12 directory quarter is inconsistent")
+    return f"{year}-Q{quarter}", f"{year}년 {quarter}/4분기"
+
+
+def _item12_attachment_names(value: str) -> tuple[str, ...]:
+    if value.strip() in {"", "@"}:
+        return ()
+    names: list[str] = []
+    for item in value.split("|"):
+        file_no, separator, file_name = item.partition("@")
+        if not separator or not file_no.isdigit() or not file_name.strip():
+            raise AlioRecordError("ALIO item 12 attachment reference is invalid")
+        normalized_name = file_name.strip()
+        if not normalized_name.casefold().endswith((".xls", ".xlsx")):
+            raise AlioRecordError("ALIO item 12 attachment format is unsupported")
+        names.append(normalized_name)
+    return tuple(names)
+
+
+def parse_item12_directory_body(body: str) -> AlioBusinessExpenseDirectory:
+    """Parse the bounded, unfiltered current Item 12 institution pointer response."""
+
+    data = AlioExecutiveDisclosureConnector._json_data(body)
+    rows = data.get("organList")
+    total = data.get("totalCnt")
+    if not isinstance(rows, list) or not isinstance(total, int) or total < 0:
+        raise AlioRecordError("ALIO item 12 institution directory contract changed")
+
+    parsed: list[AlioBusinessExpenseDirectoryRow] = []
+    seen_institutions: set[str] = set()
+    seen_disclosures: set[str] = set()
+    seen_submissions: set[str] = set()
+    for raw in rows:
+        if not isinstance(raw, dict):
+            raise AlioRecordError("ALIO item 12 directory row is invalid")
+        institution_code = _required(raw, "apbaId")
+        if institution_code in seen_institutions:
+            raise AlioRecordError("duplicate ALIO item 12 institution identifier")
+        seen_institutions.add(institution_code)
+        if _required(raw, "reportFormNo") != ITEM12_REPORT_FORM_NO:
+            raise AlioRecordError("ALIO item 12 report form is inconsistent")
+
+        report_period, report_period_label = _item12_period_from_directory(raw)
+        submission_no = _required(raw, "submissionNo")
+        if not submission_no.isdigit() or submission_no in seen_submissions:
+            raise AlioRecordError("ALIO item 12 submission identity is invalid")
+        seen_submissions.add(submission_no)
+
+        disclosure_no = _optional(raw, "disclosureNo")
+        if disclosure_no is not None:
+            if not disclosure_no.isdigit() or disclosure_no in seen_disclosures:
+                raise AlioRecordError("ALIO item 12 disclosure identity is invalid")
+            seen_disclosures.add(disclosure_no)
+
+        classification, classification_text = _classification_text(_required(raw, "typeNa"))
+        parsed.append(
+            AlioBusinessExpenseDirectoryRow(
+                institution_code=institution_code,
+                institution_name=_required(raw, "apbaNa"),
+                institution_type_code=_required(raw, "typeNa"),
+                classification=classification,
+                classification_text=classification_text,
+                report_period=report_period,
+                report_period_label=report_period_label,
+                report_form_no=ITEM12_REPORT_FORM_NO,
+                submission_no=submission_no,
+                disclosure_no=disclosure_no,
+                detail_attachment_names=_item12_attachment_names(_required(raw, "files")),
+            )
+        )
+    if total != len(parsed):
+        raise AlioRecordError("ALIO item 12 institution directory coverage is incomplete")
+    return AlioBusinessExpenseDirectory(tuple(parsed), total)
+
+
+def _item12_consistent_field(tables: list[list[list[str]]], label: str, *, field: str) -> str:
+    values: list[str] = []
+    for table in tables:
+        for row in table:
+            value = _row_value(row, label)
+            if value is not None:
+                values.append(value)
+    if not values or len(set(values)) != 1:
+        raise AlioRecordError(f"ALIO item 12 {field} is missing or conflicting")
+    return values[0]
+
+
+def parse_item12_business_expense_rows(
+    document: ConnectorDocument,
+    *,
+    directory_row: AlioBusinessExpenseDirectoryRow,
+) -> list[AlioInstitutionHeadBusinessExpenseRecord]:
+    """Parse only the official aggregate Item 12 HTML table."""
+
+    metadata = document.metadata
+    if metadata.get("source_contract") != ALIO_ITEM12_SOURCE_CONTRACT:
+        raise AlioRecordError("ALIO item 12 source contract is missing")
+    if metadata.get("report_form_no") != ITEM12_REPORT_FORM_NO:
+        raise AlioRecordError("ALIO item 12 report form is inconsistent")
+    if metadata.get("institution_code") != directory_row.institution_code:
+        raise AlioRecordError("ALIO item 12 institution identity is inconsistent")
+    if (
+        metadata.get("disclosure_no") != directory_row.disclosure_no
+        or not directory_row.disclosure_no
+    ):
+        raise AlioRecordError("ALIO item 12 disclosure identity is unavailable")
+    if metadata.get("submission_no") != directory_row.submission_no:
+        raise AlioRecordError("ALIO item 12 submission identity is inconsistent")
+    if metadata.get("report_period") != directory_row.report_period:
+        raise AlioRecordError("ALIO item 12 report period is inconsistent")
+
+    parser = _AlioReportTableParser()
+    parser.feed(document.body)
+
+    period_values: list[tuple[str, str]] = []
+    unit_values: list[str] = []
+    annual_rows: list[tuple[str, str, str | None]] = []
+    for table in parser.tables:
+        for row in table:
+            for cell in row:
+                period_match = _ITEM12_PERIOD_RE.search(cell)
+                if period_match is not None:
+                    period_values.append(_item12_period(cell, "report period"))
+                unit_match = re.search(r"단위\s*:\s*([^()]+)", cell)
+                if unit_match is not None:
+                    unit_values.append(unit_match.group(1).strip())
+
+        header_rows = [
+            (index, row)
+            for index, row in enumerate(table)
+            if {"연도", "업무추진비 집행금액", "집행상세내역"}.issubset(row)
+        ]
+        for header_index, header in header_rows:
+            year_index = header.index("연도")
+            amount_index = header.index("업무추진비 집행금액")
+            attachment_index = header.index("집행상세내역")
+            for row in table[header_index + 1 :]:
+                required_index = max(year_index, amount_index, attachment_index)
+                if len(row) <= required_index:
+                    raise AlioRecordError("ALIO item 12 annual row is incomplete")
+                annual_rows.append(
+                    (
+                        row[year_index],
+                        row[amount_index],
+                        row[attachment_index],
+                    )
+                )
+
+    if not period_values or len({item[0] for item in period_values}) != 1:
+        raise AlioRecordError("ALIO item 12 report period is missing or conflicting")
+    report_period, report_period_label = period_values[0]
+    if report_period != directory_row.report_period:
+        raise AlioRecordError("ALIO item 12 report period is inconsistent")
+    if not unit_values or set(unit_values) != {"천원"}:
+        raise AlioRecordError("ALIO item 12 amount unit is unsupported")
+    if not annual_rows:
+        raise AlioRecordError("ALIO item 12 annual expense table is unavailable")
+
+    as_of_text = _item12_consistent_field(parser.tables, "기준일", field="as-of date")
+    submission_text = _item12_consistent_field(parser.tables, "제출일", field="submission date")
+    as_of_date = _report_date(as_of_text, "기준일")
+    submission_date = _report_date(submission_text, "제출일")
+
+    records: list[AlioInstitutionHeadBusinessExpenseRecord] = []
+    seen_years: set[int] = set()
+    for year_text, amount_text, attachment_text in annual_rows:
+        year_match = re.fullmatch(r"(\d{4})\s*년?", year_text.strip())
+        if year_match is None:
+            raise AlioRecordError("ALIO item 12 fiscal year is invalid")
+        fiscal_year = int(year_match.group(1))
+        if fiscal_year < 1900 or fiscal_year in seen_years:
+            raise AlioRecordError("ALIO item 12 fiscal year is duplicate or invalid")
+        seen_years.add(fiscal_year)
+
+        amount_value = re.sub(r"[\s,]", "", amount_text.strip())
+        if not re.fullmatch(r"\d+", amount_value):
+            raise AlioRecordError("ALIO item 12 amount is missing or malformed")
+        amount_thousand_krw = int(amount_value)
+        attachment_name = _optional({"value": attachment_text}, "value")
+        if attachment_name in {"-", "없음", "해당없음"}:
+            attachment_name = None
+        if (
+            attachment_name is not None
+            and directory_row.detail_attachment_names
+            and attachment_name not in directory_row.detail_attachment_names
+        ):
+            raise AlioRecordError("ALIO item 12 attachment identity is inconsistent")
+        attachment_locator = (
+            f"submission:{directory_row.submission_no}:filename:{attachment_name}"
+            if attachment_name is not None
+            else None
+        )
+        records.append(
+            AlioInstitutionHeadBusinessExpenseRecord(
+                institution_code=directory_row.institution_code,
+                institution_name=directory_row.institution_name,
+                classification=directory_row.classification,
+                classification_text=directory_row.classification_text,
+                disclosure_no=directory_row.disclosure_no,
+                report_period=report_period,
+                report_period_label=report_period_label,
+                fiscal_year=fiscal_year,
+                amount_thousand_krw=amount_thousand_krw,
+                as_of_date=as_of_date,
+                submission_date=submission_date,
+                detail_attachment_name=attachment_name,
+                detail_attachment_locator=attachment_locator,
+                source_ref=directory_row.disclosure_no,
+            )
+        )
+    return records
 
 
 class AlioExecutiveDisclosureConnector(Connector):
@@ -883,3 +1178,169 @@ class AlioExecutiveDisclosureConnector(Connector):
         ):
             raise AlioRecordError("ALIO report has no supported executive rows")
         return records
+
+
+class AlioInstitutionHeadBusinessExpenseConnector(Connector):
+    """Bounded current Item 12 directory/report connector."""
+
+    HOST = "alio.go.kr"
+    BASE_URL = f"https://{HOST}"
+    REPORT_FORM_NO = ITEM12_REPORT_FORM_NO
+    DIRECTORY_PATH = "/item/itemOrganList.do"
+    DIRECTORY_API_PATH = "/item/itemOrganListJung.json"
+    REPORT_PATH = "/mobile/item/itemReportTerm.do"
+    ALLOWED_DIRECTORY_QUERY: ClassVar[frozenset[str]] = frozenset({"reportFormRootNo"})
+    ALLOWED_REPORT_QUERY: ClassVar[frozenset[str]] = frozenset(
+        {"apbaId", "reportFormRootNo", "disclosureNo", "nowYear", "nowQuarter"}
+    )
+
+    def __init__(self, *, transport: httpx.BaseTransport | None = None) -> None:
+        self._transport = transport
+
+    def discover(self) -> list[str]:
+        return [
+            (
+                f"{self.BASE_URL}{self.DIRECTORY_PATH}?"
+                f"{urlencode({'reportFormRootNo': self.REPORT_FORM_NO})}"
+            )
+        ]
+
+    def report_url(self, row: AlioBusinessExpenseDirectoryRow) -> str:
+        if row.report_form_no != self.REPORT_FORM_NO or not row.disclosure_no:
+            raise AlioRecordError("ALIO item 12 current disclosure is unavailable")
+        year, quarter = row.report_period.split("-Q", maxsplit=1)
+        query = urlencode(
+            {
+                "apbaId": row.institution_code,
+                "reportFormRootNo": self.REPORT_FORM_NO,
+                "disclosureNo": row.disclosure_no,
+                "nowYear": year,
+                "nowQuarter": quarter,
+            }
+        )
+        return f"{self.BASE_URL}{self.REPORT_PATH}?{query}"
+
+    @classmethod
+    def _validated_query(cls, url: str, *, path: str, allowed: frozenset[str]) -> dict[str, str]:
+        parsed = urlparse(url)
+        if parsed.scheme != "https" or parsed.netloc != cls.HOST or parsed.path != path:
+            raise ValueError("unsupported ALIO item 12 URL")
+        raw = parse_qs(parsed.query, keep_blank_values=True)
+        if set(raw) != set(allowed) or any(len(values) != 1 for values in raw.values()):
+            raise ValueError("ALIO item 12 URL has an invalid bounded query")
+        query = {key: values[0] for key, values in raw.items()}
+        if query.get("reportFormRootNo") != cls.REPORT_FORM_NO:
+            raise ValueError("ALIO item 12 URL must use report form 20701")
+        return query
+
+    def _client(self) -> httpx.Client:
+        headers = {
+            "User-Agent": os.getenv(
+                "CIVIC_HTTP_USER_AGENT", "CivicIntel/0.1 (+contact@example.invalid)"
+            )
+        }
+        return httpx.Client(transport=self._transport, timeout=20, headers=headers)
+
+    def fetch(self, url: str) -> ConnectorDocument:
+        parsed = urlparse(url)
+        try:
+            with self._client() as client:
+                if parsed.path == self.DIRECTORY_PATH:
+                    self._validated_query(
+                        url,
+                        path=self.DIRECTORY_PATH,
+                        allowed=self.ALLOWED_DIRECTORY_QUERY,
+                    )
+                    response = client.post(
+                        f"{self.BASE_URL}{self.DIRECTORY_API_PATH}",
+                        json={
+                            "apbaType": [],
+                            "jidtDptm": [],
+                            "area": [],
+                            "apbaId": "",
+                            "reportFormRootNo": self.REPORT_FORM_NO,
+                            "quart": "",
+                        },
+                    )
+                    response.raise_for_status()
+                    body = response.text
+                    directory = parse_item12_directory_body(body)
+                    return ConnectorDocument(
+                        url=url,
+                        title="ALIO 항목 12 기관장 업무추진비 기관 목록",
+                        publisher="재정경제부",
+                        published_at=None,
+                        body=body,
+                        metadata={
+                            "source_contract": ALIO_ITEM12_SOURCE_CONTRACT,
+                            "report_form_no": self.REPORT_FORM_NO,
+                            "institution_total": str(directory.total_count),
+                        },
+                    )
+                if parsed.path == self.REPORT_PATH:
+                    query = self._validated_query(
+                        url,
+                        path=self.REPORT_PATH,
+                        allowed=self.ALLOWED_REPORT_QUERY,
+                    )
+                    if not query["apbaId"] or not query["disclosureNo"].isdigit():
+                        raise AlioRecordError("ALIO item 12 report identity is invalid")
+                    if (
+                        not query["nowYear"].isdigit()
+                        or len(query["nowYear"]) != 4
+                        or int(query["nowYear"]) < 1900
+                        or query["nowQuarter"] not in {"1", "2", "3", "4"}
+                    ):
+                        raise AlioRecordError("ALIO item 12 report period is invalid")
+                    response = client.get(url)
+                    response.raise_for_status()
+                    matches = {
+                        match.group("path")
+                        for match in AlioExecutiveDisclosureConnector._DOC_PATH_RE.finditer(
+                            response.text
+                        )
+                        if match.group("disclosure") == query["disclosureNo"]
+                    }
+                    if len(matches) != 1:
+                        raise AlioRecordError("ALIO item 12 report document path is unavailable")
+                    submission_matches = re.findall(
+                        r"id=[\"']submission_no[\"'][^>]*value=[\"']([0-9]+)[\"']",
+                        response.text,
+                    )
+                    if len(submission_matches) != 1:
+                        raise AlioRecordError("ALIO item 12 submission identity is unavailable")
+                    document_path = next(iter(matches))
+                    document_response = client.get(urljoin(self.BASE_URL, document_path))
+                    document_response.raise_for_status()
+                    return ConnectorDocument(
+                        url=url,
+                        title="ALIO 항목 12 기관장 업무추진비 공시",
+                        publisher="재정경제부",
+                        published_at=None,
+                        body=document_response.text,
+                        metadata={
+                            "source_contract": ALIO_ITEM12_SOURCE_CONTRACT,
+                            "report_form_no": self.REPORT_FORM_NO,
+                            "institution_code": query["apbaId"],
+                            "disclosure_no": query["disclosureNo"],
+                            "submission_no": submission_matches[0],
+                            "report_period": f"{query['nowYear']}-Q{query['nowQuarter']}",
+                            "document_path": document_path,
+                        },
+                    )
+        except httpx.HTTPError:
+            raise AlioRecordError("ALIO item 12 request failed") from None
+        raise ValueError("unsupported ALIO item 12 URL")
+
+    @classmethod
+    def parse_directory_body(cls, body: str) -> AlioBusinessExpenseDirectory:
+        return parse_item12_directory_body(body)
+
+    @classmethod
+    def parse_business_expense_rows(
+        cls,
+        document: ConnectorDocument,
+        *,
+        directory_row: AlioBusinessExpenseDirectoryRow,
+    ) -> list[AlioInstitutionHeadBusinessExpenseRecord]:
+        return parse_item12_business_expense_rows(document, directory_row=directory_row)

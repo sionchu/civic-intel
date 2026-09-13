@@ -29,6 +29,7 @@ items include:
 - item 6-1: executive recruitment notice (`임원 모집공고`)
 - item 7-1: retired employee/executive reemployment (`퇴직 임·직원 재취업 현황`)
 - item 10: executive annual compensation (`임원 연봉`)
+- item 12: institution-head business expense (`기관장 업무추진비`)
 - board/governance and other institutional disclosures where separately reviewed
 
 The official ALIO copyright policy permits free use of ALIO-owned works and public data,
@@ -142,6 +143,57 @@ disclosure. It does not attach a role-category annual amount to a named individu
 future source explicitly supports person-level attribution.
 
 The value is official disclosed compensation/annual-pay information, not personal wealth.
+
+## Item 12 institution-head business expense
+
+Item 12 is a separate aggregate money lane. Its initial bounded contract was revalidated against
+the [official item catalog](https://www.alio.go.kr/item/itemList.do), the [unfiltered institution
+directory](https://www.alio.go.kr/item/itemOrganList.do?reportFormRootNo=20701), current report
+pages and the [ALIO copyright policy](https://www.alio.go.kr/notice/copyright.do) on 2026-09-14.
+The directory uses `reportFormRootNo=20701` and the source-specific POST
+`/item/itemOrganListJung.json` with empty institution/type/area/quarter filters. The live response
+contained 355 rows and 355 unique `apbaId` values; four rows explicitly had no current
+`disclosureNo` and an empty attachment sentinel. The directory is a bounded count-validated
+inventory, not a generic ALIO crawler.
+
+The three known-positive institutions used for the first live proof are `C0019`, `C0129` and
+`C0908`. For each selected row, the report page is requested with `apbaId`,
+`reportFormRootNo=20701`, `disclosureNo`, `nowYear` and `nowQuarter`. The connector follows only
+the exact `/upload/disclosure/.../doc.html` path embedded in that page and reads the aggregate
+table headed `연도 / 업무추진비 집행금액 / 집행상세내역`. The reviewed sample reports expose
+2021–2025 fiscal-year rows, `(단위: 천원)`, `기준일` and `제출일`; `.xls` and `.xlsx` attachment
+names are retained only as metadata locators. Attachment bytes, full report HTML and disclosure
+staff names, departments and contacts are excluded.
+
+The normalized source record is:
+
+```text
+institution apbaId + current disclosureNo + fiscal_year
+ -> institution + INSTITUTION_HEAD + fiscal-year amount
+```
+
+`apbaId` identifies the institution in ALIO, `disclosureNo` identifies the current report, and
+`submissionNo` anchors the submission/attachment locator. The provider does not publish a
+correction or replacement chain for the annual rows. `disclosureNo:fiscal_year` is therefore
+accepted only when the report identity is exact and each fiscal year occurs once; filenames and
+table ordinals are never permanent keys. A changed normalized amount creates a new immutable
+`FeederObservation` version. A provider correction, replacement, withdrawal or missing current
+report is not reconciled by inference.
+
+The source-specific parser preserves the source amount in thousand KRW and derives the integer
+`amount_krw` value by multiplying by 1,000. It does not attribute the aggregate to the current
+institution head, infer waste or corruption, inspect personal spending, compare peer institutions
+or look up a Person. `SourcePolicy`, `Source`, `SourceSnapshot`, `SourceRun`,
+`SourceCheckpoint` and `FeederObservation` are reused; no financial framework, attachment archive,
+new table or migration is introduced.
+
+The first implementation is a bounded `L2 SINGLE_PULL` lane over those three known-positive
+institutions, with deterministic parser/QA, exact provenance and unchanged-rerun proof. It is
+not L3: the full 355-institution directory has not been selected as a complete Item 12 annual-row
+universe, and provider correction/version semantics remain incomplete. The derived
+`money.alio-head-expense-yoy.v1` result is descriptive and currently has no public surface because
+the repository has no organization-scoped Claim/Evidence publication contract. No Person,
+PersonObservationLink, Claim or public FACT is created by this lane.
 
 ## Reemployment disclosure
 

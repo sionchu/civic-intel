@@ -604,9 +604,86 @@ Current bounded Assembly CHANGE proof files:
 - `tests/test_api.py`
 - `tests/test_profile_projection.py`
 
+## Current checkpoint — ALIO Item 12 MONEY
+
+### Objective
+
+The second Derived Intelligence primitive is a bounded, descriptive MONEY projection over the
+official ALIO item 12 `기관장 업무추진비` report. The source lane must preserve the existing
+SourcePolicy → Source → SourceSnapshot → FeederObservation path and must not attribute an
+institution aggregate to a named Person.
+
+### Scope and decisions
+
+- Baseline at start and remote `master`: `1af5f7ca0a76a5683415d9241c07066d5166bf90`; Alembic
+  head remains `0004`.
+- Official Item 12 uses `reportFormRootNo=20701`; the 2026-09-14 unfiltered directory returned
+  355 rows and 355 unique `apbaId` values, including four explicit no-current-disclosure rows.
+- The live implementation is deliberately bounded to known-positive `C0019`, `C0129` and
+  `C0908`. Their current report pages expose 2021–2025 annual aggregate rows, `천원` units,
+  as-of/submission dates and mixed `.xls`/`.xlsx` filenames.
+- `apbaId` is an institution namespace, `disclosureNo` is report identity and
+  `submissionNo`/filename is locator metadata. The provider does not declare annual-row
+  correction/replacement semantics, so `{disclosureNo}:{fiscal_year}` is accepted only after
+  exact identity and unique-year checks; changed values become new immutable observations.
+- Existing ALIO `SourcePolicy` was minimally widened for Item 12. Fulltext, excerpts, AI,
+  attachment bytes and disclosure staff contacts remain excluded.
+- `Claim.person_id` is mandatory and no organization Claim/Evidence route exists. MONEY output
+  therefore has no Claim/Evidence publication and remains `publication_status: BLOCKED`.
+
+### Completed
+
+- Added the source-specific Item 12 connector/parser and strict aggregate normalization.
+- Added the allowlisted worker `workers.alio_business_expense` and
+  `civic-stage-alio-money` entry point using shared source/run/checkpoint/observation persistence.
+- Added `money.alio-head-expense-yoy.v1` as an in-memory deterministic projection with exact
+  source/snapshot/observation references and explicit zero-baseline behavior.
+- Added the active plan `docs/exec-plans/active/alio-item12-money-v0.md` and updated the public
+  institution, source semantics, coverage, North Star and index documentation.
+
+### Verification evidence
+
+- Targeted Item 12, existing ALIO and batch executive tests: `40 passed`.
+- Targeted Ruff: passed. Targeted mypy for the connector, worker and projection: success.
+- Alembic `upgrade head` completed on the ignored live SQLite database.
+- First live bounded run `ac60cd8b-55ab-4410-91cb-1cc1c6379512`: `SUCCESS`, 3 institutions,
+  15 unique records. Second run `a430b5ea-857e-45d8-8b31-34a43d950d60`: `SUCCESS`, 3
+  institutions, 15 unchanged records.
+- Live database QA: 4 Sources, 4 metadata-only SourceSnapshots, 0 People, 0 Claims; run
+  counters were `(15,15,0)` then `(15,0,15)`, with no contact-string matches in snapshots or
+  observations. C0908 2024→2025 produced `-2,162,000 KRW` and `-14.39%`, still blocked from
+  public publication.
+- Milestone DoD: full Python suite `310 passed, 4 warnings`; Ruff passed; mypy succeeded for
+  55 source files; Golden quality passed; Alembic upgrade/downgrade-to-base/upgrade round-trip
+  passed; web lint/typecheck passed, 5 UI tests passed and production build passed. The
+  Markdown link check found 68 relative links and 0 broken links. `make verify` was attempted but
+  GNU Make is not installed on this Windows host; its constituent commands passed directly.
+
+### Not executed and blockers
+
+- No full 355-institution annual-row enumeration, attachment download, Person materialization,
+  organization schema, public route, generic financial abstraction or scheduled sync was added.
+- Item 12 is `L2 SINGLE_PULL` only for the three-institution bounded proof. L3 is not attempted;
+  the full annual-row universe and correction/version contract are not selected as a closed L3
+  scope. The public MONEY surface remains blocked by the person-only Claim/Evidence contract.
+
+### Modified files for this milestone
+
+- `packages/connectors/alio_disclosures.py`
+- `workers/alio_business_expense.py`
+- `packages/rendering/money_projection.py`
+- `tests/test_alio_item12_money.py`
+- `pyproject.toml`
+- `docs/architecture/PUBLIC_INSTITUTION_FEEDER.md`
+- `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
+- `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md`
+- `docs/product/CIVIC_INTEL_NORTH_STAR.md`
+- `docs/exec-plans/active/alio-item12-money-v0.md`
+- `docs/INDEX.md`
+- `HANDOFF.md`
+
 ## Next concrete action
 
-Keep the Assembly historical-member API at `L1 CONTRACT_STAGED; L3 promotion blocked` until one
-source-specific decision closes its rights, provider-published finite term-code/current-former
-coverage manifest, row-level identity/version rule and page/key QA. Until then, retain the
-packet-only reviewed proof as a bounded regression and do not treat it as live/public coverage.
+Design and approve the smallest organization-scoped Claim/Evidence publication contract required
+to expose a descriptive ALIO Item 12 MONEY result while preserving the existing person-only claim
+path and source/snapshot/observation provenance.

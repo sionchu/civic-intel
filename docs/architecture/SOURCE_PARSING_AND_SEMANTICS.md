@@ -1,7 +1,7 @@
 # Source parsing and semantics
 
 Status: governing architecture reference, source-boundary audit and bounded packet proof on
-2026-09-13.
+2026-09-14.
 This document fixes the boundary between source acquisition, parsing, normalized observations,
 canonical records and derived product output. It does not approve a source, add a live collection
 mode, create an L3 feeder, change a schema, or promote a lane to L3. A bounded reviewed packet may
@@ -315,6 +315,7 @@ The following inventory is based on the current repository, not a proposed unive
 | Gwanbo personnel notices | `packages/connectors/gwanbo_personnel.py`, `workers/gwanbo_personnel.py` | Bounded HTML/POST notice parser keyed by notice ID; metadata-only observation; no Person |
 | NEC candidates/winners | `packages/connectors/nec_local_elections.py`, `workers/local_elections.py` | Source-specific API parsers keyed by NEC `huboid` within election scope; candidate-submitted semantics preserved |
 | ALIO public-institution executives | `packages/connectors/alio_disclosures.py`, `workers/public_institutions.py` | Directory/report/document/table parsing; `disclosure_no:ordinal` observation keys; vacancies, masks and corrections explicit |
+| ALIO institution-head business expense | `packages/connectors/alio_disclosures.py`, `workers/alio_business_expense.py`, `packages/rendering/money_projection.py` | Bounded Item 12 directory/report parsing for three known-positive institutions; `disclosureNo:fiscal_year` after exact report/unique-year validation; aggregate only, no Person attribution or public MONEY route |
 | OpenDART executives and related disclosures | `packages/connectors/open_dart_corporate.py`, `workers/corporate_talent.py` | XML/JSON corp master and report parsers; company/report/row keys; Person materialization remains review-gated |
 | Civil service and MPM staging | `packages/connectors/civil_service_records.py`, `workers/civil_service.py` | Typed personnel/employment-review records; anonymous MPM rows remain source-level; no canonical event fabrication |
 | Legal personnel | `packages/connectors/legal_personnel_records.py`, `workers/legal_careers.py` | MOJ/Court source-specific staged records; no unified universe or automatic Person path |
@@ -327,6 +328,15 @@ tree. The parser-specific regression file exercises only a bounded known-positiv
 existing persistence/projection chain; its fixture is not a complete history universe or a live
 source authorization.
 
+The ALIO Item 12 lane is different: its source-specific connector performs a bounded live pull for
+three explicitly selected institutions. The directory `apbaId` is an institution namespace, the
+current `disclosureNo` is a report identity, `submissionNo` is a submission/attachment locator,
+and `fiscal_year` identifies the annual table item. The provider does not publish an annual-row
+correction chain. The worker therefore retains only policy-permitted normalized aggregate fields,
+uses `disclosureNo:fiscal_year` only after duplicate-year validation, and stores a changed value
+as a new immutable observation rather than labeling it a correction. `.xls`/`.xlsx` names are
+locators only; attachment bytes and report staff contacts are not stored.
+
 ## Storage and PostgreSQL impact
 
 | Classification | Current decision |
@@ -336,10 +346,12 @@ source authorization.
 | MISSING ONLY WHEN A REAL SOURCE REQUIRES IT | First-class release/document/disclosure or locator records, or a narrowly scoped source-level reviewed-packet importer, only if existing Source/Snapshot/Observation metadata cannot preserve the source contract, rights, correction relation and exact locator |
 | REJECT | `RawRecord`, `GenericDocument`, universal financial/event schemas, parser registry, shadow raw store, graph/RDF/OWL model, generic crawler rewrite and a `ReviewedPersonBundle` batch replacement |
 
-This milestone has no PostgreSQL impact: no domain class, SQLAlchemy row, Alembic migration,
-dependency or runtime table is added. Existing JSON metadata is not a substitute for a future
-relational model when a concrete source proves one is necessary, but a future model must be
-small, source-driven and migration-backed rather than speculative.
+These source-boundary milestones have no PostgreSQL impact: no domain class, SQLAlchemy row,
+Alembic migration, dependency or runtime table is added. Existing JSON metadata is not a
+substitute for a future relational model when a concrete source proves one is necessary, but a
+future model must be small, source-driven and migration-backed rather than speculative. The
+Item 12 MONEY projection is an in-memory deterministic result over exact observations; it does
+not add a generic money, expense or transaction model.
 
 ## Verification contract
 
@@ -354,6 +366,10 @@ The existing tests are the evidence for the current source-specific architecture
   `test_batch_nec_candidates.py`, `test_batch_nec_winners.py`, `test_batch_alio_executives.py`
   and `test_batch_opendart_executives.py` cover source-specific scope, page totals, duplicate
   keys, idempotency, changed versions, resume/checkpoint transactions, privacy and policy gates.
+- `test_alio_item12_money.py` covers the Item 12 directory/report contract, five annual rows,
+  `천원` normalization, attachment metadata-only handling, malformed/duplicate/mismatched input,
+  three-institution bounded persistence, immutable reruns, no-Person/privacy gates, exact
+  provenance, deterministic MONEY deltas and zero-baseline handling.
 - Domain, repository, materialization, migration and identity tests cover canonical contracts,
   publication gates, Alembic head checks, fail-closed identity and the boundary between research
   identity and canonical Person materialization.
@@ -361,9 +377,11 @@ The existing tests are the evidence for the current source-specific architecture
   cover typed normalization, explicit missingness and identity-safe source attribution.
 
 For the source-boundary portion, run the repository's existing verification commands and a
-relative-link check. The packet proof may produce a derived CHANGE in the test fixture only; do
-not run a live historical-career fetch, add a fixture that implies a complete history universe,
-download a new packet, or treat the proof as L3/live coverage.
+relative-link check. The Assembly packet proof may produce a derived CHANGE in the test fixture
+only; do not run a live historical-career fetch, add a fixture that implies a complete history
+universe, download a new packet, or treat the proof as L3/live coverage. The ALIO Item 12 live
+proof is limited to its three selected institutions and does not promote the complete directory
+or the public MONEY surface.
 
 ## Boundary checklist for a future source
 
