@@ -731,8 +731,72 @@ into a Person assertion.
   MONEY projection remains blocked until it consumes published annual organization Claims with
   exact ClaimEvidence/observation provenance.
 
+## Current checkpoint — Claim-backed ALIO Item 12 MONEY projection
+
+### Objective
+
+Expose the smallest read-only ALIO Item 12 MONEY result downstream of the canonical organization
+Claim/Evidence path. The result must consume published annual organization Claims, exact
+ClaimEvidence and the repository-complete immutable observation set; the bounded worker remains
+observation-only.
+
+### Completed
+
+- Added the source-specific `build_alio_head_expense_money_from_claims()` read-model builder.
+  It requires current published FACT organization Claims, one exact SUPPORT evidence item,
+  matching Claim qualifiers/text and the existing SourcePolicy → Source → SourceSnapshot →
+  FeederObservation chain.
+- Added read-only `GET /organizations/{organization_id}/money` with explicit earlier/later fiscal
+  year query parameters. It expands each referenced provider record key to all stored immutable
+  versions and fails closed when content hashes disagree.
+- The derived result preserves both input Claim IDs, serialized ClaimEvidence and exact
+  source/snapshot/observation provenance. It has no Claim/FACT status and cannot be used to infer
+  personal spending, waste, corruption, causation, performance or peer superiority.
+- Kept the existing observation-only MONEY builder `publication_status: BLOCKED`; no generic
+  `/money` route, organization enumeration, automatic ALIO binding, migration or persistent
+  financial model was added.
+- Updated the organization Claim, Item 12 feeder, source-semantics, North Star, index, execution
+  plan and this handoff documentation.
+
+### Verification evidence
+
+- Targeted Item 12 regression: `20 passed, 2 warnings`.
+- Full Python suite: `316 passed, 4 warnings`.
+- Ruff `apps packages workers tests migrations`: passed; mypy `packages workers apps/api`:
+  success for 55 source files.
+- Golden quality checks: all checks true.
+- Web lint, typecheck, UI tests (`5 passed`) and production build: passed.
+- Markdown check: 56 repository Markdown files, 73 relative links, 0 broken links.
+- `git diff --check`: passed. `make verify` was attempted but `make` is unavailable on this
+  Windows host; its constituent commands passed directly.
+
+### Not executed and blockers
+
+- No live ALIO organization Claim was published. The three-institution Item 12 observation proof
+  remains `L2 SINGLE_PULL`; the full directory, annual-row completeness and provider correction
+  semantics remain outside L3.
+- No automatic `apbaId` → Organization binding, scheduled sync, raw report/attachment storage,
+  Person materialization, generic financial schema or UI was added.
+- The new route returns no MONEY result until a reviewed canonical Organization binding and
+  annual Claims exist.
+
+### Modified files for this milestone
+
+- `apps/api/main.py`
+- `packages/rendering/money_projection.py`
+- `tests/test_alio_item12_money.py`
+- `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
+- `docs/architecture/ORGANIZATION_CLAIM_PUBLICATION.md`
+- `docs/architecture/PUBLIC_INSTITUTION_FEEDER.md`
+- `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md`
+- `docs/product/CIVIC_INTEL_NORTH_STAR.md`
+- `docs/exec-plans/active/alio-item12-claim-backed-money-projection-v0.md`
+- `docs/exec-plans/active/organization-claim-publication-v0.md`
+- `docs/INDEX.md`
+- `HANDOFF.md`
+
 ## Next concrete action
 
-Build a read-only organization MONEY projection whose only inputs are published annual
-organization Claims and their exact ClaimEvidence/observation provenance, with ambiguous
-observation versions failing closed.
+Authorize one manually reviewed ALIO `apbaId` to existing-Organization binding and import exactly
+two annual Item 12 Claims through the canonical importer before exercising the route with live
+data.

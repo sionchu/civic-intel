@@ -42,6 +42,7 @@ from packages.persistence import OrganizationClaimImportError, SqlAlchemyReposit
 from packages.rendering.money_projection import (
     build_alio_head_expense_claim,
     build_alio_head_expense_money,
+    build_alio_head_expense_money_from_claims,
 )
 from packages.verification.policy import PolicyDenied
 from workers.alio_business_expense import (
@@ -551,7 +552,36 @@ def test_item12_public_api_has_no_organization_money_bypass() -> None:
     assert "/organizations" not in paths
     assert "/organizations/{organization_id}" in paths
     assert "/organizations/{organization_id}/claims" in paths
+    assert "/organizations/{organization_id}/money" in paths
     assert "/people/{person_id}/assets" in paths
+
+
+def test_item12_money_route_does_not_fallback_without_published_claims(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "organization-money-empty.db")
+    organization = Organization(
+        id=UUID("60000000-0000-0000-0000-000000000005"),
+        name="공개기관",
+    )
+    with repository.sessions() as session:
+        session.add(
+            OrganizationRow(
+                id=str(organization.id),
+                name=organization.name,
+                valid_from=organization.valid_from,
+                valid_to=organization.valid_to,
+                recorded_at=organization.recorded_at,
+                superseded_at=organization.superseded_at,
+            )
+        )
+        session.commit()
+
+    with TestClient(create_app(repository)) as client:
+        response = client.get(f"/organizations/{organization.id}/money")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "organization MONEY evidence not found"
 
 
 def test_item12_observation_versions_are_ambiguous_until_selected() -> None:
@@ -644,13 +674,13 @@ def test_item12_claim_builder_and_publication_reuse_canonical_evidence_path(
     enumerator = AlioBusinessExpenseEnumerator(provider.connector(), repository)
     enumerator.enumerate()
 
-    observation = next(
-        item
+    observations_by_year = {
+        int(item.normalized["fiscal_year"]): item
         for item in repository.feeder_observations(enumerator.FEEDER, enumerator.scope_key)
-        if item.provider_record_key.endswith(":2025")
-        and item.normalized["institution_code"] == "C0908"
-    )
-    snapshots, sources = _money_inputs(repository, [observation])
+        if item.normalized["institution_code"] == "C0908"
+    }
+    observations = [observations_by_year[year] for year in (2024, 2025)]
+    snapshots, sources = _money_inputs(repository, observations)
     source = sources[next(iter(sources))]
     policy = repository.policies([source.policy_id])[source.policy_id]
     organization = Organization(
@@ -670,44 +700,85 @@ def test_item12_claim_builder_and_publication_reuse_canonical_evidence_path(
         )
         session.commit()
 
-    claim, evidence = build_alio_head_expense_claim(
-        observation,
-        organization=organization,
-        policy=policy,
-        snapshots=snapshots,
-        sources=sources,
-    )
-    assert claim.person_id is None
-    assert claim.organization_id == organization.id
-    assert claim.predicate == "DISCLOSED_BUSINESS_EXPENSE"
-    assert claim.qualifiers["institution_code"] == "C0908"
-    assert evidence.feeder_observation_id == observation.id
-    assert evidence.snapshot_id == observation.snapshot_id
-    assert evidence.excerpt is None
+    claims_by_year = {}
+    for year in (2024, 2025):
+        observation = observations_by_year[year]
+        claim, evidence = build_alio_head_expense_claim(
+            observation,
+            organization=organization,
+            policy=policy,
+            snapshots=snapshots,
+            sources=sources,
+        )
+        assert claim.person_id is None
+        assert claim.organization_id == organization.id
+        assert claim.predicate == "DISCLOSED_BUSINESS_EXPENSE"
+        assert claim.qualifiers["institution_code"] == "C0908"
+        assert evidence.feeder_observation_id == observation.id
+        assert evidence.snapshot_id == observation.snapshot_id
+        assert evidence.excerpt is None
+        claims_by_year[year] = (claim, evidence)
+        repository.import_organization_claim(organization, claim, [evidence])
 
-    repository.import_organization_claim(organization, claim, [evidence])
     stored = repository.claims(
         published_only=True,
         current_only=True,
         organization_id=organization.id,
     )
-    assert [item.id for item in stored] == [claim.id]
-    assert stored[0].person_id is None
-    assert stored[0].organization_id == organization.id
+    assert {item.qualifiers["fiscal_year"] for item in stored} == {"2024", "2025"}
+    assert all(item.person_id is None for item in stored)
+    assert all(item.organization_id == organization.id for item in stored)
 
     with TestClient(create_app(repository)) as client:
         response = client.get(f"/organizations/{organization.id}/claims")
         assert response.status_code == 200
         payload = response.json()
-        assert len(payload) == 1
-        assert payload[0]["organization_id"] == str(organization.id)
-        assert payload[0]["person_id"] is None
-        assert payload[0]["evidence"][0]["feeder_observation_id"] == str(observation.id)
-        assert payload[0]["evidence"][0]["snapshot_id"] == str(observation.snapshot_id)
+        assert len(payload) == 2
+        assert {item["organization_id"] for item in payload} == {str(organization.id)}
+        assert {item["person_id"] for item in payload} == {None}
+        assert {
+            item["evidence"][0]["feeder_observation_id"] for item in payload
+        } == {str(item.id) for item in observations}
+        assert {
+            item["evidence"][0]["snapshot_id"] for item in payload
+        } == {str(item.snapshot_id) for item in observations}
 
         organization_response = client.get(f"/organizations/{organization.id}")
         assert organization_response.status_code == 200
-        assert len(organization_response.json()["claims"]) == 1
+        assert len(organization_response.json()["claims"]) == 2
+
+        money_response = client.get(
+            f"/organizations/{organization.id}/money?earlier_fiscal_year=2024&later_fiscal_year=2025"
+        )
+        assert money_response.status_code == 200
+        money = money_response.json()
+        assert money["kind"] == "MONEY"
+        assert money["availability"] == "AVAILABLE"
+        assert money["epistemic_status"] is None
+        assert money["claim_ids"] == [
+            str(claims_by_year[2024][0].id),
+            str(claims_by_year[2025][0].id),
+        ]
+        assert set(money["evidence_ids"]) == {
+            str(claims_by_year[2024][1].id),
+            str(claims_by_year[2025][1].id),
+        }
+        assert {item["id"] for item in money["evidence"]} == set(money["evidence_ids"])
+        assert all(item["stance"] == "SUPPORT" for item in money["evidence"])
+        assert money["details"]["absolute_delta_krw"] == -2162000
+        assert money["details"]["percent_change"] == "-14.39"
+        assert money["details"]["input_scope"] == {
+            "source_contract": "alio_item_12_current_institution_head_business_expense",
+            "required_publication": "PUBLISHED_ORGANIZATION_CLAIM_WITH_EXACT_EVIDENCE",
+            "correction_semantics": "IMMUTABLE_SNAPSHOT_ONLY",
+            "identity_rule": "EXISTING_CANONICAL_ORGANIZATION_ONLY",
+        }
+        assert money["details"]["provenance"]["earlier"]["claim_id"] == str(
+            claims_by_year[2024][0].id
+        )
+        assert money["details"]["provenance"]["later"]["claim_id"] == str(
+            claims_by_year[2025][0].id
+        )
 
 
 def test_organization_claim_import_rejects_ambiguous_observation_versions(
@@ -770,6 +841,81 @@ def test_organization_claim_import_rejects_ambiguous_observation_versions(
         repository.import_organization_claim(organization, claim, [evidence])
 
     assert repository.claims(organization_id=organization.id) == []
+
+
+def test_item12_money_projection_rejects_ambiguous_observation_versions(
+    tmp_path: Path,
+) -> None:
+    provider = FakeAlioMoneyProvider()
+    repository = migrated_repository(tmp_path / "organization-money-version.db")
+    enumerator = AlioBusinessExpenseEnumerator(provider.connector(), repository)
+    enumerator.enumerate()
+
+    provider.amounts["C0908"][2024] = 16000
+    provider.documents["2026091400000003"] = business_expense_html(
+        provider.amounts["C0908"],
+        {year: f"{year}년 기관장 업무추진비.xls" for year in range(2025, 2020, -1)},
+        institution_name="테스트정보기관",
+    )
+    enumerator.enumerate()
+
+    all_observations = repository.feeder_observations(
+        enumerator.FEEDER,
+        enumerator.scope_key,
+    )
+    earlier = next(
+        item
+        for item in all_observations
+        if item.provider_record_key == "2026091400000003:2024"
+        and item.normalized["amount_krw"] == 16000000
+    )
+    later = next(
+        item
+        for item in all_observations
+        if item.provider_record_key == "2026091400000003:2025"
+    )
+    observations = [
+        item
+        for item in all_observations
+        if item.normalized["institution_code"] == "C0908"
+    ]
+    snapshots, sources = _money_inputs(repository, observations)
+    policies = repository.policies(source.policy_id for source in sources.values())
+    policy = policies[next(iter(sources.values())).policy_id]
+    organization = Organization(
+        id=UUID("60000000-0000-0000-0000-000000000004"),
+        name="테스트정보기관",
+    )
+    earlier_claim, earlier_evidence = build_alio_head_expense_claim(
+        earlier,
+        organization=organization,
+        policy=policy,
+        snapshots=snapshots,
+        sources=sources,
+    )
+    later_claim, later_evidence = build_alio_head_expense_claim(
+        later,
+        organization=organization,
+        policy=policy,
+        snapshots=snapshots,
+        sources=sources,
+    )
+
+    with pytest.raises(ValueError, match="ambiguous immutable observation versions"):
+        build_alio_head_expense_money_from_claims(
+            organization,
+            [earlier_claim, later_claim],
+            {
+                earlier_claim.id: [earlier_evidence],
+                later_claim.id: [later_evidence],
+            },
+            observations=observations,
+            snapshots=snapshots,
+            sources=sources,
+            policies=policies,
+            earlier_fiscal_year=2024,
+            later_fiscal_year=2025,
+        )
 
 
 def test_organization_claim_import_does_not_materialize_provider_identity(

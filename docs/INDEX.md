@@ -37,6 +37,7 @@ implementation work.
 - [CHANGE discovery experience v1 plan](exec-plans/active/change-discovery-experience-v1.md)
 - [ALIO Item 12 MONEY bounded slice](exec-plans/active/alio-item12-money-v0.md)
 - [Organization Claim publication v0 plan](exec-plans/active/organization-claim-publication-v0.md)
+- [ALIO Item 12 Claim-backed MONEY projection v0 plan](exec-plans/active/alio-item12-claim-backed-money-projection-v0.md)
 - [Role model](roles/ROLE_MODEL.md)
 - [Batch ingestion agent](roles/BATCH_INGESTION_AGENT.md)
 - [Definition of done](workflows/DEFINITION_OF_DONE.md)

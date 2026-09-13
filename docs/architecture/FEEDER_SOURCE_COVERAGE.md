@@ -302,8 +302,10 @@ rows, but no provider-declared correction/replacement chain for an annual row; t
 connector therefore fails closed on changed/duplicate identity conditions and never infers a
 replacement or latest value. The canonical Claim contract now has an organization branch, but
 publication still requires an existing reviewed Organization binding and an exact immutable
-observation version. The MONEY projection therefore remains a source-traceable internal
-derivation with the live public surface blocked.
+observation version. A narrow read-only organization MONEY route now consumes only published
+annual organization Claims and exact ClaimEvidence/observation provenance; it has no live output
+until a reviewed Organization binding and annual Claim import exist. The bounded observation
+worker remains L2 and is not promoted to L3 by this route.
 
 ### Blocked-lane reassessment
 
@@ -472,7 +474,8 @@ ALIO Item 12 institution-head business expense
  -> `amount_thousand_krw` is the source unit; `amount_krw` is deterministic integer normalization
  -> a descriptive year-over-year MONEY result is not personal spending, waste, corruption,
     performance, peer ranking or a named institution-head claim
- -> no current organization Claim/Evidence route exists, so the public result remains blocked
+ -> the bounded read-only organization MONEY route is Claim-gated; no live result exists until a
+    reviewed Organization binding and annual organization Claim import are present
 
 ALIO reemployment disclosure
  -> FACT of disclosed retirement/reemployment event
@@ -513,8 +516,9 @@ Current recommended sequence after presidential-personnel staging:
    the lane stays L0 blocked. A stable Person ID is not a collection prerequisite, but it cannot
    authorize automatic materialization;
 8. completed: source-bounded OpenDART executive-status L3 over the official corp-code master;
-9. completed (2026-09-14): bounded ALIO item 12 institution-head business-expense source slice
-   and descriptive MONEY projection; L2 only, with organization-level publication blocked;
+9. completed (2026-09-14): bounded ALIO item 12 institution-head business-expense source slice,
+   organization-scoped Claim/Evidence path and Claim-gated read-only MONEY projection; L2 only,
+   with no automatic organization binding or live claim run;
 10. one reviewed live civil-service/ethics source adapter using the #23 contracts, only after a
    permitted source contract closes;
 11. revisit bill proposal-reason text only if a verified official structured source becomes available.

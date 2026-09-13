@@ -90,6 +90,5 @@ consumes published annual organization Claims with their Claim IDs and exact pro
 
 ## Next concrete action
 
-Build a read-only organization MONEY projection whose only inputs are published annual
-organization Claims and their exact ClaimEvidence/observation provenance, with ambiguous
-observation versions failing closed.
+The follow-on Claim-backed projection is tracked in
+[`alio-item12-claim-backed-money-projection-v0.md`](alio-item12-claim-backed-money-projection-v0.md).

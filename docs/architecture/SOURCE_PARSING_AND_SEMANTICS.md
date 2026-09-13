@@ -315,7 +315,7 @@ The following inventory is based on the current repository, not a proposed unive
 | Gwanbo personnel notices | `packages/connectors/gwanbo_personnel.py`, `workers/gwanbo_personnel.py` | Bounded HTML/POST notice parser keyed by notice ID; metadata-only observation; no Person |
 | NEC candidates/winners | `packages/connectors/nec_local_elections.py`, `workers/local_elections.py` | Source-specific API parsers keyed by NEC `huboid` within election scope; candidate-submitted semantics preserved |
 | ALIO public-institution executives | `packages/connectors/alio_disclosures.py`, `workers/public_institutions.py` | Directory/report/document/table parsing; `disclosure_no:ordinal` observation keys; vacancies, masks and corrections explicit |
-| ALIO institution-head business expense | `packages/connectors/alio_disclosures.py`, `workers/alio_business_expense.py`, `packages/rendering/money_projection.py` | Bounded Item 12 directory/report parsing for three known-positive institutions; `disclosureNo:fiscal_year` after exact report/unique-year validation; aggregate only, no Person attribution; organization Claim builder/read path is canonical-row gated, with no automatic organization binding or public MONEY route |
+| ALIO institution-head business expense | `packages/connectors/alio_disclosures.py`, `workers/alio_business_expense.py`, `packages/rendering/money_projection.py` | Bounded Item 12 directory/report parsing for three known-positive institutions; `disclosureNo:fiscal_year` after exact report/unique-year validation; aggregate only, no Person attribution; organization Claim builder/read path and Claim-gated `/organizations/{organization_id}/money` projection reuse exact provenance, with no automatic organization binding or generic `/money` route |
 | OpenDART executives and related disclosures | `packages/connectors/open_dart_corporate.py`, `workers/corporate_talent.py` | XML/JSON corp master and report parsers; company/report/row keys; Person materialization remains review-gated |
 | Civil service and MPM staging | `packages/connectors/civil_service_records.py`, `workers/civil_service.py` | Typed personnel/employment-review records; anonymous MPM rows remain source-level; no canonical event fabrication |
 | Legal personnel | `packages/connectors/legal_personnel_records.py`, `workers/legal_careers.py` | MOJ/Court source-specific staged records; no unified universe or automatic Person path |
@@ -352,8 +352,9 @@ the in-place `claims.organization_id` subject field through Alembic `0005`; it d
 `OrganizationClaim` table or a financial abstraction. Existing JSON metadata is not a substitute
 for a future relational model when a concrete source proves one is necessary, but a future model
 must be small, source-driven and migration-backed rather than speculative. The Item 12 MONEY
-projection remains an in-memory deterministic result over exact observations; it does not become
-a public MONEY surface through this contract.
+projection remains an in-memory deterministic result over published organization Claims and exact
+observation provenance; the observation-only calculation remains blocked from the public route
+and never becomes a FACT or a generic financial surface.
 
 ## Verification contract
 
@@ -373,8 +374,8 @@ The existing tests are the evidence for the current source-specific architecture
   three-institution bounded persistence, immutable reruns, no-Person/privacy gates, exact
   provenance, deterministic MONEY deltas and zero-baseline handling. It also covers the exclusive
   Person/Organization Claim subject contract, the reviewed Organization binding gate, exact
-  organization Claim/Evidence import, immutable-version rejection and read-only organization
-  routes.
+  organization Claim/Evidence import, immutable-version rejection, Claim-backed MONEY
+  projection and read-only organization routes.
 - Domain, repository, materialization, migration and identity tests cover canonical contracts,
   publication gates, Alembic head checks, fail-closed identity and the boundary between research
   identity and canonical Person materialization.
@@ -386,7 +387,7 @@ relative-link check. The Assembly packet proof may produce a derived CHANGE in t
 only; do not run a live historical-career fetch, add a fixture that implies a complete history
 universe, download a new packet, or treat the proof as L3/live coverage. The ALIO Item 12 live
 proof is limited to its three selected institutions and does not promote the complete directory
-or the public MONEY surface.
+or create live organization Claim data for the public MONEY route.
 
 ## Boundary checklist for a future source
 

@@ -1,7 +1,8 @@
 # ALIO Item 12 MONEY v0
 
-Status: completed — `L2 SINGLE_PULL` bounded three-institution proof on 2026-09-14; public
-organization-level MONEY publication is blocked; L3 was not attempted.
+Status: completed — `L2 SINGLE_PULL` bounded three-institution proof on 2026-09-14; the
+Claim-gated read-only projection is a follow-on, with no live organization Claim input; L3 was
+not attempted.
 
 ## Objective
 
@@ -157,8 +158,9 @@ The Item 12 lane is `L2 SINGLE_PULL` for the explicit three-institution bounded 
 connector, parser, shared persistence, exact provenance and unchanged rerun are demonstrated by
 the live run and regressions. It is not L3: the full 355-institution annual-row scope, long-term
 correction/replacement semantics and operational sync contract have not been established or
-selected. The public MONEY result remains blocked until a reviewed canonical Organization binding
-is supplied and a projection consuming published organization Claims is approved.
+selected. The observation-only MONEY result remains blocked; the follow-on read-only route has no
+live output until a reviewed canonical Organization binding is supplied and annual organization
+Claims are imported.
 
 ## Not executed
 
@@ -169,6 +171,5 @@ public FACT; the separate organization subject contract is not a live ALIO bindi
 
 ## Next concrete action
 
-Build a read-only organization MONEY projection whose only inputs are published annual
-organization Claims and their exact ClaimEvidence/observation provenance, with ambiguous
-observation versions failing closed.
+The Claim-backed read-only projection is tracked in
+[`alio-item12-claim-backed-money-projection-v0.md`](alio-item12-claim-backed-money-projection-v0.md).

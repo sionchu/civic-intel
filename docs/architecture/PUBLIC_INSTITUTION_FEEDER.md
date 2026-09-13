@@ -196,7 +196,9 @@ contract now supports exactly one Person or current Organization subject, and re
 organization Claim routes reuse the same evidence path. The Item 12 builder/importer requires an
 existing reviewed Organization; `apbaId` never auto-creates one. The bounded worker still creates
 observations only, so no live ALIO annual Claim/public FACT is added here. The derived
-`money.alio-head-expense-yoy.v1` result remains without a `/money` public route.
+`money.alio-head-expense-yoy.v1` route is limited to
+`/organizations/{organization_id}/money`, consumes published annual organization Claims only and
+has no generic `/money` bypass; without those Claims it returns no result.
 
 ## Reemployment disclosure
 

@@ -5,8 +5,10 @@ from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
 
+from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.enums import IdentityStatus
 from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
+from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import build_profile_projection
 from packages.verification.claims import validate_claim_publication
 
@@ -152,6 +154,87 @@ def create_app(
                 organization_id=organization_id,
             )
         ]
+
+    @app.get("/organizations/{organization_id}/money")
+    def organization_money(
+        organization_id: UUID,
+        earlier_fiscal_year: int = 2024,
+        later_fiscal_year: int = 2025,
+    ) -> dict:
+        organization = organization_or_404(organization_id, public=True)
+        published_claims = target.claims(
+            published_only=True,
+            current_only=True,
+            organization_id=organization_id,
+        )
+        candidate_claims = [
+            claim
+            for claim in published_claims
+            if claim.predicate == "DISCLOSED_BUSINESS_EXPENSE"
+            and claim.qualifiers.get("source_contract")
+            == ALIO_ITEM12_SOURCE_CONTRACT
+        ]
+        if not candidate_claims:
+            raise HTTPException(404, "organization MONEY evidence not found")
+
+        evidence_by_claim = {
+            claim.id: target.evidence_for(claim.id) for claim in candidate_claims
+        }
+        snapshot_ids = {
+            item.snapshot_id
+            for claim_evidence in evidence_by_claim.values()
+            for item in claim_evidence
+            if item.snapshot_id is not None
+        }
+        source_ids = {
+            item.source_id
+            for claim_evidence in evidence_by_claim.values()
+            for item in claim_evidence
+        }
+        observations_by_id = {}
+        all_evidence = [
+            item for claim_evidence in evidence_by_claim.values() for item in claim_evidence
+        ]
+        for evidence in all_evidence:
+            if evidence.feeder_observation_id is None:
+                continue
+            observation = target.feeder_observation(evidence.feeder_observation_id)
+            if observation is None:
+                continue
+            observations_by_id[observation.id] = observation
+            snapshot_ids.add(observation.snapshot_id)
+            for version in target.feeder_observations(
+                observation.feeder,
+                observation.scope_key,
+                observation.provider_record_key,
+            ):
+                observations_by_id[version.id] = version
+                snapshot_ids.add(version.snapshot_id)
+
+        snapshots = {
+            snapshot_id: snapshot
+            for snapshot_id in snapshot_ids
+            if (snapshot := target.source_snapshot(snapshot_id)) is not None
+        }
+        source_ids.update(snapshot.source_id for snapshot in snapshots.values())
+        sources = target.sources(source_ids)
+        policies = target.policies(source.policy_id for source in sources.values())
+        try:
+            return build_alio_head_expense_money_from_claims(
+                organization,
+                candidate_claims,
+                evidence_by_claim,
+                observations=list(observations_by_id.values()),
+                snapshots=snapshots,
+                sources=sources,
+                policies=policies,
+                earlier_fiscal_year=earlier_fiscal_year,
+                later_fiscal_year=later_fiscal_year,
+            )
+        except ValueError as exc:
+            raise HTTPException(
+                409, f"organization MONEY projection blocked: {exc}"
+            ) from exc
 
     @app.get("/people/{person_id}/relationships")
     def relationships(person_id: UUID) -> list[dict]:

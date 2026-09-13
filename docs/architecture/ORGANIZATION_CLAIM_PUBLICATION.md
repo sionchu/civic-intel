@@ -1,6 +1,7 @@
 # Organization-Scoped Claim and Evidence
 
-Status: governing contract and bounded ALIO Item 12 implementation proof on 2026-09-14.
+Status: governing contract and bounded ALIO Item 12 implementation proof, including the
+Claim-backed read-only projection, on 2026-09-14.
 
 This document defines the smallest extension needed for a public record whose subject is an
 organization rather than a Person. It reuses the existing Claim, ClaimEvidence, Source,
@@ -80,19 +81,23 @@ Current public organization reads filter to `PUBLISHED` and non-superseded Claim
 ```text
 GET /organizations/{organization_id}
 GET /organizations/{organization_id}/claims
+GET /organizations/{organization_id}/money?earlier_fiscal_year=2024&later_fiscal_year=2025
 ```
 
-There is no organization list endpoint and no `/money` endpoint in this milestone. These routes
-are read-only and require an existing current Organization. No live ALIO organization binding or
-annual Claim publication is added by the bounded worker.
+There is no organization list endpoint and no generic `/money` bypass. The organization MONEY
+route is read-only, requires an existing current Organization and returns only when the requested
+years can be derived from published annual organization Claims. The bounded worker still creates
+observations only; it does not bind ALIO institutions or publish annual Claims.
 
 ## Derived MONEY boundary
 
-`money.alio-head-expense-yoy.v1` remains a separate descriptive derived result. It is not a Claim,
-does not become a FACT through this extension and cannot be used to infer waste, corruption,
-personal spending, causation or peer superiority. A future public MONEY projection may consume
-published annual organization Claims and their evidence, but it must retain both input Claim IDs
-and exact observation provenance and must reject ambiguous versions.
+`money.alio-head-expense-yoy.v1` remains a separate descriptive derived result. The read-only
+organization route consumes only current published annual organization Claims, their exact
+ClaimEvidence and repository-complete immutable observation versions. It retains both input Claim
+IDs and the complete selected observation provenance, and rejects ambiguous versions. It is not a
+Claim, does not become a FACT through this projection and cannot be used to infer waste,
+corruption, personal spending, causation or peer superiority. When no reviewed annual Claims are
+available, the route returns no MONEY result rather than falling back to observations.
 
 ## Explicit exclusions
 
@@ -106,5 +111,6 @@ This contract does not authorize:
   run;
 - turning a derived amount change into a Claim or an accusation.
 
-The remaining product gate is therefore narrow: establish a reviewed canonical Organization
-binding and then build a read-only MONEY projection over published annual organization Claims.
+The remaining product gate is therefore narrow: establish reviewed canonical Organization
+bindings and publish annual Claims through the existing importer before the route can return live
+ALIO MONEY results. No automatic ALIO binding or organization-wide claim run is implied.
