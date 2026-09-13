@@ -400,7 +400,8 @@ class SourceOriginCluster(Contract):
 
 class Claim(TemporalRecord):
     id: UUID = Field(default_factory=uuid4)
-    person_id: UUID
+    person_id: UUID | None = None
+    organization_id: UUID | None = None
     proposition: str = Field(min_length=1)
     subject: str = Field(min_length=1)
     predicate: str = Field(min_length=1)
@@ -410,6 +411,12 @@ class Claim(TemporalRecord):
     publication_status: PublicationStatus = PublicationStatus.DRAFT
     asserted_as_true: bool = False
     resolution_note: str | None = None
+
+    @model_validator(mode="after")
+    def exactly_one_subject(self) -> Claim:
+        if (self.person_id is None) == (self.organization_id is None):
+            raise ValueError("claim requires exactly one Person or Organization subject")
+        return self
 
     @model_validator(mode="after")
     def publication_semantics(self) -> Claim:

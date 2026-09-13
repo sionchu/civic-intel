@@ -4,7 +4,7 @@ Status: governing architecture reference, source-boundary audit and bounded pack
 2026-09-14.
 This document fixes the boundary between source acquisition, parsing, normalized observations,
 canonical records and derived product output. It does not approve a source, add a live collection
-mode, create an L3 feeder, change a schema, or promote a lane to L3. A bounded reviewed packet may
+mode, create an L3 feeder or promote a lane to L3. A bounded reviewed packet may
 exercise the existing Claim/Evidence and derived projection path only when its source identity,
 snapshot and policy references remain attached.
 
@@ -315,7 +315,7 @@ The following inventory is based on the current repository, not a proposed unive
 | Gwanbo personnel notices | `packages/connectors/gwanbo_personnel.py`, `workers/gwanbo_personnel.py` | Bounded HTML/POST notice parser keyed by notice ID; metadata-only observation; no Person |
 | NEC candidates/winners | `packages/connectors/nec_local_elections.py`, `workers/local_elections.py` | Source-specific API parsers keyed by NEC `huboid` within election scope; candidate-submitted semantics preserved |
 | ALIO public-institution executives | `packages/connectors/alio_disclosures.py`, `workers/public_institutions.py` | Directory/report/document/table parsing; `disclosure_no:ordinal` observation keys; vacancies, masks and corrections explicit |
-| ALIO institution-head business expense | `packages/connectors/alio_disclosures.py`, `workers/alio_business_expense.py`, `packages/rendering/money_projection.py` | Bounded Item 12 directory/report parsing for three known-positive institutions; `disclosureNo:fiscal_year` after exact report/unique-year validation; aggregate only, no Person attribution or public MONEY route |
+| ALIO institution-head business expense | `packages/connectors/alio_disclosures.py`, `workers/alio_business_expense.py`, `packages/rendering/money_projection.py` | Bounded Item 12 directory/report parsing for three known-positive institutions; `disclosureNo:fiscal_year` after exact report/unique-year validation; aggregate only, no Person attribution; organization Claim builder/read path is canonical-row gated, with no automatic organization binding or public MONEY route |
 | OpenDART executives and related disclosures | `packages/connectors/open_dart_corporate.py`, `workers/corporate_talent.py` | XML/JSON corp master and report parsers; company/report/row keys; Person materialization remains review-gated |
 | Civil service and MPM staging | `packages/connectors/civil_service_records.py`, `workers/civil_service.py` | Typed personnel/employment-review records; anonymous MPM rows remain source-level; no canonical event fabrication |
 | Legal personnel | `packages/connectors/legal_personnel_records.py`, `workers/legal_careers.py` | MOJ/Court source-specific staged records; no unified universe or automatic Person path |
@@ -346,12 +346,14 @@ locators only; attachment bytes and report staff contacts are not stored.
 | MISSING ONLY WHEN A REAL SOURCE REQUIRES IT | First-class release/document/disclosure or locator records, or a narrowly scoped source-level reviewed-packet importer, only if existing Source/Snapshot/Observation metadata cannot preserve the source contract, rights, correction relation and exact locator |
 | REJECT | `RawRecord`, `GenericDocument`, universal financial/event schemas, parser registry, shadow raw store, graph/RDF/OWL model, generic crawler rewrite and a `ReviewedPersonBundle` batch replacement |
 
-These source-boundary milestones have no PostgreSQL impact: no domain class, SQLAlchemy row,
-Alembic migration, dependency or runtime table is added. Existing JSON metadata is not a
-substitute for a future relational model when a concrete source proves one is necessary, but a
-future model must be small, source-driven and migration-backed rather than speculative. The
-Item 12 MONEY projection is an in-memory deterministic result over exact observations; it does
-not add a generic money, expense or transaction model.
+The original Item 12 source-boundary slice had no PostgreSQL impact and added no generic financial
+model, table, dependency or runtime table. The follow-on organization Claim contract adds only
+the in-place `claims.organization_id` subject field through Alembic `0005`; it does not add an
+`OrganizationClaim` table or a financial abstraction. Existing JSON metadata is not a substitute
+for a future relational model when a concrete source proves one is necessary, but a future model
+must be small, source-driven and migration-backed rather than speculative. The Item 12 MONEY
+projection remains an in-memory deterministic result over exact observations; it does not become
+a public MONEY surface through this contract.
 
 ## Verification contract
 
@@ -369,7 +371,10 @@ The existing tests are the evidence for the current source-specific architecture
 - `test_alio_item12_money.py` covers the Item 12 directory/report contract, five annual rows,
   `천원` normalization, attachment metadata-only handling, malformed/duplicate/mismatched input,
   three-institution bounded persistence, immutable reruns, no-Person/privacy gates, exact
-  provenance, deterministic MONEY deltas and zero-baseline handling.
+  provenance, deterministic MONEY deltas and zero-baseline handling. It also covers the exclusive
+  Person/Organization Claim subject contract, the reviewed Organization binding gate, exact
+  organization Claim/Evidence import, immutable-version rejection and read-only organization
+  routes.
 - Domain, repository, materialization, migration and identity tests cover canonical contracts,
   publication gates, Alembic head checks, fail-closed identity and the boundary between research
   identity and canonical Person materialization.

@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from uuid import UUID
 
 from pydantic import ValidationError
 
-from packages.domain.contracts import Person
+from packages.domain.contracts import Claim, Person
 from packages.domain.enums import (
     EpistemicStatus,
     EvidenceStance,
@@ -54,6 +55,12 @@ def _record(checks: dict[str, bool], failures: list[str], name: str, passed: boo
     checks[name] = passed
     if not passed:
         failures.append(name)
+
+
+def _golden_person_for_claim(claim: Claim, people: dict[UUID, Person]) -> Person:
+    if claim.person_id is None:
+        raise ValueError("Golden Set claims must target a Person")
+    return people[claim.person_id]
 
 
 def evaluate_golden(root: Path | None = None) -> QualityReport:
@@ -115,7 +122,7 @@ def evaluate_golden(root: Path | None = None) -> QualityReport:
     fact_results = [
         validate_claim_publication(
             claim,
-            people[claim.person_id],
+            _golden_person_for_claim(claim, people),
             evidence_by_claim[claim.id],
             sources,
             policies,
@@ -169,7 +176,11 @@ def evaluate_golden(root: Path | None = None) -> QualityReport:
         and not claim.asserted_as_true
         and bool(claim.resolution_note)
         and validate_claim_publication(
-            claim, people[claim.person_id], evidence_by_claim[claim.id], sources, policies
+            claim,
+            _golden_person_for_claim(claim, people),
+            evidence_by_claim[claim.id],
+            sources,
+            policies,
         ).publishable
         for claim in unknowns
     )

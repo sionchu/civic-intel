@@ -8,9 +8,9 @@ This document is the canonical long-term product direction and Derived Intellige
 current visual contract. Future features here require their own scoped execution plans and
 source gates. This document neither changes those contracts nor authorizes their implementation.
 
-Baseline inspected on 2026-09-13: remote master `5ca7be86a0d938631f83250e5e68b12ba7d474b2`.
-The separate local review checkout started at `a2766da665b3b14870f696af2727b7bc93654ce2`.
-Its Assembly proposer automatic accumulation candidate is not part of this remote baseline.
+Baseline inspected on 2026-09-14: remote master `0ad72f6331a82fd0b46be232a5945c12ceba30e5`.
+The organization-scoped Claim/Evidence extension is the bounded follow-on slice recorded in this
+revision; it does not authorize a live ALIO organization binding or public MONEY route.
 A local running capture, observation count or passing test does not establish shipped product
 coverage, public publication or production deployment.
 
@@ -18,16 +18,18 @@ coverage, public publication or production deployment.
 |---|---|
 | CURRENT | Evidence Core architectural direction: canonical contracts, shared SQLAlchemy persistence, SourcePolicy, snapshots, observations, deterministic materialization and publication validation |
 | CURRENT | Read-only Evidence Directory, profile/evidence projection and REST routes; internal review is opt-in, not an authenticated public operator system |
+| CURRENT | Canonical Claim/Evidence supports exactly one Person or current Organization subject; read-only organization Claim reads preserve the shared provenance path |
 | PLANNED | General Derived Intelligence, issue experience, policy-position models, influence metrics, recommendations and community |
 | PLANNED | Broader public API distribution, licensed bulk/change feeds and read-only MCP agent access |
-| NOT IMPLEMENTED AS PRODUCT CAPABILITIES | Asset, roll-call vote and public-money publication; local proposer candidate as a shipped feature; community, MCP and intelligence algorithms |
+| NOT IMPLEMENTED AS PRODUCT CAPABILITIES | Asset, roll-call vote and public MONEY derived publication; local proposer candidate as a shipped feature; community, MCP and intelligence algorithms |
 
 Existing `AssetDisclosure`/`AssetItem` contracts and an assets route do not constitute a working
 asset ingestion product. Existing source-conflict projection, hypotheses and temporal contracts
 do not constitute a general analytics platform. CURRENT describes repository implementation,
 not deployment or complete live data acquisition. The bounded ALIO Item 12 observation and
-in-memory MONEY calculation are source-specific evidence work, not a public money product or
-organization-level Claim/Evidence publication capability.
+in-memory MONEY calculation are source-specific evidence work, not a public MONEY product. The
+organization-level Claim/Evidence capability now exists as a canonical-row-gated contract, while
+live ALIO organization binding and the public MONEY projection remain separate follow-on work.
 
 ## Purpose
 

@@ -12,7 +12,17 @@ from packages.connectors.alio_disclosures import (
     ITEM12_REPORT_FORM_NO,
     POLICY_ID,
 )
-from packages.domain.contracts import FeederObservation, Source, SourceSnapshot
+from packages.domain.contracts import (
+    Claim,
+    ClaimEvidence,
+    FeederObservation,
+    Organization,
+    Source,
+    SourcePolicy,
+    SourceSnapshot,
+)
+from packages.domain.enums import EpistemicStatus, EvidenceStance, PublicationStatus
+from packages.verification.claims import validate_claim_publication
 
 MONEY_METHOD_VERSION = "money.alio-head-expense-yoy.v1"
 MONEY_FEEDER = "alio_institution_head_business_expense"
@@ -143,6 +153,78 @@ def _input_details(item: dict[str, Any]) -> dict[str, Any]:
         "snapshot_id": str(snapshot.id),
         "source_id": str(source.id),
     }
+
+
+def build_alio_head_expense_claim(
+    observation: FeederObservation,
+    *,
+    organization: Organization,
+    policy: SourcePolicy,
+    snapshots: Mapping[UUID, SourceSnapshot],
+    sources: Mapping[UUID, Source],
+) -> tuple[Claim, ClaimEvidence]:
+    """Build one reviewed annual disclosure Claim for an existing Organization.
+
+    The ALIO institution code remains a source-scoped crosswalk value. This function never
+    creates or resolves an Organization; the caller supplies the reviewed canonical target.
+    """
+
+    item = _validated_input(observation, snapshots=snapshots, sources=sources)
+    normalized: dict[str, Any] = item["normalized"]
+    source: Source = item["source"]
+    if source.policy_id != policy.id:
+        raise ValueError("ALIO MONEY Claim policy does not match Source")
+    if organization.superseded_at is not None:
+        raise ValueError("ALIO MONEY Claim requires a current Organization")
+    if organization.name != normalized["institution_name"]:
+        raise ValueError("ALIO MONEY Claim Organization does not match source institution name")
+
+    fiscal_year = item["fiscal_year"]
+    amount_thousand_krw = item["amount_thousand_krw"]
+    claim = Claim(
+        organization_id=organization.id,
+        proposition=(
+            f"{organization.name}는 {fiscal_year} 회계연도 기관장 업무추진비로 "
+            f"{amount_thousand_krw:,}천원을 공시했다."
+        ),
+        subject=organization.name,
+        predicate="DISCLOSED_BUSINESS_EXPENSE",
+        object_text=f"{amount_thousand_krw:,}천원",
+        qualifiers={
+            "source_contract": ALIO_ITEM12_SOURCE_CONTRACT,
+            "report_form_no": ITEM12_REPORT_FORM_NO,
+            "institution_code": normalized["institution_code"],
+            "role_scope": normalized["role_scope"],
+            "disclosure_no": normalized["disclosure_no"],
+            "report_period": normalized["report_period"],
+            "fiscal_year": str(fiscal_year),
+            "currency": normalized["currency"],
+            "source_unit": normalized["source_unit"],
+            "as_of_date": normalized["as_of_date"],
+            "submission_date": normalized["submission_date"],
+            "provider_record_key": observation.provider_record_key,
+        },
+        epistemic_status=EpistemicStatus.FACT,
+        publication_status=PublicationStatus.PUBLISHED,
+        asserted_as_true=True,
+    )
+    evidence = ClaimEvidence(
+        claim_id=claim.id,
+        source_id=source.id,
+        snapshot_id=observation.snapshot_id,
+        feeder_observation_id=observation.id,
+        stance=EvidenceStance.SUPPORT,
+    )
+    gate = validate_claim_publication(
+        claim,
+        organization,
+        [evidence],
+        {source.id: source},
+        {policy.id: policy},
+    )
+    if not gate.publishable:
+        raise ValueError(f"ALIO MONEY Claim failed publication gate: {gate.failures}")
+    return claim, evidence
 
 
 def build_alio_head_expense_money(

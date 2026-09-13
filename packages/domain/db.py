@@ -6,6 +6,7 @@ from datetime import date, datetime
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
@@ -217,8 +218,18 @@ class SourceOriginClusterRow(Base):
 
 class ClaimRow(TemporalMixin, Base):
     __tablename__ = "claims"
+    __table_args__ = (
+        CheckConstraint(
+            "(person_id IS NOT NULL AND organization_id IS NULL) OR "
+            "(person_id IS NULL AND organization_id IS NOT NULL)",
+            name="ck_claims_one_subject",
+        ),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    person_id: Mapped[str] = mapped_column(ForeignKey("people.id"), index=True)
+    person_id: Mapped[str | None] = mapped_column(ForeignKey("people.id"), index=True)
+    organization_id: Mapped[str | None] = mapped_column(
+        ForeignKey("organizations.id"), index=True
+    )
     proposition: Mapped[str] = mapped_column(Text)
     subject: Mapped[str] = mapped_column(Text)
     predicate: Mapped[str] = mapped_column(String(120), index=True)

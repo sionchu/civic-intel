@@ -1,6 +1,7 @@
 from .repository import (
     DatabaseNotReady,
     GoldenSeedError,
+    OrganizationClaimImportError,
     SqlAlchemyRepository,
     bootstrap_repository,
     repository,
@@ -9,6 +10,7 @@ from .repository import (
 __all__ = [
     "DatabaseNotReady",
     "GoldenSeedError",
+    "OrganizationClaimImportError",
     "SqlAlchemyRepository",
     "bootstrap_repository",
     "repository",

@@ -184,16 +184,19 @@ The source-specific parser preserves the source amount in thousand KRW and deriv
 `amount_krw` value by multiplying by 1,000. It does not attribute the aggregate to the current
 institution head, infer waste or corruption, inspect personal spending, compare peer institutions
 or look up a Person. `SourcePolicy`, `Source`, `SourceSnapshot`, `SourceRun`,
-`SourceCheckpoint` and `FeederObservation` are reused; no financial framework, attachment archive,
-new table or migration is introduced.
+`SourceCheckpoint` and `FeederObservation` are reused; the follow-on organization Claim contract
+adds only the in-place `claims.organization_id` field and no financial framework, attachment
+archive or parallel Claim table.
 
 The first implementation is a bounded `L2 SINGLE_PULL` lane over those three known-positive
 institutions, with deterministic parser/QA, exact provenance and unchanged-rerun proof. It is
 not L3: the full 355-institution directory has not been selected as a complete Item 12 annual-row
-universe, and provider correction/version semantics remain incomplete. The derived
-`money.alio-head-expense-yoy.v1` result is descriptive and currently has no public surface because
-the repository has no organization-scoped Claim/Evidence publication contract. No Person,
-PersonObservationLink, Claim or public FACT is created by this lane.
+universe, and provider correction/version semantics remain incomplete. The canonical Claim
+contract now supports exactly one Person or current Organization subject, and read-only
+organization Claim routes reuse the same evidence path. The Item 12 builder/importer requires an
+existing reviewed Organization; `apbaId` never auto-creates one. The bounded worker still creates
+observations only, so no live ALIO annual Claim/public FACT is added here. The derived
+`money.alio-head-expense-yoy.v1` result remains without a `/money` public route.
 
 ## Reemployment disclosure
 

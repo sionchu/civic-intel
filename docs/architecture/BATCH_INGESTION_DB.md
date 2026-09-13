@@ -613,6 +613,35 @@ allowed.
 
 ---
 
+## 6.4 Organization Claim subject — implemented in 0005
+
+The canonical `claims` table now supports the same Claim/Evidence path for a current
+organization-scoped subject without introducing a parallel claim table:
+
+```text
+person_id       XOR organization_id
+```
+
+`person_id` remains nullable only to permit the organization branch; the database check
+constraint and Pydantic validator require exactly one subject. Existing Person claims and
+their publication gate remain unchanged. Organization claims require an existing current
+canonical `Organization` row and must pass the same `ClaimEvidence → Source → SourcePolicy`
+checks, plus exact optional `SourceSnapshot → FeederObservation` provenance when an observation
+is referenced.
+
+The shared repository importer accepts an explicitly supplied canonical Organization and refuses
+to upsert one from an ALIO `apbaId`, provider name or row key. A provider identifier remains a
+source-scoped crosswalk value. If more than one immutable observation content hash exists for
+the same source-specific record key, organization Claim import fails closed; the provider's
+change is not relabeled as a correction.
+
+This is a narrow subject extension only. It does not authorize organization enumeration, a
+generic financial schema, automatic Person creation, raw attachment storage or a public MONEY
+projection. Alembic `0005` is the only schema-change path and its downgrade refuses to remove
+the subject column while organization claims still exist.
+
+---
+
 # 7. Materialization action table
 
 Recommended:

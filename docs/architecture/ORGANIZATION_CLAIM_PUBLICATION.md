@@ -1,0 +1,110 @@
+# Organization-Scoped Claim and Evidence
+
+Status: governing contract and bounded ALIO Item 12 implementation proof on 2026-09-14.
+
+This document defines the smallest extension needed for a public record whose subject is an
+organization rather than a Person. It reuses the existing Claim, ClaimEvidence, Source,
+SourcePolicy, SourceSnapshot and FeederObservation path. It does not create an
+`OrganizationClaim` table, a generic money schema or an automatic organization registry.
+
+## Subject contract
+
+`Claim` has exactly one canonical subject:
+
+```text
+person_id       XOR organization_id
+```
+
+The existing Person path is unchanged. Person claims still require a current `RESOLVED` Person
+at publication time. Organization claims require an existing current canonical `Organization`
+row. A provider identifier, organization name or source row does not create that canonical row
+automatically.
+
+The database enforces the same exclusive-subject rule as the Pydantic contract. The extension is
+an in-place change to `claims`; it is not a parallel claim abstraction. `ClaimEvidence` remains
+unchanged and retains the same source and optional observation references.
+
+## ALIO Item 12 application
+
+For the ALIO institution-head business-expense lane:
+
+- `apbaId` remains an ALIO provider/crosswalk identifier, not a canonical Organization ID.
+- The Item 12 builder accepts a caller-supplied, reviewed canonical `Organization`.
+- The builder requires the current Organization name to match the source institution name and
+  retains the `apbaId` in Claim qualifiers as source-scoped context.
+- The builder never resolves or creates an Organization from `apbaId`, name, or table position.
+- The existing bounded worker continues to create observations only; it never publishes Claims.
+
+An annual direct-disclosure proposition may be represented as a `FACT` only when the official
+aggregate row, current Organization binding, SourcePolicy, Source, SourceSnapshot and exact
+FeederObservation chain all pass the normal publication gate. Example semantics:
+
+```text
+기관 → DISCLOSED_BUSINESS_EXPENSE → 2025 회계연도 기관장 업무추진비 12,861천원
+```
+
+This states what the institution disclosed. It does not state who spent the money, that the
+amount was wasteful or improper, or that the institution performed well or poorly.
+
+## Provenance and policy gate
+
+Every organization ClaimEvidence item follows:
+
+```text
+Claim
+ → ClaimEvidence
+ → FeederObservation
+ → SourceSnapshot
+ → Source
+ → SourcePolicy
+```
+
+When a feeder observation is used, its snapshot must match exactly and the snapshot's source must
+match the evidence source. The policy must permit metadata storage. Excerpts remain absent when
+the policy denies excerpt display; ALIO Item 12 report HTML, attachments and disclosure staff
+contacts are not copied into the claim path.
+
+`SqlAlchemyRepository.import_organization_claim()` accepts only a Claim targeting the supplied
+Organization and an existing Organization row. It does not upsert an organization or source.
+It validates the evidence chain and the normal Claim publication gate in one transaction.
+
+## Version and temporal semantics
+
+The source-specific Item 12 key remains `disclosureNo:fiscal_year`. If the same key has multiple
+immutable observation content hashes, organization Claim publication fails closed. The provider
+does not publish an annual-row correction chain, so a changed observation is not automatically
+called a correction and no earlier Claim is silently overwritten or superseded.
+
+Current public organization reads filter to `PUBLISHED` and non-superseded Claims:
+
+```text
+GET /organizations/{organization_id}
+GET /organizations/{organization_id}/claims
+```
+
+There is no organization list endpoint and no `/money` endpoint in this milestone. These routes
+are read-only and require an existing current Organization. No live ALIO organization binding or
+annual Claim publication is added by the bounded worker.
+
+## Derived MONEY boundary
+
+`money.alio-head-expense-yoy.v1` remains a separate descriptive derived result. It is not a Claim,
+does not become a FACT through this extension and cannot be used to infer waste, corruption,
+personal spending, causation or peer superiority. A future public MONEY projection may consume
+published annual organization Claims and their evidence, but it must retain both input Claim IDs
+and exact observation provenance and must reject ambiguous versions.
+
+## Explicit exclusions
+
+This contract does not authorize:
+
+- automatic `apbaId` to Organization identity resolution;
+- Person creation for an institution head or any other disclosure staff member;
+- a generic `Expense`, `Transaction`, asset or financial framework;
+- publication of raw ALIO report HTML, XLS/XLSX bytes or contact fields;
+- organization enumeration, scheduled synchronization or a full 355-institution annual-row claim
+  run;
+- turning a derived amount change into a Claim or an accusation.
+
+The remaining product gate is therefore narrow: establish a reviewed canonical Organization
+binding and then build a read-only MONEY projection over published annual organization Claims.

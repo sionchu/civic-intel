@@ -5,7 +5,8 @@
 Maintain the evidence-first Civic Intel foundation and carry the completed Evidence Directory v0,
 site v1 and North Star into the first small Derived Intelligence product slice. The current slice
 is a source-traceable CHANGE experience over an explicitly bounded Assembly historical reviewed
-packet, using existing canonical Claim/Evidence and temporal records. Keep live historical
+packet, using existing canonical Claim/Evidence and temporal records. The follow-on ALIO
+organization Claim contract is also bounded to existing canonical rows; keep live historical
 acquisition, OpenWatch and new feeder expansion outside that slice.
 
 ## Scope
@@ -16,9 +17,10 @@ shell, and a separate read-only identity review surface that is unavailable from
 unless an internal/test caller explicitly enables it. The long-term product direction is the
 canonical `docs/product/CIVIC_INTEL_NORTH_STAR.md`; the immediate CHANGE plan must preserve the
 existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when present,
-`ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. No schema,
-migration, live feeder, search infrastructure, recommendation algorithm or new persistence
-abstraction.
+`ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. The only follow-on
+schema change is the in-place `claims.organization_id` subject extension in migration `0005`;
+no live historical acquisition, live ALIO organization binding, search infrastructure,
+recommendation algorithm or new persistence abstraction is in scope.
 
 ## Acceptance criteria
 
@@ -628,8 +630,10 @@ institution aggregate to a named Person.
   exact identity and unique-year checks; changed values become new immutable observations.
 - Existing ALIO `SourcePolicy` was minimally widened for Item 12. Fulltext, excerpts, AI,
   attachment bytes and disclosure staff contacts remain excluded.
-- `Claim.person_id` is mandatory and no organization Claim/Evidence route exists. MONEY output
-  therefore has no Claim/Evidence publication and remains `publication_status: BLOCKED`.
+- At the start of the Item 12 slice, `Claim.person_id` was mandatory and no organization
+  Claim/Evidence route existed; that slice therefore produced no Claim/Evidence publication.
+  The follow-on organization-scoped contract is recorded below, while live MONEY publication
+  remains blocked.
 
 ### Completed
 
@@ -665,7 +669,8 @@ institution aggregate to a named Person.
   organization schema, public route, generic financial abstraction or scheduled sync was added.
 - Item 12 is `L2 SINGLE_PULL` only for the three-institution bounded proof. L3 is not attempted;
   the full annual-row universe and correction/version contract are not selected as a closed L3
-  scope. The public MONEY surface remains blocked by the person-only Claim/Evidence contract.
+  scope. The public MONEY surface remains blocked until a reviewed canonical Organization binding,
+  published annual organization Claims and an approved projection path exist.
 
 ### Modified files for this milestone
 
@@ -682,8 +687,52 @@ institution aggregate to a named Person.
 - `docs/INDEX.md`
 - `HANDOFF.md`
 
+## Current checkpoint — organization-scoped Claim/Evidence
+
+### Objective
+
+Provide the smallest canonical Claim/Evidence subject extension needed for a future descriptive
+ALIO Item 12 publication without replacing the Person path or turning an institution aggregate
+into a Person assertion.
+
+### Completed
+
+- Extended `Claim` and the `claims` table in place so exactly one of `person_id` or
+  `organization_id` is populated. The Pydantic validator and database check constraint enforce the
+  same rule.
+- Added Alembic `0005` with a downgrade guard that refuses to remove the subject column while
+  organization claims exist.
+- Extended the shared publication validator and repository with an atomic organization Claim
+  importer. It accepts only an existing current canonical `Organization`; it never materializes
+  one from ALIO `apbaId`, a name or a source row.
+- Added the ALIO Item 12 source-specific Claim builder and read-only organization routes. The
+  builder retains `apbaId` as source-scoped context, requires exact current organization-name
+  binding and reuses SourcePolicy, Source, SourceSnapshot and FeederObservation provenance.
+- Added a fail-closed gate for multiple immutable observation content hashes for one source record
+  key. The bounded ALIO worker remains observation-only.
+
+### Verification evidence
+
+- Targeted regression after the version gate: `32 passed, 4 warnings` across Item 12, migration
+  and API tests.
+- Ruff passed for `apps packages workers tests migrations`; mypy succeeded for `packages workers
+  apps/api` with 55 source files.
+- Full Python suite passed with `314 passed, 4 warnings`; Golden quality passed all checks; the
+  migration test passed the `0005` upgrade/downgrade/upgrade round-trip; web lint/typecheck passed,
+  5 UI tests passed and the production build generated `/`, `/_not-found`, `/admin/review` and
+  `/people/[id]`; the Markdown check found 70 relative links across 57 Markdown files with 0
+  broken links; `git diff --check` passed. No live ALIO organization Claim was published.
+
+### Not executed and blockers
+
+- No automatic ALIO-to-Organization binding, organization enumeration, scheduled sync, raw
+  report/attachment storage, generic financial schema, `/money` route or UI was added.
+- ALIO Item 12 remains `L2 SINGLE_PULL` for the three-institution observation proof; the public
+  MONEY projection remains blocked until it consumes published annual organization Claims with
+  exact ClaimEvidence/observation provenance.
+
 ## Next concrete action
 
-Design and approve the smallest organization-scoped Claim/Evidence publication contract required
-to expose a descriptive ALIO Item 12 MONEY result while preserving the existing person-only claim
-path and source/snapshot/observation provenance.
+Build a read-only organization MONEY projection whose only inputs are published annual
+organization Claims and their exact ClaimEvidence/observation provenance, with ambiguous
+observation versions failing closed.

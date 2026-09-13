@@ -7,6 +7,7 @@ from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
     Hypothesis,
+    Organization,
     Person,
     Relationship,
     Source,
@@ -64,13 +65,27 @@ def validate_hypothesis(hypothesis: Hypothesis) -> GateResult:
 
 
 def validate_claim_publication(
-    claim: Claim, person: Person, evidence: list[ClaimEvidence], sources: dict, policies: dict
+    claim: Claim,
+    subject: Person | Organization,
+    evidence: list[ClaimEvidence],
+    sources: dict,
+    policies: dict,
 ) -> GateResult:
     failures: list[str] = []
     if claim.publication_status != PublicationStatus.PUBLISHED:
         failures.append("claim_not_marked_for_publication")
-    if person.identity_status != IdentityStatus.RESOLVED:
-        failures.append("identity_not_resolved")
+    if claim.person_id is not None:
+        if not isinstance(subject, Person) or subject.id != claim.person_id:
+            failures.append("claim_person_subject_mismatch")
+        elif subject.identity_status != IdentityStatus.RESOLVED:
+            failures.append("identity_not_resolved")
+    elif claim.organization_id is not None:
+        if not isinstance(subject, Organization) or subject.id != claim.organization_id:
+            failures.append("claim_organization_subject_mismatch")
+        elif subject.superseded_at is not None:
+            failures.append("organization_not_current")
+    else:
+        failures.append("claim_subject_missing")
     if not is_atomic(claim.proposition):
         failures.append("claim_not_atomic")
     if claim.epistemic_status == EpistemicStatus.UNKNOWN:

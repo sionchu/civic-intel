@@ -24,6 +24,8 @@ and supporting evidence. UNKNOWN may be PUBLISHED only as a non-asserted unresol
 with a resolution note.
 
 Every rendered factual item must traverse Claim, ClaimEvidence, Source, and SourcePolicy.
+`Claim` targets exactly one canonical Person or current Organization; the ClaimEvidence and
+source-policy/provenance gates are shared. Person profile routes remain person-scoped.
 Origin clusters determine independent-source counts. SUPPORT and REFUTE remain distinct.
 Decision episodes may be rendered only when they explicitly reference a published Claim and
 its ClaimEvidence; legacy or incomplete episode records stay out of the public projection.

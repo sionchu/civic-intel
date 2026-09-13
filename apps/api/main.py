@@ -37,6 +37,12 @@ def create_app(
             raise HTTPException(404, "person not found")
         return person
 
+    def organization_or_404(organization_id: UUID, *, public: bool = False):
+        organization = target.organization(organization_id)
+        if not organization or (public and organization.superseded_at is not None):
+            raise HTTPException(404, "organization not found")
+        return organization
+
     def policy_summary(policy) -> dict[str, str]:
         collection_permitted = policy.can_fetch and policy.collection_mode.value not in {
             "BLOCKED",
@@ -59,10 +65,13 @@ def create_app(
         selected_evidence = target.evidence_for(claim.id) if evidence is None else evidence
         sources = target.sources(item.source_id for item in selected_evidence)
         policies = target.policies(source.policy_id for source in sources.values())
-        person = person_or_404(claim.person_id)
-        gate = validate_claim_publication(
-            claim, person, selected_evidence, sources, policies
-        )
+        if claim.person_id is not None:
+            subject = person_or_404(claim.person_id)
+        elif claim.organization_id is not None:
+            subject = organization_or_404(claim.organization_id)
+        else:
+            raise HTTPException(500, "claim has no subject")
+        gate = validate_claim_publication(claim, subject, selected_evidence, sources, policies)
         if not gate.publishable:
             raise HTTPException(500, f"publication invariant violated: {gate.failures}")
         stances = {item.stance.value for item in selected_evidence}
@@ -119,6 +128,30 @@ def create_app(
     def claims(person_id: UUID) -> list[dict]:
         person_or_404(person_id, public=True)
         return [claim_payload(item) for item in target.claims(person_id, True, current_only=True)]
+
+    @app.get("/organizations/{organization_id}")
+    def organization(organization_id: UUID) -> dict:
+        item = organization_or_404(organization_id, public=True)
+        published_claims = target.claims(
+            published_only=True,
+            current_only=True,
+            organization_id=organization_id,
+        )
+        return item.model_dump(mode="json") | {
+            "claims": [claim_payload(claim) for claim in published_claims]
+        }
+
+    @app.get("/organizations/{organization_id}/claims")
+    def organization_claims(organization_id: UUID) -> list[dict]:
+        organization_or_404(organization_id, public=True)
+        return [
+            claim_payload(item)
+            for item in target.claims(
+                published_only=True,
+                current_only=True,
+                organization_id=organization_id,
+            )
+        ]
 
     @app.get("/people/{person_id}/relationships")
     def relationships(person_id: UUID) -> list[dict]:
@@ -224,8 +257,15 @@ def create_app(
                 evidence = target.evidence_for(claim.id)
                 sources = target.sources(item.source_id for item in evidence)
                 policies = target.policies(source.policy_id for source in sources.values())
+                if claim.person_id is not None:
+                    subject = person_or_404(claim.person_id)
+                elif claim.organization_id is not None:
+                    subject = organization_or_404(claim.organization_id)
+                else:
+                    unpublishable.append(str(claim.id))
+                    continue
                 gate = validate_claim_publication(
-                    claim, person_or_404(claim.person_id), evidence, sources, policies
+                    claim, subject, evidence, sources, policies
                 )
                 if not gate.publishable:
                     unpublishable.append(str(claim.id))

@@ -27,10 +27,13 @@ Claim, or imply waste, corruption, personal spending or institutional performanc
 - Worktree branch: `codex/change-discovery-plan`; Alembic head: `0004`.
 - Existing `SourcePolicy`, `Source`, `SourceSnapshot`, `SourceRun`, `SourceCheckpoint` and
   `FeederObservation` are the only persistence foundation used here.
-- Existing `Claim.person_id` is mandatory and the API has no organization-scoped Claim/Evidence
-  route. The MONEY projection therefore carries `publication_status: BLOCKED` and no Claim IDs.
-- `ReviewedPersonBundle`, Asset contracts, person materialization, an organization-claim schema,
-  a generic expense framework, raw attachment storage and a generic ALIO crawler are outside scope.
+- At this plan's baseline, `Claim.person_id` was mandatory and the API had no organization-scoped
+  Claim/Evidence route. The Item 12 MONEY projection therefore carried
+  `publication_status: BLOCKED` and no Claim IDs; the follow-on subject extension is documented
+  in `organization-claim-publication-v0.md`.
+- `ReviewedPersonBundle`, Asset contracts, person materialization, a parallel organization-claim
+  table, a generic expense framework, raw attachment storage and a generic ALIO crawler are
+  outside scope.
 
 ## Official source contract
 
@@ -154,18 +157,18 @@ The Item 12 lane is `L2 SINGLE_PULL` for the explicit three-institution bounded 
 connector, parser, shared persistence, exact provenance and unchanged rerun are demonstrated by
 the live run and regressions. It is not L3: the full 355-institution annual-row scope, long-term
 correction/replacement semantics and operational sync contract have not been established or
-selected. The public MONEY result remains blocked until an organization-scoped Claim/Evidence
-publication contract exists.
+selected. The public MONEY result remains blocked until a reviewed canonical Organization binding
+is supplied and a projection consuming published organization Claims is approved.
 
 ## Not executed
 
 No full-directory annual-row enumeration, attachment download, XLS/XLSX bulk ingestion, Person
-lookup/materialization, organization schema, Claim/Evidence publication, API/UI route, generic
-financial abstraction, generic crawler or scheduled sync was added. No ALIO Item 12 value was
-published as a public FACT.
+lookup/materialization, organization binding, generic financial abstraction, generic crawler or
+scheduled sync was added in this Item 12 slice. Its bounded worker still publishes no Claim or
+public FACT; the separate organization subject contract is not a live ALIO binding.
 
 ## Next concrete action
 
-Design and approve the smallest organization-scoped Claim/Evidence publication contract required
-to expose a descriptive ALIO Item 12 MONEY result while preserving the existing person-only claim
-path and source/snapshot/observation provenance.
+Build a read-only organization MONEY projection whose only inputs are published annual
+organization Claims and their exact ClaimEvidence/observation provenance, with ambiguous
+observation versions failing closed.

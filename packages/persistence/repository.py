@@ -17,6 +17,7 @@ from packages.domain.contracts import (
     ClaimEvidence,
     FeederObservation,
     IdentityReviewItem,
+    Organization,
     Person,
     PersonObservationLink,
     Source,
@@ -32,6 +33,7 @@ from packages.domain.db import (
     DecisionEpisodeRow,
     FeederObservationRow,
     IdentityReviewItemRow,
+    OrganizationRow,
     PersonObservationLinkRow,
     PersonRow,
     RelationshipRow,
@@ -67,6 +69,10 @@ class DatabaseNotReady(RuntimeError):
 
 
 class GoldenSeedError(RuntimeError):
+    pass
+
+
+class OrganizationClaimImportError(ValueError):
     pass
 
 
@@ -546,6 +552,7 @@ class SqlAlchemyRepository:
                     ClaimRow(
                         id=str(published_claim.id),
                         person_id=str(published_claim.person_id),
+                        organization_id=None,
                         proposition=published_claim.proposition,
                         subject=published_claim.subject,
                         predicate=published_claim.predicate,
@@ -828,6 +835,7 @@ class SqlAlchemyRepository:
                 ClaimRow(
                     id=str(claim.id),
                     person_id=str(claim.person_id),
+                    organization_id=None,
                     proposition=claim.proposition,
                     subject=claim.subject,
                     predicate=claim.predicate,
@@ -871,6 +879,10 @@ class SqlAlchemyRepository:
     @staticmethod
     def _person(row: PersonRow) -> Person:
         return Person.model_validate(row)
+
+    @staticmethod
+    def _organization(row: OrganizationRow) -> Organization:
+        return Organization.model_validate(row)
 
     @staticmethod
     def _claim(row: ClaimRow) -> Claim:
@@ -1090,6 +1102,7 @@ class SqlAlchemyRepository:
                         ClaimRow(
                             id=str(claim.id),
                             person_id=str(claim.person_id),
+                            organization_id=None,
                             proposition=claim.proposition,
                             subject=claim.subject,
                             predicate=claim.predicate,
@@ -1124,6 +1137,174 @@ class SqlAlchemyRepository:
                 raise
         return bundle.person
 
+    def import_organization_claim(
+        self,
+        organization: Organization,
+        claim: Claim,
+        evidence: Sequence[ClaimEvidence],
+    ) -> Claim:
+        """Persist one reviewed, already-built organization claim and its evidence.
+
+        Organization registration and provider-to-organization identity decisions stay outside
+        this method. The caller must reference an existing canonical Organization row; this
+        transaction only imports the claim after the normal source, policy and provenance gates.
+        """
+
+        self.assert_ready()
+        if claim.person_id is not None or claim.organization_id != organization.id:
+            raise OrganizationClaimImportError(
+                "organization claim must target exactly the supplied Organization"
+            )
+        if claim.publication_status != PublicationStatus.PUBLISHED:
+            raise OrganizationClaimImportError(
+                "organization claim import requires PUBLISHED status"
+            )
+        if not evidence:
+            raise OrganizationClaimImportError("organization claim requires evidence")
+        if any(item.claim_id != claim.id for item in evidence):
+            raise OrganizationClaimImportError("organization evidence references another claim")
+        if len({item.id for item in evidence}) != len(evidence):
+            raise OrganizationClaimImportError("organization claim contains duplicate evidence IDs")
+
+        with self.sessions() as session:
+            try:
+                organization_row = session.get(OrganizationRow, str(organization.id))
+                if organization_row is None:
+                    raise OrganizationClaimImportError(
+                        "organization claim requires an existing canonical Organization"
+                    )
+                stored_organization = self._organization(organization_row)
+                if (
+                    stored_organization.name != organization.name
+                    or stored_organization.superseded_at is not None
+                ):
+                    raise OrganizationClaimImportError(
+                        "organization claim Organization is not the current canonical row"
+                    )
+                if session.get(ClaimRow, str(claim.id)) is not None:
+                    raise OrganizationClaimImportError(
+                        "organization claim ID already exists; reviewed import does not upsert"
+                    )
+                for item in evidence:
+                    if session.get(ClaimEvidenceRow, str(item.id)) is not None:
+                        raise OrganizationClaimImportError(
+                            f"organization evidence ID already exists: {item.id}"
+                        )
+
+                sources: dict[UUID, Source] = {}
+                policies: dict[UUID, SourcePolicy] = {}
+                for item in evidence:
+                    source_row = session.get(SourceRow, str(item.source_id))
+                    if source_row is None:
+                        raise OrganizationClaimImportError(
+                            f"organization claim references missing source: {item.source_id}"
+                        )
+                    source = self._source(source_row)
+                    sources[source.id] = source
+                    policy_row = session.get(SourcePolicyRow, str(source.policy_id))
+                    if policy_row is None:
+                        raise OrganizationClaimImportError(
+                            f"organization claim references missing SourcePolicy: {source.policy_id}"
+                        )
+                    policy = self._policy(policy_row)
+                    policies[policy.id] = policy
+                    try:
+                        require_policy(policy, PolicyAction.STORE_METADATA)
+                        if item.excerpt:
+                            require_policy(policy, PolicyAction.SHOW_EXCERPT)
+                    except PolicyDenied as exc:
+                        raise OrganizationClaimImportError(
+                            f"SourcePolicy forbids organization claim evidence: {item.id}"
+                        ) from exc
+
+                    if item.snapshot_id is not None:
+                        snapshot_row = session.get(SourceSnapshotRow, str(item.snapshot_id))
+                        if snapshot_row is None or snapshot_row.source_id != str(source.id):
+                            raise OrganizationClaimImportError(
+                                f"organization evidence snapshot does not match source: {item.id}"
+                            )
+                    if item.feeder_observation_id is None:
+                        continue
+                    if item.snapshot_id is None:
+                        raise OrganizationClaimImportError(
+                            f"organization evidence with observation requires snapshot: {item.id}"
+                        )
+                    observation_row = session.get(
+                        FeederObservationRow, str(item.feeder_observation_id)
+                    )
+                    if observation_row is None:
+                        raise OrganizationClaimImportError(
+                            "organization claim references missing feeder observation: "
+                            f"{item.feeder_observation_id}"
+                        )
+                    if observation_row.snapshot_id != str(item.snapshot_id):
+                        raise OrganizationClaimImportError(
+                            f"organization evidence snapshot does not match observation: {item.id}"
+                        )
+                    versions = session.scalars(
+                        select(FeederObservationRow).where(
+                            FeederObservationRow.feeder == observation_row.feeder,
+                            FeederObservationRow.scope_key == observation_row.scope_key,
+                            FeederObservationRow.provider_record_key
+                            == observation_row.provider_record_key,
+                        )
+                    )
+                    if len({row.content_hash for row in versions}) > 1:
+                        raise OrganizationClaimImportError(
+                            "organization claim cannot publish across multiple immutable observation versions"
+                        )
+
+                gate = validate_claim_publication(
+                    claim,
+                    stored_organization,
+                    list(evidence),
+                    sources,
+                    policies,
+                )
+                if not gate.publishable:
+                    raise OrganizationClaimImportError(
+                        f"organization claim failed publication gate: {gate.failures}"
+                    )
+
+                session.add(
+                    ClaimRow(
+                        id=str(claim.id),
+                        person_id=None,
+                        organization_id=str(claim.organization_id),
+                        proposition=claim.proposition,
+                        subject=claim.subject,
+                        predicate=claim.predicate,
+                        object_text=claim.object_text,
+                        qualifiers=claim.qualifiers,
+                        epistemic_status=claim.epistemic_status.value,
+                        publication_status=claim.publication_status.value,
+                        asserted_as_true=claim.asserted_as_true,
+                        resolution_note=claim.resolution_note,
+                        **self._temporal(claim),
+                    )
+                )
+                for item in evidence:
+                    session.add(
+                        ClaimEvidenceRow(
+                            id=str(item.id),
+                            claim_id=str(item.claim_id),
+                            source_id=str(item.source_id),
+                            snapshot_id=(str(item.snapshot_id) if item.snapshot_id else None),
+                            feeder_observation_id=(
+                                str(item.feeder_observation_id)
+                                if item.feeder_observation_id
+                                else None
+                            ),
+                            stance=item.stance.value,
+                            excerpt=item.excerpt,
+                        )
+                    )
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
+        return claim
+
     def people(self) -> list[Person]:
         with self.sessions() as session:
             return [
@@ -1150,15 +1331,26 @@ class SqlAlchemyRepository:
             row = session.get(PersonRow, str(person_id))
             return self._person(row) if row else None
 
+    def organization(self, organization_id: UUID) -> Organization | None:
+        with self.sessions() as session:
+            row = session.get(OrganizationRow, str(organization_id))
+            return self._organization(row) if row else None
+
     def claims(
         self,
         person_id: UUID | None = None,
         published_only: bool = False,
         current_only: bool = False,
+        *,
+        organization_id: UUID | None = None,
     ) -> list[Claim]:
+        if person_id is not None and organization_id is not None:
+            raise ValueError("claims query accepts one subject filter")
         statement = select(ClaimRow)
         if person_id is not None:
             statement = statement.where(ClaimRow.person_id == str(person_id))
+        if organization_id is not None:
+            statement = statement.where(ClaimRow.organization_id == str(organization_id))
         if published_only:
             statement = statement.where(ClaimRow.publication_status == "PUBLISHED")
         if current_only:
