@@ -1,6 +1,6 @@
 # Railway first deployment v0
 
-Status: active — staging project and plan reviewed; infrastructure not applied.
+Status: active — staging is privately deployed; database-region remediation pending.
 
 Date: 2026-09-14
 
@@ -86,9 +86,18 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   migration failed because Railway supplied `postgresql://` while the project ships only the
   `psycopg` DBAPI. The provider URL is now normalized once at the repository/Alembic boundary to
   `postgresql+psycopg://`; local full verification passed before the corrective revision is pushed.
+- GitHub Actions run `34845467011` at `b8c1f7666c8dcd2293da90a20cda1e41944a527c` passed the
+  full verification, including PostgreSQL migration/load/restore and both deployment artifacts.
+  Railway's corrective API deployment at that revision succeeded: Alembic applied `0001` through
+  `0006`, and the observed `/ready` probe returned `200`. The private web service is also running;
+  neither service has a public URL.
+- Railway reports API and web in `asia-southeast1-eqsg3a`, but `postgres` and its 500 MB volume
+  are actually in `sfo`. A post-apply read-only IaC plan proposes exactly one
+  `destructive` action: move `postgres` to `asia-southeast1-eqsg3a`. Railway documents that a
+  volume-backed region move migrates the volume and causes service downtime. This plan has not
+  been applied; the staging topology is therefore not accepted as region-correct.
 
 ## Next action
 
-Push the verified DBAPI normalization revision and observe the API pre-deploy migration, `/ready`
-health check and dependent web deployment. Public-domain generation and data loading remain
-separate approvals.
+Obtain explicit approval to apply the destructive PostgreSQL volume migration from `sfo` to
+`asia-southeast1-eqsg3a`. Public-domain generation and data loading remain separate approvals.

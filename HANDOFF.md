@@ -1031,15 +1031,15 @@ hosting contract without external deployment.
 
 ## Next action
 
-The owner-operated Railway CLI authenticated successfully. The approved `civic-intel-staging`
-project and its isolated `staging` environment now exist, with zero services. A read-only IaC plan
-targeted at `staging` proposes exactly three safe creates — `postgres`, private `api`, and private
-networked `web` — with zero changes, zero destroys and no diagnostics. The plan was not applied;
-no database, service, deployment, domain or operational data exists. The default `production`
-environment remains untouched and empty.
+The approved `civic-intel-staging` plan is privately deployed. API and web run in Singapore;
+API revision `b8c1f7666c8dcd2293da90a20cda1e41944a527c` applied Alembic through `0006` and returned
+`200` from `/ready`. Web remains private with no public URL. Railway created the PostgreSQL
+service and its 500 MB volume in `sfo`, however. The post-apply IaC plan labels moving it to
+Singapore as `destructive`, because it migrates the attached volume with downtime. No operational
+data or public domain exists; `production` remains empty.
 
-Obtain explicit approval to apply this reviewed staging plan. Public-domain generation,
-operational data loading and production remain separate approvals.
+Obtain explicit approval to apply the destructive PostgreSQL regional migration. Public-domain
+generation, operational data loading and production remain separate approvals.
 
 ## Current checkpoint — Railway staging target (2026-09-14)
 
@@ -1051,13 +1051,12 @@ operational data loading and production remain separate approvals.
 - The SDK is isolated under `.railway`; local TypeScript and six deployment contract tests passed.
 - GitHub Actions run `34840650378` at `a1cdacd7326c758110eb03b946e0245330bc9963`
   passed the full suite, PostgreSQL restore, Docker builds, Compose and Railway IaC checks.
-- The owner-operated CLI has authenticated. The approved `civic-intel-staging` project and an
-  isolated `staging` environment exist, both service-free; the default `production` environment
-  is also untouched and service-free.
-- The staging-only read-only IaC plan has zero diagnostics and exactly three safe creates:
-  `postgres`, private `api`, and private-networked `web`. It has zero changes and zero destroys.
-  The approved plan was applied: PostgreSQL is running and API/Web services exist, with no public
-  domain or operational data. API's first pre-deploy migration failed because Railway provides a
-  plain `postgresql://` URL while the repository ships `psycopg`, not `psycopg2`. A small shared
-  repository/Alembic URL normalization fix and regression coverage passed local full verification;
-  push it and observe the corrective deployment before treating staging as ready.
+- The owner-operated CLI has authenticated. The approved `civic-intel-staging` project and
+  isolated `staging` environment contain `postgres`, private `api`, and private `web`; no public
+  domain or operational data exists, and the default `production` environment remains empty.
+- API corrective deployment `4ca58690-8f0e-42de-8f3b-53482424abcd` at
+  `b8c1f7666c8dcd2293da90a20cda1e41944a527c` succeeded. It ran migrations through `0006` and
+  received a `200` `/ready` health response. Web is running privately in Singapore.
+- API/Web are in Singapore, while PostgreSQL and its 500 MB volume are in `sfo`. The post-apply
+  IaC plan contains one `destructive` database move to Singapore. It is not applied because the
+  provider documents downtime during a volume migration; this topology remains unresolved.

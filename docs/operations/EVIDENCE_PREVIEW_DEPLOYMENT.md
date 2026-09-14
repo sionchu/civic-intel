@@ -42,8 +42,15 @@ web domain remain operator approval actions.
 On 2026-09-14 the owner-approved `civic-intel-staging` project and isolated `staging` environment
 were created. A read-only Railway IaC plan against that environment produced zero diagnostics,
 zero changes and zero destroys. Its only proposed actions are the safe creation of `postgres`,
-private `api` and private-networked `web`. The plan is not applied: no database, service,
-deployment, public domain or operational data exists.
+private `api` and private-networked `web`. At that review checkpoint, the plan was not applied:
+no database, service, deployment, public domain or operational data existed.
+
+The approved plan was subsequently applied. API and web are private and running in Singapore; the
+corrective API revision completed Alembic through `0006` and passed `/ready`. The PostgreSQL
+service and its 500 MB volume were instead created in `sfo`. A new read-only IaC plan identifies
+the intended move to Singapore as `destructive`. Railway's volume contract states that this kind
+of regional move migrates the volume with downtime, so it requires separate approval and has not
+been applied. No public domain or operational data load exists.
 
 ## Required runtime configuration
 
@@ -87,7 +94,7 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 
 ## Approval boundary
 
-Provisioning the selected Railway staging database/services, accepting billable usage, applying the
-IaC plan, creating its public web domain, changing access, or running against an operational
-database requires explicit approval. Until those actions and the deployed smoke are complete, the
-only valid state is `TARGET_STAGED`.
+Migrating the selected Railway staging PostgreSQL volume between regions, accepting billable usage,
+creating its public web domain, changing access, or running against an operational database
+requires explicit approval. Until the regional topology and deployed browser smoke are complete,
+the only valid state is `TARGET_STAGED`.
