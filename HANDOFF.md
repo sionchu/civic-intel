@@ -1033,13 +1033,12 @@ hosting contract without external deployment.
 
 The approved `civic-intel-staging` plan is privately deployed. API and web run in Singapore;
 API revision `b8c1f7666c8dcd2293da90a20cda1e41944a527c` applied Alembic through `0006` and returned
-`200` from `/ready`. Web remains private with no public URL. Railway created the PostgreSQL
-service and its 500 MB volume in `sfo`, however. The post-apply IaC plan labels moving it to
-Singapore as `destructive`, because it migrates the attached volume with downtime. No operational
-data or public domain exists; `production` remains empty.
+`200` from `/ready`. PostgreSQL's explicitly approved volume migration from `sfo` to Singapore
+completed: the volume is `READY` with one running replica. Web remains private with no public URL;
+no operational data load exists, and `production` remains empty.
 
-Obtain explicit approval to apply the destructive PostgreSQL regional migration. Public-domain
-generation, operational data loading and production remain separate approvals.
+Obtain explicit approval to generate the public Web domain for browser smoke. API/DB exposure,
+PITR/backup configuration and operational data loading remain separate approvals.
 
 ## Current checkpoint — Railway staging target (2026-09-14)
 
@@ -1057,11 +1056,12 @@ generation, operational data loading and production remain separate approvals.
 - API corrective deployment `4ca58690-8f0e-42de-8f3b-53482424abcd` at
   `b8c1f7666c8dcd2293da90a20cda1e41944a527c` succeeded. It ran migrations through `0006` and
   received a `200` `/ready` health response. Web is running privately in Singapore.
-- API/Web are in Singapore, while PostgreSQL and its 500 MB volume are in `sfo`. The post-apply
-  IaC plan contains one `destructive` database move to Singapore. It is not applied because the
-  provider documents downtime during a volume migration; this topology remains unresolved.
+- API/Web/PostgreSQL and the attached 500 MB volume are now in Singapore. The migration observed
+  PostgreSQL with zero replicas while the volume was `MIGRATING`, then `READY` with one running
+  replica.
 - PostgreSQL PITR is disabled and no backup bucket is wired. The local host lacks PostgreSQL client
   tools, and private SSH inspection requires a new SSH key, so no one-off backup or table-count
-  query was created. No operational data load has been run. The pinned plan remains the same one
-  destructive database move and requires an explicit acknowledgement of the downtime/data-loss
-  risk before application.
+  query was created. No operational data load has been run.
+- The post-migration read-only IaC plan returned `No changes.` with zero diagnostics. API, Web and
+  PostgreSQL are `SUCCESS` with one running replica each; API and database have no public URL, and
+  Web has no generated public URL yet.

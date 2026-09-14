@@ -1,6 +1,6 @@
 # Railway first deployment v0
 
-Status: active — staging is privately deployed; database-region remediation pending.
+Status: active — private staging topology verified; public preview pending.
 
 Date: 2026-09-14
 
@@ -91,19 +91,21 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   Railway's corrective API deployment at that revision succeeded: Alembic applied `0001` through
   `0006`, and the observed `/ready` probe returned `200`. The private web service is also running;
   neither service has a public URL.
-- Railway reports API and web in `asia-southeast1-eqsg3a`, but `postgres` and its 500 MB volume
-  are actually in `sfo`. A post-apply read-only IaC plan proposes exactly one
-  `destructive` action: move `postgres` to `asia-southeast1-eqsg3a`. Railway documents that a
-  volume-backed region move migrates the volume and causes service downtime. This plan has not
-  been applied; the staging topology is therefore not accepted as region-correct.
+- Railway initially reported API and web in `asia-southeast1-eqsg3a`, but `postgres` and its 500 MB
+  volume were in `sfo`. The explicitly approved volume migration was applied on 2026-09-14. During
+  the observed move the PostgreSQL volume reported `MIGRATING` with zero replicas; it recovered
+  with the volume `READY`, one running replica and the region `asia-southeast1-eqsg3a`.
 - Before the requested move, Railway reported PostgreSQL PITR disabled and no backup bucket wired.
   The local host has no PostgreSQL client, and private SSH inspection would require creating an
   SSH key; neither a new credential nor a persistent backup configuration was created. No
-  operational data load has been run. The pinned migration plan remains the one database move
-  above, and the provider safety gate requires an explicit acknowledgement of its destructive
-  downtime/data-loss risk before it can be applied.
+  operational data load has been run. No PITR or one-off backup was configured.
+- After migration, a read-only IaC plan returned `No changes.` with zero diagnostics. API, Web and
+  PostgreSQL each report `SUCCESS` with one running replica; API and Web remain private with no
+  public URL. The staging topology is now region-correct, but public browser verification and
+  canonical data loading remain separate approvals.
 
 ## Next action
 
-Obtain explicit approval to apply the destructive PostgreSQL volume migration from `sfo` to
-`asia-southeast1-eqsg3a`. Public-domain generation and data loading remain separate approvals.
+Obtain explicit approval to generate a public domain for the Web service only, then run the
+deployed browser smoke against the empty/fixture state. API/DB exposure and operational data
+loading remain separate approvals.

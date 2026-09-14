@@ -46,16 +46,16 @@ private `api` and private-networked `web`. At that review checkpoint, the plan w
 no database, service, deployment, public domain or operational data existed.
 
 The approved plan was subsequently applied. API and web are private and running in Singapore; the
-corrective API revision completed Alembic through `0006` and passed `/ready`. The PostgreSQL
-service and its 500 MB volume were instead created in `sfo`. A new read-only IaC plan identifies
-the intended move to Singapore as `destructive`. Railway's volume contract states that this kind
-of regional move migrates the volume with downtime, so it requires separate approval and has not
-been applied. No public domain or operational data load exists.
+corrective API revision completed Alembic through `0006` and passed `/ready`. PostgreSQL was then
+migrated from `sfo` to Singapore with the explicitly approved volume move. The observed volume
+state progressed from `MIGRATING` with zero replicas to `READY` with one running replica. A
+post-migration read-only IaC plan returned `No changes.` with zero diagnostics. No public domain or
+operational data load exists.
 
 At the current checkpoint, Railway reports PostgreSQL PITR disabled and no backup bucket wired.
 The local host has no PostgreSQL client tools, and private SSH inspection needs a new SSH key; no
-new credential, persistent backup configuration or one-off backup was created. The migration plan
-remains pending explicit acknowledgement of its destructive downtime/data-loss risk.
+new credential, persistent backup configuration or one-off backup was created. Data loading remains
+outside this deployment checkpoint.
 
 ## Required runtime configuration
 
@@ -99,7 +99,6 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 
 ## Approval boundary
 
-Migrating the selected Railway staging PostgreSQL volume between regions, accepting billable usage,
-creating its public web domain, changing access, or running against an operational database
-requires explicit approval. Until the regional topology and deployed browser smoke are complete,
-the only valid state is `TARGET_STAGED`.
+Creating the public Web domain, changing access, or running against an operational database
+requires explicit approval. API and database public access remain prohibited. Until the public
+browser smoke is complete, the only valid state is `TARGET_STAGED`.
