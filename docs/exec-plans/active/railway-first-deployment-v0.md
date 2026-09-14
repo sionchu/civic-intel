@@ -1,6 +1,7 @@
 # Railway first deployment v0
 
-Status: completed — private API/DB and public Web staging preview verified; data load deferred.
+Status: completed for deployment — private API/DB and public Web staging preview verified; the
+approved backup/restore gate is provider-blocked and data load remains deferred.
 
 Date: 2026-09-14
 
@@ -45,8 +46,9 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
 4. [x] After approval, apply the saved staging plan and generate a public domain only for `web`.
 5. [x] Verify migration head, `/ready`, public roster, Person evidence, Organization states, 404 and
    API-unavailable behavior in the deployed browser artifact.
-6. Configure and verify a database backup before any non-fixture data load. Data loading remains a
-   separate reviewed operation.
+6. [blocked] Configure and verify a database backup before any non-fixture data load. The approved
+   on-demand volume-backup attempt was rejected by Railway with `UNAUTHORIZED`; no backup or
+   restore was run. Data loading remains a separate reviewed operation.
 
 ## Acceptance
 
@@ -114,8 +116,19 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   reload recovered to `200` without a code or configuration change; this transient recovery is
   recorded, not hidden. No operational data load has been run and the default `production`
   environment remains empty.
+- After explicit approval for the staging backup/restore rehearsal, the owner-operated CLI attempted
+  `railway postgres pitr backup create` for `postgres` with the named backup
+  `pre-restore-rehearsal-2026-09-14`. Railway returned `{"code":"UNAUTHORIZED","error":"Failed to
+  create a backup"}` and exit code `1`. The command was not retried.
+- Read-only follow-up confirmed the target volume is `Ready` (`500 MB`, current size about
+  `103.16 MB`), the PITR backup list is empty, PITR reports `enabled: false` and
+  `bucketWired: false`, and the automatic backup schedule is empty. Usage, service and volume
+  metadata reads succeed, but no provider-side entitlement reason was exposed. No backup, restore,
+  PITR bucket, new service, operational data load or database content mutation occurred.
 
 ## Next action
 
-Obtain explicit approval for a PostgreSQL backup/restore rehearsal, then complete it before any
-operational or feeder data load; API/DB exposure remains prohibited.
+Resolve the provider-side authorization or feature entitlement for the existing staging volume,
+then rerun the already reviewed backup/restore rehearsal before any operational or feeder data load;
+do not enable PITR or create a new database service under this checkpoint, and keep API/DB exposure
+prohibited.

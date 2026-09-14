@@ -53,9 +53,12 @@ Web-only approval, the generated service domain
 `https://web-staging-efe2.up.railway.app` became `ACTIVE`; API and PostgreSQL have no public URL.
 
 At the current checkpoint, Railway reports PostgreSQL PITR disabled and no backup bucket wired.
-The local host has no PostgreSQL client tools, and private SSH inspection needs a new SSH key; no
-new credential, persistent backup configuration or one-off backup was created. Data loading remains
-outside this deployment checkpoint.
+The approved on-demand volume-backup attempt for `pre-restore-rehearsal-2026-09-14` returned
+`UNAUTHORIZED` / `Failed to create a backup`; the command was not retried. The backup list and
+automatic schedule remain empty. The local host has no PostgreSQL client tools, and private SSH
+inspection needs a new SSH key; no new credential, persistent backup configuration, backup snapshot,
+restore, or database-content mutation was created. Data loading remains outside this deployment
+checkpoint.
 
 ## Required runtime configuration
 
@@ -71,7 +74,9 @@ outside this deployment checkpoint.
 
 ## Release order
 
-1. Record the exact application commit and take a PostgreSQL custom-format backup.
+1. [blocked] Record the exact application commit and take a PostgreSQL custom-format backup. The
+   approved provider-side volume-backup attempt was rejected with `UNAUTHORIZED` before a snapshot
+   existed.
 2. Restore that backup into a disposable database and run
    `python -m packages.verification.postgresql` against the restored URL.
 3. Build both images and scan the build logs for copied secrets or ignored runtime databases.
@@ -111,10 +116,12 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 | Web → API success | API `GET /people 200`; Web rendered the empty result, not an outage fallback |
 | Public 404 | unknown UUID rendered `Profile not found`; API `GET /people/<unknown> 404` |
 | IaC drift | read-only `railway config plan` returned `Your Railway configuration is already up to date.` |
+| Backup rehearsal | `railway postgres pitr backup create` returned `UNAUTHORIZED`; backup list and automatic schedule remain empty; restore not run |
 
 ## Approval boundary
 
 The Web-only public domain and its browser smoke were explicitly approved and completed. API and
-database public access remain prohibited. Operational data loading and persistent backup/PITR
-configuration require separate approval. The current deployment classification is
-`DEPLOYED_PREVIEW`, with no operational data loaded.
+database public access remain prohibited. The backup/restore rehearsal was separately approved but
+is currently blocked by the provider-side authorization response above; persistent backup/PITR
+configuration and operational data loading remain outside this checkpoint. The current deployment
+classification is `DEPLOYED_PREVIEW`, with no operational data loaded.

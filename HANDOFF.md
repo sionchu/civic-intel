@@ -1084,5 +1084,15 @@ separate approvals.
   was outside this CUA smoke artifact. The first transient `503` is retained as migration-recovery
   evidence rather than treated as a data absence.
 - PostgreSQL PITR remains disabled, no backup bucket is wired, and no operational/feeder data load
-  has run. The next gate is a separately approved backup/restore rehearsal before any operational
-  load.
+  has run. After explicit approval, the owner-operated CLI attempted the on-demand volume backup
+  `pre-restore-rehearsal-2026-09-14`; Railway returned `UNAUTHORIZED` / `Failed to create a backup`
+  with exit code `1`. The backup list remains empty, the automatic schedule is empty, and no
+  restore, PITR enablement, new service, or database-content mutation was attempted. The volume is
+  `Ready` at `500 MB` with current size about `103.16 MB`; read-only usage/service/volume checks
+  succeed, but the provider did not expose the entitlement reason.
+
+## Next concrete action
+
+Resolve the provider-side authorization or feature entitlement for the existing staging volume,
+then rerun the reviewed backup/restore rehearsal before any operational or feeder data load. Keep
+PITR disabled, do not create a new database service, and keep API/PostgreSQL private.
