@@ -1,6 +1,6 @@
 # Evidence Preview v1
 
-Status: active — M0 complete; M1 engineering in progress.
+Status: active — M0 and M1.1 complete; M1.2 is next.
 
 Date: 2026-09-14
 
@@ -42,6 +42,8 @@ this worktree and must not be reset, cleaned, moved or rewritten.
 
 ## M1.1 — atomic and idempotent reviewed ALIO pair
 
+Status: completed locally on 2026-09-14.
+
 ### Required implementation
 
 1. Reproduce the split-transaction failure with a disposable database and injected failure on
@@ -67,6 +69,19 @@ this worktree and must not be reset, cleaned, moved or rewritten.
   make no change.
 - Concurrent equivalent calls converge on one logical pair without duplicates.
 - Dry-run, Person imports, the existing single-Claim path and Golden regressions remain valid.
+
+Implementation and evidence:
+
+- The pre-change regression injected failure into the second CLI write and observed one residual
+  Claim, confirming the split-transaction risk.
+- ALIO Item 12 Claim/Evidence IDs are now deterministic over canonical Organization, source
+  contract, provider record key, immutable observation hash and exact Evidence provenance.
+- `SqlAlchemyRepository.import_organization_claim_pair()` validates and writes both Claims in one
+  transaction, reuses the single-Claim validation/write seam, recovers an exact legacy partial,
+  rejects divergent semantics and retries one deterministic primary-key race.
+- Targeted Item 12 tests: 29 passed. The full local suite: 325 passed, 4 warnings. Ruff, mypy (56
+  source files), Golden quality, web lint/typecheck, seven UI tests and production build passed.
+- No migration or dependency was added. The ignored runtime database was not opened or changed.
 
 ## M1.2 — honest public read states and Source boundary
 

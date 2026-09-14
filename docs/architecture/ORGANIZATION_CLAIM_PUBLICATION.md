@@ -67,7 +67,11 @@ contacts are not copied into the claim path.
 
 `SqlAlchemyRepository.import_organization_claim()` accepts only a Claim targeting the supplied
 Organization and an existing Organization row. It does not upsert an organization or source.
-It validates the evidence chain and the normal Claim publication gate in one transaction.
+It validates the evidence chain and the normal Claim publication gate in one transaction. The
+reviewed two-year ALIO command uses `import_organization_claim_pair()` so both annual Claims share
+one transaction. Exact retries return the stored rows, an exact legacy one-row partial may add only
+the missing row, and divergent partial state fails closed. Source-specific deterministic Claim and
+Evidence primary keys provide the database uniqueness guard for concurrent equivalent operations.
 
 ## Version and temporal semantics
 

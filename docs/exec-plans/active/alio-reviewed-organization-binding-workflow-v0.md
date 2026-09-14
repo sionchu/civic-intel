@@ -1,6 +1,7 @@
 # ALIO reviewed Organization binding workflow v0
 
-Status: completed on 2026-09-14 — operator-only source-specific Claim import; no public binding
+Status: completed on 2026-09-14 — operator-only source-specific Claim import; the two-year commit
+is atomic, exactly idempotent and legacy-partial recoverable; no public binding
 surface.
 
 Date: 2026-09-14

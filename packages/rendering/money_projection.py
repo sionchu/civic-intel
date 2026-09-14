@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 from urllib.parse import parse_qs, urlparse
-from uuid import UUID
+from uuid import UUID, uuid5
 
 from packages.connectors.alio_disclosures import (
     ALIO_ITEM12_SOURCE_CONTRACT,
@@ -28,6 +28,7 @@ MONEY_METHOD_VERSION = "money.alio-head-expense-yoy.v1"
 MONEY_FEEDER = "alio_institution_head_business_expense"
 MONEY_SEMANTIC_SCOPE = "institutional_head_business_expense_annual_disclosure"
 _PERCENT_QUANTUM = Decimal("0.01")
+_ALIO_ITEM12_CLAIM_NAMESPACE = UUID("c2e18890-c2bd-4c13-8c68-92bf44950228")
 
 
 def _ordered_unique(values: Sequence[str]) -> list[str]:
@@ -193,7 +194,22 @@ def build_alio_head_expense_claim(
 
     fiscal_year = item["fiscal_year"]
     amount_thousand_krw = item["amount_thousand_krw"]
+    claim_id = uuid5(
+        _ALIO_ITEM12_CLAIM_NAMESPACE,
+        "|".join(
+            (
+                str(organization.id),
+                ALIO_ITEM12_SOURCE_CONTRACT,
+                observation.feeder,
+                observation.scope_key,
+                observation.semantic_scope,
+                observation.provider_record_key,
+                observation.content_hash,
+            )
+        ),
+    )
     claim = Claim(
+        id=claim_id,
         organization_id=organization.id,
         proposition=(
             f"{organization.name}는 {fiscal_year} 회계연도 기관장 업무추진비로 "
@@ -221,6 +237,17 @@ def build_alio_head_expense_claim(
         asserted_as_true=True,
     )
     evidence = ClaimEvidence(
+        id=uuid5(
+            claim_id,
+            "|".join(
+                (
+                    str(source.id),
+                    str(observation.snapshot_id),
+                    str(observation.id),
+                    EvidenceStance.SUPPORT.value,
+                )
+            ),
+        ),
         claim_id=claim.id,
         source_id=source.id,
         snapshot_id=observation.snapshot_id,

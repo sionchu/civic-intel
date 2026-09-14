@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import httpx
 import pytest
@@ -29,6 +30,7 @@ from packages.domain.contracts import (
     SourceSnapshot,
 )
 from packages.domain.db import (
+    ClaimEvidenceRow,
     ClaimRow,
     IdentityReviewItemRow,
     OrganizationRow,
@@ -51,6 +53,7 @@ from workers.alio_business_expense import (
     normalized_alio_business_expense,
 )
 from workers.alio_reviewed_claim_import import main as reviewed_claim_import_main
+from workers.alio_reviewed_claim_import import prepare_reviewed_import
 
 STAFF_NAME = "수집하지않는공시담당자"
 STAFF_PHONE = "02-9999-9999"
@@ -1048,6 +1051,52 @@ def test_reviewed_claim_import_commit_uses_existing_claim_importer(
     assert all(item.feeder_observation_id is not None for item in evidence)
 
 
+def test_reviewed_claim_pair_rolls_back_when_second_write_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-atomic.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000010")
+    insert_organization(repository, organization_id, "테스트정보기관")
+    original_add = SqlAlchemyRepository._add_organization_claim_rows
+    calls = 0
+
+    def fail_second_add(session, claim, evidence):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OrganizationClaimImportError("injected second claim failure")
+        return original_add(session, claim, evidence)
+
+    monkeypatch.setattr(
+        SqlAlchemyRepository,
+        "_add_organization_claim_rows",
+        staticmethod(fail_second_add),
+    )
+
+    with pytest.raises(SystemExit) as error:
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+                "--commit",
+            ]
+        )
+
+    assert error.value.code == 2
+    assert repository.claims(organization_id=organization_id) == []
+    with repository.sessions() as session:
+        assert session.query(ClaimEvidenceRow).count() == 0
+
+
 def test_reviewed_claim_import_fails_before_write_without_existing_organization(
     tmp_path: Path,
 ) -> None:
@@ -1103,7 +1152,7 @@ def test_reviewed_claim_import_rejects_binding_name_mismatch_before_write(
     assert repository.claims(organization_id=organization_id) == []
 
 
-def test_reviewed_claim_import_rejects_existing_provider_key_before_partial_write(
+def test_reviewed_claim_import_exact_rerun_is_idempotent(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -1125,9 +1174,140 @@ def test_reviewed_claim_import_rejects_existing_provider_key_before_partial_writ
     ]
 
     assert reviewed_claim_import_main(arguments) == 0
-    capsys.readouterr()
+    first = json.loads(capsys.readouterr().out)
+    assert reviewed_claim_import_main(arguments) == 0
+    second = json.loads(capsys.readouterr().out)
+    assert second["claim_ids"] == first["claim_ids"]
+    assert len(repository.claims(organization_id=organization_id)) == 2
+
+
+def test_reviewed_claim_import_recovers_exact_legacy_partial_state(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-partial.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000011")
+    insert_organization(repository, organization_id, "테스트정보기관")
+    prepared = prepare_reviewed_import(
+        repository,
+        organization_id=organization_id,
+        institution_code="C0908",
+        earlier_fiscal_year=2024,
+        later_fiscal_year=2025,
+    )
+    first_claim, first_evidence = prepared.claims[0]
+    legacy_claim = first_claim.model_copy(update={"id": uuid4()})
+    legacy_evidence = first_evidence.model_copy(
+        update={"id": uuid4(), "claim_id": legacy_claim.id}
+    )
+    repository.import_organization_claim(
+        prepared.organization,
+        legacy_claim,
+        [legacy_evidence],
+    )
+
+    assert reviewed_claim_import_main(
+        [
+            "--organization-id",
+            str(organization_id),
+            "--institution-code",
+            "C0908",
+            "--earlier-fiscal-year",
+            "2024",
+            "--later-fiscal-year",
+            "2025",
+            "--database-url",
+            database_url,
+            "--commit",
+        ]
+    ) == 0
+
+    result = json.loads(capsys.readouterr().out)
+    assert result["claim_ids"][0] == str(legacy_claim.id)
+    assert len(repository.claims(organization_id=organization_id)) == 2
+    assert sum(
+        len(repository.evidence_for(claim.id))
+        for claim in repository.claims(organization_id=organization_id)
+    ) == 2
+
+
+def test_reviewed_claim_import_rejects_conflicting_legacy_partial_state(
+    tmp_path: Path,
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-conflict.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000012")
+    insert_organization(repository, organization_id, "테스트정보기관")
+    prepared = prepare_reviewed_import(
+        repository,
+        organization_id=organization_id,
+        institution_code="C0908",
+        earlier_fiscal_year=2024,
+        later_fiscal_year=2025,
+    )
+    first_claim, first_evidence = prepared.claims[0]
+    conflicting_claim = first_claim.model_copy(
+        update={"id": uuid4(), "object_text": "99,999천원"}
+    )
+    conflicting_evidence = first_evidence.model_copy(
+        update={"id": uuid4(), "claim_id": conflicting_claim.id}
+    )
+    repository.import_organization_claim(
+        prepared.organization,
+        conflicting_claim,
+        [conflicting_evidence],
+    )
+
     with pytest.raises(SystemExit) as error:
-        reviewed_claim_import_main(arguments)
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+                "--commit",
+            ]
+        )
 
     assert error.value.code == 2
+    stored = repository.claims(organization_id=organization_id)
+    assert [claim.id for claim in stored] == [conflicting_claim.id]
+    assert repository.evidence_for(conflicting_claim.id) == [conflicting_evidence]
+
+
+def test_reviewed_claim_import_concurrent_calls_converge_on_one_pair(
+    tmp_path: Path,
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(tmp_path / "reviewed-import-race.db")
+    organization_id = UUID("60000000-0000-0000-0000-000000000013")
+    insert_organization(repository, organization_id, "테스트정보기관")
+    prepared = prepare_reviewed_import(
+        repository,
+        organization_id=organization_id,
+        institution_code="C0908",
+        earlier_fiscal_year=2024,
+        later_fiscal_year=2025,
+    )
+
+    def run_import() -> tuple[Claim, Claim]:
+        concurrent_repository = SqlAlchemyRepository(database_url)
+        return concurrent_repository.import_organization_claim_pair(
+            prepared.organization,
+            [(claim, [evidence]) for claim, evidence in prepared.claims],
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = [future.result() for future in [executor.submit(run_import) for _ in range(2)]]
+
+    assert [[claim.id for claim in result] for result in results] == [
+        [claim.id for claim, _ in prepared.claims],
+        [claim.id for claim, _ in prepared.claims],
+    ]
     assert len(repository.claims(organization_id=organization_id)) == 2
+    with repository.sessions() as session:
+        assert session.query(ClaimEvidenceRow).count() == 2

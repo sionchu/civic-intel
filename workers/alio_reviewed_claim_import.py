@@ -5,7 +5,6 @@ import json
 from dataclasses import dataclass
 from uuid import UUID
 
-from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -136,18 +135,6 @@ def prepare_reviewed_import(
             )
         )
 
-    existing_claims = repository.claims(
-        organization_id=organization.id,
-    )
-    existing_keys = {
-        claim.qualifiers.get("provider_record_key")
-        for claim in existing_claims
-        if claim.qualifiers.get("source_contract") == ALIO_ITEM12_SOURCE_CONTRACT
-    }
-    requested_keys = {observation.provider_record_key for observation in selected}
-    if existing_keys & requested_keys:
-        raise ValueError("ALIO reviewed import refuses an already imported provider record key")
-
     return ReviewedAlioClaimImport(
         organization=organization,
         institution_code=institution_code,
@@ -187,12 +174,12 @@ def main(argv: list[str] | None = None) -> int:
             later_fiscal_year=args.later_fiscal_year,
         )
         if args.commit:
-            for claim, evidence in prepared.claims:
-                repository.import_organization_claim(
-                    prepared.organization,
-                    claim,
-                    [evidence],
-                )
+            stored_claims = repository.import_organization_claim_pair(
+                prepared.organization,
+                [(claim, [evidence]) for claim, evidence in prepared.claims],
+            )
+        else:
+            stored_claims = (prepared.claims[0][0], prepared.claims[1][0])
         status = "COMMITTED" if args.commit else "DRY_RUN"
     except (ValueError, TypeError) as exc:
         parser.error(str(exc))
@@ -205,7 +192,7 @@ def main(argv: list[str] | None = None) -> int:
                 "institution_code": prepared.institution_code,
                 "fiscal_years": list(prepared.fiscal_years),
                 "observation_keys": [item.provider_record_key for item in prepared.observations],
-                "claim_ids": [str(claim.id) for claim, _ in prepared.claims],
+                "claim_ids": [str(claim.id) for claim in stored_claims],
                 "evidence_ids": [str(evidence.id) for _, evidence in prepared.claims],
                 "scope_key": BOUNDED_SCOPE_KEY,
                 "network_fetch": False,

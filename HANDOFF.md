@@ -989,15 +989,18 @@ hosting contract without external deployment.
   `1306f00976db6fc7460320885d3863fa236c4ba9`, equal to `origin/master`.
 - The root checkout, ignored ALIO runtime database and other worktrees remain outside this worktree.
 - Governing documents and the ALIO repository/API/web/test paths were re-read.
-- M0 documentation alignment is complete. M1.1 regression and implementation are next.
-- The reviewed plan's partial-write risk is present: the CLI currently imports the two Claims in
-  separate repository transactions and rejects a rerun when either provider key already exists.
+- M0 documentation alignment and M1.1 are complete. M1.2 public read-state work is next.
+- The split-transaction risk was reproduced with one residual Claim after an injected second write
+  failure. The CLI now uses one shared-repository pair transaction with deterministic IDs, exact
+  rerun no-op, safe exact-partial recovery, divergent-partial rejection and a concurrent-call
+  regression. No schema or dependency changed.
 
 ## Verification
 
 - Git fetch/status/revision/worktree inventory completed before edits.
-- No M1 implementation or new runtime verification is claimed at this checkpoint.
+- M1.1 targeted tests: 29 passed. Full suite: 325 passed, 4 warnings. Ruff, mypy (56 files), Golden
+  quality, web lint/typecheck, seven UI tests and production build passed locally.
 
 ## Next action
 
-Add the M1.1 failure-injection regression, then implement the shared atomic pair import.
+Implement M1.2 discriminated public read errors and reachable-only public Source DTOs.
