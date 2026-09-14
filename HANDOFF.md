@@ -1056,5 +1056,8 @@ operational data loading and production remain separate approvals.
   is also untouched and service-free.
 - The staging-only read-only IaC plan has zero diagnostics and exactly three safe creates:
   `postgres`, private `api`, and private-networked `web`. It has zero changes and zero destroys.
-  It was not applied, so no billable service/database, deployment, public domain or operational
-  data exists. Apply and public exposure remain at the operator approval boundary.
+  The approved plan was applied: PostgreSQL is running and API/Web services exist, with no public
+  domain or operational data. API's first pre-deploy migration failed because Railway provides a
+  plain `postgresql://` URL while the repository ships `psycopg`, not `psycopg2`. A small shared
+  repository/Alembic URL normalization fix and regression coverage passed local full verification;
+  push it and observe the corrective deployment before treating staging as ready.

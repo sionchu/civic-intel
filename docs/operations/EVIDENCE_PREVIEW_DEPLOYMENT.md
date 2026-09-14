@@ -49,7 +49,7 @@ deployment, public domain or operational data exists.
 
 | Role | Variable | Rule |
 | --- | --- | --- |
-| API/migration | `DATABASE_URL` | PostgreSQL SQLAlchemy URL using the `psycopg` driver; inject as a secret. |
+| API/migration | `DATABASE_URL` | Railway PostgreSQL output; normalize provider `postgresql://` URLs at the process boundary to the project's `postgresql+psycopg://` dialect. |
 | API | `CIVIC_BOOTSTRAP_MODE` | Must be `runtime`; production must never use Golden bootstrap. |
 | web | `CIVIC_API_URL` | Server-only routable API origin; do not expose credentials or private endpoints. |
 | connector jobs | provider API keys | Add only to the one bounded job that needs them; never to web runtime. |

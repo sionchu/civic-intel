@@ -54,6 +54,7 @@ from packages.domain.enums import (
     PublicationStatus,
     SourceRunStatus,
 )
+from packages.persistence.database_url import normalize_database_url
 from packages.verification.claims import validate_claim_publication
 from packages.verification.golden import GoldenSet, load_golden_set
 from packages.verification.materialization import (
@@ -97,7 +98,9 @@ def _expected_schema_revision() -> str:
 
 class SqlAlchemyRepository:
     def __init__(self, database_url: str | None = None):
-        url = database_url or os.getenv("DATABASE_URL") or "sqlite:///./civic_intel.db"
+        url = normalize_database_url(
+            database_url or os.getenv("DATABASE_URL") or "sqlite:///./civic_intel.db"
+        )
         self.engine = create_engine(url)
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
 

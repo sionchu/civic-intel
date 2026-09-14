@@ -81,9 +81,14 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   path stored in `process.env._` rather than the transient `npx` CLI. Explicitly pointing that
   value at the verified Railway CLI `5.54.1` produced the successful read-only plan. This is a
   local invocation detail only; no provider configuration changed.
+- The approved pinned plan was applied on 2026-09-14. Railway created `postgres`, `api` and
+  `web`; no public domain was generated. PostgreSQL started, but the first API pre-deploy
+  migration failed because Railway supplied `postgresql://` while the project ships only the
+  `psycopg` DBAPI. The provider URL is now normalized once at the repository/Alembic boundary to
+  `postgresql+psycopg://`; local full verification passed before the corrective revision is pushed.
 
 ## Next action
 
-Obtain explicit approval to apply the reviewed staging plan. The only planned external creates are
-`postgres`, private `api` and private-networked `web`; public domain generation and data loading
-remain separate approvals.
+Push the verified DBAPI normalization revision and observe the API pre-deploy migration, `/ready`
+health check and dependent web deployment. Public-domain generation and data loading remain
+separate approvals.
