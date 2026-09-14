@@ -989,8 +989,7 @@ hosting contract without external deployment.
   `1306f00976db6fc7460320885d3863fa236c4ba9`, equal to `origin/master`.
 - The root checkout, ignored ALIO runtime database and other worktrees remain outside this worktree.
 - Governing documents and the ALIO repository/API/web/test paths were re-read.
-- M0 through M1.4 are complete. M1.5 deployment preparation is implemented locally and awaiting
-  its final CI artifact-build check.
+- M0 through M1.5 are complete. M2 through M5 remain deferred by the canonical execution plan.
 - The split-transaction risk was reproduced with one residual Claim after an injected second write
   failure. The CLI now uses one shared-repository pair transaction with deterministic IDs, exact
   rerun no-op, safe exact-partial recovery, divergent-partial rejection and a concurrent-call
@@ -1026,7 +1025,11 @@ hosting contract without external deployment.
   335 tests and one PostgreSQL-only skip, Ruff, mypy (57 files), Golden quality, web
   lint/typecheck, nine UI tests, production build and standalone artifact check. Docker execution
   is CI-only on this host.
+- M1.5 GitHub Actions run `34838879854` at
+  `0e90bae9269e980d38e45f0041fdcdc76852e17c` passed both image builds, Compose validation and
+  every preceding canonical/PostgreSQL/restore check.
 
 ## Next action
 
-Close M1.5 only after its pushed Docker image/Compose contract and complete GitHub Actions run pass.
+With a separately approved host and PostgreSQL target, execute the runbook's first host-level
+deployment and direct-ID browser smoke at one recorded commit.

@@ -1,6 +1,6 @@
 # Evidence Preview v1
 
-Status: active — M0 through M1.4 complete; M1.5 implemented locally, final CI pending.
+Status: completed — M0 and M1 verified; M2 through M5 deferred.
 
 Date: 2026-09-14
 
@@ -190,8 +190,7 @@ Implementation and evidence:
 
 ## M1.5 — deployment preparation and approval boundary
 
-Status: implemented and verified locally on 2026-09-14; final GitHub Actions artifact build is
-pending.
+Status: completed in GitHub Actions on 2026-09-14.
 
 Document and verify the selected artifact contract for the standalone web, FastAPI API, migrated
 PostgreSQL database, environment variables, health/readiness checks, migration order, data load,
@@ -214,8 +213,10 @@ Implementation and evidence:
   repository's separate Next server, FastAPI process and PostgreSQL runtime contract.
 - Targeted deployment/API checks passed with 21 tests. Full local verification passed with 335
   tests and one PostgreSQL-only skip, Ruff, mypy (57 files), Golden quality, web lint/typecheck,
-  nine UI tests, production build and standalone artifact check. Docker is unavailable locally;
-  CI builds both images and validates the Compose contract before this stage is final.
+  nine UI tests, production build and standalone artifact check. Docker is unavailable locally.
+- GitHub Actions run `34838879854` at `0e90bae9269e980d38e45f0041fdcdc76852e17c`
+  passed the full canonical suite, SQLite and PostgreSQL migration checks, PostgreSQL load and
+  backup/restore, both Docker image builds and Compose contract validation.
 
 ## Deferred product specification — M2 to M5
 
