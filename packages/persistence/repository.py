@@ -786,7 +786,12 @@ class SqlAlchemyRepository:
             data["id"] = str(policy.id)
             data["collection_mode"] = policy.collection_mode.value
             session.add(SourcePolicyRow(**data))
+        session.flush()
+
+        source_origin_clusters: dict[str, str] = {}
         for source in golden.sources:
+            if source.origin_cluster_id is not None:
+                source_origin_clusters[str(source.id)] = str(source.origin_cluster_id)
             session.add(
                 SourceRow(
                     id=str(source.id),
@@ -795,11 +800,11 @@ class SqlAlchemyRepository:
                     publisher=source.publisher,
                     published_at=source.published_at,
                     policy_id=str(source.policy_id),
-                    origin_cluster_id=str(source.origin_cluster_id)
-                    if source.origin_cluster_id
-                    else None,
+                    origin_cluster_id=None,
                 )
             )
+        session.flush()
+
         for snapshot in golden.snapshots:
             session.add(
                 SourceSnapshotRow(
@@ -811,6 +816,8 @@ class SqlAlchemyRepository:
                     fulltext=snapshot.fulltext,
                 )
             )
+        session.flush()
+
         for cluster in golden.origin_clusters:
             session.add(
                 SourceOriginClusterRow(
@@ -820,6 +827,14 @@ class SqlAlchemyRepository:
                     reason=cluster.reason,
                 )
             )
+        session.flush()
+        for source_id, cluster_id in source_origin_clusters.items():
+            source_row = session.get(SourceRow, source_id)
+            if source_row is None:
+                raise GoldenSeedError(f"Golden source disappeared during seed: {source_id}")
+            source_row.origin_cluster_id = cluster_id
+        session.flush()
+
         for item in golden.people:
             person = item.person
             session.add(
@@ -831,6 +846,8 @@ class SqlAlchemyRepository:
                     **self._temporal(person),
                 )
             )
+        session.flush()
+
         for claim in golden.claims:
             session.add(
                 ClaimRow(
@@ -849,6 +866,8 @@ class SqlAlchemyRepository:
                     **self._temporal(claim),
                 )
             )
+        session.flush()
+
         for evidence in golden.evidence:
             session.add(
                 ClaimEvidenceRow(
@@ -860,6 +879,8 @@ class SqlAlchemyRepository:
                     excerpt=evidence.excerpt,
                 )
             )
+        session.flush()
+
         for relationship in golden.relationships:
             session.add(
                 RelationshipRow(
