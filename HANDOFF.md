@@ -1060,3 +1060,8 @@ generation, operational data loading and production remain separate approvals.
 - API/Web are in Singapore, while PostgreSQL and its 500 MB volume are in `sfo`. The post-apply
   IaC plan contains one `destructive` database move to Singapore. It is not applied because the
   provider documents downtime during a volume migration; this topology remains unresolved.
+- PostgreSQL PITR is disabled and no backup bucket is wired. The local host lacks PostgreSQL client
+  tools, and private SSH inspection requires a new SSH key, so no one-off backup or table-count
+  query was created. No operational data load has been run. The pinned plan remains the same one
+  destructive database move and requires an explicit acknowledgement of the downtime/data-loss
+  risk before application.

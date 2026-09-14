@@ -96,6 +96,12 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   `destructive` action: move `postgres` to `asia-southeast1-eqsg3a`. Railway documents that a
   volume-backed region move migrates the volume and causes service downtime. This plan has not
   been applied; the staging topology is therefore not accepted as region-correct.
+- Before the requested move, Railway reported PostgreSQL PITR disabled and no backup bucket wired.
+  The local host has no PostgreSQL client, and private SSH inspection would require creating an
+  SSH key; neither a new credential nor a persistent backup configuration was created. No
+  operational data load has been run. The pinned migration plan remains the one database move
+  above, and the provider safety gate requires an explicit acknowledgement of its destructive
+  downtime/data-loss risk before it can be applied.
 
 ## Next action
 

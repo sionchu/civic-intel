@@ -52,6 +52,11 @@ the intended move to Singapore as `destructive`. Railway's volume contract state
 of regional move migrates the volume with downtime, so it requires separate approval and has not
 been applied. No public domain or operational data load exists.
 
+At the current checkpoint, Railway reports PostgreSQL PITR disabled and no backup bucket wired.
+The local host has no PostgreSQL client tools, and private SSH inspection needs a new SSH key; no
+new credential, persistent backup configuration or one-off backup was created. The migration plan
+remains pending explicit acknowledgement of its destructive downtime/data-loss risk.
+
 ## Required runtime configuration
 
 | Role | Variable | Rule |
