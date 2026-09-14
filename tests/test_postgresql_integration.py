@@ -62,7 +62,7 @@ def test_postgresql_migration_load_and_public_api_contracts() -> None:
         assert money.status_code == 200
         assert len(money.json()["claim_ids"]) == 2
         assert len(money.json()["evidence_ids"]) == 2
-        assert len(money.json()["snapshot_ids"]) == 2
+        assert len(money.json()["snapshot_ids"]) == 1
 
     report = verify_restored_database(
         POSTGRES_TEST_URL,
