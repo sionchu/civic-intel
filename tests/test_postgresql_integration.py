@@ -29,6 +29,8 @@ def test_postgresql_migration_load_and_public_api_contracts() -> None:
     config = Config(str(Path("alembic.ini")))
     config.set_main_option("sqlalchemy.url", POSTGRES_TEST_URL)
     command.upgrade(config, "head")
+    command.downgrade(config, "-1")
+    command.upgrade(config, "head")
 
     repository = SqlAlchemyRepository(POSTGRES_TEST_URL)
     repository.seed_golden()

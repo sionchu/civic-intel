@@ -66,6 +66,29 @@ def _claims_table(*, organization_subject: bool = False) -> sa.Table:
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    columns = {item["name"] for item in sa.inspect(bind).get_columns("claims")}
+    if "organization_id" in columns:
+        return
+    if bind.dialect.name == "postgresql":
+        op.alter_column(
+            "claims",
+            "person_id",
+            existing_type=sa.String(length=36),
+            nullable=True,
+        )
+        op.add_column("claims", sa.Column("organization_id", sa.String(length=36)))
+        op.create_foreign_key(
+            "fk_claims_organization_id",
+            "claims",
+            "organizations",
+            ["organization_id"],
+            ["id"],
+        )
+        op.create_index("ix_claims_organization_id", "claims", ["organization_id"])
+        op.create_check_constraint("ck_claims_one_subject", "claims", _ONE_SUBJECT)
+        return
+
     with op.batch_alter_table(
         "claims", recreate="always", copy_from=_claims_table()
     ) as batch:
@@ -94,6 +117,19 @@ def downgrade() -> None:
         raise RuntimeError(
             "cannot downgrade organization-scoped claims while organization claims exist"
         )
+
+    if bind.dialect.name == "postgresql":
+        op.drop_constraint("ck_claims_one_subject", "claims", type_="check")
+        op.drop_index("ix_claims_organization_id", table_name="claims")
+        op.drop_constraint("fk_claims_organization_id", "claims", type_="foreignkey")
+        op.drop_column("claims", "organization_id")
+        op.alter_column(
+            "claims",
+            "person_id",
+            existing_type=sa.String(length=36),
+            nullable=False,
+        )
+        return
 
     with op.batch_alter_table(
         "claims", recreate="always", copy_from=_claims_table(organization_subject=True)
