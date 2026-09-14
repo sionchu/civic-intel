@@ -1031,5 +1031,16 @@ hosting contract without external deployment.
 
 ## Next action
 
-With a separately approved host and PostgreSQL target, execute the runbook's first host-level
-deployment and direct-ID browser smoke at one recorded commit.
+Use the active Railway first-deployment plan to authenticate the owner-operated CLI, create/select
+an isolated `staging` environment and obtain a zero-destroy IaC plan before any apply.
+
+## Current checkpoint — Railway staging target (2026-09-14)
+
+- Railway staging was selected as the smallest provider contract matching the existing Next,
+  private FastAPI and PostgreSQL architecture. OpenAI Sites remains outside this runtime shape.
+- Added one project-level `.railway/railway.ts` graph using the current IaC SDK rather than the
+  deprecated per-service config format. It fails outside `staging`, uses the reviewed Dockerfiles,
+  runs Alembic before API release, checks `/ready`, and gives no public domain to API or database.
+- The SDK is isolated under `.railway`; local TypeScript and six deployment contract tests passed.
+- No Railway CLI/account/project/token/resource, billable plan, public domain or deployment was
+  created. Apply and public exposure remain at the operator approval boundary.

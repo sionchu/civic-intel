@@ -1,6 +1,6 @@
 # Evidence Preview deployment preparation
 
-Status: `PREPARED`, not deployed.
+Status: `TARGET_STAGED`, not deployed.
 
 This runbook defines the reviewed deployment contract for Evidence Preview v1. It creates no
 infrastructure and authorizes no public exposure, production database mutation, purchase or
@@ -24,6 +24,20 @@ OpenAI Sites is not the selected host for this milestone. Its static output or C
 Workers-compatible server contract does not directly host this repository's separate Next server,
 FastAPI process and PostgreSQL database. No `.openai/hosting.json`, Site registration or deployment
 resource is therefore created.
+
+## First host target
+
+Railway staging is the selected first host contract. Its official project model supplies private
+service networking, a PostgreSQL service, pre-deploy commands and health checks for this exact
+three-resource shape. `.railway/railway.ts` is the sole provider specification; deprecated
+`railway.json` and `railway.toml` service files are prohibited.
+
+The specification is deliberately fail-closed outside an environment named `staging`. It pins the
+GitHub source to `sionchu/civic-intel` `master`, builds the reviewed API and web Dockerfiles, runs
+Alembic before API release, keeps API/PostgreSQL without public domains, and routes server-side web
+reads over Railway private DNS. It does not declare a custom or generated public domain. Creating
+the Railway project/environment, accepting billable usage, applying the plan and generating the
+web domain remain operator approval actions.
 
 ## Required runtime configuration
 
@@ -67,8 +81,7 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 
 ## Approval boundary
 
-The remaining host choice must support two long-running server processes, private service-to-service
-networking, secret injection, PostgreSQL backups and an independently runnable migration job.
-Selecting or purchasing that host, provisioning its database, creating public DNS/resources,
-changing access, or running this against an operational database requires explicit approval. Until
-those actions and the deployed smoke are complete, the only valid state is `PREPARED`.
+Provisioning the selected Railway staging project/database, accepting billable usage, applying the
+IaC plan, creating its public web domain, changing access, or running against an operational
+database requires explicit approval. Until those actions and the deployed smoke are complete, the
+only valid state is `TARGET_STAGED`.

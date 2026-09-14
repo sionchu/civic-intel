@@ -21,6 +21,7 @@ def test_api_and_web_images_have_separate_runtime_contracts() -> None:
     assert "127.0.0.1:8000/ready" in api
     assert "USER civic" in api
     assert "/build/.next/standalone" in web
+    assert web.count("FROM node:22-bookworm-slim") == 2
     assert "node server.js" not in web
     assert 'CMD ["node", "server.js"]' in web
     assert "USER node" in web
@@ -42,7 +43,7 @@ def test_rehearsal_manifest_is_loopback_bound_and_migrates_before_api() -> None:
 def test_deployment_runbook_preserves_approval_and_sites_boundaries() -> None:
     runbook = read("docs/operations/EVIDENCE_PREVIEW_DEPLOYMENT.md")
 
-    assert "Status: `PREPARED`, not deployed." in runbook
+    assert "Status: `TARGET_STAGED`, not deployed." in runbook
     assert "No `.openai/hosting.json`" in runbook
     assert "requires explicit approval" in runbook
     assert "production must never use Golden bootstrap" in runbook

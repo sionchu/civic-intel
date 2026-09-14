@@ -34,20 +34,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: |
+            apps/web/package-lock.json
+            .railway/package-lock.json
 
       - name: Install Python dependencies
         run: |
@@ -56,6 +58,9 @@ jobs:
 
       - name: Install web dependencies
         run: npm ci --prefix apps/web
+
+      - name: Install deployment specification dependencies
+        run: npm ci --prefix .railway
 
       - name: Run canonical verification
         env:
@@ -93,3 +98,4 @@ jobs:
           docker build --file deploy/Dockerfile.api --tag civic-intel-api:verify .
           docker build --file deploy/Dockerfile.web --tag civic-intel-web:verify .
           docker compose --file compose.deploy.yml config --quiet
+          npm run check --prefix .railway
