@@ -17,6 +17,20 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: civic_intel
+          POSTGRES_PASSWORD: civic
+          POSTGRES_USER: civic
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U civic -d civic_intel"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -56,3 +70,17 @@ jobs:
           python -m alembic upgrade head
           python -m alembic downgrade -1
           python -m alembic upgrade head
+
+      - name: Verify PostgreSQL migration, load and API contracts
+        env:
+          POSTGRES_TEST_URL: postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel
+        run: python -m pytest tests/test_postgresql_integration.py
+
+      - name: Verify PostgreSQL backup and restore
+        env:
+          PGPASSWORD: civic
+        run: |
+          pg_dump --host 127.0.0.1 --username civic --dbname civic_intel --format custom --file /tmp/civic-intel.dump
+          createdb --host 127.0.0.1 --username civic civic_intel_restore
+          pg_restore --host 127.0.0.1 --username civic --dbname civic_intel_restore --exit-on-error /tmp/civic-intel.dump
+          python -m packages.verification.postgresql --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore --expected-people 10 --expected-organization-claims 2
