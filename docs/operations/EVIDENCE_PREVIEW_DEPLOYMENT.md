@@ -39,6 +39,12 @@ reads over Railway private DNS. It does not declare a custom or generated public
 the Railway project/environment, accepting billable usage, applying the plan and generating the
 web domain remain operator approval actions.
 
+On 2026-09-14 the owner-approved `civic-intel-staging` project and isolated `staging` environment
+were created. A read-only Railway IaC plan against that environment produced zero diagnostics,
+zero changes and zero destroys. Its only proposed actions are the safe creation of `postgres`,
+private `api` and private-networked `web`. The plan is not applied: no database, service,
+deployment, public domain or operational data exists.
+
 ## Required runtime configuration
 
 | Role | Variable | Rule |
@@ -81,7 +87,7 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 
 ## Approval boundary
 
-Provisioning the selected Railway staging project/database, accepting billable usage, applying the
+Provisioning the selected Railway staging database/services, accepting billable usage, applying the
 IaC plan, creating its public web domain, changing access, or running against an operational
 database requires explicit approval. Until those actions and the deployed smoke are complete, the
 only valid state is `TARGET_STAGED`.

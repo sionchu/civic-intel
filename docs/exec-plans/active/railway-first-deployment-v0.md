@@ -1,6 +1,6 @@
 # Railway first deployment v0
 
-Status: active — provider contract staged; no Railway resources created.
+Status: active — staging project and plan reviewed; infrastructure not applied.
 
 Date: 2026-09-14
 
@@ -66,13 +66,24 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   environments and zero deployments.
 - Railway SDK `3.11.0` and TypeScript `5.9.2` are isolated under `.railway`; `npm run check` passed.
 - Contract tests for staging-only scope, Dockerfiles, migration, readiness, private API DNS and no
-  declared public domain passed locally. No Railway account, token, project, service or database
-  was accessed or created.
+  declared public domain passed locally.
 - GitHub Actions run `34840650378` at `a1cdacd7326c758110eb03b946e0245330bc9963`
   passed canonical verification, PostgreSQL backup/restore, both Node 22/Python Docker builds,
   Compose validation and the Railway IaC typecheck.
+- The owner-operated CLI authenticated on 2026-09-14. Project `civic-intel-staging` and its
+  isolated `staging` environment were created with zero services. The untouched default
+  `production` environment also has zero services.
+- A read-only `railway config plan` against `staging` succeeded. It proposes exactly three safe
+  creates — database `postgres`, service `api`, and service `web` — with zero changes, zero
+  destroys and no diagnostics. The plan was not applied; no service, database, deployment, domain
+  or operational data exists.
+- The first plan attempt exposed a local CLI-discovery defect: the IaC SDK invoked the process
+  path stored in `process.env._` rather than the transient `npx` CLI. Explicitly pointing that
+  value at the verified Railway CLI `5.54.1` produced the successful read-only plan. This is a
+  local invocation detail only; no provider configuration changed.
 
 ## Next action
 
-Authenticate the owner-operated Railway CLI, create/select the isolated `staging` environment and
-run a read-only `railway config plan` before any apply.
+Obtain explicit approval to apply the reviewed staging plan. The only planned external creates are
+`postgres`, private `api` and private-networked `web`; public domain generation and data loading
+remain separate approvals.

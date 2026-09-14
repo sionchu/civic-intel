@@ -1031,8 +1031,15 @@ hosting contract without external deployment.
 
 ## Next action
 
-Use the active Railway first-deployment plan to authenticate the owner-operated CLI, create/select
-an isolated `staging` environment and obtain a zero-destroy IaC plan before any apply.
+The owner-operated Railway CLI authenticated successfully. The approved `civic-intel-staging`
+project and its isolated `staging` environment now exist, with zero services. A read-only IaC plan
+targeted at `staging` proposes exactly three safe creates — `postgres`, private `api`, and private
+networked `web` — with zero changes, zero destroys and no diagnostics. The plan was not applied;
+no database, service, deployment, domain or operational data exists. The default `production`
+environment remains untouched and empty.
+
+Obtain explicit approval to apply this reviewed staging plan. Public-domain generation,
+operational data loading and production remain separate approvals.
 
 ## Current checkpoint — Railway staging target (2026-09-14)
 
@@ -1044,5 +1051,10 @@ an isolated `staging` environment and obtain a zero-destroy IaC plan before any 
 - The SDK is isolated under `.railway`; local TypeScript and six deployment contract tests passed.
 - GitHub Actions run `34840650378` at `a1cdacd7326c758110eb03b946e0245330bc9963`
   passed the full suite, PostgreSQL restore, Docker builds, Compose and Railway IaC checks.
-- No Railway CLI/account/project/token/resource, billable plan, public domain or deployment was
-  created. Apply and public exposure remain at the operator approval boundary.
+- The owner-operated CLI has authenticated. The approved `civic-intel-staging` project and an
+  isolated `staging` environment exist, both service-free; the default `production` environment
+  is also untouched and service-free.
+- The staging-only read-only IaC plan has zero diagnostics and exactly three safe creates:
+  `postgres`, private `api`, and private-networked `web`. It has zero changes and zero destroys.
+  It was not applied, so no billable service/database, deployment, public domain or operational
+  data exists. Apply and public exposure remain at the operator approval boundary.
