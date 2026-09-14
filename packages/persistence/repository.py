@@ -549,6 +549,7 @@ class SqlAlchemyRepository:
                         **self._temporal(person),
                     )
                 )
+                session.flush()
                 session.add(
                     ClaimRow(
                         id=str(published_claim.id),
@@ -566,6 +567,7 @@ class SqlAlchemyRepository:
                         **self._temporal(published_claim),
                     )
                 )
+                session.flush()
                 session.add(
                     ClaimEvidenceRow(
                         id=str(evidence.id),
@@ -644,6 +646,7 @@ class SqlAlchemyRepository:
                     policy_data["id"] = str(policy.id)
                     policy_data["collection_mode"] = policy.collection_mode.value
                     session.add(SourcePolicyRow(**policy_data))
+                    session.flush()
                 elif policy_row.domain != policy.domain:
                     raise ValueError("SourcePolicy identity conflict")
 
@@ -1119,6 +1122,7 @@ class SqlAlchemyRepository:
                         **self._temporal(bundle.person),
                     )
                 )
+                session.flush()
                 for claim in bundle.claims:
                     session.add(
                         ClaimRow(
@@ -1137,6 +1141,7 @@ class SqlAlchemyRepository:
                             **self._temporal(claim),
                         )
                     )
+                session.flush()
                 for evidence in bundle.evidence:
                     session.add(
                         ClaimEvidenceRow(
@@ -1337,6 +1342,7 @@ class SqlAlchemyRepository:
                 **SqlAlchemyRepository._temporal(claim),
             )
         )
+        session.flush()
         for item in evidence:
             session.add(
                 ClaimEvidenceRow(
