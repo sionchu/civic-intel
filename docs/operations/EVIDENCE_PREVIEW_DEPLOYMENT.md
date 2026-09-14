@@ -58,7 +58,10 @@ The approved on-demand volume-backup attempt for `pre-restore-rehearsal-2026-09-
 automatic schedule remain empty. The local host has no PostgreSQL client tools, and private SSH
 inspection needs a new SSH key; no new credential, persistent backup configuration, backup snapshot,
 restore, or database-content mutation was created. Data loading remains outside this deployment
-checkpoint.
+checkpoint. On continuation, read-only Railway `whoami`, project/status, service-list and PITR-status
+calls using the stored credential also returned `Unauthorized`; no interactive login or further
+mutation was attempted. Re-authentication and a fresh read-only access check are required before
+resuming this gate.
 
 ## Required runtime configuration
 
@@ -122,6 +125,7 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 
 The Web-only public domain and its browser smoke were explicitly approved and completed. API and
 database public access remain prohibited. The backup/restore rehearsal was separately approved but
-is currently blocked by the provider-side authorization response above; persistent backup/PITR
-configuration and operational data loading remain outside this checkpoint. The current deployment
-classification is `DEPLOYED_PREVIEW`, with no operational data loaded.
+is currently blocked by the provider-side authorization response and subsequent CLI authentication
+failure above; persistent backup/PITR configuration and operational data loading remain outside this
+checkpoint. The current deployment classification is `DEPLOYED_PREVIEW`, with no operational data
+loaded.

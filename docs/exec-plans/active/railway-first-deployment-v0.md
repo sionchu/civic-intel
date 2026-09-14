@@ -125,6 +125,11 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   `bucketWired: false`, and the automatic backup schedule is empty. Usage, service and volume
   metadata reads succeed, but no provider-side entitlement reason was exposed. No backup, restore,
   PITR bucket, new service, operational data load or database content mutation occurred.
+- On continuation, the same locally stored Railway credential was rejected by read-only
+  `whoami`, project/status, service-list and PITR-status calls with `Unauthorized`. The credential
+  value was not printed or changed, no interactive login was automated, and no further mutation was
+  attempted. The earlier successful resource reads and the later authentication failure are both
+  retained as time-specific observations.
 - GitHub Actions run `34857175558` at
   `a9124150f00c8740187060f8a01ecfbca554319f` passed in 2m35s. Canonical verification, Alembic
   round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and deployment
@@ -132,7 +137,7 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
 
 ## Next action
 
-Resolve the provider-side authorization or feature entitlement for the existing staging volume,
-then rerun the already reviewed backup/restore rehearsal before any operational or feeder data load;
-do not enable PITR or create a new database service under this checkpoint, and keep API/DB exposure
-prohibited.
+Re-authenticate the owner-operated Railway CLI outside this task, confirm read-only access to the
+existing staging project, and then rerun the already reviewed backup/restore rehearsal only if the
+provider authorizes it; do not enable PITR or create a new database service under this checkpoint,
+and keep API/DB exposure prohibited.
