@@ -24,7 +24,7 @@ def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> Non
     } <= columns
     assert "published" not in columns
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0005"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0006"
     tables = set(inspect(engine).get_table_names())
     assert {
         "source_runs",

@@ -80,7 +80,7 @@ class SourcePolicyRow(Base):
     robots_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     terms_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     license: Mapped[str | None] = mapped_column(String(255))
-    rate_limit: Mapped[str | None] = mapped_column(String(100))
+    rate_limit: Mapped[str | None] = mapped_column(Text)
     policy_note: Mapped[str | None] = mapped_column(Text)
 
 
