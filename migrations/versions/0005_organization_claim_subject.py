@@ -119,9 +119,19 @@ def downgrade() -> None:
         )
 
     if bind.dialect.name == "postgresql":
+        organization_fk = next(
+            (
+                item["name"]
+                for item in sa.inspect(bind).get_foreign_keys("claims")
+                if item["constrained_columns"] == ["organization_id"]
+            ),
+            None,
+        )
+        if not organization_fk:
+            raise RuntimeError("claims.organization_id foreign key is missing")
         op.drop_constraint("ck_claims_one_subject", "claims", type_="check")
         op.drop_index("ix_claims_organization_id", table_name="claims")
-        op.drop_constraint("fk_claims_organization_id", "claims", type_="foreignkey")
+        op.drop_constraint(organization_fk, "claims", type_="foreignkey")
         op.drop_column("claims", "organization_id")
         op.alter_column(
             "claims",
