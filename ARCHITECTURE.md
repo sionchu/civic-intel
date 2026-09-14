@@ -33,6 +33,12 @@ Review-only identity and source-operational metadata are not public data. The AP
 is disabled by default because V0 has no authenticated operator boundary; test/internal callers
 must opt in explicitly.
 
+Anonymous Source reads are reachability-scoped: a Source is public only when a current publishable
+Claim/Evidence path on a public eligible Person or Organization reaches it. The public Source DTO
+is an allowlist and never serializes the complete SourcePolicy. Public read failures distinguish
+missing records, insufficient eligible inputs, source-version conflict and service failure;
+transport failure is not an `UNKNOWN` Claim.
+
 ## Temporal and analysis model
 
 Material records carry valid time (`valid_from`, `valid_to`) and system time

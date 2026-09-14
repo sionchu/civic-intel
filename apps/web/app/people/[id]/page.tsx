@@ -2,13 +2,23 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getPerson, getSource } from "../../data";
+import ReadState from "../../components/read-state";
 
 export const dynamic = "force-dynamic";
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const person = await getPerson(id);
-  if (!person) notFound();
+  const personResult = await getPerson(id);
+  if (personResult.state === "error") {
+    if (personResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
+    return (
+      <div className="site-page profile-page">
+        <Link href="/" className="back-link"><span aria-hidden="true">←</span> Roster</Link>
+        <ReadState error={personResult.error} />
+      </div>
+    );
+  }
+  const person = personResult.data;
 
   const sectionSourceIds =
     person.profile?.sections.flatMap((section) =>
@@ -16,7 +26,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     ) ?? [];
   const claimSourceIds = (person.claims ?? []).flatMap((claim) => claim.source_ids);
   const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds])];
-  const sources = (await Promise.all(sourceIds.map(getSource))).filter((item) => item !== null);
+  const sourceResults = await Promise.all(sourceIds.map(getSource));
+  const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
+  const sourceError = sourceResults.find((item) => item.state === "error");
   const sourceById = new Map(sources.map((source) => [source.id, source]));
   const profile = person.profile;
 
@@ -193,25 +205,24 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <div><span className="eyebrow">Evidence & audit</span><h2 id="sources-title">Sources behind this profile</h2></div>
           <p>Source policy는 수집·저장·표시 범위를 함께 보여줍니다. 세부 식별자는 audit trace 안에 둡니다.</p>
         </div>
-        {sources.length === 0 ? <p className="empty">No source cards available.</p> : (
+        {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
+        {sources.length === 0 && !sourceError ? <p className="empty">No source cards available.</p> : (
           <div className="source-grid">
             {sources.map((source) => (
               <article className="source" id={`source-${source.id}`} key={source.id}>
                 <div className="source-card-topline"><span className="micro-label">Source record</span><span className="source-arrow" aria-hidden="true">↗</span></div>
                 <h3><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></h3>
-                <p className="source-meta">{source.publisher} <span>·</span> {source.policy.source_class}</p>
-                <p className="source-license">License: {source.policy.license ?? "License not specified"}</p>
-                {source.policy_summary && (
-                  <div className="policy-summary">
-                    <span>Collection {source.policy_summary.collection}</span>
-                    <span>Metadata {source.policy_summary.metadata_storage}</span>
-                    <span>Fulltext {source.policy_summary.fulltext_storage}</span>
-                    <span>Excerpt {source.policy_summary.excerpt_display}</span>
-                  </div>
-                )}
+                <p className="source-meta">{source.publisher} <span>·</span> {source.source_class}</p>
+                <p className="source-license">License: {source.license ?? "License not specified"}</p>
+                <div className="policy-summary">
+                  <span>Collection {source.policy_summary.collection}</span>
+                  <span>Metadata {source.policy_summary.metadata_storage}</span>
+                  <span>Fulltext {source.policy_summary.fulltext_storage}</span>
+                  <span>Excerpt {source.policy_summary.excerpt_display}</span>
+                </div>
                 <details className="audit-details">
                   <summary>Source audit</summary>
-                  <small>Source {source.id}<br />URL {source.url}<br />Policy mode {source.policy.collection_mode}</small>
+                  <small>Source {source.id}<br />URL {source.url}<br />Terms checked {source.terms_checked_at ?? "not recorded"}</small>
                 </details>
               </article>
             ))}

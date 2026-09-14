@@ -1,6 +1,24 @@
 export type Status = "FACT" | "CLAIM" | "INFERENCE" | "HYPOTHESIS" | "UNKNOWN" | "ENTITY_UNRESOLVED";
 export type ProfileSectionStatus = "AVAILABLE" | "PARTIAL" | "UNKNOWN";
 
+export type ApiErrorCode =
+  | "PUBLIC_RECORD_NOT_FOUND"
+  | "INSUFFICIENT_ELIGIBLE_INPUTS"
+  | "SOURCE_VERSION_CONFLICT"
+  | "ACCESS_DENIED"
+  | "INVALID_INPUT"
+  | "SERVICE_UNAVAILABLE";
+
+export type ApiError = {
+  code: ApiErrorCode;
+  message: string;
+  request_id: string | null;
+};
+
+export type ApiResult<T> =
+  | { state: "success"; data: T }
+  | { state: "error"; error: ApiError };
+
 export type Evidence = {
   id: string;
   source_id: string;
@@ -137,16 +155,11 @@ export type Source = {
   url: string;
   title: string;
   publisher: string;
-  policy: {
-    source_class: string;
-    collection_mode: string;
-    license: string | null;
-    can_fetch: boolean;
-    can_store_metadata: boolean;
-    can_store_fulltext: boolean;
-    can_show_excerpt: boolean;
-  };
-  policy_summary?: {
+  published_at: string | null;
+  source_class: string;
+  license: string | null;
+  terms_checked_at: string | null;
+  policy_summary: {
     collection: "PERMITTED" | "NOT_PERMITTED";
     metadata_storage: "PERMITTED" | "NOT_PERMITTED";
     fulltext_storage: "PERMITTED" | "NOT_PERMITTED";

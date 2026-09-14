@@ -612,8 +612,72 @@ def test_item12_money_route_does_not_fallback_without_published_claims(
     with TestClient(create_app(repository)) as client:
         response = client.get(f"/organizations/{organization.id}/money")
 
-    assert response.status_code == 404
-    assert response.json()["detail"] == "organization MONEY evidence not found"
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INSUFFICIENT_ELIGIBLE_INPUTS"
+    assert response.json()["error"]["request_id"] == response.headers["x-request-id"]
+
+
+def test_item12_money_route_distinguishes_invalid_input(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "organization-money-invalid.db")
+    organization = Organization(
+        id=UUID("60000000-0000-0000-0000-000000000014"),
+        name="공개기관",
+    )
+    insert_organization(repository, organization.id, organization.name)
+
+    with TestClient(create_app(repository)) as client:
+        response = client.get(
+            f"/organizations/{organization.id}/money"
+            "?earlier_fiscal_year=2025&later_fiscal_year=2025"
+        )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INVALID_INPUT"
+
+
+def test_item12_money_route_distinguishes_source_version_conflict(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(
+        tmp_path / "organization-money-conflict.db"
+    )
+    organization_id = UUID("60000000-0000-0000-0000-000000000015")
+    insert_organization(repository, organization_id, "테스트정보기관")
+    assert reviewed_claim_import_main(
+        [
+            "--organization-id",
+            str(organization_id),
+            "--institution-code",
+            "C0908",
+            "--earlier-fiscal-year",
+            "2024",
+            "--later-fiscal-year",
+            "2025",
+            "--database-url",
+            database_url,
+            "--commit",
+        ]
+    ) == 0
+    capsys.readouterr()
+
+    changed_provider = FakeAlioMoneyProvider()
+    changed_provider.amounts["C0908"][2024] = 16000
+    changed_provider.documents["2026091400000003"] = business_expense_html(
+        changed_provider.amounts["C0908"],
+        {year: f"{year}년 기관장 업무추진비.xls" for year in range(2025, 2020, -1)},
+        institution_name="테스트정보기관",
+    )
+    AlioBusinessExpenseEnumerator(changed_provider.connector(), repository).enumerate()
+
+    with TestClient(create_app(repository)) as client:
+        response = client.get(f"/organizations/{organization_id}/money")
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "SOURCE_VERSION_CONFLICT"
+    assert response.json()["error"]["request_id"] == response.headers["x-request-id"]
 
 
 def test_item12_observation_versions_are_ambiguous_until_selected() -> None:

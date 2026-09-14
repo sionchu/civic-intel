@@ -1,11 +1,13 @@
 import Link from "next/link";
 
 import { getReviewReport } from "../../data";
+import ReadState from "../../components/read-state";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReviewPage() {
-  const report = await getReviewReport();
+  const reportResult = await getReviewReport();
+  const report = reportResult.state === "success" ? reportResult.data : null;
 
   return (
     <div className="site-page review-page">
@@ -20,7 +22,7 @@ export default async function ReviewPage() {
       </header>
       <aside className="review-intro"><strong>Read-only surface</strong><span>No approval, merge, or publication action is available here.</span></aside>
       {!report ? (
-        <p className="empty-state"><span className="empty-state-mark" aria-hidden="true">∅</span><span><strong>Review data is unavailable.</strong><small>API report could not be loaded.</small></span></p>
+        <ReadState error={reportResult.state === "error" ? reportResult.error : { code: "SERVICE_UNAVAILABLE", message: "Unavailable", request_id: null }} />
       ) : (
         <>
           <div className="review-metrics" aria-label="Review queue summary">

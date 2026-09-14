@@ -163,7 +163,8 @@ def test_successful_roster_materializes_and_reaches_public_evidence_directory(
         source_id = payload["claims"][0]["evidence"][0]["source_id"]
         source = client.get(f"/sources/{source_id}")
         assert source.status_code == 200
-        assert source.json()["policy"]["source_class"] == "official_open_api"
+        assert source.json()["source_class"] == "official_open_api"
+        assert "policy" not in source.json()
 
 
 def test_successful_rerun_and_changed_observation_are_idempotent_and_linked(

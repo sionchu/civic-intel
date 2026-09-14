@@ -60,12 +60,27 @@ test("organization page consumes the existing direct-ID evidence contract", asyn
   assert.match(page, /getOrganizationMoney\(id\)/);
   assert.match(page, /Published claims/);
   assert.match(page, /DERIVED · MONEY/);
-  assert.match(page, /Claim-backed comparison is unavailable/);
+  assert.match(page, /moneyResult\.error/);
+  assert.match(page, /ReadState/);
   assert.match(page, /SourceSnapshot/);
   assert.match(page, /FeederObservation/);
   assert.match(page, /policy_summary/);
   assert.match(data, /organizations\/\$\{id\}/);
   assert.match(data, /earlier_fiscal_year/);
+});
+
+test("public reads preserve distinct error states without blanket fallbacks", async () => {
+  const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
+  const state = await readFile(new URL("../app/components/read-state.tsx", import.meta.url), "utf8");
+  const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
+  assert.match(data, /CIVIC_API_URL/);
+  assert.match(data, /ACCESS_DENIED/);
+  assert.match(data, /SERVICE_UNAVAILABLE/);
+  assert.doesNotMatch(data, /fallback/);
+  assert.match(types, /INSUFFICIENT_ELIGIBLE_INPUTS/);
+  assert.match(types, /SOURCE_VERSION_CONFLICT/);
+  assert.match(state, /ACCESS_DENIED/);
+  assert.match(state, /자료 없음이나 UNKNOWN으로 처리하지 않았습니다/);
 });
 
 test("organization page does not add binding or organization enumeration controls", async () => {

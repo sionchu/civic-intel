@@ -989,18 +989,23 @@ hosting contract without external deployment.
   `1306f00976db6fc7460320885d3863fa236c4ba9`, equal to `origin/master`.
 - The root checkout, ignored ALIO runtime database and other worktrees remain outside this worktree.
 - Governing documents and the ALIO repository/API/web/test paths were re-read.
-- M0 documentation alignment and M1.1 are complete. M1.2 public read-state work is next.
+- M0, M1.1 and M1.2 are complete. M1.3 browser/standalone verification is next.
 - The split-transaction risk was reproduced with one residual Claim after an injected second write
   failure. The CLI now uses one shared-repository pair transaction with deterministic IDs, exact
   rerun no-op, safe exact-partial recovery, divergent-partial rejection and a concurrent-call
   regression. No schema or dependency changed.
+- Public reads now use stable safe error codes/request IDs; insufficient MONEY inputs, source
+  conflicts, public 404 and service failure no longer collapse into one web fallback. Public Source
+  reads require reachability from an eligible published Claim and return an allowlisted DTO.
 
 ## Verification
 
 - Git fetch/status/revision/worktree inventory completed before edits.
 - M1.1 targeted tests: 29 passed. Full suite: 325 passed, 4 warnings. Ruff, mypy (56 files), Golden
   quality, web lint/typecheck, seven UI tests and production build passed locally.
+- M1.2 targeted API/ALIO tests: 47 passed. Full suite: 330 passed, 4 warnings. Ruff, mypy (56
+  files), Golden quality, web lint/typecheck, eight UI contract tests and build passed locally.
 
 ## Next action
 
-Implement M1.2 discriminated public read errors and reachable-only public Source DTOs.
+Run the M1.3 production standalone artifact and real-browser state/accessibility checks.

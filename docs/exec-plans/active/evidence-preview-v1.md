@@ -1,6 +1,6 @@
 # Evidence Preview v1
 
-Status: active — M0 and M1.1 complete; M1.2 is next.
+Status: active — M0, M1.1 and M1.2 complete; M1.3 is next.
 
 Date: 2026-09-14
 
@@ -85,6 +85,8 @@ Implementation and evidence:
 
 ## M1.2 — honest public read states and Source boundary
 
+Status: completed locally on 2026-09-14.
+
 Replace blanket web fallbacks with a small discriminated read result. API responses must expose
 safe stable error codes and request IDs for not found, insufficient eligible inputs, source/version
 conflict, access denial and service failure without leaking exceptions, SQL, credentials or
@@ -98,6 +100,24 @@ allowlist; do not expose the full Source or SourcePolicy model.
 Acceptance requires deterministic API/UI regressions for success-empty, public 404, insufficient
 comparison inputs, conflict, access denial and upstream/service failure. The UI must never turn a
 transport failure into UNKNOWN or empty data and must never fall back to raw observations.
+
+Implementation and evidence:
+
+- FastAPI now returns safe error envelopes with stable codes and per-request IDs. Missing public
+  records, invalid input, insufficient eligible annual Claims, source-version conflict and
+  unexpected service failure are distinct. The disabled review route retains an indistinguishable
+  public 404; the web adapter also renders an explicit access-denied result when a host boundary
+  returns 403.
+- `GET /sources/{id}` now resolves only Sources reachable through a current publishable
+  Claim/Evidence path on a public eligible subject. Its DTO allowlists source identity, locator,
+  publisher/date, source class, license/terms review date and policy summary; internal policy
+  booleans, notes and operational metadata are absent.
+- Server Components prefer `CIVIC_API_URL`; `NEXT_PUBLIC_API_URL` remains a compatibility fallback.
+  Network/5xx failures are not rendered as empty data or `UNKNOWN`.
+- Targeted API/ALIO tests: 47 passed. Full suite: 330 passed, 4 warnings. Ruff, mypy (56 files),
+  Golden quality, web lint/typecheck, eight UI contract tests and production build passed.
+- No migration or dependency was added. No private Source, raw observation or credential entered a
+  public response.
 
 ## M1.3 — browser and standalone production artifact
 

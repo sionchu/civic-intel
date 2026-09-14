@@ -1523,6 +1523,89 @@ class SqlAlchemyRepository:
     def source(self, source_id: UUID) -> Source | None:
         return self.sources([source_id]).get(source_id)
 
+    def public_source(self, source_id: UUID) -> Source | None:
+        """Return a Source only through a currently publishable public Claim/Evidence path."""
+
+        with self.sessions() as session:
+            source_row = session.get(SourceRow, str(source_id))
+            if source_row is None:
+                return None
+            evidence_rows = list(
+                session.scalars(
+                    select(ClaimEvidenceRow).where(
+                        ClaimEvidenceRow.source_id == str(source_id)
+                    )
+                )
+            )
+            for claim_id in {row.claim_id for row in evidence_rows}:
+                claim_row = session.get(ClaimRow, claim_id)
+                if (
+                    claim_row is None
+                    or claim_row.publication_status != PublicationStatus.PUBLISHED.value
+                    or claim_row.superseded_at is not None
+                ):
+                    continue
+                claim = self._claim(claim_row)
+                subject: Person | Organization
+                if claim.person_id is not None:
+                    person_row = session.get(PersonRow, str(claim.person_id))
+                    if (
+                        person_row is None
+                        or person_row.identity_status != IdentityStatus.RESOLVED.value
+                        or person_row.superseded_at is not None
+                    ):
+                        continue
+                    subject = self._person(person_row)
+                elif claim.organization_id is not None:
+                    organization_row = session.get(
+                        OrganizationRow, str(claim.organization_id)
+                    )
+                    if organization_row is None or organization_row.superseded_at is not None:
+                        continue
+                    subject = self._organization(organization_row)
+                else:
+                    continue
+
+                claim_evidence = [
+                    self._evidence(row)
+                    for row in session.scalars(
+                        select(ClaimEvidenceRow).where(
+                            ClaimEvidenceRow.claim_id == claim_id
+                        )
+                    )
+                ]
+                source_items = [
+                    self._source(row)
+                    for row in session.scalars(
+                        select(SourceRow).where(
+                            SourceRow.id.in_(
+                                [str(item.source_id) for item in claim_evidence]
+                            )
+                        )
+                    )
+                ]
+                sources = {item.id: item for item in source_items}
+                policy_items = [
+                    self._policy(row)
+                    for row in session.scalars(
+                        select(SourcePolicyRow).where(
+                            SourcePolicyRow.id.in_(
+                                [str(item.policy_id) for item in sources.values()]
+                            )
+                        )
+                    )
+                ]
+                policies = {item.id: item for item in policy_items}
+                if validate_claim_publication(
+                    claim,
+                    subject,
+                    claim_evidence,
+                    sources,
+                    policies,
+                ).publishable:
+                    return self._source(source_row)
+            return None
+
     def source_snapshot(self, snapshot_id: UUID) -> SourceSnapshot | None:
         with self.sessions() as session:
             row = session.get(SourceSnapshotRow, str(snapshot_id))

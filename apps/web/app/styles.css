@@ -244,7 +244,12 @@ main { flex: 1; }
 .status { display: inline-flex; width: fit-content; align-items: center; border: 1px solid currentColor; border-radius: var(--radius-pill); padding: 3px 8px; font-size: 10px; font-weight: 850; letter-spacing: .07em; line-height: 1.2; }
 .FACT, .RESOLVED, .AVAILABLE, .SUPPORT { color: var(--color-accent); }
 .CLAIM, .INFERENCE, .HYPOTHESIS, .REVIEW, .PARTIAL, .REVIEW_REQUIRED, .NEUTRAL { color: var(--color-warning); }
-.UNKNOWN, .ENTITY_UNRESOLVED, .UNRESOLVED, .REFUTE, .HARD_CONFLICT, .CONFLICT { color: var(--color-danger); }
+.UNKNOWN, .ENTITY_UNRESOLVED, .UNRESOLVED { color: var(--color-ink-muted); }
+.REFUTE, .HARD_CONFLICT, .CONFLICT, .SOURCE_VERSION_CONFLICT, .SERVICE_UNAVAILABLE { color: var(--color-danger); }
+.read-state { display: grid; gap: 8px; margin: 24px 0; padding: 20px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); background: var(--color-surface-muted); }
+.read-state strong, .read-state p, .read-state small { margin: 0; }
+.read-state p, .read-state small { color: var(--color-ink-muted); }
+.read-state.SOURCE_VERSION_CONFLICT, .read-state.SERVICE_UNAVAILABLE { border-color: var(--color-danger); background: var(--color-danger-soft); }
 .empty-state { display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px dashed var(--color-line-strong); border-radius: var(--radius-md); background: rgba(255, 253, 248, .55); color: var(--color-ink-muted); }
 .empty-state-mark { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid var(--color-line-strong); border-radius: 50%; color: var(--color-accent); font-size: 20px; }
 .empty-state strong { display: block; color: var(--color-ink); }

@@ -158,7 +158,10 @@ def test_public_roster_and_profiles_exclude_unresolved_identities(
 
 def test_review_surface_is_disabled_by_default(seeded_repository: SqlAlchemyRepository) -> None:
     with TestClient(create_app(seeded_repository)) as public_client:
-        assert public_client.get("/admin/review").status_code == 404
+        response = public_client.get("/admin/review")
+        assert response.status_code == 404
+        assert response.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
+        assert response.json()["error"]["request_id"] == response.headers["x-request-id"]
 
 
 def test_public_profile_does_not_publish_unlinked_decision_episodes(client: TestClient) -> None:
@@ -202,14 +205,83 @@ def test_published_fact_is_traceable_through_source_policy(client: TestClient) -
     assert fact["evidence"][0]["stance"] == "SUPPORT"
     source = client.get(f"/sources/{fact['source_ids'][0]}").json()
     assert source["id"] == SOURCE_ID
-    assert source["policy"]["can_store_metadata"] is True
-    assert source["policy"]["can_show_excerpt"] is True
+    assert set(source) == {
+        "id",
+        "url",
+        "title",
+        "publisher",
+        "published_at",
+        "source_class",
+        "license",
+        "terms_checked_at",
+        "policy_summary",
+    }
+    assert "policy" not in source
     assert source["policy_summary"] == {
         "collection": "NOT_PERMITTED",
         "metadata_storage": "PERMITTED",
         "fulltext_storage": "NOT_PERMITTED",
         "excerpt_display": "PERMITTED",
     }
+
+
+def test_public_source_requires_reachable_published_claim(
+    client: TestClient,
+    seeded_repository: SqlAlchemyRepository,
+) -> None:
+    observation = stage_observation(
+        seeded_repository,
+        feeder="test_private_source",
+        semantic_scope="review_only",
+        provider_record_key="private-001",
+        canonical_name="검토 전 후보",
+    )
+    snapshot = seeded_repository.source_snapshot(observation.snapshot_id)
+    assert snapshot is not None
+
+    response = client.get(f"/sources/{snapshot.source_id}")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
+    assert response.json()["error"]["request_id"] == response.headers["x-request-id"]
+    assert "review" not in response.text.casefold()
+
+
+def test_public_api_uses_safe_error_contract(client: TestClient) -> None:
+    response = client.get("/people/00000000-0000-0000-0000-999999999999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {
+            "code": "PUBLIC_RECORD_NOT_FOUND",
+            "message": "The public record was not found.",
+            "request_id": response.headers["x-request-id"],
+        }
+    }
+    assert "detail" not in response.json()
+
+
+def test_public_api_masks_unexpected_failure(
+    seeded_repository: SqlAlchemyRepository,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_people():
+        raise RuntimeError("database-password=must-not-leak")
+
+    monkeypatch.setattr(seeded_repository, "public_people", fail_people)
+    with TestClient(
+        create_app(seeded_repository),
+        raise_server_exceptions=False,
+    ) as public_client:
+        response = public_client.get("/people")
+
+    assert response.status_code == 503
+    assert response.json()["error"] == {
+        "code": "SERVICE_UNAVAILABLE",
+        "message": "The public data service is temporarily unavailable.",
+        "request_id": response.headers["x-request-id"],
+    }
+    assert "password" not in response.text.casefold()
 
 
 def test_api_renders_explicit_unknown_without_fact_promotion(client: TestClient) -> None:

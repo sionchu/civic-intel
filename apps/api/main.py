@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.enums import IdentityStatus
@@ -11,6 +13,37 @@ from packages.persistence import SqlAlchemyRepository, bootstrap_repository, rep
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import build_profile_projection
 from packages.verification.claims import validate_claim_publication
+
+
+class PublicApiError(Exception):
+    def __init__(self, status_code: int, code: str, message: str) -> None:
+        self.status_code = status_code
+        self.code = code
+        self.message = message
+
+
+def _request_id(request: Request) -> str:
+    return getattr(request.state, "request_id", "unavailable")
+
+
+def _error_response(
+    request: Request,
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status_code,
+        headers={"X-Request-ID": _request_id(request)},
+        content={
+            "error": {
+                "code": code,
+                "message": message,
+                "request_id": _request_id(request),
+            }
+        },
+    )
 
 
 def create_app(
@@ -25,7 +58,61 @@ def create_app(
         bootstrap_repository(target)
         yield
 
-    app = FastAPI(title="Civic Intel API", version="0.4.0", lifespan=lifespan)
+    app = FastAPI(title="Civic Intel API", version="0.5.0", lifespan=lifespan)
+
+    @app.middleware("http")
+    async def request_identity(request: Request, call_next):
+        request.state.request_id = str(uuid4())
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request.state.request_id
+        return response
+
+    @app.exception_handler(PublicApiError)
+    async def public_api_error(request: Request, exc: PublicApiError) -> JSONResponse:
+        return _error_response(
+            request,
+            status_code=exc.status_code,
+            code=exc.code,
+            message=exc.message,
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request: Request, _: RequestValidationError) -> JSONResponse:
+        return _error_response(
+            request,
+            status_code=422,
+            code="INVALID_INPUT",
+            message="The request input is invalid.",
+        )
+
+    @app.exception_handler(HTTPException)
+    async def framework_http_error(request: Request, exc: HTTPException) -> JSONResponse:
+        code = {
+            403: "ACCESS_DENIED",
+            404: "PUBLIC_RECORD_NOT_FOUND",
+            422: "INVALID_INPUT",
+        }.get(exc.status_code, "SERVICE_UNAVAILABLE")
+        message = {
+            "ACCESS_DENIED": "This operation is not available.",
+            "PUBLIC_RECORD_NOT_FOUND": "The public record was not found.",
+            "INVALID_INPUT": "The request input is invalid.",
+            "SERVICE_UNAVAILABLE": "The public data service is temporarily unavailable.",
+        }[code]
+        return _error_response(
+            request,
+            status_code=exc.status_code,
+            code=code,
+            message=message,
+        )
+
+    @app.exception_handler(Exception)
+    async def unexpected_error(request: Request, _: Exception) -> JSONResponse:
+        return _error_response(
+            request,
+            status_code=503,
+            code="SERVICE_UNAVAILABLE",
+            message="The public data service is temporarily unavailable.",
+        )
 
     def person_or_404(person_id: UUID, *, public: bool = False):
         person = target.person(person_id)
@@ -36,13 +123,13 @@ def create_app(
                 or person.superseded_at is not None
             )
         ):
-            raise HTTPException(404, "person not found")
+            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
         return person
 
     def organization_or_404(organization_id: UUID, *, public: bool = False):
         organization = target.organization(organization_id)
         if not organization or (public and organization.superseded_at is not None):
-            raise HTTPException(404, "organization not found")
+            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
         return organization
 
     def policy_summary(policy) -> dict[str, str]:
@@ -58,8 +145,17 @@ def create_app(
         }
 
     def source_payload(source, policy) -> dict:
-        return source.model_dump(mode="json") | {
-            "policy": policy.model_dump(mode="json"),
+        return {
+            "id": str(source.id),
+            "url": str(source.url),
+            "title": source.title,
+            "publisher": source.publisher,
+            "published_at": source.published_at.isoformat() if source.published_at else None,
+            "source_class": policy.source_class,
+            "license": policy.license,
+            "terms_checked_at": (
+                policy.terms_checked_at.isoformat() if policy.terms_checked_at else None
+            ),
             "policy_summary": policy_summary(policy),
         }
 
@@ -72,10 +168,18 @@ def create_app(
         elif claim.organization_id is not None:
             subject = organization_or_404(claim.organization_id)
         else:
-            raise HTTPException(500, "claim has no subject")
+            raise PublicApiError(
+                503,
+                "SERVICE_UNAVAILABLE",
+                "The public data service is temporarily unavailable.",
+            )
         gate = validate_claim_publication(claim, subject, selected_evidence, sources, policies)
         if not gate.publishable:
-            raise HTTPException(500, f"publication invariant violated: {gate.failures}")
+            raise PublicApiError(
+                503,
+                "SERVICE_UNAVAILABLE",
+                "The public data service is temporarily unavailable.",
+            )
         stances = {item.stance.value for item in selected_evidence}
         return claim.model_dump(mode="json") | {
             "evidence": [item.model_dump(mode="json") for item in selected_evidence],
@@ -161,6 +265,12 @@ def create_app(
         earlier_fiscal_year: int = 2024,
         later_fiscal_year: int = 2025,
     ) -> dict:
+        if earlier_fiscal_year >= later_fiscal_year:
+            raise PublicApiError(
+                422,
+                "INVALID_INPUT",
+                "The earlier fiscal year must precede the later fiscal year.",
+            )
         organization = organization_or_404(organization_id, public=True)
         published_claims = target.claims(
             published_only=True,
@@ -175,7 +285,20 @@ def create_app(
             == ALIO_ITEM12_SOURCE_CONTRACT
         ]
         if not candidate_claims:
-            raise HTTPException(404, "organization MONEY evidence not found")
+            raise PublicApiError(
+                422,
+                "INSUFFICIENT_ELIGIBLE_INPUTS",
+                "Eligible published annual Claims are insufficient for this comparison.",
+            )
+        available_years = {
+            claim.qualifiers.get("fiscal_year") for claim in candidate_claims
+        }
+        if {str(earlier_fiscal_year), str(later_fiscal_year)} - available_years:
+            raise PublicApiError(
+                422,
+                "INSUFFICIENT_ELIGIBLE_INPUTS",
+                "Eligible published annual Claims are insufficient for this comparison.",
+            )
 
         evidence_by_claim = {
             claim.id: target.evidence_for(claim.id) for claim in candidate_claims
@@ -232,8 +355,10 @@ def create_app(
                 later_fiscal_year=later_fiscal_year,
             )
         except ValueError as exc:
-            raise HTTPException(
-                409, f"organization MONEY projection blocked: {exc}"
+            raise PublicApiError(
+                409,
+                "SOURCE_VERSION_CONFLICT",
+                "Conflicting source versions prevent this comparison.",
             ) from exc
 
     @app.get("/people/{person_id}/relationships")
@@ -248,9 +373,9 @@ def create_app(
 
     @app.get("/sources/{source_id}")
     def get_source(source_id: UUID) -> dict:
-        source = target.source(source_id)
+        source = target.public_source(source_id)
         if not source:
-            raise HTTPException(404, "source not found")
+            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
         policy = target.policies([source.policy_id])[source.policy_id]
         return source_payload(source, policy)
 
@@ -368,6 +493,10 @@ def create_app(
                     review_item_payload(item) for item in target.identity_review_items()
                 ],
             }
+
+    @app.get("/{public_path:path}", include_in_schema=False)
+    def public_route_not_found(public_path: str) -> dict:
+        raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
 
     return app
 

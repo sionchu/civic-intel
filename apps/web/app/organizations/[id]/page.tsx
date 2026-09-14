@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getOrganization, getOrganizationMoney, getSource } from "../../data";
+import ReadState from "../../components/read-state";
 import type { Claim, Evidence, MoneyProjection, Source } from "../../types";
 
 export const dynamic = "force-dynamic";
@@ -152,19 +153,17 @@ function SourceCard({ source }: { source: Source }) {
         <span className="source-arrow" aria-hidden="true">↗</span>
       </div>
       <h3><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></h3>
-      <p className="source-meta">{source.publisher} <span>·</span> {source.policy.source_class}</p>
-      <p className="source-license">License: {source.policy.license ?? "License not specified"}</p>
-      {source.policy_summary && (
-        <div className="policy-summary">
-          <span>Collection {source.policy_summary.collection}</span>
-          <span>Metadata {source.policy_summary.metadata_storage}</span>
-          <span>Fulltext {source.policy_summary.fulltext_storage}</span>
-          <span>Excerpt {source.policy_summary.excerpt_display}</span>
-        </div>
-      )}
+      <p className="source-meta">{source.publisher} <span>·</span> {source.source_class}</p>
+      <p className="source-license">License: {source.license ?? "License not specified"}</p>
+      <div className="policy-summary">
+        <span>Collection {source.policy_summary.collection}</span>
+        <span>Metadata {source.policy_summary.metadata_storage}</span>
+        <span>Fulltext {source.policy_summary.fulltext_storage}</span>
+        <span>Excerpt {source.policy_summary.excerpt_display}</span>
+      </div>
       <details className="audit-details">
         <summary>Source audit</summary>
-        <small>Source {source.id}<br />URL {source.url}<br />Policy mode {source.policy.collection_mode}</small>
+        <small>Source {source.id}<br />URL {source.url}<br />Terms checked {source.terms_checked_at ?? "not recorded"}</small>
       </details>
     </article>
   );
@@ -176,11 +175,28 @@ export default async function OrganizationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [organization, money] = await Promise.all([
+  const [organizationResult, moneyResult] = await Promise.all([
     getOrganization(id),
     getOrganizationMoney(id),
   ]);
-  if (!organization) notFound();
+  if (organizationResult.state === "error") {
+    if (organizationResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
+    return (
+      <div className="site-page organization-page">
+        <Link href="/" className="back-link"><span aria-hidden="true">←</span> Directory</Link>
+        <ReadState error={organizationResult.error} />
+      </div>
+    );
+  }
+  const organization = organizationResult.data;
+  const money = moneyResult.state === "success" ? moneyResult.data : null;
+  const moneySummary = money
+    ? "Claim-backed MONEY"
+    : moneyResult.state === "error" && moneyResult.error.code === "INSUFFICIENT_ELIGIBLE_INPUTS"
+      ? "insufficient eligible inputs"
+      : moneyResult.state === "error" && moneyResult.error.code === "SOURCE_VERSION_CONFLICT"
+        ? "comparison blocked"
+        : "service unavailable";
 
   const claims = organization.claims ?? [];
   const claimSourceIds = claims.flatMap((claim) => [
@@ -188,7 +204,9 @@ export default async function OrganizationPage({
     ...claim.evidence.map((item) => item.source_id),
   ]);
   const sourceIds = [...new Set([...claimSourceIds, ...(money?.source_ids ?? [])])];
-  const sources = (await Promise.all(sourceIds.map(getSource))).filter((item) => item !== null);
+  const sourceResults = await Promise.all(sourceIds.map(getSource));
+  const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
+  const sourceError = sourceResults.find((item) => item.state === "error");
   const sourceById = new Map(sources.map((source) => [source.id, source]));
 
   return (
@@ -219,7 +237,7 @@ export default async function OrganizationPage({
         <div className="signal-cell">
           <span className="micro-label">Derived view</span>
           <strong>{money ? "1" : "—"}</strong>
-          <span>{money ? "Claim-backed MONEY" : "UNKNOWN / unavailable"}</span>
+          <span>{moneySummary}</span>
         </div>
         <div className="signal-cell">
           <span className="micro-label">Source trace</span>
@@ -252,12 +270,7 @@ export default async function OrganizationPage({
         </div>
         {money ? (
           <MoneyCard money={money} sourceById={sourceById} />
-        ) : (
-          <div className="empty-state">
-            <span className="empty-state-mark" aria-hidden="true">∅</span>
-            <div><strong>Claim-backed comparison is unavailable.</strong><p><span className="status UNKNOWN">UNKNOWN</span> 비교 가능한 published annual Claim 결과가 없습니다.</p></div>
-          </div>
-        )}
+        ) : moneyResult.state === "error" ? <ReadState error={moneyResult.error} /> : null}
       </section>
 
       <section className="source-library organization-source-library" aria-labelledby="organization-sources-title">
@@ -265,7 +278,12 @@ export default async function OrganizationPage({
           <div><span className="eyebrow">Evidence & audit</span><h2 id="organization-sources-title">이 기록의 출처</h2></div>
           <p>출처 제목과 policy 요약은 바로 확인하고, snapshot·observation 식별자는 감사 세부정보에서 확인합니다.</p>
         </div>
-        {sources.length === 0 ? <p className="empty">No source cards available.</p> : <div className="source-grid">{sources.map((source) => <SourceCard key={source.id} source={source} />)}</div>}
+        {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
+        {sources.length === 0 ? (
+          !sourceError && <p className="empty">No source cards available.</p>
+        ) : (
+          <div className="source-grid">{sources.map((source) => <SourceCard key={source.id} source={source} />)}</div>
+        )}
       </section>
     </div>
   );

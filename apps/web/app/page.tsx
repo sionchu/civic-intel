@@ -1,12 +1,14 @@
 import Link from "next/link";
 
 import RosterGrid from "./components/roster-grid";
+import ReadState from "./components/read-state";
 import { getPeople } from "./data";
 
 export const dynamic = "force-dynamic";
 
 export default async function RosterPage() {
-  const people = await getPeople();
+  const peopleResult = await getPeople();
+  const people = peopleResult.state === "success" ? peopleResult.data : [];
 
   return (
     <div className="site-page home-page">
@@ -38,7 +40,7 @@ export default async function RosterPage() {
       <section className="signal-strip" aria-label="Directory 개요">
         <div className="signal-cell signal-primary">
           <span className="micro-label">Public roster</span>
-          <strong>{people.length}</strong>
+          <strong>{peopleResult.state === "success" ? people.length : "—"}</strong>
           <span>resolved identities</span>
         </div>
         <div className="signal-cell">
@@ -61,7 +63,11 @@ export default async function RosterPage() {
           </div>
           <p>현재 공개 디렉터리에는 자동으로 확인된 identity만 표시됩니다. 이름을 선택하면 해당 profile의 근거 경로를 볼 수 있습니다.</p>
         </div>
-        <RosterGrid people={people} />
+        {peopleResult.state === "success" ? (
+          people.length > 0 ? <RosterGrid people={people} /> : (
+            <p className="empty-state"><span className="empty-state-mark" aria-hidden="true">∅</span><span><strong>현재 공개 roster가 비어 있습니다.</strong><small>대상이 없다는 의미가 아니라 현재 조건의 공개 결과가 없다는 뜻입니다.</small></span></p>
+          )
+        ) : <ReadState error={peopleResult.error} />}
       </section>
 
       <section className="principles" id="principles" aria-labelledby="principles-title">
