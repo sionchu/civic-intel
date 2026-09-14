@@ -70,6 +70,11 @@ For batch/full-enumeration work also read:
 - Re-read the final diff and remove dead helpers, duplicate semantics, obsolete paths and
   documentation drift.
 
+Release plans may defer otherwise valid product capabilities. Treat those exclusions as scoped
+to the named release, not as permanent architecture prohibitions. Any later implementation still
+requires its own approved plan and the same source, identity, privacy, migration and publication
+gates.
+
 ## Long-running agent behavior
 
 For an approved multi-milestone execution plan:

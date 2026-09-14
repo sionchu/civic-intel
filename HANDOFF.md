@@ -973,3 +973,31 @@ seeding is introduced.
 
 Define an approved hosting/API/DB target and data-loading procedure, then run the first host-level
 direct-ID route smoke before adding further Organization coverage or identity-binding behavior.
+# Current checkpoint — Evidence Preview v1 (2026-09-14)
+
+## Objective
+
+Execute M0 and M1 from the canonical
+[`evidence-preview-v1.md`](docs/exec-plans/active/evidence-preview-v1.md) plan: make the reviewed
+ALIO two-year Claim operation atomic/idempotent/recoverable, make public read failures honest,
+verify the real standalone artifact in a browser, prove PostgreSQL load/restore, and prepare the
+hosting contract without external deployment.
+
+## Current checkpoint
+
+- Isolated branch `codex/change-discovery-plan` started clean at
+  `1306f00976db6fc7460320885d3863fa236c4ba9`, equal to `origin/master`.
+- The root checkout, ignored ALIO runtime database and other worktrees remain outside this worktree.
+- Governing documents and the ALIO repository/API/web/test paths were re-read.
+- M0 documentation alignment is complete. M1.1 regression and implementation are next.
+- The reviewed plan's partial-write risk is present: the CLI currently imports the two Claims in
+  separate repository transactions and rejects a rerun when either provider key already exists.
+
+## Verification
+
+- Git fetch/status/revision/worktree inventory completed before edits.
+- No M1 implementation or new runtime verification is claimed at this checkpoint.
+
+## Next action
+
+Add the M1.1 failure-injection regression, then implement the shared atomic pair import.

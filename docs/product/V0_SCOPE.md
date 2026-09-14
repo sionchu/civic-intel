@@ -9,6 +9,11 @@ metadata, short excerpts, identity anchors, atomic claims, evidence stances, ori
 clusters, relationships, and decision episodes. Golden and CI tests never access live
 data sources.
 
+Golden Set 001 is the deterministic research and regression baseline. Evidence Preview is a
+separate delivery slice over eligible canonical records. Passing Golden verification does not
+establish current live-source coverage, publication of a reviewed runtime record, PostgreSQL
+operation or an external deployment; each requires its own evidence.
+
 After Golden Set 001 passed, V0 permits narrowly scoped, explicitly reviewed official-data
 connectors. A reviewed connector may progress from one-record or one-page staging to bounded
 full enumeration of its declared official source universe. Full enumeration must remain

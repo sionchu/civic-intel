@@ -31,11 +31,12 @@ The light theme uses these roles in `apps/web/app/styles.css`:
 - `--color-line` / `--color-line-strong`: quiet and emphasized borders.
 - `--color-accent` / `--color-accent-soft`: navigation, links and positive traceability cues.
 - `--color-warning` / `--color-warning-soft`: claims, review and partial states.
-- `--color-danger` / `--color-danger-soft`: unknown, refute and conflict states.
+- `--color-danger` / `--color-danger-soft`: refute, conflict and service-failure states.
 - `--color-focus`: keyboard focus ring.
 
 Status colors are semantic only: green is not a confidence score, amber is not a risk score and
-red is not a wrongdoing claim.
+red is not a wrongdoing claim. `UNKNOWN` is a neutral unresolved evidence state, not an error;
+transport failure and source conflict use distinct feedback treatment and language.
 
 ### Typography
 
@@ -86,6 +87,10 @@ summaries are visible; UUIDs, hashes and snapshot references stay behind `detail
 Use the existing domain labels verbatim: `FACT`, `CLAIM`, `INFERENCE`, `HYPOTHESIS`, `UNKNOWN`,
 `AVAILABLE`, `PARTIAL`, `RESOLVED`, `REVIEW_REQUIRED`, `HARD_CONFLICT` and `SOURCE CONFLICT`.
 Empty states explain what is absent without implying a negative fact.
+
+Public reads distinguish an empty eligible result, a missing public record, insufficient comparison
+inputs, source/version conflict, access denial and temporary service failure. A service failure must
+not render as `UNKNOWN`, an empty result or a not-found record.
 
 ## Interaction
 

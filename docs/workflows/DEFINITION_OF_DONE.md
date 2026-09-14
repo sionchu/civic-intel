@@ -9,6 +9,18 @@ P0 is done only when `make verify` passes and the executable Golden Set 001 repo
 - SQLAlchemy-backed API reads and migration coverage;
 - web lint, typecheck, tests, and production build passing.
 
+These are the canonical code and Golden regression gates. A milestone that changes runtime or
+delivery behavior must also prove the layer it claims:
+
+- database changes: forward/reversible migration and a disposable-database data recovery check;
+- browser behavior: real production-artifact navigation, responsive/keyboard behavior, asset
+  delivery, hydration and console checks rather than source-string assertions alone;
+- PostgreSQL support: migration, representative load/read and backup/restore on disposable
+  PostgreSQL;
+- deployment: actual host, API and database smoke at the reported deployed revision.
+
+A build is not browser verification, local runtime is not CI, and CI is not deployment.
+
 Reviewed real-person profile enrichment may extend Golden Set 001 only through the single canonical
 `tests/golden/fixtures/golden_set_001_profile_evidence.json` supplement. The supplement cannot
 add Person records, reuse an existing record ID, or bypass merged-corpus reference and publication
