@@ -68,6 +68,9 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
 - Contract tests for staging-only scope, Dockerfiles, migration, readiness, private API DNS and no
   declared public domain passed locally. No Railway account, token, project, service or database
   was accessed or created.
+- GitHub Actions run `34840650378` at `a1cdacd7326c758110eb03b946e0245330bc9963`
+  passed canonical verification, PostgreSQL backup/restore, both Node 22/Python Docker builds,
+  Compose validation and the Railway IaC typecheck.
 
 ## Next action
 

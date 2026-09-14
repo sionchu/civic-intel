@@ -1042,5 +1042,7 @@ an isolated `staging` environment and obtain a zero-destroy IaC plan before any 
   deprecated per-service config format. It fails outside `staging`, uses the reviewed Dockerfiles,
   runs Alembic before API release, checks `/ready`, and gives no public domain to API or database.
 - The SDK is isolated under `.railway`; local TypeScript and six deployment contract tests passed.
+- GitHub Actions run `34840650378` at `a1cdacd7326c758110eb03b946e0245330bc9963`
+  passed the full suite, PostgreSQL restore, Docker builds, Compose and Railway IaC checks.
 - No Railway CLI/account/project/token/resource, billable plan, public domain or deployment was
   created. Apply and public exposure remain at the operator approval boundary.
