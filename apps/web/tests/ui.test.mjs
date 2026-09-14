@@ -99,3 +99,14 @@ test("UI stays within the directory scope", async () => {
   const unsupportedSurface = /confidence|faction|influence|probability|OpenWatch|roll-call|asset dashboard/i;
   assert.ok(files.every((body) => !unsupportedSurface.test(body)));
 });
+
+test("production build prepares a self-contained standalone asset contract", async () => {
+  const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const prepare = await readFile(new URL("../scripts/prepare-standalone.mjs", import.meta.url), "utf8");
+  const check = await readFile(new URL("../scripts/check-standalone.mjs", import.meta.url), "utf8");
+
+  assert.match(packageJson.scripts.build, /prepare-standalone\.mjs/);
+  assert.match(prepare, /staticTarget/);
+  assert.match(prepare, /cpSync/);
+  assert.match(check, /Standalone runtime contract verified/);
+});

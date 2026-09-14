@@ -989,7 +989,7 @@ hosting contract without external deployment.
   `1306f00976db6fc7460320885d3863fa236c4ba9`, equal to `origin/master`.
 - The root checkout, ignored ALIO runtime database and other worktrees remain outside this worktree.
 - Governing documents and the ALIO repository/API/web/test paths were re-read.
-- M0, M1.1 and M1.2 are complete. M1.3 browser/standalone verification is next.
+- M0 through M1.3 are complete. M1.4 PostgreSQL integration and backup/restore proof is next.
 - The split-transaction risk was reproduced with one residual Claim after an injected second write
   failure. The CLI now uses one shared-repository pair transaction with deterministic IDs, exact
   rerun no-op, safe exact-partial recovery, divergent-partial rejection and a concurrent-call
@@ -997,6 +997,10 @@ hosting contract without external deployment.
 - Public reads now use stable safe error codes/request IDs; insufficient MONEY inputs, source
   conflicts, public 404 and service failure no longer collapse into one web fallback. Public Source
   reads require reachability from an eligible published Claim and return an allowlisted DTO.
+- The standalone build now packages `.next/static` and checks the runtime asset contract. A real
+  browser verified roster filtering, profile/source traceability, public 404, API-down and
+  insufficient-input states, ALIO MONEY success and immutable-version conflict, 390 px layout and
+  the keyboard skip link against disposable data.
 
 ## Verification
 
@@ -1005,7 +1009,10 @@ hosting contract without external deployment.
   quality, web lint/typecheck, seven UI tests and production build passed locally.
 - M1.2 targeted API/ALIO tests: 47 passed. Full suite: 330 passed, 4 warnings. Ruff, mypy (56
   files), Golden quality, web lint/typecheck, eight UI contract tests and build passed locally.
+- M1.3 web lint/typecheck, nine UI tests, production build and standalone contract check passed.
+  Browser console warnings/errors: zero; framework overlay: absent; horizontal overflow at 390 px:
+  absent. No migration or dependency changed.
 
 ## Next action
 
-Run the M1.3 production standalone artifact and real-browser state/accessibility checks.
+Run the M1.4 PostgreSQL migration, representative load and backup/restore integration proof.

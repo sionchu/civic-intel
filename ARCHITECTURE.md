@@ -39,6 +39,10 @@ is an allowlist and never serializes the complete SourcePolicy. Public read fail
 missing records, insufficient eligible inputs, source-version conflict and service failure;
 transport failure is not an `UNKNOWN` Claim.
 
+The web production artifact is the Next standalone server plus its generated `.next/static` tree
+and optional `public` directory. Artifact verification fails closed when any required runtime part
+is absent; a successful compile alone is not standalone readiness.
+
 ## Temporal and analysis model
 
 Material records carry valid time (`valid_from`, `valid_to`) and system time

@@ -1,6 +1,6 @@
 # Evidence Preview v1
 
-Status: active — M0, M1.1 and M1.2 complete; M1.3 is next.
+Status: active — M0 through M1.3 complete; M1.4 is next.
 
 Date: 2026-09-14
 
@@ -121,7 +121,31 @@ Implementation and evidence:
 
 ## M1.3 — browser and standalone production artifact
 
+Status: completed locally on 2026-09-14.
+
 Run the production Next standalone artifact against FastAPI and a disposable migrated database.
+
+Implementation and evidence:
+
+- The previous `next build` output omitted `.next/static` from `.next/standalone`, so the server
+  executable was present while its CSS and client chunks were not self-contained. The build now
+  copies generated static assets (and `public` when present) into the standalone root and a separate
+  contract check fails when the server, build ID or non-empty static tree is missing.
+- A fresh ignored SQLite database was migrated to Alembic head and seeded from the Golden fixture;
+  no existing runtime database was used or changed. FastAPI and the production standalone server
+  were run as separate processes with the server-only `CIVIC_API_URL` contract.
+- In a real browser, the ten-person roster rendered, name filtering reduced it to the selected
+  resolved identity, and the person detail exposed Claim, Evidence and two reachable Source cards.
+  A missing Person rendered the dedicated public not-found page. With FastAPI stopped, the roster
+  rendered `SERVICE_UNAVAILABLE` instead of empty data or `UNKNOWN`. A disposable Organization with
+  no eligible annual Claims rendered `INSUFFICIENT_ELIGIBLE_INPUTS` with its request ID. The ALIO
+  known-positive fixture then rendered the two annual Claims, two Evidence inputs, one Source and
+  the derived MONEY delta. Adding a second immutable 2024 observation version removed that derived
+  card and rendered `SOURCE_VERSION_CONFLICT` without choosing a version.
+- Desktop and 390 px viewport checks found no horizontal overflow, blank screen, Next error overlay,
+  console warning or console error. The first keyboard focus was the `본문으로 건너뛰기` link.
+  UI tests increased from eight to nine and the rebuilt standalone artifact passed its contract
+  check. No browser dependency, migration or production data was added.
 Use one existing or narrowly justified browser test tool. Verify people search → profile → evidence
 → origin link, organization direct-ID → MONEY → both Claim/Evidence inputs, missing UUID, API-down
 and conflict states. Verify CSS/JS assets, hydration and console output, desktop and 390 px layouts,
