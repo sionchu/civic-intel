@@ -1094,15 +1094,16 @@ separate approvals.
   `a9124150f00c8740187060f8a01ecfbca554319f` passed in 2m35s. Canonical verification, Alembic
   round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and deployment
   artifact checks all passed.
-- On continuation, the same locally stored Railway credential was rejected by read-only `whoami`,
-  project/status, service-list and PITR-status calls with `Unauthorized`. Its value was not printed
-  or changed, no interactive login was automated, and no further mutation was attempted. The
-  earlier successful resource reads and this later authentication failure are retained as
-  time-specific observations.
+- On 2026-09-15, owner-operated Railway OAuth login completed. Read-only `whoami`, project/status,
+  service-list, volume, backup-list, PITR-status and schedule calls then succeeded; the target
+  project/environment is accessible and the volume remains `Ready`. Retrying the approved backup
+  creation once under the fresh login still returned `UNAUTHORIZED` / `Failed to create a backup`.
+  The audit trail records both failed create attempts (2026-09-14 and 2026-09-15), backup list
+  remains empty, and no provider plan or entitlement reason was exposed. No further mutation was
+  attempted.
 
 ## Next concrete action
 
-Re-authenticate the owner-operated Railway CLI outside this task, confirm read-only access to the
-existing staging project, and rerun the reviewed backup/restore rehearsal only if the provider
-authorizes it. Keep PITR disabled, do not create a new database service, and keep API/PostgreSQL
-private.
+Resolve the Railway provider-side authorization or feature entitlement for the existing staging
+volume, then rerun the reviewed backup/restore rehearsal only if the provider authorizes it. Keep
+PITR disabled, do not create a new database service, and keep API/PostgreSQL private.

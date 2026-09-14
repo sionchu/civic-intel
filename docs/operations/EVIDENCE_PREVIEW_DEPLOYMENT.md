@@ -58,10 +58,11 @@ The approved on-demand volume-backup attempt for `pre-restore-rehearsal-2026-09-
 automatic schedule remain empty. The local host has no PostgreSQL client tools, and private SSH
 inspection needs a new SSH key; no new credential, persistent backup configuration, backup snapshot,
 restore, or database-content mutation was created. Data loading remains outside this deployment
-checkpoint. On continuation, read-only Railway `whoami`, project/status, service-list and PITR-status
-calls using the stored credential also returned `Unauthorized`; no interactive login or further
-mutation was attempted. Re-authentication and a fresh read-only access check are required before
-resuming this gate.
+checkpoint. On 2026-09-15, owner-operated OAuth login completed and the same read-only Railway
+project/service/volume/backup/PITR/schedule calls succeeded. A single retry of the approved backup
+creation under the fresh login still returned `UNAUTHORIZED` / `Failed to create a backup`; the
+backup list remains empty and no interactive or further resource mutation was attempted. A fresh
+provider-side authorization or feature-entitlement decision is required before resuming this gate.
 
 ## Required runtime configuration
 
