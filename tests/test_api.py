@@ -134,9 +134,27 @@ def stage_observation(
 
 def test_health_and_real_roster(client: TestClient) -> None:
     assert client.get("/health").json() == {"status": "ok"}
+    assert client.get("/ready").json() == {"status": "ready"}
     people = client.get("/people").json()
     assert len(people) == 10
     assert {item["canonical_name"] for item in people} >= {"이형일", "홍지선", "이해민"}
+
+
+def test_readiness_masks_database_failure(
+    seeded_repository: SqlAlchemyRepository,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_ready() -> None:
+        raise RuntimeError("database detail must remain private")
+
+    with TestClient(create_app(seeded_repository), raise_server_exceptions=False) as api_client:
+        monkeypatch.setattr(seeded_repository, "assert_ready", fail_ready)
+        response = api_client.get("/ready")
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "SERVICE_UNAVAILABLE"
+    assert response.json()["error"]["request_id"] == response.headers["x-request-id"]
+    assert "database detail" not in response.text
 
 
 def test_public_roster_and_profiles_exclude_unresolved_identities(

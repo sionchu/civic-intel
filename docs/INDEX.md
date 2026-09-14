@@ -29,6 +29,7 @@ implementation work.
 - [ALIO reviewed Organization binding workflow v0](exec-plans/active/alio-reviewed-organization-binding-workflow-v0.md)
 - [Organization Evidence page v0](exec-plans/active/organization-evidence-page-v0.md)
 - [Evidence Preview v1 active execution plan](exec-plans/active/evidence-preview-v1.md)
+- [Evidence Preview deployment preparation](operations/EVIDENCE_PREVIEW_DEPLOYMENT.md)
 - [CleanEye local public institution feeder](architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)
 - [Legal career feeder](architecture/LEGAL_CAREER_FEEDER.md)

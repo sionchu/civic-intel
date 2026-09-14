@@ -84,3 +84,12 @@ jobs:
           createdb --host 127.0.0.1 --username civic civic_intel_restore
           pg_restore --host 127.0.0.1 --username civic --dbname civic_intel_restore --exit-on-error /tmp/civic-intel.dump
           python -m packages.verification.postgresql --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore --expected-people 10 --expected-organization-claims 2
+
+      - name: Verify deployment artifacts
+        env:
+          DATABASE_URL: postgresql+psycopg://civic:civic@db:5432/civic_intel
+          POSTGRES_PASSWORD: civic
+        run: |
+          docker build --file deploy/Dockerfile.api --tag civic-intel-api:verify .
+          docker build --file deploy/Dockerfile.web --tag civic-intel-web:verify .
+          docker compose --file compose.deploy.yml config --quiet

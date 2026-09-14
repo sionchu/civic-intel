@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.enums import IdentityStatus
@@ -190,6 +191,13 @@ def create_app(
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/ready")
+    def ready() -> dict[str, str]:
+        target.assert_ready()
+        with target.sessions() as session:
+            session.execute(text("SELECT 1"))
+        return {"status": "ready"}
 
     @app.get("/people")
     def people() -> list[dict]:

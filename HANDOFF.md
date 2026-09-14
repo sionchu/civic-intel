@@ -989,7 +989,8 @@ hosting contract without external deployment.
   `1306f00976db6fc7460320885d3863fa236c4ba9`, equal to `origin/master`.
 - The root checkout, ignored ALIO runtime database and other worktrees remain outside this worktree.
 - Governing documents and the ALIO repository/API/web/test paths were re-read.
-- M0 through M1.3 are complete. M1.4 PostgreSQL integration and backup/restore proof is next.
+- M0 through M1.4 are complete. M1.5 deployment preparation is implemented locally and awaiting
+  its final CI artifact-build check.
 - The split-transaction risk was reproduced with one residual Claim after an injected second write
   failure. The CLI now uses one shared-repository pair transaction with deterministic IDs, exact
   rerun no-op, safe exact-partial recovery, divergent-partial rejection and a concurrent-call
@@ -1001,6 +1002,12 @@ hosting contract without external deployment.
   browser verified roster filtering, profile/source traceability, public 404, API-down and
   insufficient-input states, ALIO MONEY success and immutable-version conflict, 390 px layout and
   the keyboard skip link against disposable data.
+- PostgreSQL 16 CI now proves clean migration, a safe `0004` downgrade/current-head upgrade,
+  Golden and reviewed ALIO loading, public reads, custom-format backup and restore into a second
+  database. The current schema head is `0006`; `psycopg` is the only added runtime dependency.
+- Separate non-root API/web images, a loopback rehearsal Compose manifest, `/ready` and the
+  canonical deployment runbook are prepared. No public resource, DNS, host, operational database
+  or deployment was created.
 
 ## Verification
 
@@ -1012,7 +1019,14 @@ hosting contract without external deployment.
 - M1.3 web lint/typecheck, nine UI tests, production build and standalone contract check passed.
   Browser console warnings/errors: zero; framework overlay: absent; horizontal overflow at 390 px:
   absent. No migration or dependency changed.
+- M1.4 GitHub Actions run `34838519611` at
+  `cd65b7eee82d887150009ff20700ddb6ca98b9fc` passed canonical verification, SQLite migration
+  round trip, PostgreSQL migration/load/API integration and PostgreSQL backup/restore.
+- M1.5 targeted deployment/API checks passed with 21 tests. Full local verification passed with
+  335 tests and one PostgreSQL-only skip, Ruff, mypy (57 files), Golden quality, web
+  lint/typecheck, nine UI tests, production build and standalone artifact check. Docker execution
+  is CI-only on this host.
 
 ## Next action
 
-Run the M1.4 PostgreSQL migration, representative load and backup/restore integration proof.
+Close M1.5 only after its pushed Docker image/Compose contract and complete GitHub Actions run pass.

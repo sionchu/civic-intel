@@ -1,6 +1,6 @@
 # Evidence Preview v1
 
-Status: active — M0 through M1.3 complete; M1.4 is next.
+Status: active — M0 through M1.4 complete; M1.5 implemented locally, final CI pending.
 
 Date: 2026-09-14
 
@@ -158,6 +158,8 @@ must agree.
 
 ## M1.4 — PostgreSQL, load and recovery proof
 
+Status: completed in GitHub Actions on 2026-09-14.
+
 Keep one SQLAlchemy/Alembic repository and retain SQLite tests. Add only the required PostgreSQL
 driver/configuration. Against a disposable PostgreSQL instance, verify clean upgrade to head,
 upgrade/downgrade/upgrade where safe, Golden or reviewed fixture load, the atomic ALIO pair, API
@@ -168,7 +170,28 @@ backup and restore into a second disposable database, then compare schema head a
 counts plus a representative provenance-backed read. Never test downgrade or restore against an
 operational database.
 
+Implementation and evidence:
+
+- Added the `psycopg` SQLAlchemy driver and a PostgreSQL 16 CI service while retaining all SQLite
+  tests. The integration test performs a clean upgrade, downgrade to `0004`, upgrade to current
+  head, Golden seed, bounded ALIO observation load, atomic reviewed two-Claim import and public
+  roster/MONEY reads through the shared repository and API.
+- PostgreSQL exposed real ordering and migration portability defects hidden by SQLite. Canonical
+  parent/dependent writes now flush in foreign-key order; migration `0005` uses an in-place
+  PostgreSQL subject-XOR change and discovers the actual foreign-key name for downgrade.
+- `SourcePolicy.rate_limit` is now `Text` through reversible migration `0006`; its pre-downgrade
+  guard refuses truncation when any stored value exceeds 100 characters.
+- CI run `34838519611` at `cd65b7eee82d887150009ff20700ddb6ca98b9fc` passed canonical
+  verification, the SQLite migration round trip, PostgreSQL migration/load/API contracts and a
+  custom-format `pg_dump` restored into a second database. The restored verifier confirmed head
+  `0006`, ten public People, two published Organization Claims and a representative public read.
+- PostgreSQL tooling was unavailable on the Windows host, so this stage's database and
+  backup/restore execution evidence is CI evidence, not a local PostgreSQL claim.
+
 ## M1.5 — deployment preparation and approval boundary
+
+Status: implemented and verified locally on 2026-09-14; final GitHub Actions artifact build is
+pending.
 
 Document and verify the selected artifact contract for the standalone web, FastAPI API, migrated
 PostgreSQL database, environment variables, health/readiness checks, migration order, data load,
@@ -178,6 +201,21 @@ resources or cost.
 Creating public infrastructure, changing an operational database, purchasing a service, widening
 access, transferring ownership or exposing a secret requires separate approval. Until then the
 deployment state is `PREPARED`, never `DEPLOYED`.
+
+Implementation and evidence:
+
+- Added separate non-root FastAPI and Next standalone images, a loopback-bound PostgreSQL/API/web
+  rehearsal manifest and a context denylist for secrets, ignored databases and build outputs.
+- Added `/ready`, which verifies Alembic head and database connectivity while returning the same
+  safe `SERVICE_UNAVAILABLE` envelope used by public reads when readiness fails.
+- Added `docs/operations/EVIDENCE_PREVIEW_DEPLOYMENT.md` as the single runbook for configuration,
+  migration order, dry-run/committed loading, readiness, backup/restore and restore-to-new-database
+  rollback. OpenAI Sites was evaluated but not selected because it does not directly supply this
+  repository's separate Next server, FastAPI process and PostgreSQL runtime contract.
+- Targeted deployment/API checks passed with 21 tests. Full local verification passed with 335
+  tests and one PostgreSQL-only skip, Ruff, mypy (57 files), Golden quality, web lint/typecheck,
+  nine UI tests, production build and standalone artifact check. Docker is unavailable locally;
+  CI builds both images and validates the Compose contract before this stage is final.
 
 ## Deferred product specification — M2 to M5
 
