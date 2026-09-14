@@ -1,9 +1,9 @@
 # Evidence Preview deployment preparation
 
-Status: `TARGET_STAGED`, not deployed.
+Status: `DEPLOYED_PREVIEW` — public Web staging verified; API and PostgreSQL remain private.
 
-This runbook defines the reviewed deployment contract for Evidence Preview v1. It creates no
-infrastructure and authorizes no public exposure, production database mutation, purchase or
+This runbook defines and records the reviewed deployment contract for Evidence Preview v1. It is
+not an authorization for production exposure, production database mutation, purchase or
 ownership/access change.
 
 ## Selected artifact contract
@@ -35,22 +35,22 @@ three-resource shape. `.railway/railway.ts` is the sole provider specification; 
 The specification is deliberately fail-closed outside an environment named `staging`. It pins the
 GitHub source to `sionchu/civic-intel` `master`, builds the reviewed API and web Dockerfiles, runs
 Alembic before API release, keeps API/PostgreSQL without public domains, and routes server-side web
-reads over Railway private DNS. It does not declare a custom or generated public domain. Creating
-the Railway project/environment, accepting billable usage, applying the plan and generating the
-web domain remain operator approval actions.
+reads over Railway private DNS. It does not declare a custom or generated public domain; the
+generated Web domain is an explicit provider-side approval action recorded below. API and
+PostgreSQL public access remain prohibited.
 
 On 2026-09-14 the owner-approved `civic-intel-staging` project and isolated `staging` environment
 were created. A read-only Railway IaC plan against that environment produced zero diagnostics,
-zero changes and zero destroys. Its only proposed actions are the safe creation of `postgres`,
-private `api` and private-networked `web`. At that review checkpoint, the plan was not applied:
-no database, service, deployment, public domain or operational data existed.
+zero changes and zero destroys. Its only proposed actions were the safe creation of `postgres`,
+private `api` and private-networked `web`. That plan was subsequently applied after approval.
 
 The approved plan was subsequently applied. API and web are private and running in Singapore; the
 corrective API revision completed Alembic through `0006` and passed `/ready`. PostgreSQL was then
 migrated from `sfo` to Singapore with the explicitly approved volume move. The observed volume
 state progressed from `MIGRATING` with zero replicas to `READY` with one running replica. A
-post-migration read-only IaC plan returned `No changes.` with zero diagnostics. No public domain or
-operational data load exists.
+post-migration read-only IaC plan returned `No changes.` with zero diagnostics. After the separate
+Web-only approval, the generated service domain
+`https://web-staging-efe2.up.railway.app` became `ACTIVE`; API and PostgreSQL have no public URL.
 
 At the current checkpoint, Railway reports PostgreSQL PITR disabled and no backup bucket wired.
 The local host has no PostgreSQL client tools, and private SSH inspection needs a new SSH key; no
@@ -78,8 +78,12 @@ outside this deployment checkpoint.
 4. Run `python -m alembic upgrade head` as a one-shot migration job against the approved target.
 5. Start FastAPI and require `/ready` to return 200 before routing traffic.
 6. Start the standalone web server with `CIVIC_API_URL` pointing to that API.
-7. Run the public roster, Person evidence, Organization MONEY, 404, conflict and API-unavailable
-   browser smoke at the deployed revision.
+7. [x] Run the public roster and 404 browser smoke at the deployed revision. The root rendered an
+   explicit empty roster after `GET /people 200`; an unknown profile rendered `Profile not found`
+   after `GET /people/<unknown> 404`. The first post-migration request briefly rendered the safe
+   `SERVICE_UNAVAILABLE` state while a terminated database connection was discarded; reload
+   recovered to `200`. Organization MONEY, conflict and API-unavailable cases remain covered by
+   the local/CI browser and API regressions, not by this empty staging deployment.
 
 Runtime startup checks schema head and does not migrate or seed. Canonical data loading must use an
 existing source-specific worker/import command and its publication/identity gates. For the bounded
@@ -97,8 +101,20 @@ migration or load fails, stop new writes, retain the failed run receipt, restore
 backup into a new database, verify schema/count/provenance reads, and switch the application only
 after an operator reviews that evidence. Never overwrite the failed database in place.
 
+## Observed staging verification
+
+| Check | Observed result |
+| --- | --- |
+| Web public domain | `https://web-staging-efe2.up.railway.app`, Railway service domain `ACTIVE` |
+| API / PostgreSQL exposure | both service URLs `null`; private Singapore services, one running replica each |
+| Web root | Evidence Directory rendered; `0` resolved identities / explicit empty roster |
+| Web → API success | API `GET /people 200`; Web rendered the empty result, not an outage fallback |
+| Public 404 | unknown UUID rendered `Profile not found`; API `GET /people/<unknown> 404` |
+| IaC drift | read-only `railway config plan` returned `Your Railway configuration is already up to date.` |
+
 ## Approval boundary
 
-Creating the public Web domain, changing access, or running against an operational database
-requires explicit approval. API and database public access remain prohibited. Until the public
-browser smoke is complete, the only valid state is `TARGET_STAGED`.
+The Web-only public domain and its browser smoke were explicitly approved and completed. API and
+database public access remain prohibited. Operational data loading and persistent backup/PITR
+configuration require separate approval. The current deployment classification is
+`DEPLOYED_PREVIEW`, with no operational data loaded.

@@ -43,7 +43,8 @@ def test_rehearsal_manifest_is_loopback_bound_and_migrates_before_api() -> None:
 def test_deployment_runbook_preserves_approval_and_sites_boundaries() -> None:
     runbook = read("docs/operations/EVIDENCE_PREVIEW_DEPLOYMENT.md")
 
-    assert "Status: `TARGET_STAGED`, not deployed." in runbook
+    assert "Status: `DEPLOYED_PREVIEW`" in runbook
     assert "No `.openai/hosting.json`" in runbook
-    assert "requires explicit approval" in runbook
+    assert "Web-only public domain and its browser smoke were explicitly approved and completed" in runbook
+    assert "API and\ndatabase public access remain prohibited." in runbook
     assert "production must never use Golden bootstrap" in runbook

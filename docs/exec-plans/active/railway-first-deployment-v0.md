@@ -1,6 +1,6 @@
 # Railway first deployment v0
 
-Status: active — private staging topology verified; public preview pending.
+Status: completed — private API/DB and public Web staging preview verified; data load deferred.
 
 Date: 2026-09-14
 
@@ -28,7 +28,8 @@ per-service config files are not used.
 - No provider key, local/ignored database, Golden fixture or reviewed local ALIO database is a
   deployment input.
 - No production environment, public API/database endpoint, custom domain, automatic feeder,
-  operational data load or source maturity change is in scope.
+  operational data load or source maturity change is in scope. The only public endpoint is the
+  Railway-generated Web domain created after explicit approval; API and PostgreSQL remain private.
 
 Creating resources, accepting billable usage, applying the IaC plan and generating a public web
 domain are external state changes and require explicit operator approval. Before that approval the
@@ -41,8 +42,8 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
    `staging` environment.
 3. Run `railway config plan` and record the exact add/change/destroy summary. Any destroy or
    production target is a hard stop.
-4. After approval, apply the saved staging plan and generate a public domain only for `web`.
-5. Verify migration head, `/ready`, public roster, Person evidence, Organization states, 404 and
+4. [x] After approval, apply the saved staging plan and generate a public domain only for `web`.
+5. [x] Verify migration head, `/ready`, public roster, Person evidence, Organization states, 404 and
    API-unavailable behavior in the deployed browser artifact.
 6. Configure and verify a database backup before any non-fixture data load. Data loading remains a
    separate reviewed operation.
@@ -100,12 +101,21 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   SSH key; neither a new credential nor a persistent backup configuration was created. No
   operational data load has been run. No PITR or one-off backup was configured.
 - After migration, a read-only IaC plan returned `No changes.` with zero diagnostics. API, Web and
-  PostgreSQL each report `SUCCESS` with one running replica; API and Web remain private with no
-  public URL. The staging topology is now region-correct, but public browser verification and
-  canonical data loading remain separate approvals.
+  PostgreSQL each report `SUCCESS` with one running replica; API and database have no public URL.
+- Following the explicit approval to expose Web only, `railway domain --service web` created
+  `https://web-staging-efe2.up.railway.app`. Railway reports the service domain `ACTIVE`; the
+  service listing shows this URL only on `web` and keeps `api` and `postgres` at `url: null`.
+- Browser smoke at the generated Web URL rendered the Evidence Directory home and an explicit
+  empty roster (`0` resolved identities) after the API returned `200`. The deployed profile route
+  for UUID `00000000-0000-0000-0000-000000000000` rendered `Profile not found`; the API log shows
+  `GET /people/<unknown> 404`. The API log also shows the successful `GET /people 200` responses.
+- The first post-migration browser request observed `SERVICE_UNAVAILABLE` while the API reused a
+  database connection terminated by the approved volume move (`psycopg.errors.AdminShutdown`). A
+  reload recovered to `200` without a code or configuration change; this transient recovery is
+  recorded, not hidden. No operational data load has been run and the default `production`
+  environment remains empty.
 
 ## Next action
 
-Obtain explicit approval to generate a public domain for the Web service only, then run the
-deployed browser smoke against the empty/fixture state. API/DB exposure and operational data
-loading remain separate approvals.
+Obtain explicit approval for a PostgreSQL backup/restore rehearsal, then complete it before any
+operational or feeder data load; API/DB exposure remains prohibited.

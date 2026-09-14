@@ -1031,14 +1031,12 @@ hosting contract without external deployment.
 
 ## Next action
 
-The approved `civic-intel-staging` plan is privately deployed. API and web run in Singapore;
-API revision `b8c1f7666c8dcd2293da90a20cda1e41944a527c` applied Alembic through `0006` and returned
-`200` from `/ready`. PostgreSQL's explicitly approved volume migration from `sfo` to Singapore
-completed: the volume is `READY` with one running replica. Web remains private with no public URL;
-no operational data load exists, and `production` remains empty.
-
-Obtain explicit approval to generate the public Web domain for browser smoke. API/DB exposure,
-PITR/backup configuration and operational data loading remain separate approvals.
+The approved `civic-intel-staging` plan is deployed. API and web run in Singapore; API revision
+`b8c1f7666c8dcd2293da90a20cda1e41944a527c` applied Alembic through `0006` and returned `200` from
+`/ready`. PostgreSQL's explicitly approved volume migration from `sfo` to Singapore completed;
+the volume is `READY` with one running replica. The Web-only public domain and browser smoke are
+now complete. API/DB exposure, PITR/backup configuration and operational data loading remain
+separate approvals.
 
 ## Current checkpoint — Railway staging target (2026-09-14)
 
@@ -1051,8 +1049,9 @@ PITR/backup configuration and operational data loading remain separate approvals
 - GitHub Actions run `34840650378` at `a1cdacd7326c758110eb03b946e0245330bc9963`
   passed the full suite, PostgreSQL restore, Docker builds, Compose and Railway IaC checks.
 - The owner-operated CLI has authenticated. The approved `civic-intel-staging` project and
-  isolated `staging` environment contain `postgres`, private `api`, and private `web`; no public
-  domain or operational data exists, and the default `production` environment remains empty.
+  isolated `staging` environment contain `postgres`, private `api`, and Web; the only public
+  endpoint is the explicitly approved generated Web domain. No operational data exists, and the
+  default `production` environment remains empty.
 - API corrective deployment `4ca58690-8f0e-42de-8f3b-53482424abcd` at
   `b8c1f7666c8dcd2293da90a20cda1e41944a527c` succeeded. It ran migrations through `0006` and
   received a `200` `/ready` health response. Web is running privately in Singapore.
@@ -1063,5 +1062,27 @@ PITR/backup configuration and operational data loading remain separate approvals
   tools, and private SSH inspection requires a new SSH key, so no one-off backup or table-count
   query was created. No operational data load has been run.
 - The post-migration read-only IaC plan returned `No changes.` with zero diagnostics. API, Web and
-  PostgreSQL are `SUCCESS` with one running replica each; API and database have no public URL, and
-  Web has no generated public URL yet.
+  PostgreSQL are `SUCCESS` with one running replica each; API and database have no public URL.
+- After explicit Web-only approval, Railway created
+  `https://web-staging-efe2.up.railway.app`; the service domain is `ACTIVE`. Browser smoke rendered
+  the home page with an explicit empty roster after `GET /people 200`, and an unknown UUID rendered
+  `Profile not found` after `GET /people/<unknown> 404`. The first request after the volume move
+  briefly rendered the safe service-unavailable state due to the terminated pooled DB connection;
+  reload recovered to `200`. No code/configuration change was needed for the recovered steady state.
+
+## Current checkpoint — public Web preview (2026-09-14)
+
+- Deployment classification is `DEPLOYED_PREVIEW`: public Web only, private API/PostgreSQL, no
+  operational data loaded.
+- The generated Web domain is the only Railway public URL. A read-only service listing verified
+  `api.url == null`, `postgres.url == null`, and the Web URL above; all services are in
+  `asia-southeast1-eqsg3a` with one running replica.
+- CUA browser smoke directly inspected the deployed root and unknown profile route. The root showed
+  `Evidence Directory`, `0` resolved identities and the explicit empty-roster state; the unknown
+  UUID showed `Profile not found`. API logs recorded `GET /people 200` and the unknown-profile `404`.
+- No visible framework error overlay was present in the successful root inspection; console capture
+  was outside this CUA smoke artifact. The first transient `503` is retained as migration-recovery
+  evidence rather than treated as a data absence.
+- PostgreSQL PITR remains disabled, no backup bucket is wired, and no operational/feeder data load
+  has run. The next gate is a separately approved backup/restore rehearsal before any operational
+  load.
