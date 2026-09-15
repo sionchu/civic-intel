@@ -31,6 +31,8 @@ class AlioRecordError(ValueError):
 POLICY_ID = UUID("13000000-0000-0000-0000-000000000001")
 ITEM12_REPORT_FORM_NO = "20701"
 ALIO_ITEM12_SOURCE_CONTRACT = "alio_item_12_current_institution_head_business_expense"
+ALIO_ITEM12_ATTACHMENT_SUFFIXES = (".xls", ".xlsx", ".pdf", ".hwp")
+ALIO_ITEM12_MACHINE_READABLE_ATTACHMENT_SUFFIXES = (".xls", ".xlsx")
 
 
 def alio_public_institution_policy() -> SourcePolicy:
@@ -569,7 +571,7 @@ def _item12_attachment_names(value: str) -> tuple[str, ...]:
         if not separator or not file_no.isdigit() or not file_name.strip():
             raise AlioRecordError("ALIO item 12 attachment reference is invalid")
         normalized_name = file_name.strip()
-        if not normalized_name.casefold().endswith((".xls", ".xlsx")):
+        if not normalized_name.casefold().endswith(ALIO_ITEM12_ATTACHMENT_SUFFIXES):
             raise AlioRecordError("ALIO item 12 attachment format is unsupported")
         names.append(normalized_name)
     return tuple(names)

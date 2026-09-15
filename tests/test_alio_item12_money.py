@@ -297,7 +297,21 @@ def test_item12_directory_preserves_explicit_no_data_without_inventing_report() 
     assert parsed.rows[0].detail_attachment_names == ()
 
 
-def test_item12_directory_rejects_non_spreadsheet_attachment() -> None:
+def test_item12_directory_rejects_unknown_attachment_extension() -> None:
+    row = directory_row(
+        "C0908",
+        "테스트정보기관",
+        "준정부기관(위탁집행형)",
+        "2026091400000003",
+        "2026091400001003",
+        "csv",
+    )
+
+    with pytest.raises(AlioRecordError, match="attachment format"):
+        parse_item12_directory_body(json.dumps(directory_payload([row])))
+
+
+def test_item12_directory_preserves_known_document_attachment_metadata() -> None:
     row = directory_row(
         "C0908",
         "테스트정보기관",
@@ -307,8 +321,9 @@ def test_item12_directory_rejects_non_spreadsheet_attachment() -> None:
         "pdf",
     )
 
-    with pytest.raises(AlioRecordError, match="attachment format"):
-        parse_item12_directory_body(json.dumps(directory_payload([row])))
+    parsed = parse_item12_directory_body(json.dumps(directory_payload([row])))
+
+    assert all(name.casefold().endswith(".pdf") for name in parsed.rows[0].detail_attachment_names)
 
 
 @pytest.mark.parametrize(
@@ -391,6 +406,23 @@ def test_bounded_item12_enumerator_persists_observations_without_persons(
     )
     assert STAFF_NAME not in persisted
     assert STAFF_PHONE not in persisted
+
+
+def test_item12_enumerator_rejects_unsupported_selected_attachment(
+    tmp_path: Path,
+) -> None:
+    provider = FakeAlioMoneyProvider()
+    provider.rows[0]["files"] = str(provider.rows[0]["files"]).replace(".xlsx", ".pdf")
+    repository = migrated_repository(tmp_path / "unsupported-selected-attachment.db")
+
+    with pytest.raises(AlioRecordError, match="selected institution"):
+        AlioBusinessExpenseEnumerator(provider.connector(), repository).enumerate()
+
+    assert repository.feeder_observations(
+        "alio_institution_head_business_expense",
+        "item_12_current_known_positive:C0019,C0129,C0908",
+    ) == []
+    assert repository.sources() == {}
 
 
 def test_item12_policy_denial_happens_before_network_or_run(tmp_path: Path) -> None:

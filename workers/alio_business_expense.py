@@ -8,6 +8,7 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 
 from packages.connectors.alio_disclosures import (
+    ALIO_ITEM12_MACHINE_READABLE_ATTACHMENT_SUFFIXES,
     ALIO_ITEM12_SOURCE_CONTRACT,
     AlioBusinessExpenseDirectoryRow,
     AlioInstitutionHeadBusinessExpenseConnector,
@@ -190,6 +191,15 @@ class AlioBusinessExpenseEnumerator:
                     )
                 selected_rows.append(row)
             selected = tuple(selected_rows)
+            for row in selected:
+                if any(
+                    not name.casefold().endswith(ALIO_ITEM12_MACHINE_READABLE_ATTACHMENT_SUFFIXES)
+                    for name in row.detail_attachment_names
+                ):
+                    raise AlioRecordError(
+                        "ALIO item 12 selected institution has unsupported attachment format: "
+                        f"{row.institution_code}"
+                    )
             if any(row.disclosure_no is None for row in selected):
                 raise AlioRecordError("ALIO item 12 selected institution has no current disclosure")
 
