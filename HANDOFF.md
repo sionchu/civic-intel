@@ -1031,11 +1031,11 @@ hosting contract without external deployment.
 
 ## Next action
 
-The approved `civic-intel-staging` plan is deployed. API and web run in Singapore; API revision
+At that deployment checkpoint, the approved `civic-intel-staging` plan was deployed. API and web run in Singapore; API revision
 `b8c1f7666c8dcd2293da90a20cda1e41944a527c` applied Alembic through `0006` and returned `200` from
 `/ready`. PostgreSQL's explicitly approved volume migration from `sfo` to Singapore completed;
 the volume is `READY` with one running replica. The Web-only public domain and browser smoke are
-now complete. API/DB exposure, PITR/backup configuration and operational data loading remain
+now complete. API/DB exposure, PITR/backup configuration and operational data loading remained
 separate approvals.
 
 ## Current checkpoint — Railway staging target (2026-09-14)
@@ -1050,7 +1050,7 @@ separate approvals.
   passed the full suite, PostgreSQL restore, Docker builds, Compose and Railway IaC checks.
 - The owner-operated CLI has authenticated. The approved `civic-intel-staging` project and
   isolated `staging` environment contain `postgres`, private `api`, and Web; the only public
-  endpoint is the explicitly approved generated Web domain. No operational data exists, and the
+  endpoint is the explicitly approved generated Web domain. At that 2026-09-14 checkpoint, no operational data existed, and the
   default `production` environment remains empty.
 - API corrective deployment `4ca58690-8f0e-42de-8f3b-53482424abcd` at
   `b8c1f7666c8dcd2293da90a20cda1e41944a527c` succeeded. It ran migrations through `0006` and
@@ -1060,7 +1060,7 @@ separate approvals.
   replica.
 - PostgreSQL PITR is disabled and no backup bucket is wired. The local host lacks PostgreSQL client
   tools, and private SSH inspection requires a new SSH key, so no one-off backup or table-count
-  query was created. No operational data load has been run.
+  query was created. No operational data load had been run at that checkpoint.
 - The post-migration read-only IaC plan returned `No changes.` with zero diagnostics. API, Web and
   PostgreSQL are `SUCCESS` with one running replica each; API and database have no public URL.
 - After explicit Web-only approval, Railway created
@@ -1144,10 +1144,10 @@ PITR disabled, do not create a new database service, and keep API/PostgreSQL pri
   verification, Alembic round trip, PostgreSQL migration/load/API, PostgreSQL backup/restore and
   deployment artifact checks.
 
-## Next concrete action
+## Previous next action — before the approved ALIO load
 
-Obtain separate operator approval for the bounded reviewed ALIO data-load rehearsal; until then
-keep staging empty and do not add new feeders.
+Obtain separate operator approval for the bounded reviewed ALIO data-load rehearsal; until that
+approval, keep staging empty and do not add new feeders.
 
 ## Current checkpoint — approved staging ALIO observation rehearsal (2026-09-15)
 

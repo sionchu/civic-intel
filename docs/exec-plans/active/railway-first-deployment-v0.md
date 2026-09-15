@@ -119,8 +119,8 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
 - The first post-migration browser request observed `SERVICE_UNAVAILABLE` while the API reused a
   database connection terminated by the approved volume move (`psycopg.errors.AdminShutdown`). A
   reload recovered to `200` without a code or configuration change; this transient recovery is
-  recorded, not hidden. No operational data load has been run and the default `production`
-  environment remains empty.
+  recorded, not hidden. At that 2026-09-14 browser checkpoint, no operational data load had been
+  run and the default `production` environment remained empty.
 - After explicit approval for the staging backup/restore rehearsal, the owner-operated CLI attempted
   `railway postgres pitr backup create` for `postgres` with the named backup
   `pre-restore-rehearsal-2026-09-14`. Railway returned `{"code":"UNAUTHORIZED","error":"Failed to
