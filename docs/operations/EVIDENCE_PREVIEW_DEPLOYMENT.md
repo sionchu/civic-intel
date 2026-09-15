@@ -141,14 +141,18 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 | Logical backup receipt | Custom format, `--no-owner`; `57,261` bytes; SHA-256 `47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`; captured `2026-09-15T00:17:52.2664981Z` outside repository |
 | Restore rehearsal | Loopback-only disposable PostgreSQL `18.6` / `restore_target`; `pg_restore` duration `0.321s`; schema/table/count/provenance/MONEY comparison `PASS` |
 | Restored API smoke | `/ready 200`, `/health 200`, `/people 200` with zero rows, unknown Organization `404` |
-| Original staging mutation | None; read-only inspection and `pg_dump` only. Temporary SSH key, client binaries, disposable cluster and API process removed after proof |
+| Original staging mutation | No reset/drop/schema change; the separately approved bounded ALIO run wrote four Sources, four SourceSnapshots, one checkpoint and 15 observation rows only. Temporary SSH key, client binaries, disposable cluster and API process removed after proof |
 | CI after logical proof | GitHub Actions `Verify` run `34913882587`, pushed commit `6d979cdbd925f94328d578c3f941cb295d815201`, `success` in `2m25s`; canonical, migration, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
+| Bounded ALIO staging load | Run `40ba451d-4d57-4f18-bbdb-122c516ebfde`, `SUCCESS`; allowlist `C0019,C0129,C0908`; 15 observations; two SourceRuns including the first fail-closed attempt; schema `0006`; zero People/Organizations/Claims/ClaimEvidence |
+| Bounded ALIO read QA | Three distinct report snapshots; zero fulltext, empty identity hints, zero orphan observations, subject-XOR/provenance mismatch `0`; local `/health 200`, `/ready 200`, `/people 200` with zero rows and unknown Organization `404` |
+| CI after ALIO boundary fix | GitHub Actions `Verify` run `34916320972`, commit `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a`, `success`; canonical, migration, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
 
 ## Approval boundary
 
 The Web-only public domain and its browser smoke were explicitly approved and completed. API and
 database public access remain prohibited. Railway-managed backup/PITR is unavailable on the current
 plan and is not required for this checkpoint; the separately approved provider-independent logical
-backup/restore rehearsal passed. Persistent provider backup configuration and operational data
+backup/restore rehearsal passed. Persistent provider backup configuration and unbounded operational
 loading remain outside this checkpoint. The current deployment classification is
-`DEPLOYED_PREVIEW`, with no operational data loaded.
+`DEPLOYED_PREVIEW`: staging contains observation-only ALIO data, while no canonical Person,
+Organization, Claim or public FACT was loaded.

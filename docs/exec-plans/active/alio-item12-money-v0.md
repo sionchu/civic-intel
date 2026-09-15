@@ -1,8 +1,8 @@
 # ALIO Item 12 MONEY v0
 
-Status: completed — `L2 SINGLE_PULL` bounded three-institution proof on 2026-09-14; the
-Claim-gated read-only projection is a follow-on, with no live organization Claim input; L3 was
-not attempted.
+Status: completed — `L2 SINGLE_PULL` bounded three-institution proof on 2026-09-14 and approved
+staging observation rehearsal on 2026-09-15; the Claim-gated read-only projection still has no
+live organization Claim input; L3 was not attempted.
 
 ## Objective
 
@@ -61,7 +61,8 @@ current report pages and the [ALIO copyright policy](https://www.alio.go.kr/noti
   `submission_no`; the connector follows that path only.
 - The report table exposes `연도`, `업무추진비 집행금액`, `집행상세내역`, `(단위: 천원)`,
   `기준일` and `제출일`. The three proof institutions expose five annual rows for 2021–2025;
-  `.xls` and `.xlsx` filenames are retained as attachment locator metadata only.
+  selected rows use `.xls`/`.xlsx`, while recognized `.pdf`/`.hwp` names from unrelated directory
+  rows are retained as attachment locator metadata only and their bytes are not fetched.
 - `apbaId` is the ALIO institution namespace. `disclosureNo` is the current report identity.
   `submissionNo` identifies the submission used in the document/attachment locator. None is a
   canonical Person authority.
@@ -107,10 +108,11 @@ HTML, writer/supervisor/confirmer names, department, phone or email are persiste
 ## Acceptance and verification
 
 The source-specific regression file `tests/test_alio_item12_money.py` covers directory count and
-identity, five annual rows, `천원` normalization, mixed `.xls`/`.xlsx` metadata, malformed unit/
-amount/duplicate-year/institution cases, explicit no-data, policy-minimized persistence, no
-Person/Claim/review link, idempotent rerun, changed immutable version, exact provenance,
-deterministic MONEY output, zero baseline and the absent public organization route.
+identity, five annual rows, `천원` normalization, recognized document metadata and selected-row
+spreadsheet gating, malformed unit/amount/duplicate-year/institution cases, explicit no-data,
+policy-minimized persistence, no Person/Claim/review link, idempotent rerun, changed immutable
+version, exact provenance, deterministic MONEY output, zero baseline and the absent public
+organization route.
 
 Executed targeted evidence:
 
@@ -152,16 +154,44 @@ four metadata-only SourceSnapshots, zero People, zero Claims, run counters `(15,
 2024→2025 projection produced an absolute delta of `-2,162,000 KRW` and `-14.39%` with
 publication status `BLOCKED`.
 
+## Approved staging observation rehearsal (2026-09-15)
+
+The first approved live attempt failed closed after parsing the 355-row directory because
+unselected institutions advertised `.pdf`/`.hwp` attachments. It created one failed `SourceRun`
+but no Source, SourceSnapshot or FeederObservation, and no checkpoint; no partial recovery was
+needed. The minimal source-boundary fix was committed as `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a`.
+
+After that fix, the worker ran through a private Railway PostgreSQL tunnel and completed the
+allowlist `C0019`, `C0129`, `C0908` with run
+`40ba451d-4d57-4f18-bbdb-122c516ebfde`, `SUCCESS`, three institutions and 15 unique annual
+records. The live staging result has four Sources (directory plus three reports), four
+metadata-only SourceSnapshots, one checkpoint at cursor `3`, and two SourceRuns including the
+earlier failed run. The successful run recorded `(records_seen, observations_created,
+observations_unchanged) = (15, 15, 0)`.
+
+Read-only QA against staging confirmed Alembic head `0006`, 15 target observations and 15 distinct
+`{disclosureNo}:{fiscal_year}` keys, three report snapshots, zero fulltext snapshots, empty
+identity hints, zero orphan observations, zero unsafe source URLs and zero Claim subject-XOR or
+ClaimEvidence provenance mismatches. People, Organizations, Claims and ClaimEvidence remain zero.
+The local API read smoke against the staging connection returned `/health 200`, `/ready 200`,
+`/people 200` with zero rows and unknown Organization `404`. The reviewed Claim importer was not
+run because no existing canonical Organization binding was present; no Organization was created
+from an ALIO row.
+
+The temporary Railway SSH key was removed after the run, Railway reported no registered keys, and
+the local private/public key files were deleted. No provider plan, new resource, schema migration,
+database reset/drop or public API/database exposure was performed.
+
 ## Maturity decision
 
-The Item 12 lane is `L2 SINGLE_PULL` for the explicit three-institution bounded proof. The
+The Item 12 lane remains `L2 SINGLE_PULL` for the explicit three-institution bounded proof. The
 connector, parser, shared persistence, exact provenance and unchanged rerun are demonstrated by
-the live run and regressions. It is not L3: the full 355-institution annual-row scope, long-term
-correction/replacement semantics and operational sync contract have not been established or
-selected. The observation-only MONEY result remains blocked; the follow-on read-only route has no
-automatic ALIO binding or organization-wide Claim run. A separate operator-approved local C0908
-runtime slice now exercises the Claim-backed route with two annual Claims; this is not a shipped or
-public coverage claim.
+local regressions and the live staging observation rehearsal. It is not L3: the full 355-institution
+annual-row scope, long-term correction/replacement semantics and operational sync contract have
+not been established or selected. The staging result is observation-only; it does not create
+canonical Organizations, Claims or public FACTs. A separate operator-approved local C0908 runtime
+slice exercises the Claim-backed route with two annual Claims; this is not a shipped or public
+coverage claim.
 
 ## Not executed
 
@@ -173,5 +203,6 @@ validation only.
 
 ## Next concrete action
 
-The Claim-backed read-only projection is tracked in
-[`alio-item12-claim-backed-money-projection-v0.md`](alio-item12-claim-backed-money-projection-v0.md).
+Record one manually reviewed binding from an ALIO institution code to an existing canonical
+Organization before running the reviewed two-year Claim importer; do not create the Organization
+from the provider row.

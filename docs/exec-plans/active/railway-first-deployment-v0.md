@@ -2,7 +2,8 @@
 
 Status: completed for deployment and provider-independent logical backup/restore — private API/DB
 and public Web staging preview verified; Railway-managed backup/PITR is unavailable on the current
-plan and operational data load remains deferred.
+plan. A separately approved bounded ALIO observation rehearsal is complete; canonical subject and
+Claim data remain absent.
 
 Date: 2026-09-14
 
@@ -30,8 +31,10 @@ per-service config files are not used.
 - No provider key, local/ignored database, Golden fixture or reviewed local ALIO database is a
   deployment input.
 - No production environment, public API/database endpoint, custom domain, automatic feeder,
-  operational data load or source maturity change is in scope. The only public endpoint is the
-  Railway-generated Web domain created after explicit approval; API and PostgreSQL remain private.
+  unbounded operational data load or source maturity change is in scope. A separately approved
+  bounded ALIO observation rehearsal may write only source/observation records through the existing
+  gates. The only public endpoint is the Railway-generated Web domain created after explicit
+  approval; API and PostgreSQL remain private.
 
 Creating resources, accepting billable usage, applying the IaC plan and generating a public web
 domain are external state changes and require explicit operator approval. Before that approval the
@@ -164,9 +167,25 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   `6d979cdbd925f94328d578c3f941cb295d815201` passed in `2m25s`, including canonical verification,
   Alembic round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and
   deployment artifact checks.
+- After explicit approval on 2026-09-15, the bounded ALIO Item 12 worker ran through a private
+  tunnel against staging using only `C0019`, `C0129` and `C0908`. Run
+  `40ba451d-4d57-4f18-bbdb-122c516ebfde` returned `SUCCESS` with three institutions and 15
+  observations. Read-only QA found schema head `0006`, four Sources, four SourceSnapshots, two
+  SourceRuns (one failed pre-fix and the successful run), one checkpoint at cursor `3`, and zero
+  People, Organizations, Claims and ClaimEvidence. The successful run counters were
+  `(15, 15, 0)`; target provider keys were distinct, fulltext was zero, subject-XOR/provenance
+  checks were zero, and `/health`/`/ready`/`/people` returned `200`/`200`/`200` with an unknown
+  Organization `404`.
+- The first attempt failed closed on unrelated `.pdf`/`.hwp` directory metadata before any source
+  page commit. Commit `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a` now preserves recognized document
+  metadata for unselected rows and enforces the spreadsheet gate only for selected institutions.
+  GitHub Actions `Verify` run `34916320972` passed for that commit. Claim import was not run because
+  no existing canonical Organization binding was present; no provider row was materialized.
+- The temporary Railway SSH key was removed and local key files deleted after verification. No
+  plan/resource change, database reset/drop/schema migration or API/database public exposure was
+  performed.
 
 ## Next action
 
-Keep Railway-managed backup/PITR disabled and do not upgrade the plan or create a new database
-resource. Obtain separate operator approval for the bounded reviewed ALIO data-load rehearsal;
-until then keep staging empty and keep API/DB exposure prohibited.
+Before any ALIO Claim import, record one manually reviewed binding from an institution code to an
+existing canonical Organization; do not create the Organization from a provider observation.

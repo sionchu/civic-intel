@@ -19,11 +19,12 @@ This execution covers M0 and M1 only. It preserves the canonical
 `Claim → ClaimEvidence → Source → SourcePolicy` path, exact observation/snapshot provenance,
 Person/Organization subject XOR, current identity gates and the observation-only ALIO worker.
 
-It does not add a feeder, promote maturity, enumerate or bind ALIO Organizations automatically,
-publish raw provider material, create a generic financial model, or implement M2–M5. The seven
-existing L3 feeders and every blocked/L1/L2 source lane retain their current source-specific
-maturity. Fixture, reviewed packet, live observation, published canonical record and deployed
-data remain distinct evidence classes.
+It does not add a feeder, perform unbounded enumeration, or bind ALIO Organizations automatically,
+publish raw provider material, create a generic financial model, or implement M2–M5. A separately
+approved bounded ALIO observation rehearsal is allowed within M1.4 and remains observation-only.
+The seven existing L3 feeders and every blocked/L1/L2 source lane retain their current
+source-specific maturity. Fixture, reviewed packet, live observation, published canonical record
+and deployed data remain distinct evidence classes.
 
 The root checkout, ignored runtime database, proposer candidate and other worktrees are outside
 this worktree and must not be reset, cleaned, moved or rewritten.
@@ -221,6 +222,35 @@ Implementation and evidence:
   `6d979cdbd925f94328d578c3f941cb295d815201` passed in `2m25s`, including canonical verification,
   Alembic round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and
   deployment artifact checks.
+
+### Subsequent approved staging observation rehearsal
+
+- The first approved live attempt failed closed because unrelated directory rows advertised
+  `.pdf`/`.hwp` attachments while the selected known-positive rows were spreadsheet-backed. It
+  created only a failed `SourceRun` (`00a234ee-dde6-407f-a4a9-2deed6e27875`); read-only inspection
+  confirmed zero Sources, SourceSnapshots, Checkpoints and FeederObservations, so no partial
+  recovery was needed.
+- The minimal fix `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a` preserves recognized document filenames
+  as metadata for unselected rows, rejects unsupported formats only inside the selected allowlist,
+  and continues to reject unknown extensions. Targeted ALIO tests (34), full pytest (exit 0 with
+  one PostgreSQL-only skip), Ruff, mypy and Golden quality all passed locally. GitHub Actions
+  `Verify` run `34916320972` for this commit completed successfully, including canonical,
+  migration, PostgreSQL load/API, backup/restore and deployment-artifact checks.
+- Through a private Railway tunnel, the bounded worker completed `C0019`, `C0129`, `C0908` with
+  run `40ba451d-4d57-4f18-bbdb-122c516ebfde`, `SUCCESS`, three institutions and 15 observations.
+  Staging now contains four Sources, four metadata-only SourceSnapshots, two SourceRuns (one
+  earlier failed and one successful), one checkpoint at cursor `3`, and zero People,
+  Organizations, Claims and ClaimEvidence. The successful run counters are
+  `(records_seen, observations_created, observations_unchanged) = (15, 15, 0)`.
+- Read-only QA confirmed schema head `0006`, 15 distinct provider keys, three report snapshots,
+  zero fulltext snapshots, empty identity hints, zero orphan observations, zero unsafe source URLs,
+  subject-XOR `0` and ClaimEvidence provenance mismatch `0`. A local API read smoke using the
+  staging connection returned `/health 200`, `/ready 200`, `/people 200` with zero rows and
+  unknown Organization `404`. Claim import was not run because an existing canonical Organization
+  binding is required; no provider row was materialized as an Organization.
+- The temporary Railway key was removed and local ephemeral key files deleted after verification.
+  No provider plan/resource change, reset/drop/schema migration, public API/database exposure or
+  new feeder was introduced. This is `LIVE_OBSERVATION` evidence, not published canonical data.
 
 ## M1.5 — deployment preparation and approval boundary
 

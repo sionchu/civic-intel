@@ -1148,3 +1148,36 @@ PITR disabled, do not create a new database service, and keep API/PostgreSQL pri
 
 Obtain separate operator approval for the bounded reviewed ALIO data-load rehearsal; until then
 keep staging empty and do not add new feeders.
+
+## Current checkpoint — approved staging ALIO observation rehearsal (2026-09-15)
+
+- The isolated worktree is `C:\Users\getch\OneDrive\Documents\ChatGPT\cvic\.worktrees\change-discovery-plan`
+  on `codex/change-discovery-plan`. The root checkout, its proposer candidate and ignored runtime
+  database, plus the other worktrees, remain preserved.
+- The live Item 12 attempt first failed closed when unselected directory rows advertised
+  `.pdf`/`.hwp` attachments. The failed run was
+  `00a234ee-dde6-407f-a4a9-2deed6e27875`; read-only inspection showed no Source, SourceSnapshot,
+  Checkpoint or FeederObservation writes, so no partial recovery was needed. The minimal parser/
+  selected-scope fix was committed as `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a`.
+- The approved private-tunnel retry completed run
+  `40ba451d-4d57-4f18-bbdb-122c516ebfde` with `SUCCESS`, allowlist `C0019,C0129,C0908`, three
+  institutions and 15 observations. Staging now has four Sources, four metadata-only
+  SourceSnapshots, two SourceRuns (failed plus successful), one checkpoint at cursor `3`, and
+  zero People, Organizations, Claims and ClaimEvidence. The successful run counters were
+  `(records_seen, observations_created, observations_unchanged) = (15, 15, 0)`.
+- Read-only QA confirmed schema head `0006`, 15 distinct provider keys, three report snapshots,
+  zero fulltext snapshots, empty identity hints, zero orphan observations, zero unsafe source URLs,
+  subject-XOR `0` and ClaimEvidence provenance mismatch `0`. A local API read smoke against the
+  staging connection returned `/health 200`, `/ready 200`, `/people 200` with zero rows and
+  unknown Organization `404`. Claim import was not run because no existing canonical Organization
+  binding was available; no Organization was created from an ALIO observation.
+- GitHub Actions `Verify` run `34916320972` for `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a` passed.
+  Targeted ALIO tests (34), full pytest (exit 0 with one PostgreSQL-only skip), Ruff, mypy and
+  Golden quality passed locally. The temporary Railway SSH key and local private/public key files
+  were removed after verification; no provider plan/resource change, database reset/drop/schema
+  migration or public API/database exposure occurred.
+
+## Next concrete action
+
+Record one manually reviewed ALIO institution-code binding to an existing canonical Organization
+before any reviewed Claim import; never create that Organization from the provider observation.
