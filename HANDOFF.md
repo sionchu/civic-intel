@@ -1269,11 +1269,17 @@ existing successful-enumeration and source-specific materialization gates.
   `UNKNOWN` states and field-level evidence traces. Local full verification passed with 345 tests
   and one PostgreSQL-only skip, plus Ruff, mypy, Golden quality, web lint/typecheck/UI tests,
   production build and standalone artifact checks. No schema or dependency change was made.
-- The staging Web smoke already proved the pre-M4 public roster/profile path; the new Base Profile
-  section awaits the post-push deployed artifact check and is not yet counted as browser evidence.
+- Post-push staging API deployment from commit
+  `10ef8317cd01ac3f1c8933647a0cfecdf1c7b69b` completed `SUCCESS` without a new resource or plan
+  change. The public Web then rendered `298 resolved identities`; the resolved `이상휘` profile
+  rendered 14 sections with `국회 기본 프로필` `AVAILABLE`, four party/district/committees/
+  reelection Claims and a visible Evidence trace for each. Raw normalized provider payload and
+  provider contact fields were not rendered.
+- GitHub Actions `Verify` run `34957511937` for the same commit completed successfully in 2m40s,
+  including canonical verification, Alembic round trip, PostgreSQL load/API, backup/restore and
+  deployment-artifact checks. The isolated worktree is clean and local HEAD equals `origin/master`.
 
 ## Next concrete action
 
-Push the Assembly Base Profile v1 implementation and perform the post-deployment staging browser
-smoke for the new profile section; keep the one birth-date conflict and one missing committee value
-explicit, and do not start BTIS or another feeder.
+Review the one open Assembly `EXACT_BIRTH_DATE_CONFLICT` queue item before the next roster refresh;
+keep the one missing committee value explicit and do not start BTIS or another feeder.

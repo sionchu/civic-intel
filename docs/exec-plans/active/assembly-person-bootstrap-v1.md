@@ -1,7 +1,7 @@
 # Assembly Person Bootstrap v1
 
-Status: active — M0–M4 implementation and staging data proof are complete; post-push deployed
-Web smoke and CI closure remain in the delivery loop.
+Status: completed on 2026-09-15 — M0–M4 implementation, staging proof, deployed Web smoke and
+CI verification are closed.
 
 ## Objective
 
@@ -152,6 +152,16 @@ conflict. Python full verification passed with `345 passed, 1 skipped`; Ruff, my
 web lint/typecheck/UI tests, production build and standalone artifact checks also passed. The
 staging Web deployment used for the earlier M3 smoke predates this M4 code, so the new profile
 section is not counted as deployed/browser evidence until the post-push deployment smoke.
+
+Post-push evidence (2026-09-15): the existing staging API service was redeployed from
+`10ef8317cd01ac3f1c8933647a0cfecdf1c7b69b` without creating a resource or changing the plan. The
+deployment completed `SUCCESS`. The public staging Web then rendered `298 resolved identities`;
+the resolved profile for `이상휘` rendered `14 sections`, with `국회 기본 프로필` in
+`AVAILABLE` state and the four source-specific party, district, committees and reelection Claims,
+each with a visible `Evidence trace` to the official Assembly Source. No raw normalized provider
+payload or provider contact fields appeared in the rendered profile. GitHub Actions `Verify` run
+`34957511937` for the same commit completed successfully in `2m40s`, including canonical,
+Alembic, PostgreSQL load/API, backup/restore and deployment-artifact checks.
 
 ## Acceptance and verification
 
