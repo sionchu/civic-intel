@@ -52,17 +52,33 @@ post-migration read-only IaC plan returned `No changes.` with zero diagnostics. 
 Web-only approval, the generated service domain
 `https://web-staging-efe2.up.railway.app` became `ACTIVE`; API and PostgreSQL have no public URL.
 
-At the current checkpoint, Railway reports PostgreSQL PITR disabled and no backup bucket wired.
-The approved on-demand volume-backup attempt for `pre-restore-rehearsal-2026-09-14` returned
-`UNAUTHORIZED` / `Failed to create a backup`; the command was not retried. The backup list and
-automatic schedule remain empty. The local host has no PostgreSQL client tools, and private SSH
-inspection needs a new SSH key; no new credential, persistent backup configuration, backup snapshot,
-restore, or database-content mutation was created. Data loading remains outside this deployment
-checkpoint. On 2026-09-15, owner-operated OAuth login completed and the same read-only Railway
-project/service/volume/backup/PITR/schedule calls succeeded. A single retry of the approved backup
-creation under the fresh login still returned `UNAUTHORIZED` / `Failed to create a backup`; the
-backup list remains empty and no interactive or further resource mutation was attempted. A fresh
-provider-side authorization or feature-entitlement decision is required before resuming this gate.
+At the current checkpoint, Railway-managed PostgreSQL backups/PITR are unavailable on the current
+plan; the owner-observed staging Dashboard states that backups and point-in-time recovery are
+available only for Pro customers. PITR remains disabled, no backup bucket is wired, and the backup
+list/schedule remain empty. The approved provider-side backup creation attempts on 2026-09-14 and
+2026-09-15 both returned `UNAUTHORIZED` / `Failed to create a backup`. No Pro upgrade,
+billing/plan change or new Railway resource was made; managed backup is not an M1.4 blocker.
+
+The M1.4 backup requirement was completed with a provider-independent logical rehearsal. On
+2026-09-15, a private `railway connect postgres --tunnel-only` session performed read-only
+inspection and `pg_dump`; a temporary SSH key was registered for that session and removed
+afterward, and Railway then reported no registered SSH keys. Staging was at application revision
+`b8c1f7666c8dcd2293da90a20cda1e41944a527c`, schema head `0006`, PostgreSQL `18.6`, with 26 public
+tables. The checked canonical table counts were all `0`; subject-XOR and ClaimEvidence
+provenance mismatch checks were `0`, and published/MONEY counts were `0`.
+
+The custom-format dump used `--no-owner`, was captured at `2026-09-15T00:17:52.2664981Z`, measured
+`57,261` bytes, and has SHA-256
+`47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`. It remains in a private
+temporary path outside the repository and was not committed. `pg_restore --no-owner --exit-on-error`
+restored it into a loopback-only disposable PostgreSQL `18.6` database named `restore_target` in
+`0.321` seconds. Schema head, table set, canonical counts, subject-XOR/provenance checks and
+MONEY counts matched. Against the restored database, `/ready` returned `200`, `/health` returned
+`200`, `/people` returned `200` with zero rows and an unknown Organization returned `404`.
+Both source and restored staging databases were empty, so no live staging MONEY pilot row existed
+to compare; the non-empty pilot result remains separately evidenced by CI/fixtures. The original
+staging database was not dropped, reset, migrated or written; only read-only inspection and
+`pg_dump` were performed.
 
 ## Required runtime configuration
 
@@ -78,11 +94,12 @@ provider-side authorization or feature-entitlement decision is required before r
 
 ## Release order
 
-1. [blocked] Record the exact application commit and take a PostgreSQL custom-format backup. The
-   approved provider-side volume-backup attempt was rejected with `UNAUTHORIZED` before a snapshot
-   existed.
-2. Restore that backup into a disposable database and run
-   `python -m packages.verification.postgresql` against the restored URL.
+1. [x] Record the exact application commit and take a PostgreSQL custom-format logical backup.
+   The provider-managed attempt was rejected with `UNAUTHORIZED`, so the receipt above records
+   the private-tunnel `pg_dump` artifact, checksum and `--no-owner` contract.
+2. [x] Restore that logical backup into a disposable database and run the restored-database
+   verifier/API smoke. The local loopback PostgreSQL target passed schema, table/count,
+   provenance, MONEY-count and `/ready`/`/health`/`/people`/404 checks.
 3. Build both images and scan the build logs for copied secrets or ignored runtime databases.
 4. Run `python -m alembic upgrade head` as a one-shot migration job against the approved target.
 5. Start FastAPI and require `/ready` to return 200 before routing traffic.
@@ -120,13 +137,17 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 | Web → API success | API `GET /people 200`; Web rendered the empty result, not an outage fallback |
 | Public 404 | unknown UUID rendered `Profile not found`; API `GET /people/<unknown> 404` |
 | IaC drift | read-only `railway config plan` returned `Your Railway configuration is already up to date.` |
-| Backup rehearsal | `railway postgres pitr backup create` returned `UNAUTHORIZED`; backup list and automatic schedule remain empty; restore not run |
+| Managed Railway backup | PITR disabled, no backup bucket wired; both approved create attempts returned `UNAUTHORIZED`; current plan Dashboard says managed backup/PITR is Pro-only; no plan or billing change |
+| Logical backup receipt | Custom format, `--no-owner`; `57,261` bytes; SHA-256 `47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`; captured `2026-09-15T00:17:52.2664981Z` outside repository |
+| Restore rehearsal | Loopback-only disposable PostgreSQL `18.6` / `restore_target`; `pg_restore` duration `0.321s`; schema/table/count/provenance/MONEY comparison `PASS` |
+| Restored API smoke | `/ready 200`, `/health 200`, `/people 200` with zero rows, unknown Organization `404` |
+| Original staging mutation | None; read-only inspection and `pg_dump` only. Temporary SSH key, client binaries, disposable cluster and API process removed after proof |
 
 ## Approval boundary
 
 The Web-only public domain and its browser smoke were explicitly approved and completed. API and
-database public access remain prohibited. The backup/restore rehearsal was separately approved but
-is currently blocked by the provider-side authorization response and subsequent CLI authentication
-failure above; persistent backup/PITR configuration and operational data loading remain outside this
-checkpoint. The current deployment classification is `DEPLOYED_PREVIEW`, with no operational data
-loaded.
+database public access remain prohibited. Railway-managed backup/PITR is unavailable on the current
+plan and is not required for this checkpoint; the separately approved provider-independent logical
+backup/restore rehearsal passed. Persistent provider backup configuration and operational data
+loading remain outside this checkpoint. The current deployment classification is
+`DEPLOYED_PREVIEW`, with no operational data loaded.

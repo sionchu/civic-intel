@@ -1,7 +1,8 @@
 # Railway first deployment v0
 
-Status: completed for deployment — private API/DB and public Web staging preview verified; the
-approved backup/restore gate is provider-blocked and data load remains deferred.
+Status: completed for deployment and provider-independent logical backup/restore — private API/DB
+and public Web staging preview verified; Railway-managed backup/PITR is unavailable on the current
+plan and operational data load remains deferred.
 
 Date: 2026-09-14
 
@@ -46,9 +47,10 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
 4. [x] After approval, apply the saved staging plan and generate a public domain only for `web`.
 5. [x] Verify migration head, `/ready`, public roster, Person evidence, Organization states, 404 and
    API-unavailable behavior in the deployed browser artifact.
-6. [blocked] Configure and verify a database backup before any non-fixture data load. The approved
-   on-demand volume-backup attempt was rejected by Railway with `UNAUTHORIZED`; no backup or
-   restore was run. Data loading remains a separate reviewed operation.
+6. [x] Verify a database backup before any non-fixture data load. Railway-managed volume backup
+   remains unavailable (`UNAUTHORIZED` on the approved attempts), so the provider-independent
+   logical dump/restore receipt below satisfies this gate. Data loading remains a separate
+   reviewed operation.
 
 ## Acceptance
 
@@ -99,9 +101,9 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   the observed move the PostgreSQL volume reported `MIGRATING` with zero replicas; it recovered
   with the volume `READY`, one running replica and the region `asia-southeast1-eqsg3a`.
 - Before the requested move, Railway reported PostgreSQL PITR disabled and no backup bucket wired.
-  The local host has no PostgreSQL client, and private SSH inspection would require creating an
-  SSH key; neither a new credential nor a persistent backup configuration was created. No
-  operational data load has been run. No PITR or one-off backup was configured.
+  At that earlier checkpoint the local host had no PostgreSQL client and no SSH key was created;
+  no persistent backup configuration was created. No operational data load has been run. No PITR
+  or one-off provider backup was configured.
 - After migration, a read-only IaC plan returned `No changes.` with zero diagnostics. API, Web and
   PostgreSQL each report `SUCCESS` with one running replica; API and database have no public URL.
 - Following the explicit approval to expose Web only, `railway domain --service web` created
@@ -136,10 +138,31 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
   `a9124150f00c8740187060f8a01ecfbca554319f` passed in 2m35s. Canonical verification, Alembic
   round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and deployment
   artifact checks all passed.
+- On 2026-09-15, the owner-observed staging Dashboard stated that Railway-managed backups and PITR
+  are available only for Pro customers. No Pro upgrade, billing/plan change or new resource was
+  made. A private `railway connect postgres --tunnel-only` session used a temporary registered SSH
+  key; the key was removed after the session and Railway reported no registered keys.
+- The read-only staging receipt recorded app revision
+  `b8c1f7666c8dcd2293da90a20cda1e41944a527c`, repository HEAD
+  `33c664b3a93addb7d02c89c6ef1807a62ac6041b` at capture, schema head `0006`, PostgreSQL `18.6`,
+  26 public tables and zero rows in each canonical table/count checked. Subject-XOR and
+  ClaimEvidence provenance mismatch checks were zero; published and MONEY counts were zero.
+- The custom-format, `--no-owner` logical dump was captured at
+  `2026-09-15T00:17:52.2664981Z`, measured `57,261` bytes, and has SHA-256
+  `47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`. It is retained outside
+  the repository in a private temporary path and was not committed.
+- `pg_restore --no-owner --exit-on-error` restored into a loopback-only disposable PostgreSQL
+  `18.6` `restore_target` in `0.321` seconds. Schema head, table set, canonical counts,
+  subject-XOR/provenance checks and MONEY counts matched. Restored-DB API smoke returned
+  `/ready 200`, `/health 200`, `/people 200` with zero rows and unknown Organization `404`.
+  The source and restored staging databases were empty, so there was no live staging MONEY row;
+  the non-empty pilot proof remains the separate CI/fixture result.
+- The original staging database was not dropped, reset, migrated or written; the rehearsal used
+  read-only inspection and `pg_dump` only. Temporary client binaries, disposable PostgreSQL and
+  API processes were cleaned up after the proof.
 
 ## Next action
 
-Resolve the Railway provider-side authorization or feature entitlement for the existing staging
-volume, then rerun the already reviewed backup/restore rehearsal only if a read-only access check
-and provider response authorize it; do not enable PITR or create a new database service under this
-checkpoint, and keep API/DB exposure prohibited.
+Keep Railway-managed backup/PITR disabled and do not upgrade the plan or create a new database
+resource. Obtain separate operator approval for the bounded reviewed ALIO data-load rehearsal;
+until then keep staging empty and keep API/DB exposure prohibited.

@@ -158,7 +158,8 @@ must agree.
 
 ## M1.4 — PostgreSQL, load and recovery proof
 
-Status: completed in GitHub Actions on 2026-09-14.
+Status: completed with GitHub Actions and provider-independent staging logical backup/restore proof
+on 2026-09-15.
 
 Keep one SQLAlchemy/Alembic repository and retain SQLite tests. Add only the required PostgreSQL
 driver/configuration. Against a disposable PostgreSQL instance, verify clean upgrade to head,
@@ -185,8 +186,37 @@ Implementation and evidence:
   verification, the SQLite migration round trip, PostgreSQL migration/load/API contracts and a
   custom-format `pg_dump` restored into a second database. The restored verifier confirmed head
   `0006`, ten public People, two published Organization Claims and a representative public read.
-- PostgreSQL tooling was unavailable on the Windows host, so this stage's database and
-  backup/restore execution evidence is CI evidence, not a local PostgreSQL claim.
+- Railway-managed backup/PITR is unavailable on the current staging plan: the owner-observed
+  Dashboard states that backups and point-in-time recovery are available only for Pro customers.
+  No Pro upgrade, billing/plan change or new Railway resource was made. This provider limitation
+  is not an M1.4 blocker because the approved backup requirement is satisfied by the
+  provider-independent logical proof below.
+- On 2026-09-15, a read-only `railway connect postgres --tunnel-only` session was used to inspect
+  staging and create the dump. A temporary SSH key was registered for that session and removed
+  afterward; Railway then reported no registered SSH keys. The staging baseline was schema head
+  `0006` on PostgreSQL `18.6`, with 26 public tables. The canonical counts for People,
+  Organizations, Sources, SourceSnapshots, SourceRuns, SourceCheckpoints, FeederObservations,
+  Claims, ClaimEvidence, PersonObservationLinks and IdentityReviewItems were all `0`;
+  subject-XOR and ClaimEvidence provenance mismatch checks were `0`, and published/MONEY counts
+  were `0`.
+- The logical receipt captured application revision
+  `b8c1f7666c8dcd2293da90a20cda1e41944a527c`, repository HEAD
+  `33c664b3a93addb7d02c89c6ef1807a62ac6041b` at capture, schema head `0006`, and PostgreSQL
+  `18.6` at `2026-09-15T00:17:52.2664981Z`. The private dump used custom format and `--no-owner`,
+  was `57,261` bytes, and had SHA-256
+  `47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`. It remains outside the
+  repository in a private temporary backup path and is not committed.
+- `pg_restore --no-owner --exit-on-error` restored the dump into a loopback-only disposable
+  PostgreSQL `18.6` database in `0.321` seconds. The restored schema head, 26-table set,
+  canonical counts, subject-XOR/provenance checks and pilot MONEY counts matched the read-only
+  staging baseline. The restored database API smoke returned `/ready 200`, `/health 200`,
+  `/people 200` with zero rows, and `404` for an unknown Organization; the restore gate passed.
+  Both source and restored staging databases were empty, so no live staging Organization/MONEY
+  pilot row existed to compare. The non-empty pilot result remains separately evidenced by CI
+  and fixtures, not attributed to this staging dump.
+- The staging source was never dropped, reset, migrated, or written during the rehearsal: only
+  read-only inspection and `pg_dump` were performed. The temporary PostgreSQL client binaries,
+  disposable cluster, API process and transient key material were cleaned up after verification.
 
 ## M1.5 — deployment preparation and approval boundary
 

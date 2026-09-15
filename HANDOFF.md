@@ -1107,3 +1107,40 @@ separate approvals.
 Resolve the Railway provider-side authorization or feature entitlement for the existing staging
 volume, then rerun the reviewed backup/restore rehearsal only if the provider authorizes it. Keep
 PITR disabled, do not create a new database service, and keep API/PostgreSQL private.
+
+## Current checkpoint — M1.4 provider-independent logical backup/restore (2026-09-15)
+
+- The isolated worktree is `C:\Users\getch\OneDrive\Documents\ChatGPT\cvic\.worktrees\change-discovery-plan`
+  on `codex/change-discovery-plan`; the repository and `origin/master` were both at
+  `33c664b3a93addb7d02c89c6ef1807a62ac6041b` before this documentation update. The root checkout,
+  ignored runtime database, proposer candidate and other worktrees remain preserved.
+- Railway staging application revision was
+  `b8c1f7666c8dcd2293da90a20cda1e41944a527c`; the read-only database baseline was PostgreSQL
+  `18.6`, Alembic head `0006`, and 26 public tables. People, Organizations, Sources,
+  SourceSnapshots, SourceRuns, SourceCheckpoints, FeederObservations, Claims, ClaimEvidence,
+  PersonObservationLinks and IdentityReviewItems each had count `0`. Subject-XOR and
+  ClaimEvidence provenance mismatch checks were `0`; published and MONEY counts were `0`.
+- The baseline used a private `railway connect postgres --tunnel-only` session. A temporary SSH key
+  was registered only for the session and removed afterward; Railway reported no registered SSH keys
+  after cleanup. No persistent credential remains. The original staging database received only
+  read-only inspection and `pg_dump`; it was not dropped, reset, migrated or written.
+- The logical dump receipt is: captured `2026-09-15T00:17:52.2664981Z`; custom format with
+  `--no-owner`; `57,261` bytes; SHA-256
+  `47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`. The dump remains in a
+  private temporary path outside the repository and is not committed.
+- `pg_restore --no-owner --exit-on-error` restored into a loopback-only disposable PostgreSQL
+  `18.6` database `restore_target` in `0.321` seconds. Schema head, table set, canonical counts,
+  subject-XOR/provenance checks and MONEY counts matched the staging baseline. Restored-database
+  API smoke returned `/ready 200`, `/health 200`, `/people 200` with zero rows and unknown
+  Organization `404`. Both source and restored staging databases were empty; the non-empty pilot
+  MONEY result remains separate CI/fixture evidence.
+- Railway-managed backup/PITR is unavailable on the current plan; the owner-observed Dashboard
+  states it is Pro-only. The two approved provider backup attempts returned `UNAUTHORIZED`. No Pro
+  upgrade, billing/plan change or new resource was made. This does not block M1.4 because the
+  provider-independent logical proof passed. Temporary client binaries, disposable PostgreSQL,
+  API process and transient key files were cleaned after verification.
+
+## Next concrete action
+
+Obtain separate operator approval for the bounded reviewed ALIO data-load rehearsal; until then
+keep staging empty and do not add new feeders.
