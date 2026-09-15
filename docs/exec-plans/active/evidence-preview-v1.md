@@ -286,6 +286,10 @@ mypy, Golden quality, web lint/typecheck/UI tests and standalone production buil
 `success` in `3m4s` with canonical, Alembic, PostgreSQL load/API, backup/restore and deployment
 artifact checks.
 
+The next approved implementation plan is [Assembly Person Bootstrap v1](assembly-person-bootstrap-v1.md).
+It is limited to the existing current-roster L3 enumeration/materialization gates and a later
+small roster-field review; no other feeder starts before that sequence closes.
+
 ## M1.5 — deployment preparation and approval boundary
 
 Status: completed in GitHub Actions on 2026-09-14.

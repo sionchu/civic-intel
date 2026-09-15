@@ -1208,3 +1208,19 @@ approval, keep staging empty and do not add new feeders.
 Close the ALIO reviewed-Claim/MONEY milestone with the targeted and full local verification,
 diff review and CI result, then start the active `Assembly Person Bootstrap v1` plan using the
 existing successful-enumeration and source-specific materialization gates.
+
+## Current checkpoint — Assembly Person Bootstrap v1 plan established (2026-09-15)
+
+- The ALIO reviewed Organization binding → two fiscal-year Claim → MONEY staging smoke is closed
+  at `b8b23984de5aad4ce762afbd528558a25a764116`; its Verify run `34945537685` passed.
+- The next active plan is `docs/exec-plans/active/assembly-person-bootstrap-v1.md`. It reuses the
+  existing Assembly enumerator, shared batch persistence and source-specific materialization gate;
+  no new schema, repository, resolver or UI path is authorized.
+- The required order is current staging logical backup/restore receipt, successful unfiltered full
+  roster enumeration, exact-observation materialization with four outcome counts/review queue,
+  `/people` resolved-person smoke, then a separate atomic roster-field publishability slice.
+
+## Next concrete action
+
+Create the fresh staging logical backup/restore receipt and read-only baseline, then execute the
+existing Assembly current-roster enumeration; do not materialize unless the run is `SUCCESS`.
