@@ -196,8 +196,8 @@ contract now supports exactly one Person or current Organization subject, and re
 organization Claim routes reuse the same evidence path. The Item 12 builder/importer requires an
 existing reviewed Organization; `apbaId` never auto-creates one. The bounded worker still creates
 observations only, so no automatic ALIO annual Claim/public FACT is added here. A separate
-operator-approved local C0908 binding now proves the Claim-backed route with two annual Claims;
-that runtime capture is not a shipped/public product artifact. The derived
+operator-approved C0908 binding now proves the Claim-backed route with two annual Claims in local
+and staging smoke; that runtime capture is not a shipped/public product artifact. The derived
 `money.alio-head-expense-yoy.v1` route is limited to
 `/organizations/{organization_id}/money`, consumes published annual organization Claims only and
 has no generic `/money` bypass; without a reviewed binding and those Claims it returns no result.

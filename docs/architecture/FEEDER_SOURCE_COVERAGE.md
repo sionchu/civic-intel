@@ -475,8 +475,8 @@ ALIO Item 12 institution-head business expense
  -> `amount_thousand_krw` is the source unit; `amount_krw` is deterministic integer normalization
  -> a descriptive year-over-year MONEY result is not personal spending, waste, corruption,
     performance, peer ranking or a named institution-head claim
- -> the bounded read-only organization MONEY route is Claim-gated; no live result exists until a
-    reviewed Organization binding and annual organization Claim import are present
+ -> the bounded read-only organization MONEY route is Claim-gated; organizations without a
+    reviewed Organization binding and annual organization Claim import have no live result
 
 ALIO reemployment disclosure
  -> FACT of disclosed retirement/reemployment event

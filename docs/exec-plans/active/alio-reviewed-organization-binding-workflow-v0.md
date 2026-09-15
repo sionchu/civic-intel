@@ -111,6 +111,11 @@ the ALIO provider code in source-scoped Claim qualifiers.
 - Actual local runtime dry run returned `DRY_RUN` for C0908/2021–2022 and left the database at
   one Organization, two Claims, two ClaimEvidence rows and 15 observations. The previously
   imported C0908 2024–2025 route returned `200` / `AVAILABLE` with `-2,162,000 KRW` and `-14.39%`.
+- The separately approved staging rehearsal bound the same existing Organization for C0908 and
+  committed the reviewed 2024–2025 pair. Staging read smoke returned the organization, Claims and
+  MONEY routes with `200` / `AVAILABLE`, the same `-2,162,000 KRW` and `-14.39%`, and exact
+  ClaimEvidence → SourceSnapshot → FeederObservation provenance. This remains an operator-approved
+  staging proof, not automatic binding or L3 coverage.
 - GNU Make is unavailable on this Windows host, so `make verify` was not runnable; every
   constituent verification command was executed directly.
 

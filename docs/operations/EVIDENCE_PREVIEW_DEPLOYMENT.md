@@ -133,18 +133,19 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 | --- | --- |
 | Web public domain | `https://web-staging-efe2.up.railway.app`, Railway service domain `ACTIVE` |
 | API / PostgreSQL exposure | both service URLs `null`; private Singapore services, one running replica each |
-| Web root | Evidence Directory rendered; `0` resolved identities / explicit empty roster |
-| Web → API success | API `GET /people 200`; Web rendered the empty result, not an outage fallback |
+| Web root | Evidence Directory rendered; the earlier pre-load check showed `0` resolved identities / explicit empty roster |
+| Web → API success | API `GET /people 200`; the pre-load Web smoke rendered the empty result, not an outage fallback |
 | Public 404 | unknown UUID rendered `Profile not found`; API `GET /people/<unknown> 404` |
 | IaC drift | read-only `railway config plan` returned `Your Railway configuration is already up to date.` |
 | Managed Railway backup | PITR disabled, no backup bucket wired; both approved create attempts returned `UNAUTHORIZED`; current plan Dashboard says managed backup/PITR is Pro-only; no plan or billing change |
 | Logical backup receipt | Custom format, `--no-owner`; `57,261` bytes; SHA-256 `47CE121735FB27F9DCBCA9B297A2041FE25FFAA3F3CEAB2CEBE8050F5C834CAF`; captured `2026-09-15T00:17:52.2664981Z` outside repository |
 | Restore rehearsal | Loopback-only disposable PostgreSQL `18.6` / `restore_target`; `pg_restore` duration `0.321s`; schema/table/count/provenance/MONEY comparison `PASS` |
 | Restored API smoke | `/ready 200`, `/health 200`, `/people 200` with zero rows, unknown Organization `404` |
-| Original staging mutation | No reset/drop/schema change; the separately approved bounded ALIO run wrote four Sources, four SourceSnapshots, one checkpoint and 15 observation rows only. Temporary SSH key, client binaries, disposable cluster and API process removed after proof |
+| Original staging mutation | No reset/drop/schema change; the separately approved bounded ALIO run wrote four Sources, four SourceSnapshots, one checkpoint and 15 observation rows. The later separately approved reviewed binding and Claim import added one existing canonical Organization, two Claims and two ClaimEvidence rows. Temporary SSH key, client binaries, disposable cluster and API process removed after proof |
 | CI after logical proof | GitHub Actions `Verify` run `34913882587`, pushed commit `6d979cdbd925f94328d578c3f941cb295d815201`, `success` in `2m25s`; canonical, migration, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
-| Bounded ALIO staging load | Run `40ba451d-4d57-4f18-bbdb-122c516ebfde`, `SUCCESS`; allowlist `C0019,C0129,C0908`; 15 observations; two SourceRuns including the first fail-closed attempt; schema `0006`; zero People/Organizations/Claims/ClaimEvidence |
-| Bounded ALIO read QA | Three distinct report snapshots; zero fulltext, empty identity hints, zero orphan observations, subject-XOR/provenance mismatch `0`; local `/health 200`, `/ready 200`, `/people 200` with zero rows and unknown Organization `404` |
+| Bounded ALIO staging load | Run `40ba451d-4d57-4f18-bbdb-122c516ebfde`, `SUCCESS`; allowlist `C0019,C0129,C0908`; 15 observations; two SourceRuns including the first fail-closed attempt; schema `0006` |
+| Bounded ALIO read QA | Three distinct report snapshots; zero fulltext, empty identity hints, zero orphan observations, subject-XOR/provenance mismatch `0`; pre-load local `/health 200`, `/ready 200`, `/people 200` with zero rows and unknown Organization `404` |
+| Reviewed ALIO Claim/MONEY staging smoke | Existing Organization `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` bound explicitly to `C0908`; reviewed importer dry-run and commit produced two deterministic Claims and two ClaimEvidence rows for 2024/2025; one Organization, two Claims, two ClaimEvidence and 15 observations at schema `0006`; local `/organizations/{id}` and `/claims` `200`; MONEY `AVAILABLE`, delta `-2,162,000 KRW`, `-14.39%`, exact provenance |
 | CI after ALIO boundary fix | GitHub Actions `Verify` run `34916320972`, commit `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a`, `success`; canonical, migration, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
 
 ## Approval boundary
@@ -154,5 +155,5 @@ database public access remain prohibited. Railway-managed backup/PITR is unavail
 plan and is not required for this checkpoint; the separately approved provider-independent logical
 backup/restore rehearsal passed. Persistent provider backup configuration and unbounded operational
 loading remain outside this checkpoint. The current deployment classification is
-`DEPLOYED_PREVIEW`: staging contains observation-only ALIO data, while no canonical Person,
-Organization, Claim or public FACT was loaded.
+`DEPLOYED_PREVIEW`: staging contains bounded ALIO observations plus the explicitly reviewed
+Organization Claim/MONEY smoke; no ALIO L3 promotion or production/public coverage claim was made.

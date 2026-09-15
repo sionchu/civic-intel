@@ -91,7 +91,10 @@ GET /organizations/{organization_id}/money?earlier_fiscal_year=2024&later_fiscal
 There is no organization list endpoint and no generic `/money` bypass. The organization MONEY
 route is read-only, requires an existing current Organization and returns only when the requested
 years can be derived from published annual organization Claims. The bounded worker still creates
-observations only; it does not bind ALIO institutions or publish annual Claims.
+observations only; it does not bind ALIO institutions or publish annual Claims. The separate
+reviewed importer does publish exactly the operator-selected annual pair after an existing
+Organization binding; the C0908 staging smoke is proof of that narrow route, not automatic
+organization coverage.
 
 The public web may render an explicit `/organizations/{organization_id}` record page using these
 existing reads. That page is a direct-ID read surface only: it does not add organization search or

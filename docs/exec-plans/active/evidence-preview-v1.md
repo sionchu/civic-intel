@@ -252,6 +252,34 @@ Implementation and evidence:
   No provider plan/resource change, reset/drop/schema migration, public API/database exposure or
   new feeder was introduced. This is `LIVE_OBSERVATION` evidence, not published canonical data.
 
+### Subsequent approved staging reviewed Claim/MONEY smoke
+
+The zero-Organization state above was the pre-binding observation checkpoint. In the separately
+approved reviewed-binding slice, the existing canonical Organization
+`b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` (`정보통신기획평가원`, provider code `C0908`) was bound
+explicitly. The provider observation was not used to create an Organization.
+
+The existing reviewed importer was run first as a dry-run and then with `--commit`, both against
+the same two deterministic ALIO observation keys `2026041303154117:2024` and
+`2026041303154117:2025`. It produced the same Claim IDs
+`6e8b4287-8a00-5820-ad5f-1e47ac868844` and `cc7ef8ab-1f40-5e08-b4be-302e3a0e04db`, and the same
+ClaimEvidence IDs `68c61f94-65fc-5ca5-a867-3f93914f3865` and
+`729cf75b-4c26-5d30-bf39-ce9ba496a6c7`. Read-only staging inspection then found one reviewed
+Organization, two Claims, two ClaimEvidence rows, the existing 15 ALIO observations, Alembic head
+`0006`, and no provenance or subject-XOR violations.
+
+A local FastAPI read smoke using the private staging connection returned `/organizations/{id}`
+`200`, `/organizations/{id}/claims` `200` and the 2024→2025 MONEY projection `200` with
+`availability=AVAILABLE`, absolute delta `-2,162,000 KRW`, percent change `-14.39%`, and the
+exact Claim/Evidence/SourceSnapshot/FeederObservation chain. This closes the reviewed ALIO
+Organization binding → two fiscal-year Claim → MONEY staging smoke prerequisite while retaining
+the ALIO maturity ceiling at `L2 SINGLE_PULL`; it does not promote ALIO to L3 or assert production
+coverage.
+
+The logical backup/restore receipt was captured before this approved staging write. No provider
+plan/resource change, reset, drop, schema migration, public API/database exposure or new feeder was
+introduced.
+
 ## M1.5 — deployment preparation and approval boundary
 
 Status: completed in GitHub Actions on 2026-09-14.

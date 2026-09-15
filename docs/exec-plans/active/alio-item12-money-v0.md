@@ -1,8 +1,8 @@
 # ALIO Item 12 MONEY v0
 
-Status: completed — `L2 SINGLE_PULL` bounded three-institution proof on 2026-09-14 and approved
-staging observation rehearsal on 2026-09-15; the Claim-gated read-only projection still has no
-live organization Claim input; L3 was not attempted.
+Status: completed — `L2 SINGLE_PULL` bounded three-institution proof on 2026-09-14, approved
+staging observation rehearsal on 2026-09-15, and reviewed Organization binding → two fiscal-year
+Claim → MONEY staging smoke on 2026-09-15; L3 was not attempted.
 
 ## Objective
 
@@ -198,11 +198,29 @@ coverage claim.
 No full-directory annual-row enumeration, attachment download, XLS/XLSX bulk ingestion, Person
 lookup/materialization, automatic organization binding, generic financial abstraction, generic
 crawler or scheduled sync was added in this Item 12 slice. Its bounded worker still publishes no
-Claim or public FACT; the separate reviewed C0908 runtime binding is an operator-approved local
+Claim or public FACT; the separate reviewed C0908 runtime binding is an operator-approved staging
 validation only.
+
+## Reviewed Organization binding and Claim/MONEY staging smoke (2026-09-15)
+
+The earlier observation-only result above is retained as the pre-binding checkpoint. With separate
+operator approval, existing canonical Organization `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11`
+(`정보통신기획평가원`, `C0908`) was bound explicitly. The reviewed importer dry-run and commit
+resolved the same ALIO observation keys `2026041303154117:2024` and
+`2026041303154117:2025` to Claim IDs `6e8b4287-8a00-5820-ad5f-1e47ac868844` and
+`cc7ef8ab-1f40-5e08-b4be-302e3a0e04db`, with ClaimEvidence IDs
+`68c61f94-65fc-5ca5-a867-3f93914f3865` and `729cf75b-4c26-5d30-bf39-ce9ba496a6c7`.
+
+Read-only staging QA found one Organization, two Claims, two ClaimEvidence rows and the existing
+15 ALIO observations at schema head `0006`, with zero subject-XOR/provenance mismatches. A local
+FastAPI read smoke returned `/organizations/{id}` `200`, `/organizations/{id}/claims` `200` and
+the 2024→2025 MONEY projection `200`, `availability=AVAILABLE`, absolute delta
+`-2,162,000 KRW` and percent change `-14.39%`, retaining exact source/snapshot/observation
+provenance. This is reviewed staging evidence and remains `L2 SINGLE_PULL`; it is not an L3
+promotion or production/public coverage claim.
 
 ## Next concrete action
 
-Record one manually reviewed binding from an ALIO institution code to an existing canonical
-Organization before running the reviewed two-year Claim importer; do not create the Organization
-from the provider row.
+Close the ALIO reviewed Claim/MONEY milestone with local full verification, diff review and the
+new CI result, then begin `Assembly Person Bootstrap v1`; do not add another source before that
+Assembly bootstrap and its small roster-field slice are complete.

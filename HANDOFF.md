@@ -1177,7 +1177,30 @@ approval, keep staging empty and do not add new feeders.
   were removed after verification; no provider plan/resource change, database reset/drop/schema
   migration or public API/database exposure occurred.
 
+## Current checkpoint — approved staging ALIO reviewed Organization Claim/MONEY smoke (2026-09-15)
+
+- The previously recorded zero-Organization staging state was the pre-binding observation checkpoint.
+  Under the separately approved reviewed-binding scope, canonical Organization
+  `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` (`정보통신기획평가원`, provider code `C0908`) was bound
+  explicitly; it was not created from an ALIO observation.
+- The existing reviewed importer dry-run and commit both resolved the same deterministic pair of
+  ALIO observations (`2026041303154117:2024`, `2026041303154117:2025`) to the same Claim IDs
+  `6e8b4287-8a00-5820-ad5f-1e47ac868844` and `cc7ef8ab-1f40-5e08-b4be-302e3a0e04db`, with
+  ClaimEvidence IDs `68c61f94-65fc-5ca5-a867-3f93914f3865` and
+  `729cf75b-4c26-5d30-bf39-ce9ba496a6c7`. The staging database now contains one reviewed
+  Organization, two Claims, two ClaimEvidence rows and the existing 15 ALIO observations.
+- A local FastAPI read smoke using the private staging connection returned `/organizations/{id}`
+  `200`, `/organizations/{id}/claims` `200` and the 2024→2025 MONEY projection `200` with
+  `availability=AVAILABLE`, absolute delta `-2,162,000 KRW`, percent change `-14.39%`, and
+  exact Claim/Evidence/SourceSnapshot/FeederObservation provenance. This is reviewed staging
+  evidence, not an L3 ALIO promotion or a production/public coverage claim.
+- The staging schema remained at Alembic head `0006`; no reset, drop, migration, provider-plan
+  change or new resource was performed. The logical backup/restore receipt was captured before
+  this approved load; the original staging database was only extended by the approved binding and
+  Claim import.
+
 ## Next concrete action
 
-Record one manually reviewed ALIO institution-code binding to an existing canonical Organization
-before any reviewed Claim import; never create that Organization from the provider observation.
+Close the ALIO reviewed-Claim/MONEY milestone with the targeted and full local verification,
+diff review and CI result, then start the active `Assembly Person Bootstrap v1` plan using the
+existing successful-enumeration and source-specific materialization gates.
