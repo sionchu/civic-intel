@@ -219,6 +219,11 @@ the 2024→2025 MONEY projection `200`, `availability=AVAILABLE`, absolute delta
 provenance. This is reviewed staging evidence and remains `L2 SINGLE_PULL`; it is not an L3
 promotion or production/public coverage claim.
 
+Targeted and full local verification passed, including Ruff, mypy, Golden quality, web lint/typecheck,
+UI tests and the standalone production build. GitHub Actions `Verify` run `34945055796` for
+`1150c9b75daa550bcd578913cc32abb77fe8386b` completed `success` in `3m4s`, including canonical,
+Alembic, PostgreSQL load/API, backup/restore and deployment-artifact checks.
+
 ## Next concrete action
 
 Close the ALIO reviewed Claim/MONEY milestone with local full verification, diff review and the

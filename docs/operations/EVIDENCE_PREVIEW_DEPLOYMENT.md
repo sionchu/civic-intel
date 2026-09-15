@@ -147,6 +147,7 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 | Bounded ALIO read QA | Three distinct report snapshots; zero fulltext, empty identity hints, zero orphan observations, subject-XOR/provenance mismatch `0`; pre-load local `/health 200`, `/ready 200`, `/people 200` with zero rows and unknown Organization `404` |
 | Reviewed ALIO Claim/MONEY staging smoke | Existing Organization `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` bound explicitly to `C0908`; reviewed importer dry-run and commit produced two deterministic Claims and two ClaimEvidence rows for 2024/2025; one Organization, two Claims, two ClaimEvidence and 15 observations at schema `0006`; local `/organizations/{id}` and `/claims` `200`; MONEY `AVAILABLE`, delta `-2,162,000 KRW`, `-14.39%`, exact provenance |
 | CI after ALIO boundary fix | GitHub Actions `Verify` run `34916320972`, commit `d06b0cc6f7c8d0313a1973a1dbafb02b0f83d20a`, `success`; canonical, migration, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
+| CI after ALIO Claim/MONEY documentation closure | GitHub Actions `Verify` run `34945055796`, commit `1150c9b75daa550bcd578913cc32abb77fe8386b`, `success` in `3m4s`; canonical, Alembic, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
 
 ## Approval boundary
 

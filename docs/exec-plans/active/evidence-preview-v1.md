@@ -280,6 +280,12 @@ The logical backup/restore receipt was captured before this approved staging wri
 plan/resource change, reset, drop, schema migration, public API/database exposure or new feeder was
 introduced.
 
+The ALIO prerequisite is now closed: targeted and full local verification passed, including Ruff,
+mypy, Golden quality, web lint/typecheck/UI tests and standalone production build. GitHub Actions
+`Verify` run `34945055796` for commit `1150c9b75daa550bcd578913cc32abb77fe8386b` completed
+`success` in `3m4s` with canonical, Alembic, PostgreSQL load/API, backup/restore and deployment
+artifact checks.
+
 ## M1.5 — deployment preparation and approval boundary
 
 Status: completed in GitHub Actions on 2026-09-14.
