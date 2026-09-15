@@ -160,6 +160,10 @@ valid state is `TARGET_STAGED`, not `DEPLOYED`.
 - The original staging database was not dropped, reset, migrated or written; the rehearsal used
   read-only inspection and `pg_dump` only. Temporary client binaries, disposable PostgreSQL and
   API processes were cleaned up after the proof.
+- GitHub Actions `Verify` run `34913882587` for pushed commit
+  `6d979cdbd925f94328d578c3f941cb295d815201` passed in `2m25s`, including canonical verification,
+  Alembic round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and
+  deployment artifact checks.
 
 ## Next action
 

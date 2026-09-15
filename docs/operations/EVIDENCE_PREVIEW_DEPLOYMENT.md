@@ -142,6 +142,7 @@ after an operator reviews that evidence. Never overwrite the failed database in 
 | Restore rehearsal | Loopback-only disposable PostgreSQL `18.6` / `restore_target`; `pg_restore` duration `0.321s`; schema/table/count/provenance/MONEY comparison `PASS` |
 | Restored API smoke | `/ready 200`, `/health 200`, `/people 200` with zero rows, unknown Organization `404` |
 | Original staging mutation | None; read-only inspection and `pg_dump` only. Temporary SSH key, client binaries, disposable cluster and API process removed after proof |
+| CI after logical proof | GitHub Actions `Verify` run `34913882587`, pushed commit `6d979cdbd925f94328d578c3f941cb295d815201`, `success` in `2m25s`; canonical, migration, PostgreSQL load/API, backup/restore and deployment artifact checks passed |
 
 ## Approval boundary
 

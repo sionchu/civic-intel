@@ -217,6 +217,10 @@ Implementation and evidence:
 - The staging source was never dropped, reset, migrated, or written during the rehearsal: only
   read-only inspection and `pg_dump` were performed. The temporary PostgreSQL client binaries,
   disposable cluster, API process and transient key material were cleaned up after verification.
+- GitHub Actions `Verify` run `34913882587` for the pushed logical-proof commit
+  `6d979cdbd925f94328d578c3f941cb295d815201` passed in `2m25s`, including canonical verification,
+  Alembic round trip, PostgreSQL migration/load/API contracts, PostgreSQL backup/restore and
+  deployment artifact checks.
 
 ## M1.5 — deployment preparation and approval boundary
 
