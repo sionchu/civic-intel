@@ -18,11 +18,16 @@ from packages.domain.enums import (
     IdentityStatus,
     PublicationStatus,
 )
+from packages.verification.assembly_base_profile import (
+    ASSEMBLY_BASE_PROFILE_FIELDS,
+    ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
+)
 
 CHANGE_METHOD_VERSION = "change.role-sequence.v1"
 
 SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("identity", "신원"),
+    ("assembly_base_profile", "국회 기본 프로필"),
     ("summary", "한눈에 보는 요약"),
     ("career_timeline", "경력 타임라인"),
     ("recent_changes", "최근 변화"),
@@ -109,6 +114,7 @@ def _claim_entry(
         "details": {
             "predicate": claim.predicate,
             "object_text": claim.object_text,
+            "field_name": claim.qualifiers.get("field_name"),
             "publication_status": claim.publication_status.value,
             "asserted_as_true": claim.asserted_as_true,
             "resolution_note": claim.resolution_note,
@@ -161,6 +167,26 @@ def _claim_entries_for(
 ) -> list[dict[str, Any]]:
     selected = [claim for claim in claims if claim.predicate in predicates]
     selected.sort(key=lambda item: (item.qualifiers.get("date", ""), str(item.id)))
+    return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _assembly_base_profile_entries(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    field_order = {item.name: index for index, item in enumerate(ASSEMBLY_BASE_PROFILE_FIELDS)}
+    selected = [
+        claim
+        for claim in claims
+        if claim.qualifiers.get("source_contract") == ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+        and claim.qualifiers.get("field_name") in field_order
+    ]
+    selected.sort(
+        key=lambda item: (
+            field_order[item.qualifiers["field_name"]],
+            str(item.id),
+        )
+    )
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
 
 
@@ -500,6 +526,7 @@ def build_profile_projection(
         None if person.birth_date else "검토된 현재 근거에서 생년월일은 확인되지 않았습니다."
     )
 
+    assembly_base_profile_entries = _assembly_base_profile_entries(claims, evidence_by_claim)
     summary_entries = _claim_entries_for(claims, evidence_by_claim, SUMMARY_PREDICATES)
     timeline_entries = _claim_entries_for(claims, evidence_by_claim, CAREER_PREDICATES)
     recent_changes, eligible_change_claim_count = _assembly_role_sequence_changes(
@@ -515,6 +542,28 @@ def build_profile_projection(
 
     sections: list[dict[str, Any]] = [
         _section("identity", "신원", identity_entries, status="AVAILABLE", note=identity_note),
+        _section(
+            "assembly_base_profile",
+            "국회 기본 프로필",
+            assembly_base_profile_entries,
+            status=(
+                "AVAILABLE"
+                if len(
+                    {
+                        item.get("details", {}).get("field_name")
+                        for item in assembly_base_profile_entries
+                    }
+                ) == len(ASSEMBLY_BASE_PROFILE_FIELDS)
+                else "PARTIAL"
+                if assembly_base_profile_entries
+                else "UNKNOWN"
+            ),
+            note=(
+                "현재 국회 명부에서 제공된 기본 필드만 표시하며, 빠진 값은 추론하지 않습니다."
+                if assembly_base_profile_entries
+                else "현재 국회 명부 기본 프로필 Claim이 없습니다."
+            ),
+        ),
         _section(
             "summary",
             "한눈에 보는 요약",

@@ -16,6 +16,13 @@ from packages.connectors.open_assembly import (
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
 from packages.domain.enums import MaterializationAction, SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
+from packages.verification.assembly_base_profile import (
+    ASSEMBLY_BASE_PROFILE_FEEDER,
+    ASSEMBLY_BASE_PROFILE_SCOPE,
+    ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
+    ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
+    AssemblyBaseProfilePublisher,
+)
 from packages.verification.identity import IdentityCandidate
 from packages.verification.materialization import MaterializationError, MaterializationResult
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
@@ -138,10 +145,10 @@ def assembly_member_content_hash(normalized: dict[str, object]) -> str:
 
 
 class AssemblyRosterEnumerator:
-    FEEDER = "national_assembly_members"
-    SCOPE_KEY = "current_member_roster"
-    SEMANTIC_SCOPE = "legislative_member_roster"
-    SOURCE_CONTRACT = "assembly_member_roster"
+    FEEDER = ASSEMBLY_BASE_PROFILE_FEEDER
+    SCOPE_KEY = ASSEMBLY_BASE_PROFILE_SCOPE
+    SEMANTIC_SCOPE = ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE
+    SOURCE_CONTRACT = ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
 
     def __init__(
         self,
@@ -438,6 +445,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Materialize the exact current roster after a successful full enumeration.",
     )
+    parser.add_argument(
+        "--publish-base-profile",
+        action="store_true",
+        help="Publish the four source-specific base-profile fields from the latest successful roster.",
+    )
     parser.add_argument("--database-url")
     return parser
 
@@ -447,6 +459,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.materialize and not (args.enumerate or args.resume):
         parser.error("--materialize requires --enumerate or --resume")
+    if args.publish_base_profile and any(
+        (args.enumerate, args.resume, args.materialize, args.name, args.party, args.district)
+    ):
+        parser.error("--publish-base-profile is a separate operation and accepts no roster filters")
     connector = OpenAssemblyMemberConnector(
         page_index=args.page_index,
         page_size=args.page_size,
@@ -455,6 +471,30 @@ def main(argv: list[str] | None = None) -> int:
         district=args.district,
     )
     try:
+        if args.publish_base_profile:
+            result = AssemblyBaseProfilePublisher(
+                SqlAlchemyRepository(args.database_url)
+            ).publish_latest_successful()
+            print(
+                json.dumps(
+                    {
+                        "run_id": str(result.run_id),
+                        "status": "SUCCESS",
+                        "observations_considered": result.observations_considered,
+                        "observations_published": result.observations_published,
+                        "published_claims": result.published_claims,
+                        "unchanged_claims": result.unchanged_claims,
+                        "missing_field_counts": result.missing_field_counts,
+                        "skipped_observation_ids": [
+                            str(item) for item in result.skipped_observation_ids
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
         if args.enumerate or args.resume:
             enumerator = AssemblyRosterEnumerator(
                 connector,

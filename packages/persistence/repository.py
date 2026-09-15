@@ -55,6 +55,13 @@ from packages.domain.enums import (
     SourceRunStatus,
 )
 from packages.persistence.database_url import normalize_database_url
+from packages.verification.assembly_base_profile import (
+    ASSEMBLY_BASE_PROFILE_FEEDER,
+    ASSEMBLY_BASE_PROFILE_SCOPE,
+    ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
+    AssemblyBaseProfileError,
+    is_assembly_base_profile_field,
+)
 from packages.verification.claims import validate_claim_publication
 from packages.verification.golden import GoldenSet, load_golden_set
 from packages.verification.materialization import (
@@ -333,6 +340,65 @@ class SqlAlchemyRepository:
             rows = session.scalars(statement.order_by(PersonObservationLinkRow.linked_at))
             return [self._person_observation_link(row) for row in rows]
 
+    def assembly_base_profile_contexts(
+        self, observation_ids: Sequence[UUID]
+    ) -> dict[UUID, tuple[Person, Source, SourcePolicy]]:
+        """Load resolved Assembly profile targets and provenance in one read session."""
+
+        if not observation_ids:
+            return {}
+        statement = (
+            select(
+                PersonObservationLinkRow,
+                PersonRow,
+                FeederObservationRow,
+                SourceSnapshotRow,
+                SourceRow,
+                SourcePolicyRow,
+            )
+            .join(PersonRow, PersonRow.id == PersonObservationLinkRow.person_id)
+            .join(
+                FeederObservationRow,
+                FeederObservationRow.id == PersonObservationLinkRow.observation_id,
+            )
+            .join(
+                SourceSnapshotRow,
+                SourceSnapshotRow.id == FeederObservationRow.snapshot_id,
+            )
+            .join(SourceRow, SourceRow.id == SourceSnapshotRow.source_id)
+            .join(SourcePolicyRow, SourcePolicyRow.id == SourceRow.policy_id)
+            .where(
+                PersonObservationLinkRow.observation_id.in_(
+                    [str(item) for item in observation_ids]
+                ),
+                PersonObservationLinkRow.superseded_at.is_(None),
+            )
+        )
+        contexts: dict[UUID, tuple[Person, Source, SourcePolicy]] = {}
+        with self.sessions() as session:
+            for link, person_row, observation_row, snapshot_row, source_row, policy_row in session.execute(
+                statement
+            ):
+                observation_id = UUID(observation_row.id)
+                if observation_id in contexts:
+                    raise AssemblyBaseProfileError(
+                        "Assembly observation has multiple active Person links"
+                    )
+                if snapshot_row.source_id != source_row.id:
+                    raise AssemblyBaseProfileError(
+                        "Assembly observation snapshot does not match Source"
+                    )
+                if source_row.policy_id != policy_row.id:
+                    raise AssemblyBaseProfileError(
+                        "Assembly Source does not match SourcePolicy"
+                    )
+                contexts[observation_id] = (
+                    self._person(person_row),
+                    self._source(source_row),
+                    self._policy(policy_row),
+                )
+        return contexts
+
     def identity_review_items(
         self, status: IdentityReviewStatus | None = None
     ) -> list[IdentityReviewItem]:
@@ -601,6 +667,278 @@ class SqlAlchemyRepository:
                     claim_id=published_claim.id,
                     created=True,
                 )
+            except Exception:
+                session.rollback()
+                raise
+
+    @staticmethod
+    def _person_claim_import_semantics(claim: Claim) -> dict:
+        return {
+            "person_id": claim.person_id,
+            "organization_id": claim.organization_id,
+            "proposition": claim.proposition,
+            "subject": claim.subject,
+            "predicate": claim.predicate,
+            "object_text": claim.object_text,
+            "qualifiers": claim.qualifiers,
+            "epistemic_status": claim.epistemic_status,
+            "publication_status": claim.publication_status,
+            "asserted_as_true": claim.asserted_as_true,
+            "resolution_note": claim.resolution_note,
+        }
+
+    def _import_assembly_base_profile_claims_in_session(
+        self,
+        session: Session,
+        person: Person,
+        observation: FeederObservation,
+        claims: Sequence[Claim],
+        evidence: Sequence[ClaimEvidence],
+    ) -> tuple[Claim, ...]:
+        observation_row = session.get(FeederObservationRow, str(observation.id))
+        if observation_row is None:
+            raise AssemblyBaseProfileError("Assembly observation does not exist")
+        stored_observation = self._observation(observation_row)
+        if stored_observation != observation:
+            raise AssemblyBaseProfileError("Assembly observation has changed since claim build")
+        if (
+            stored_observation.feeder != ASSEMBLY_BASE_PROFILE_FEEDER
+            or stored_observation.scope_key != ASSEMBLY_BASE_PROFILE_SCOPE
+        ):
+            raise AssemblyBaseProfileError("observation is outside the Assembly base-profile scope")
+
+        person_row = session.get(PersonRow, str(person.id))
+        if person_row is None:
+            raise AssemblyBaseProfileError("Assembly base profile Person does not exist")
+        stored_person = self._person(person_row)
+        if stored_person != person or stored_person.identity_status != IdentityStatus.RESOLVED:
+            raise AssemblyBaseProfileError("Assembly base profile Person is not the current resolved row")
+
+        links = list(
+            session.scalars(
+                select(PersonObservationLinkRow).where(
+                    PersonObservationLinkRow.observation_id == str(observation.id),
+                    PersonObservationLinkRow.superseded_at.is_(None),
+                )
+            )
+        )
+        if len(links) != 1 or links[0].person_id != str(person.id):
+            raise AssemblyBaseProfileError(
+                "Assembly base profile requires exactly one active Person observation link"
+            )
+
+        snapshot_row = session.get(SourceSnapshotRow, str(observation.snapshot_id))
+        if snapshot_row is None:
+            raise AssemblyBaseProfileError("Assembly observation snapshot does not exist")
+        source_row = session.get(SourceRow, snapshot_row.source_id)
+        if source_row is None:
+            raise AssemblyBaseProfileError("Assembly observation Source does not exist")
+        policy_row = session.get(SourcePolicyRow, source_row.policy_id)
+        if policy_row is None:
+            raise AssemblyBaseProfileError("Assembly observation SourcePolicy does not exist")
+        source = self._source(source_row)
+        policy = self._policy(policy_row)
+
+        if not claims:
+            raise AssemblyBaseProfileError("Assembly base profile requires at least one present field")
+        if len({claim.id for claim in claims}) != len(claims):
+            raise AssemblyBaseProfileError("Assembly base profile contains duplicate Claim IDs")
+        if len({item.id for item in evidence}) != len(evidence):
+            raise AssemblyBaseProfileError("Assembly base profile contains duplicate Evidence IDs")
+        evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {}
+        for item in evidence:
+            evidence_by_claim.setdefault(item.claim_id, []).append(item)
+        requested_fields: set[str] = set()
+        for claim in claims:
+            field_name = claim.qualifiers.get("field_name")
+            if field_name is None or not is_assembly_base_profile_field(field_name):
+                raise AssemblyBaseProfileError("Assembly base profile Claim has an unsupported field")
+            if field_name in requested_fields:
+                raise AssemblyBaseProfileError("Assembly base profile contains duplicate fields")
+            requested_fields.add(field_name)
+            if (
+                claim.person_id != person.id
+                or claim.organization_id is not None
+                or claim.publication_status != PublicationStatus.PUBLISHED
+                or claim.qualifiers.get("source_contract")
+                != ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+                or claim.qualifiers.get("source_scope") != observation.scope_key
+                or claim.qualifiers.get("semantic_scope") != observation.semantic_scope
+                or claim.qualifiers.get("provider_record_key")
+                != observation.provider_record_key
+                or claim.qualifiers.get("immutable_observation_hash")
+                != observation.content_hash
+            ):
+                raise AssemblyBaseProfileError(
+                    "Assembly base profile Claim provenance does not match observation"
+                )
+            claim_evidence = evidence_by_claim.get(claim.id, [])
+            if len(claim_evidence) != 1:
+                raise AssemblyBaseProfileError(
+                    "Assembly base profile Claim requires exactly one Evidence row"
+                )
+            item = claim_evidence[0]
+            if (
+                item.source_id != source.id
+                or item.snapshot_id != observation.snapshot_id
+                or item.feeder_observation_id != observation.id
+                or item.stance != EvidenceStance.SUPPORT
+                or item.excerpt is not None
+            ):
+                raise AssemblyBaseProfileError(
+                    "Assembly base profile Evidence provenance does not match observation"
+                )
+            gate = validate_claim_publication(
+                claim,
+                stored_person,
+                claim_evidence,
+                {source.id: source},
+                {policy.id: policy},
+            )
+            if not gate.publishable:
+                raise AssemblyBaseProfileError(
+                    f"Assembly base profile Claim failed publication gate: {gate.failures}"
+                )
+
+        current_claim_rows = list(
+            session.scalars(
+                select(ClaimRow).where(
+                    ClaimRow.person_id == str(person.id),
+                    ClaimRow.superseded_at.is_(None),
+                )
+            )
+        )
+        existing_by_field: dict[str, ClaimRow] = {}
+        for row in current_claim_rows:
+            field_name = row.qualifiers.get("field_name")
+            if (
+                row.qualifiers.get("source_contract")
+                != ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+                or not is_assembly_base_profile_field(field_name or "")
+            ):
+                continue
+            assert field_name is not None
+            if field_name in existing_by_field:
+                raise AssemblyBaseProfileError(
+                    "Assembly base profile has duplicate current field Claims"
+                )
+            existing_by_field[field_name] = row
+
+        results: list[Claim] = []
+        for claim in claims:
+            field_name = claim.qualifiers["field_name"]
+            existing_row = existing_by_field.get(field_name)
+            if existing_row is not None and existing_row.id != str(claim.id):
+                raise AssemblyBaseProfileError(
+                    "Assembly base profile field conflicts with another immutable observation version"
+                )
+            if existing_row is not None:
+                stored_claim = self._claim(existing_row)
+                stored_evidence = [
+                    self._evidence(row)
+                    for row in session.scalars(
+                        select(ClaimEvidenceRow).where(
+                            ClaimEvidenceRow.claim_id == existing_row.id
+                        )
+                    )
+                ]
+                if (
+                    self._person_claim_import_semantics(stored_claim)
+                    != self._person_claim_import_semantics(claim)
+                    or self._evidence_import_semantics(stored_evidence)
+                    != self._evidence_import_semantics(evidence_by_claim[claim.id])
+                ):
+                    raise AssemblyBaseProfileError(
+                        "Assembly base profile Claim ID has conflicting stored semantics"
+                    )
+                results.append(stored_claim)
+                continue
+            if session.get(ClaimRow, str(claim.id)) is not None:
+                raise AssemblyBaseProfileError("Assembly base profile Claim ID is already in use")
+            session.add(
+                ClaimRow(
+                    id=str(claim.id),
+                    person_id=str(claim.person_id),
+                    organization_id=None,
+                    proposition=claim.proposition,
+                    subject=claim.subject,
+                    predicate=claim.predicate,
+                    object_text=claim.object_text,
+                    qualifiers=claim.qualifiers,
+                    epistemic_status=claim.epistemic_status.value,
+                    publication_status=claim.publication_status.value,
+                    asserted_as_true=claim.asserted_as_true,
+                    resolution_note=claim.resolution_note,
+                    **self._temporal(claim),
+                )
+            )
+            session.flush()
+            item = evidence_by_claim[claim.id][0]
+            session.add(
+                ClaimEvidenceRow(
+                    id=str(item.id),
+                    claim_id=str(item.claim_id),
+                    source_id=str(item.source_id),
+                    snapshot_id=str(item.snapshot_id) if item.snapshot_id else None,
+                    feeder_observation_id=(
+                        str(item.feeder_observation_id)
+                        if item.feeder_observation_id
+                        else None
+                    ),
+                    stance=item.stance.value,
+                    excerpt=item.excerpt,
+                )
+            )
+            results.append(claim)
+
+        return tuple(results)
+
+    def import_assembly_base_profile_claims(
+        self,
+        person: Person,
+        observation: FeederObservation,
+        claims: Sequence[Claim],
+        evidence: Sequence[ClaimEvidence],
+    ) -> tuple[Claim, ...]:
+        """Atomically import one exact Assembly observation's base-profile Claims.
+
+        An existing field Claim from another immutable observation version is a conflict. The
+        importer never supersedes or overwrites it because the provider does not declare a
+        correction or replacement contract for current-roster rows.
+        """
+
+        self.assert_ready()
+        with self.sessions() as session:
+            try:
+                results = self._import_assembly_base_profile_claims_in_session(
+                    session, person, observation, claims, evidence
+                )
+                session.commit()
+                return tuple(results)
+            except Exception:
+                session.rollback()
+                raise
+
+    def import_assembly_base_profile_claims_batch(
+        self,
+        items: Sequence[
+            tuple[Person, FeederObservation, Sequence[Claim], Sequence[ClaimEvidence]]
+        ],
+    ) -> tuple[Claim, ...]:
+        """Atomically import exact Assembly base-profile bundles in one database session."""
+
+        self.assert_ready()
+        with self.sessions() as session:
+            try:
+                results: list[Claim] = []
+                for person, observation, claims, evidence in items:
+                    results.extend(
+                        self._import_assembly_base_profile_claims_in_session(
+                            session, person, observation, claims, evidence
+                        )
+                    )
+                session.commit()
+                return tuple(results)
             except Exception:
                 session.rollback()
                 raise

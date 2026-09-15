@@ -320,6 +320,7 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
 
     assert profile["section_order"] == [
         "identity",
+        "assembly_base_profile",
         "summary",
         "career_timeline",
         "recent_changes",

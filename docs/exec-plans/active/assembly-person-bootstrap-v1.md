@@ -1,7 +1,7 @@
 # Assembly Person Bootstrap v1
 
-Status: active — plan established after the ALIO reviewed Organization Claim/MONEY milestone
-closed at `b8b23984de5aad4ce762afbd528558a25a764116` on 2026-09-15.
+Status: active — M0–M4 implementation and staging data proof are complete; post-push deployed
+Web smoke and CI closure remain in the delivery loop.
 
 ## Objective
 
@@ -122,6 +122,36 @@ Only after M1–M3 pass, evaluate and implement the smallest source-specific ros
 existing canonical semantic. Do not create a generic profile/financial framework. Preserve field-
 level provenance, explicit missingness and source/version boundaries; do not infer absent values.
 The result must be a separate coherent slice and must not expose raw normalized provider payload.
+
+- [x] Build only the four source-specific field Claims from the latest successful complete-roster
+      manifest; keep `MONA_CD` source-scoped and retain exact snapshot/observation provenance.
+- [x] Import Claims and ClaimEvidence through one shared repository transaction, make reruns
+      idempotent, and fail closed when an immutable newer observation would conflict with a current
+      field Claim.
+- [x] Project the fields through the existing profile read model as `AVAILABLE`/`PARTIAL`/`UNKNOWN`
+      without adding raw normalized payload or direct provider-field API/UI bypasses.
+- [x] Record missing-field counts, skipped review/conflict observations and the resulting staging
+      Claim/Evidence counts.
+
+M4 evidence (2026-09-15): the source-specific publisher consumed the exact successful run
+`4fa48daa-5b02-45eb-ad98-2fb01ee5c5f8` and considered 299 observations. It published 1,191
+current Assembly base-profile Claims and one ClaimEvidence per Claim for 298 resolved People;
+`committees` was absent for one source row and one `HARD_CONFLICT` observation was skipped with
+its existing open review item preserved. The final read-only staging QA found field counts of
+`party=298`, `district=298`, `committees=297`, `reelection=298`, 1,191 ClaimEvidence rows, zero
+subject-XOR violations, zero provenance mismatches, zero fulltext snapshots and zero forbidden
+normalized contact fields. The publisher's idempotent recovery output reported
+`observations_considered=299`, `observations_published=298`, `published_claims=1,191` and
+`missing_field_counts={"committees":1}`; the non-zero unchanged count reflects an earlier
+per-observation retry that had already committed a subset before its tunnel failed, after which
+the batch transaction completed the remaining Claims without overwriting them.
+
+The implementation adds no table, migration, dependency or generic profile framework. The local
+regressions cover atomic provenance, idempotent rerun, explicit missingness and immutable version
+conflict. Python full verification passed with `345 passed, 1 skipped`; Ruff, mypy, Golden quality,
+web lint/typecheck/UI tests, production build and standalone artifact checks also passed. The
+staging Web deployment used for the earlier M3 smoke predates this M4 code, so the new profile
+section is not counted as deployed/browser evidence until the post-push deployment smoke.
 
 ## Acceptance and verification
 

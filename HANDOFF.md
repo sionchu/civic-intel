@@ -106,8 +106,18 @@ recommendation algorithm or new persistence abstraction is in scope.
 - Implemented the bounded Assembly reviewed-packet vertical slice: typed packet parsing, immutable
   `SourceRun`/`SourceSnapshot`/`FeederObservation` staging, reviewed Claim/Evidence import with
   exact observation provenance, and a read-only profile `DERIVED · CHANGE` projection/UI for the
-  known-positive `XQ98168F` pair. No live historical fetch, L3 worker, new schema or new feeder was
-  added.
+  known-positive `XQ98168F` pair. No live historical fetch, L3 worker, new schema or new feeder
+  was added.
+- Completed the approved Assembly current-roster bootstrap after a fresh staging logical
+  backup/restore receipt: the existing unfiltered L3 worker committed 299 provider observations,
+  source-specific materialization resolved 298 canonical People and kept one exact birth-date
+  conflict in the review queue. Provider `MONA_CD` values remain source-scoped external IDs and
+  are never canonical Person IDs.
+- Added the smallest Assembly Person Base Profile v1 slice for `party`, `district`, `committees`
+  and `reelection`. It reuses the existing Claim/Evidence publication gate and repository session,
+  publishes exact snapshot/observation provenance, preserves missingness, and treats a changed
+  observation as an immutable version conflict. No new model/table/migration/dependency or raw
+  normalized-payload UI path was added.
 
 ## Current checkpoint
 
@@ -1240,8 +1250,30 @@ existing successful-enumeration and source-specific materialization gates.
   official Source trace without raw party/district/committee payload exposure. This is browser
   staging evidence, not a production deployment claim.
 
+## Current checkpoint — Assembly Person Bootstrap v1 Base Profile slice (2026-09-15)
+
+- Local implementation is in `packages/verification/assembly_base_profile.py`, the shared
+  SQLAlchemy repository, the existing profile projection and the Assembly worker's explicit
+  `--publish-base-profile` operation. The worker accepts no enumeration/filter flags for this
+  operation, so publishing cannot accidentally bypass the successful-roster gate.
+- The publisher required the latest `SUCCESS` checkpoint's provider manifest and exact committed
+  observations. It considered all 299 records, published 1,191 four-field Claims for 298 resolved
+  People, retained one skipped `HARD_CONFLICT` observation, and counted one missing `committees`
+  field. A prior pre-optimization tunnel failure left a safely committed subset; the idempotent
+  batch recovery completed the remainder without changing stored semantics.
+- Read-only staging QA after recovery reported `party=298`, `district=298`, `committees=297`,
+  `reelection=298`, 1,191 ClaimEvidence rows, zero subject-XOR violations, zero provenance
+  mismatches and no fulltext/forbidden normalized contact fields. The existing ALIO baseline
+  remains one Organization, 15 observations, two Claims and two ClaimEvidence rows.
+- The profile projection now has the `assembly_base_profile` section with `AVAILABLE`/`PARTIAL`/
+  `UNKNOWN` states and field-level evidence traces. Local full verification passed with 345 tests
+  and one PostgreSQL-only skip, plus Ruff, mypy, Golden quality, web lint/typecheck/UI tests,
+  production build and standalone artifact checks. No schema or dependency change was made.
+- The staging Web smoke already proved the pre-M4 public roster/profile path; the new Base Profile
+  section awaits the post-push deployed artifact check and is not yet counted as browser evidence.
+
 ## Next concrete action
 
-Implement the separate, source-specific Person Base Profile v1 slice for publishable Assembly
-party, district, committees and reelection Claims using the existing Claim/Evidence repository path;
-do not add a generic profile schema or raw-payload UI path.
+Push the Assembly Base Profile v1 implementation and perform the post-deployment staging browser
+smoke for the new profile section; keep the one birth-date conflict and one missing committee value
+explicit, and do not start BTIS or another feeder.
