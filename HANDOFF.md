@@ -1219,8 +1219,29 @@ existing successful-enumeration and source-specific materialization gates.
 - The required order is current staging logical backup/restore receipt, successful unfiltered full
   roster enumeration, exact-observation materialization with four outcome counts/review queue,
   `/people` resolved-person smoke, then a separate atomic roster-field publishability slice.
+- M0 is complete. A fresh `pg_dump --format=custom --no-owner` was captured at
+  `2026-09-15T08:29:56.2862488Z` outside the repository: `64,744` bytes, SHA-256
+  `9D941BCC4476D3906747019753CF895A2529FCCFA797685007285C279C5C621E`. A loopback-only
+  PostgreSQL `18.6` `restore_target` restored it with `pg_restore --no-owner --exit-on-error` in
+  `0.351s`. Read-only staging/restored comparison matched schema head `0006`, all 26 public tables,
+  one ALIO Organization, 15 observations, two Claims and two ClaimEvidence rows, with subject-XOR
+  and provenance mismatches both `0`. No paid resource or staging reset/drop/migration occurred.
+- M1 is complete. Existing unfiltered Assembly enumeration run
+  `4fa48daa-5b02-45eb-ad98-2fb01ee5c5f8` returned `SUCCESS` with three pages, provider total `299`,
+  299 records and 299 committed observations. The checkpoint recorded cursor `3`, page size `100`
+  and expected page count `3`; all provider keys and source-scoped external IDs were distinct.
+- M2 is complete. The exact successful observation set produced `AUTO_CREATE=298`, `AUTO_LINK=0`,
+  `REVIEW_REQUIRED=0` and `HARD_CONFLICT=1`. The one open review item is
+  `b0b404b2-4c23-4577-8678-c9047cac7fe6` (`EXACT_BIRTH_DATE_CONFLICT`). Read-only QA found 298
+  resolved People, 298 Person links, 298 roster Claims and 298 ClaimEvidence rows, with no provider
+  key used as a Person ID and zero subject-XOR/provenance mismatches.
+- M3 is complete for staging. The actual staging Web roster rendered `298 resolved identities`, and
+  a resolved profile rendered the canonical identity, evidence-backed Assembly `HELD_ROLE` claim and
+  official Source trace without raw party/district/committee payload exposure. This is browser
+  staging evidence, not a production deployment claim.
 
 ## Next concrete action
 
-Create the fresh staging logical backup/restore receipt and read-only baseline, then execute the
-existing Assembly current-roster enumeration; do not materialize unless the run is `SUCCESS`.
+Implement the separate, source-specific Person Base Profile v1 slice for publishable Assembly
+party, district, committees and reelection Claims using the existing Claim/Evidence repository path;
+do not add a generic profile schema or raw-payload UI path.

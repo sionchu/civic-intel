@@ -43,42 +43,77 @@ Person schema or UI bypass.
 
 ### M0 — staging safety baseline
 
-- [ ] Capture a current provider-independent logical backup/restore receipt for staging after the
+- [x] Capture a current provider-independent logical backup/restore receipt for staging after the
       completed ALIO smoke and before Assembly writes. Keep dump and restore target outside the
       repository; never record credentials, passwords or a full database URL.
-- [ ] Read-only verify staging Alembic head, existing ALIO Organization/Claim/MONEY baseline and
+- [x] Read-only verify staging Alembic head, existing ALIO Organization/Claim/MONEY baseline and
       no unexpected schema/resource change.
-- [ ] Do not reset, drop, migrate or overwrite staging. Use an existing private tunnel or an
+- [x] Do not reset, drop, migrate or overwrite staging. Use an existing private tunnel or an
       already available disposable local PostgreSQL restore target; create no paid resource.
+
+M0 evidence (2026-09-15): a `pg_dump --format=custom --no-owner` capture was created at
+`2026-09-15T08:29:56.2862488Z` in a private temp path outside the repository. The dump size was
+`64,744` bytes and its SHA-256 was
+`9D941BCC4476D3906747019753CF895A2529FCCFA797685007285C279C5C621E`. It was restored with
+`pg_restore --format=custom --no-owner --exit-on-error` into loopback-only disposable PostgreSQL
+`18.6` database `restore_target` in `0.351` seconds. Read-only comparison of staging and restored
+databases matched Alembic head `0006`, all 26 public tables, the ALIO Organization/Claim/MONEY
+baseline (`1` Organization, `15` observations, `2` Claims, `2` ClaimEvidence), and zero
+subject-XOR/provenance mismatches. No provider plan/resource, database reset/drop/migration or paid
+resource was used.
 
 ### M1 — complete current-roster enumeration
 
-- [ ] Run the existing unfiltered Assembly enumerator against staging with the official API key
+- [x] Run the existing unfiltered Assembly enumerator against staging with the official API key
       supplied only through the process environment.
-- [ ] Require provider-declared total, page metadata, expected page count, complete page coverage,
+- [x] Require provider-declared total, page metadata, expected page count, complete page coverage,
       unique `MONA_CD` keys, deterministic page fingerprints and committed observation IDs.
-- [ ] Record the `SourceRun`, `SourceCheckpoint`, source/snapshot provenance and run counters.
-- [ ] If the run is not `SUCCESS`, retain the fail-closed run/queue state and do not materialize.
+- [x] Record the `SourceRun`, `SourceCheckpoint`, source/snapshot provenance and run counters.
+- [x] If the run is not `SUCCESS`, retain the fail-closed run/queue state and do not materialize.
+
+M1 evidence (2026-09-15): the existing unfiltered worker completed run
+`4fa48daa-5b02-45eb-ad98-2fb01ee5c5f8` with `status=SUCCESS`, three committed pages, provider
+`list_total_count=299`, `records_seen=299`, `observations_created=299` and
+`observations_unchanged=0`. The checkpoint cursor was `3` with page size `100` and expected page
+count `3`; the 299 provider keys and 299 external-ID links were distinct and complete. No
+materialization was attempted until this successful enumeration was committed.
 
 ### M2 — source-specific Person materialization
 
-- [ ] Only after M1 `SUCCESS`, invoke the existing `enumerate_and_materialize()` path for the
+- [x] Only after M1 `SUCCESS`, invoke the existing `enumerate_and_materialize()` path for the
       exact successful observation set.
-- [ ] Record counts for `AUTO_CREATE`, `AUTO_LINK`, `REVIEW_REQUIRED` and `HARD_CONFLICT`, plus
+- [x] Record counts for `AUTO_CREATE`, `AUTO_LINK`, `REVIEW_REQUIRED` and `HARD_CONFLICT`, plus
       all open review item IDs and reasons.
-- [ ] Verify resolved People are canonical rows whose IDs differ from provider `MONA_CD` values;
+- [x] Verify resolved People are canonical rows whose IDs differ from provider `MONA_CD` values;
       preserve exact provider identity in source-scoped external IDs/links.
-- [ ] Verify materialization idempotency and no partial Person/Claim/Evidence/Link state on a
+- [x] Verify materialization idempotency and no partial Person/Claim/Evidence/Link state on a
       publication or identity-gate failure using existing regressions and staging read QA.
+
+M2 evidence (2026-09-15): the same successful run materialized 298 canonical People with
+`AUTO_CREATE=298`, `AUTO_LINK=0`, `REVIEW_REQUIRED=0` and `HARD_CONFLICT=1`. The single open
+review item is `b0b404b2-4c23-4577-8678-c9047cac7fe6` with reason
+`EXACT_BIRTH_DATE_CONFLICT`; it was not published as a Person or Claim. Read-only staging QA
+found 299 observations, 298 Person links, 298 roster Claims and 298 ClaimEvidence rows; all 299
+provider IDs were retained as source-scoped external IDs, no provider key equalled a Person ID,
+and no Assembly fulltext or forbidden normalized contact key was stored. Subject-XOR and
+ClaimEvidence provenance mismatch counts were both zero.
 
 ### M3 — public read smoke
 
-- [ ] Read staging `/people` and an actual resolved `/people/{id}` through the existing API/web
+- [x] Read staging `/people` and an actual resolved `/people/{id}` through the existing API/web
       contract. Confirm the roster is no longer an empty placeholder and the profile shows only
       evidence-backed canonical output.
-- [ ] Confirm exact ClaimEvidence/source/snapshot/observation provenance is reachable through the
+- [x] Confirm exact ClaimEvidence/source/snapshot/observation provenance is reachable through the
       existing read path and raw provider party/district/committee payload is not a UI side door.
-- [ ] Separate staging/browser evidence from published release and deployed coverage claims.
+- [x] Separate staging/browser evidence from published release and deployed coverage claims.
+
+M3 evidence (2026-09-15): the staging Web browser smoke rendered `298 resolved identities` in the
+public roster and opened resolved profile `/people/017b6ddd-e52a-4221-b1fd-e7d0999c81a8` for
+`이상휘`. The profile displayed the canonical identity, one evidence-backed `HELD_ROLE` career
+entry and its `Evidence trace` to the official Assembly API Source; it did not render raw party,
+district or committee payload fields. The source panel exposed the policy state and official URL,
+while the exact snapshot/observation identifiers remained in the audit trace. This is staging
+browser evidence only, not a production release or a public coverage claim.
 
 ### M4 — small Person Base Profile v1 slice
 
