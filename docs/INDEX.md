@@ -21,6 +21,7 @@ implementation work.
 - [Assembly reviewed distinct-Person resolution v1](exec-plans/active/assembly-reviewed-distinct-person-v1.md)
 - [Evidence Directory site v1](exec-plans/active/evidence-directory-site-v1.md)
 - [People Discovery UX v1](exec-plans/active/people-discovery-ux-v1.md)
+- [Visual System v2](exec-plans/active/visual-system-v2.md)
 - [Acquisition Sync v1](exec-plans/active/acquisition-sync-v1.md)
 - [Collector Runtime Hardening v1](exec-plans/active/collector-runtime-hardening-v1.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)

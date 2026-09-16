@@ -1511,3 +1511,42 @@ Obtain separate approval for an existing-resource staging rehearsal of
 Before any future staging operation, obtain separate approval for one existing-resource rehearsal
 using normal `civic-sync assembly-roster`; do not use completed-checkpoint `--resume` as periodic
 sync.
+
+## Current checkpoint — Visual System v2 (2026-09-17)
+
+- The approved web-only visual milestone is implemented in isolated branch
+  `codex/change-discovery-plan`. `DESIGN.md` was updated first and remains the visual contract.
+  Home is now the quiet discovery entry, People is the single flat editorial directory, and the
+  existing Person page remains the evidence dossier. No feeder, API, database, schema, dependency,
+  Railway or staging change was made.
+- Official Apple Design/HIG pages were read as structural reference through the available Aside
+  run. The reusable grammar was limited to clear hierarchy, grouped navigation/topics, semantic
+  headings and explicit accessibility affordances. Apple branding, assets, copy, HTML/CSS, icons,
+  screenshots, fonts and tokens were not copied. Aside could not inspect staging because its local
+  Windows installation key was unavailable; the public staging page was inspected read-only with
+  the in-app browser and remains on its previous visual revision.
+- Home-only decorative hero panel, gradient/rings/dots/cross, floating signal strip and People
+  gallery-card hierarchy were removed or flattened. Existing canonical `getPeople()` and
+  publication-gated discovery projection remain the only data path. Role, party, district,
+  committees, reelection, evidence/as-of metadata, same-name separation, incomplete/no-match,
+  unavailable and not-found semantics remain intact.
+- A temporary 299-row Assembly mock fixture produced 299 public resolved People after the existing
+  reviewed distinct-Person path resolved one exact birth-date conflict. Standalone browser checks
+  at `1280x720` showed Home `299명`, People `299명`, party/district/committee/reelection options
+  `3/299/4/5`, `박지원=2`, no-match `0`, facet results `100/1/75/60` and a combination result `25`.
+  Same-name rows kept separate canonical links; a representative dossier showed Base Profile,
+  Claim/Evidence and Source provenance without raw normalized/contact fields. Skip-link keyboard
+  focus, static assets, no overflow and no console warning/error were observed.
+- A real 390px browser viewport was not available through the current CUA surface; an attempted
+  temporary wrapper was rejected by browser security policy and was not used as a workaround.
+  Mobile is therefore not claimed as browser PASS. The responsive CSS rules are present and
+  deterministic source regression remains green, but a viewport-capable browser check is the next
+  concrete verification boundary.
+- Local web test `10/10`, lint, typecheck, production/standalone build, Python Ruff, mypy, Golden
+  quality and full pytest completed successfully; full pytest exited `0` with one skipped test
+  observed. CI/HEAD closure will be added after push. No staging deployment was requested or made.
+
+## Next concrete action
+
+Run one real `390x844` browser smoke against the current Visual System v2 commit with a
+viewport-capable browser, then record only that responsive result before changing scope.

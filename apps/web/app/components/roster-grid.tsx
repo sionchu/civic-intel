@@ -9,7 +9,7 @@ const FACETS = [
   ["party", "정당"],
   ["district", "지역구"],
   ["committees", "위원회"],
-  ["reelection", "재선 상태"],
+  ["reelection", "초선/재선"],
 ] as const;
 
 type FilterKey = (typeof FACETS)[number][0];
@@ -69,15 +69,15 @@ export default function RosterGrid({ people }: { people: Person[] }) {
     <>
       <div className="roster-toolbar">
         <div>
-          <span className="micro-label">Resolved identities</span>
+          <span className="micro-label">People directory</span>
           <p className="toolbar-count">
-            <strong>{visiblePeople.length}</strong>
-            <span>of {people.length} profiles</span>
+            <strong>{visiblePeople.length}명</strong>
+            <span>표시 중 / 전체 {people.length}명</span>
           </p>
         </div>
         <label className="search-field">
           <span className="search-icon" aria-hidden="true">⌕</span>
-          <span className="sr-only">이름으로 공개 roster 필터링</span>
+          <span className="sr-only">이름으로 공개 기록 찾기</span>
           <input
             type="search"
             value={query}
@@ -116,13 +116,13 @@ export default function RosterGrid({ people }: { people: Person[] }) {
         <div className="empty-state">
           <span className="empty-state-mark" aria-hidden="true">∅</span>
           <div>
-            <strong>{people.length === 0 ? "Resolved identities are not available." : "검색 결과가 없습니다."}</strong>
-            <p>{people.length === 0 ? "The public directory is currently empty." : "표시된 canonical 이름과 공개 Claim 값으로만 검색합니다."}</p>
+            <strong>{people.length === 0 ? "현재 공개 기록이 없습니다." : "검색 결과가 없습니다."}</strong>
+            <p>{people.length === 0 ? "현재 공개 조건에서 표시할 사람이 없습니다." : "표시된 이름과 공개 Claim 값으로만 검색합니다."}</p>
             {people.length > 0 && hasActiveFilters && <button className="clear-filters" type="button" onClick={clearFilters}>필터 초기화</button>}
           </div>
         </div>
       ) : (
-        <div className="roster-grid">
+        <div className="roster-list">
           {visiblePeople.map((person, index) => {
             const facets = person.discovery?.facets;
             const sameNameCount = sameNameCounts.get(person.canonical_name) ?? 1;
@@ -134,31 +134,30 @@ export default function RosterGrid({ people }: { people: Person[] }) {
             const differentiators = [role, party, district, committees, reelection].filter(Boolean).join(" · ");
             return (
               <Link
-                className="person-card"
+                className="roster-row"
                 href={`/people/${person.id}`}
                 key={person.id}
                 aria-label={`${person.canonical_name}${differentiators ? ` · ${differentiators}` : ""} · Evidence profile`}
               >
-                <div className="card-topline">
-                  <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="status RESOLVED">RESOLVED</span>
-                </div>
-                <span className="person-avatar" aria-hidden="true">
-                  {person.canonical_name.trim().slice(0, 1)}
+                <span className="row-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                <span className="row-avatar" aria-hidden="true">{person.canonical_name.trim().slice(0, 1)}</span>
+                <span className="row-main">
+                  <span className="row-name-line">
+                    <h3>{person.canonical_name}</h3>
+                    {sameNameCount > 1 && <span className="same-name-note">동명이인 · {sameNameCount}명</span>}
+                  </span>
+                  <span className="row-role">{role ?? "역할 정보 없음"}</span>
                 </span>
-                <h3>{person.canonical_name}</h3>
-                <div className="card-details">
-                  <span><small>역할</small><strong>{role ?? "공개 Claim 없음"}</strong></span>
-                  <span><small>정당</small><strong>{party ?? "공개 Claim 없음"}</strong></span>
-                  <span><small>지역구</small><strong>{district ?? "공개 Claim 없음"}</strong></span>
-                  <span><small>재선</small><strong>{reelection ?? "공개 Claim 없음"}</strong></span>
-                </div>
-                {committees && <p className="card-committees"><small>위원회</small>{committees}</p>}
-                {sameNameCount > 1 && <span className="facet-chip">동명이인 · {sameNameCount}명</span>}
-                <div className="card-footer">
-                  <span className="card-provenance">근거 {person.discovery?.evidence_ids.length ?? 0}개 · 기준일 {person.discovery?.as_of ?? "정보 없음"}</span>
-                  <span className="card-arrow" aria-hidden="true">↗</span>
-                </div>
+                <span className="row-facts">
+                  <span><small>정당</small><strong>{party ?? "공개 정보 없음"}</strong></span>
+                  <span><small>지역구</small><strong>{district ?? "공개 정보 없음"}</strong></span>
+                </span>
+                <span className="row-secondary">
+                  <span><small>위원회</small><strong>{committees ?? "공개 정보 없음"}</strong></span>
+                  <span><small>초선/재선</small><strong>{reelection ?? "공개 정보 없음"}</strong></span>
+                </span>
+                <span className="row-proof">근거 {person.discovery?.evidence_ids.length ?? 0}개 · 기준일 {person.discovery?.as_of ?? "정보 없음"}</span>
+                <span className="row-arrow" aria-hidden="true">↗</span>
               </Link>
             );
           })}

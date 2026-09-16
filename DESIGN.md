@@ -2,10 +2,9 @@
 
 ## Design intent
 
-Civic Intel is a Korean-first, read-only Evidence Directory for people whose public roles and
-claims can be followed back to published evidence. The site should feel calm and inspectable:
-the interface helps a reader move from a resolved identity to an evidence trace without making
-the interface look like a verdict, ranking or social feed.
+Civic Intel is a Korean-first public-record directory. The interface should help a reader move
+from a person to the record behind a claim without turning a source into a verdict, score or
+social feed. The visual tone is quiet, editorial, precise and content-first.
 
 ## Design principles
 
@@ -18,6 +17,17 @@ the interface look like a verdict, ranking or social feed.
 - Prefer one clear next interaction: open a profile, jump to a section or inspect a source.
 - Keep the public surface read-only and source-bounded; do not add controls that imply approval,
   merging or publication authority.
+- Make the reading path apparent through hierarchy and proximity: person → public record → Claim
+  → Evidence → Source.
+- Use whitespace, thin dividers and type to establish hierarchy. Use color for semantic feedback
+  only, with one restrained civic accent.
+- Prefer flat editorial rows and grouped fields over galleries, dashboards or nested cards.
+- Explain what is visible, where it comes from and how it was checked without leading with
+  implementation vocabulary.
+
+External design references may inform this grammar, but they do not override product behavior,
+evidence rules, accessibility or existing component conventions. No external brand assets, copy,
+fonts, icons, screenshots or proprietary tokens are part of this system.
 
 ## Foundations
 
@@ -40,10 +50,10 @@ transport failure and source conflict use distinct feedback treatment and langua
 
 ### Typography
 
-Use the system sans stack for controls, labels and dense evidence metadata. Use a Korean-safe
-serif fallback stack for display headings and section names. Display headings use a compact,
-high-contrast scale; body copy stays between 15px and 18px with generous line height. Uppercase
-tracking is reserved for small English kicker labels.
+Use a system sans stack with Korean-safe fallbacks for body text, controls and dense evidence
+metadata. Use a Korean-safe serif fallback stack for display headings and names. Body copy stays
+between 15px and 18px with generous line height. Uppercase tracking is reserved for small route
+labels, not primary content.
 
 ### Spacing scale
 
@@ -53,23 +63,26 @@ breakpoint requires one.
 
 ### Layout and containers
 
-The content container is capped at 1180px with fluid 20–48px gutters. The roster uses a
-responsive three-column card grid; profile pages use a narrow sticky index beside a readable
-content column and reflow to one column below 820px. Long identifiers wrap inside audit details.
+The content container is capped at 1180px with fluid 20–48px gutters. Home uses a two-column
+introduction that collapses to one column. People uses a readable directory column with flat
+editorial rows and one mobile column. Profile pages keep their narrow index beside a readable
+content column and reflow below 820px. Long Korean values and identifiers wrap instead of clip.
 
 ### Borders, radii, shadows and surfaces
 
-Surfaces use a 1px border, 12–20px radii and a restrained shadow only for primary interactive
-cards. Status pills are fully rounded. Avoid glass effects, heavy gradients and decorative
-depth that could make source status feel more authoritative than the evidence.
+The default surface uses a 1px border and no shadow. Rounded corners are limited to controls,
+groups, avatars and feedback panels. Functional elevation may be used sparingly for an explicit
+interactive surface. Avoid glass effects, heavy gradients and decorative depth that could make
+source status feel more authoritative than the evidence.
 
 ## Components
 
-### Cards and panels
+### Records and panels
 
-Roster cards are clickable whole-surface links with a visible resolved status, person name and
-one action phrase. Profile claims and sources are separate panels. Review cards remain visibly
-read-only and keep operational IDs in expandable audit details.
+Roster records are flat clickable rows with canonical name, evidenced role, available profile
+fields, evidence/as-of metadata and a clear profile link. Profile claims and sources are separate
+panels. Review cards remain visibly read-only and keep operational IDs in expandable audit
+details.
 
 ### Navigation
 
@@ -79,8 +92,9 @@ navigation.
 
 ### Tables and data-dense UI
 
-Evidence is presented as stacked readable rows rather than a wide table. Source titles and policy
-summaries are visible; UUIDs, hashes and snapshot references stay behind `details` disclosure.
+People are presented as stacked readable rows rather than a gallery or wide table. Evidence is
+presented as stacked readable rows. Source titles and policy summaries are visible; UUIDs, hashes
+and snapshot references stay behind `details` disclosure.
 
 ### Status and feedback
 
@@ -96,9 +110,9 @@ not render as `UNKNOWN`, an empty result or a not-found record.
 
 ### Interaction states
 
-All links, search fields and disclosure summaries have visible keyboard focus. Clickable cards
-lift by a small amount on hover; no status depends on hover. The name filter changes only the
-displayed roster list and never creates an identity match.
+All links, search fields, native selects and disclosure summaries have visible keyboard focus.
+Interactive rows may receive a quiet border or background change on hover; no status depends on
+hover. The name filter changes only the displayed roster list and never creates an identity match.
 
 ### Motion
 
@@ -120,7 +134,8 @@ semantic headings/landmarks, labelled search, visible focus and touch targets of
 
 ## Implementation notes
 
-The visual SSOT is this file and the semantic CSS variables in `apps/web/app/styles.css`. The
-existing Server Component data reads in `apps/web/app/data.ts` remain the read boundary. The
+The visual contract is this file and the semantic CSS variables in `apps/web/app/styles.css`.
+The existing Server Component data reads in `apps/web/app/data.ts` remain the read boundary. The
 small client-side roster filter receives only serializable `Person` records from the server and
-does not call a new API or mutate canonical data.
+does not call a new API or mutate canonical data. Home and People changes must not introduce a
+feeder, schema, dependency or second provenance presentation path.

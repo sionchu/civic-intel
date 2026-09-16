@@ -55,6 +55,27 @@ test("People is the canonical identity-scoped discovery route", async () => {
   assert.match(layout, /href="\/people"/);
 });
 
+test("Visual System v2 keeps Home editorial and People content-first", async () => {
+  const home = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const people = await readFile(new URL("../app/people/page.tsx", import.meta.url), "utf8");
+  const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
+
+  assert.match(home, /공개 기록을/);
+  assert.match(home, /사람 기록 탐색/);
+  assert.match(home, /Identity/);
+  assert.match(home, /Evidence/);
+  assert.match(home, /Source/);
+  assert.doesNotMatch(home, /<RosterGrid|hero-panel|signal-strip/);
+  assert.match(people, /명의 공개 기록/);
+  assert.doesNotMatch(people, /profile-stamp/);
+  assert.match(roster, /className="roster-row"/);
+  assert.match(roster, /className="row-proof"/);
+  assert.match(roster, /key=\{person\.id\}/);
+  assert.doesNotMatch(roster, /person-card|FeederObservation|normalized/);
+  assert.doesNotMatch(styles, /\.hero-panel|\.panel-visual|\.panel-ring|\.panel-dot|\.panel-cross|\.person-card|\.signal-dot/);
+});
+
 test("UI exposes explicit provenance and a read-only review surface", async () => {
   const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
   const review = await readFile(new URL("../app/admin/review/page.tsx", import.meta.url), "utf8");

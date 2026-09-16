@@ -28,7 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </Link>
               <nav className="global-nav" aria-label="주요 메뉴">
                 <Link className="nav-link" href="/people">People</Link>
-                <span className="nav-status"><span className="signal-dot" /> Read-only V0</span>
+                <span className="nav-status">읽기 전용 공개 기록</span>
               </nav>
             </div>
           </header>
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <span className="brand-mark small" aria-hidden="true">CI</span>
               <div>
                 <strong>Civic Intel</strong>
-                <p>Every published fact is source-traceable.</p>
+                <p>공개 기록과 근거를 함께 보여줍니다.</p>
               </div>
             </div>
             <div className="footer-note">
