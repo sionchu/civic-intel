@@ -1467,7 +1467,10 @@ source or product surface.
   ingested and no face-based identity or AI portrait path was introduced.
 - This milestone intentionally did not execute staging, add credentials, change Railway,
   reload a database, create a public page, or start BTIS, CleanEye, MPM, assets, portraits,
-  admin, issue, MCP or community work. CI Verify is recorded after the delivery push.
+  admin, issue, MCP or community work. GitHub Actions [Verify run 35099025424](https://github.com/sionchu/civic-intel/actions/runs/35099025424)
+  passed in `2m35s` for delivery commit `eb37d8e982c89521ae8ffafd5dfee6870c285879`, including
+  canonical verification, Alembic round trip, PostgreSQL migration/load/API,
+  PostgreSQL backup/restore and deployment-artifact checks.
 
 ## Next concrete action
 

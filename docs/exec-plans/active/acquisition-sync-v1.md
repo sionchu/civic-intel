@@ -1,6 +1,7 @@
 # Acquisition Sync v1
 
-Status: local implementation and verification complete; CI/delivery receipt is pending.
+Status: complete — bounded local Acquisition Sync v1 delivered; staging execution remains a
+separate approved operation.
 
 Baseline: `origin/master` at `cd0ea4fdbd4a1e970ee3399bdc79bc23aa95628b`.
 
@@ -179,4 +180,7 @@ Ruff passed for `apps packages workers tests`, mypy passed for `60 source files`
 passed, web lint/typecheck/tests/build passed (`9` web tests), `.railway` standalone contract
 check passed, and a disposable SQLite Alembic upgrade/downgrade/upgrade round trip passed.
 `git diff --check` passed. No staging execution, deployment, database reload or Railway change
-was made. The CI Verify result and final delivery SHA are recorded after push.
+was made. GitHub Actions [Verify run 35099025424](https://github.com/sionchu/civic-intel/actions/runs/35099025424)
+passed in `2m35s` for delivery commit `eb37d8e982c89521ae8ffafd5dfee6870c285879`, including
+canonical verification, Alembic round trip, PostgreSQL migration/load/API, PostgreSQL
+backup/restore and deployment-artifact checks.
