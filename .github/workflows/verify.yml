@@ -104,6 +104,7 @@ jobs:
         run: |
           docker run --rm --entrypoint /bin/sh civic-intel-api:verify -lc '
             set -eu
+            cd /tmp
             test "$(command -v civic-sync)" = "/usr/local/bin/civic-sync"
             python -c "import importlib; module=importlib.import_module(\"packages.persistence.repository\"); assert \"site-packages\" in module.__file__; assert module._expected_schema_revision() == \"0006\""
             python -c "from alembic import command; from alembic.config import Config; config=Config(\"/app/alembic.ini\"); config.set_main_option(\"script_location\", \"/app/migrations\"); config.set_main_option(\"sqlalchemy.url\", \"sqlite:////tmp/runtime.db\"); command.upgrade(config, \"head\")"
