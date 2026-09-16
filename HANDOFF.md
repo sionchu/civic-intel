@@ -1363,9 +1363,29 @@ start BTIS or another feeder.
   keys. The two local standard-name temporary key files used for this staging tunnel were removed
   after the user-approved exact-path cleanup; no other SSH key was touched.
 
+## Current checkpoint — People Discovery UX v1 (2026-09-16)
+
+- The Evidence Directory read-model closure was confirmed from the canonical published
+  People/Claims path and existing staging evidence; the stale handoff action to reimplement it
+  is superseded.
+- People Discovery UX v1 is complete in commit `6d0b0893f5dd488c2c1d7ecb46f4ed7aa587b9a2`.
+  Home `/` is the discovery entry point, `/people` is the sole people directory, and
+  `/people/[id]` remains the evidence dossier. The directory reads only current resolved People
+  and publication-gated Claim/Evidence-derived Assembly Base Profile facets; no raw observation
+  UI, feeder, schema, migration or dependency was added.
+- Supported discovery inputs are canonical name, exact party/district/committee/reelection
+  facets when their current published Claims are deterministic, and evidenced role/provenance
+  display. Missing or ambiguous values remain visibly unavailable. Canonical Person IDs keep
+  same-name profiles separate, neutral initials avoid unapproved portraits, and the existing
+  dossier evidence/provenance presentation is reused.
+- Local full Python verification passed with `350 passed, 1 skipped`; web tests, lint, typecheck,
+  production/standalone build, Ruff, mypy and Clean-v0 quality passed. Browser checks covered
+  IA, filter/no-match, keyboard, incomplete facets, API outage, person 404 and 390px long-name
+  layout. GitHub Actions Verify `35090241928` passed in `2m23s`; local HEAD equals
+  `origin/master` at this commit and the worktree is clean. No staging/production deployment
+  or database write was made for this milestone.
+
 ## Next concrete action
 
-The Evidence Directory read-model milestone is already implemented through the canonical
-published People/Claims path; the focused API, roster, Base Profile and CHANGE regressions pass.
-The current approved execution plans are complete or explicitly blocked, so do not start BTIS,
-another feeder or a raw-observation UI path without a separately approved bounded milestone.
+Obtain approval to deploy commit `6d0b0893f5dd488c2c1d7ecb46f4ed7aa587b9a2` to the existing
+staging Web service only and run the 299-row People discovery browser smoke.

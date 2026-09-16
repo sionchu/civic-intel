@@ -1,6 +1,6 @@
 # People Discovery UX v1
 
-Status: in progress
+Status: complete
 
 ## Objective
 
@@ -81,4 +81,31 @@ substitution is introduced; each card and profile link remains keyed by canonica
 
 ## Completion record
 
-Implementation and verification evidence will be appended here after the gates above complete.
+Completed 2026-09-16 at commit `6d0b0893f5dd488c2c1d7ecb46f4ed7aa587b9a2`.
+
+- `/people` is now the single public people-discovery route. Home `/` is an orientation and
+  discovery entry point, `/people` is the bounded directory, and `/people/[id]` remains the
+  evidence dossier. The existing `RosterGrid` is shared by the directory only; no parallel
+  directory or raw-observation UI was added.
+- The API list projection starts from current, non-superseded `RESOLVED` People and derives
+  facets only from current published Person Claims whose ClaimEvidence passes the existing
+  Source/SourcePolicy publication gate. It does not expose or read `FeederObservation.normalized`.
+  No schema, migration, dependency or persistent model change was made.
+- Name, party, district, committees and reelection filters are supported only from exact
+  Assembly Base Profile Claim values. Missing or ambiguous values stay unavailable; the local
+  incomplete-facet browser check rendered the explicit warning and omitted the unavailable
+  party facet rather than inferring it.
+- Cards use canonical Person IDs and neutral initials, display available role/profile values,
+  ClaimEvidence count and as-of date, and mark same-name People separately. A reviewed
+  same-name regression kept two canonical IDs and distinct party facets.
+- Local verification passed: full Python `350 passed, 1 skipped`, Ruff, mypy for 59 source files,
+  Clean-v0 quality, web UI tests `9 passed`, web lint, typecheck, production build and
+  standalone contract. GNU Make is unavailable on this Windows host; the Makefile's
+  constituent verification commands were run directly.
+- Browser verification used a disposable SQLite dataset and standalone production artifact:
+  Home IA, `/people`, party filter, no-match/reset, keyboard focus through skip/search/filter/
+  card, resolved dossier navigation, incomplete facets, API-unavailable `SERVICE_UNAVAILABLE`,
+  unknown-Person `Profile not found`, and a 390px viewport with a long Korean name. The mobile
+  DOM reported `scrollWidth=375` for `innerWidth=390`; no console warning/error was captured.
+- GitHub Actions Verify run `35090241928` for this commit completed successfully in `2m23s`.
+  No staging/production deployment or database write was made for this milestone.
