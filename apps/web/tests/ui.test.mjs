@@ -26,16 +26,33 @@ test("UI does not implement publication decisions", async () => {
   assert.ok(files.every((body) => !body.includes("validate_claim_publication")));
 });
 
-test("public roster keeps name filtering client-side and identity-scoped", async () => {
-  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+test("People is the canonical identity-scoped discovery route", async () => {
+  const home = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const page = await readFile(new URL("../app/people/page.tsx", import.meta.url), "utf8");
+  const loading = await readFile(new URL("../app/people/loading.tsx", import.meta.url), "utf8");
   const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
-  assert.match(page, /<RosterGrid people=\{people\} \/>/);
+  const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const notFound = await readFile(new URL("../app/not-found.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(home, /<RosterGrid/);
+  assert.match(home, /href="\/people"/);
+  assert.match(page, /getPeople/);
+  assert.match(page, /<RosterGrid people=\{peopleResult\.data\} \/>/);
   assert.match(roster, /type=\"search\"/);
   assert.match(roster, /canonical_name/);
   assert.match(roster, /href=\{`\/people\/\$\{person\.id\}`\}/);
+  assert.match(roster, /person\.discovery/);
+  assert.match(roster, /FACETS/);
+  assert.match(roster, /<select/);
+  assert.match(roster, /sameNameCounts/);
+  assert.match(roster, /key=\{person\.id\}/);
+  assert.doesNotMatch(roster, /FeederObservation|normalized/);
+  assert.match(loading, /aria-busy="true"/);
+  assert.match(profile, /href="\/people"/);
+  assert.match(notFound, /href="\/people"/);
   assert.match(layout, /lang=\"ko\"/);
   assert.match(layout, /skip-link/);
+  assert.match(layout, /href="\/people"/);
 });
 
 test("UI exposes explicit provenance and a read-only review surface", async () => {
@@ -92,7 +109,7 @@ test("organization page does not add binding or organization enumeration control
 
 test("UI stays within the directory scope", async () => {
   const files = await Promise.all(
-    ["../app/page.tsx", "../app/people/[id]/page.tsx", "../app/organizations/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
+    ["../app/page.tsx", "../app/people/page.tsx", "../app/people/[id]/page.tsx", "../app/components/roster-grid.tsx", "../app/organizations/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
       readFile(new URL(path, import.meta.url), "utf8"),
     ),
   );

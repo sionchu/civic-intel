@@ -27,7 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </span>
               </Link>
               <nav className="global-nav" aria-label="주요 메뉴">
-                <Link className="nav-link" href="/" aria-current="page">Directory</Link>
+                <Link className="nav-link" href="/people">People</Link>
                 <span className="nav-status"><span className="signal-dot" /> Read-only V0</span>
               </nav>
             </div>

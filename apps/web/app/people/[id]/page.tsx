@@ -13,7 +13,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     if (personResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
     return (
       <div className="site-page profile-page">
-        <Link href="/" className="back-link"><span aria-hidden="true">←</span> Roster</Link>
+        <Link href="/people" className="back-link"><span aria-hidden="true">←</span> People</Link>
         <ReadState error={personResult.error} />
       </div>
     );
@@ -34,7 +34,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="site-page profile-page">
-      <Link href="/" className="back-link"><span aria-hidden="true">←</span> Roster</Link>
+      <Link href="/people" className="back-link"><span aria-hidden="true">←</span> People</Link>
       <header className="profile-header">
         <div>
           <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Evidence profile / Resolved identity</div>

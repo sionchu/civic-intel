@@ -1,12 +1,10 @@
 import Link from "next/link";
 
-import RosterGrid from "./components/roster-grid";
-import ReadState from "./components/read-state";
 import { getPeople } from "./data";
 
 export const dynamic = "force-dynamic";
 
-export default async function RosterPage() {
+export default async function HomePage() {
   const peopleResult = await getPeople();
   const people = peopleResult.state === "success" ? peopleResult.data : [];
 
@@ -18,7 +16,7 @@ export default async function RosterPage() {
           <h1 id="hero-title">공개 기록을<br /><em>증거로 읽는 사람들</em></h1>
           <p className="lede">공개된 기록을 따라가며, 확인된 것과 아직 열려 있는 것을 분리합니다. 모든 프로필은 canonical identity와 published evidence에서 시작합니다.</p>
           <div className="hero-actions">
-            <a className="primary-action" href="#roster">Roster 살펴보기 <span aria-hidden="true">↘</span></a>
+            <Link className="primary-action" href="/people">People 탐색하기 <span aria-hidden="true">↘</span></Link>
             <span className="hero-note"><span className="signal-dot" /> Source-traceable / read-only</span>
           </div>
         </div>
@@ -53,21 +51,6 @@ export default async function RosterPage() {
           <strong>Trace first</strong>
           <span>Claim → Evidence → Source</span>
         </div>
-      </section>
-
-      <section className="directory-section" id="roster" aria-labelledby="roster-title">
-        <div className="section-intro">
-          <div>
-            <span className="eyebrow">Public roster</span>
-            <h2 id="roster-title">Resolved people</h2>
-          </div>
-          <p>현재 공개 디렉터리에는 자동으로 확인된 identity만 표시됩니다. 이름을 선택하면 해당 profile의 근거 경로를 볼 수 있습니다.</p>
-        </div>
-        {peopleResult.state === "success" ? (
-          people.length > 0 ? <RosterGrid people={people} /> : (
-            <p className="empty-state"><span className="empty-state-mark" aria-hidden="true">∅</span><span><strong>현재 공개 roster가 비어 있습니다.</strong><small>대상이 없다는 의미가 아니라 현재 조건의 공개 결과가 없다는 뜻입니다.</small></span></p>
-          )
-        ) : <ReadState error={peopleResult.error} />}
       </section>
 
       <section className="principles" id="principles" aria-labelledby="principles-title">

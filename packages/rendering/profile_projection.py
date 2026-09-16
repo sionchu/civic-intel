@@ -20,6 +20,8 @@ from packages.domain.enums import (
 )
 from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_FIELDS,
+    ASSEMBLY_BASE_PROFILE_SCOPE,
+    ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
 
@@ -188,6 +190,119 @@ def _assembly_base_profile_entries(
         )
     )
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _discovery_facet_entry(
+    claim: Claim,
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> dict[str, Any] | None:
+    value = claim.object_text.strip()
+    evidence = tuple(evidence_by_claim.get(claim.id, ()))
+    if not value or not evidence:
+        return None
+    return {
+        "value": value,
+        "claim_id": str(claim.id),
+        "evidence_ids": [str(item.id) for item in evidence],
+        "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
+        "as_of": claim.valid_from.date().isoformat(),
+    }
+
+
+def build_people_discovery_projection(
+    person: Person,
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> dict[str, Any]:
+    """Build the bounded list projection from already publication-gated Claim/Evidence.
+
+    This intentionally accepts canonical Claims and ClaimEvidence rather than observations. A
+    facet is available only when exactly one current, asserted Assembly roster Claim supplies its
+    value. Multiple current Claims are ambiguous, even when their text happens to match.
+    """
+
+    field_definitions = {item.name: item for item in ASSEMBLY_BASE_PROFILE_FIELDS}
+    field_claims: dict[str, list[Claim]] = {name: [] for name in field_definitions}
+    role_claims: list[Claim] = []
+    for claim in claims:
+        if (
+            claim.person_id != person.id
+            or claim.superseded_at is not None
+            or claim.publication_status != PublicationStatus.PUBLISHED
+            or claim.epistemic_status != EpistemicStatus.FACT
+            or not claim.asserted_as_true
+        ):
+            continue
+        if (
+            claim.qualifiers.get("source_contract") == ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+            and claim.qualifiers.get("source_scope") == ASSEMBLY_BASE_PROFILE_SCOPE
+            and claim.qualifiers.get("semantic_scope") == ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE
+        ):
+            field_name = claim.qualifiers.get("field_name")
+            definition = field_definitions.get(field_name or "")
+            if (
+                isinstance(field_name, str)
+                and definition is not None
+                and claim.predicate == definition.predicate
+            ):
+                field_claims[field_name].append(claim)
+        elif (
+            claim.predicate == "HELD_ROLE"
+            and claim.qualifiers.get("source_contract")
+            in {None, ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT}
+            and claim.qualifiers.get("source_scope") == ASSEMBLY_BASE_PROFILE_SCOPE
+            and claim.qualifiers.get("provider_record_key")
+            and claim.qualifiers.get("semantic_scope")
+            in {None, ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE}
+        ):
+            role_claims.append(claim)
+
+    facets: dict[str, dict[str, Any] | None] = {
+        "role": None,
+        **{name: None for name in field_definitions},
+    }
+    missing_fields: list[str] = []
+    ambiguous_fields: list[str] = []
+
+    if len(role_claims) == 1:
+        facets["role"] = _discovery_facet_entry(role_claims[0], evidence_by_claim)
+        if facets["role"] is None:
+            missing_fields.append("role")
+    elif not role_claims:
+        missing_fields.append("role")
+    else:
+        ambiguous_fields.append("role")
+
+    for field_definition in ASSEMBLY_BASE_PROFILE_FIELDS:
+        candidates = field_claims[field_definition.name]
+        if len(candidates) == 1:
+            facets[field_definition.name] = _discovery_facet_entry(
+                candidates[0], evidence_by_claim
+            )
+            if facets[field_definition.name] is None:
+                missing_fields.append(field_definition.name)
+        elif not candidates:
+            missing_fields.append(field_definition.name)
+        else:
+            ambiguous_fields.append(field_definition.name)
+
+    selected_facets = [item for item in facets.values() if item is not None]
+    as_of_values = {item["as_of"] for item in selected_facets}
+    as_of = next(iter(as_of_values)) if len(as_of_values) == 1 else None
+    evidence_ids = _ordered_unique(
+        [evidence_id for item in selected_facets for evidence_id in item["evidence_ids"]]
+    )
+    source_ids = _ordered_unique(
+        [source_id for item in selected_facets for source_id in item["source_ids"]]
+    )
+    return {
+        "facets": facets,
+        "as_of": as_of,
+        "evidence_ids": evidence_ids,
+        "source_ids": source_ids,
+        "missing_fields": missing_fields,
+        "ambiguous_fields": ambiguous_fields,
+    }
 
 
 def _controversy_entries(

@@ -2337,6 +2337,64 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             return [self._person(row) for row in session.scalars(statement)]
 
+    def published_person_claim_contexts(
+        self,
+        person_ids: Iterable[UUID],
+    ) -> dict[UUID, tuple[tuple[Claim, ...], dict[UUID, tuple[ClaimEvidence, ...]]]]:
+        """Load current published Person Claim/Evidence context in two bounded reads."""
+
+        requested_ids = tuple(sorted({str(person_id) for person_id in person_ids}))
+        if not requested_ids:
+            return {}
+
+        with self.sessions() as session:
+            claim_rows = list(
+                session.scalars(
+                    select(ClaimRow)
+                    .where(
+                        ClaimRow.person_id.in_(requested_ids),
+                        ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                        ClaimRow.superseded_at.is_(None),
+                    )
+                    .order_by(ClaimRow.person_id, ClaimRow.id)
+                )
+            )
+            claims_by_person: dict[UUID, list[Claim]] = {
+                UUID(person_id): [] for person_id in requested_ids
+            }
+            claims_by_id: dict[UUID, Claim] = {}
+            for row in claim_rows:
+                claim = self._claim(row)
+                assert claim.person_id is not None
+                claims_by_person[claim.person_id].append(claim)
+                claims_by_id[claim.id] = claim
+
+            evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {
+                claim_id: [] for claim_id in claims_by_id
+            }
+            if claims_by_id:
+                evidence_rows = session.scalars(
+                    select(ClaimEvidenceRow)
+                    .where(ClaimEvidenceRow.claim_id.in_([str(item) for item in claims_by_id]))
+                    .order_by(ClaimEvidenceRow.claim_id, ClaimEvidenceRow.id)
+                )
+                for evidence_row in evidence_rows:
+                    claim_id = UUID(evidence_row.claim_id)
+                    if claim_id in evidence_by_claim:
+                        evidence_by_claim[claim_id].append(self._evidence(evidence_row))
+
+        return {
+            person_id: (
+                tuple(claims_by_person[person_id]),
+                {
+                    claim_id: tuple(items)
+                    for claim_id, items in evidence_by_claim.items()
+                    if claim_id in {claim.id for claim in claims_by_person[person_id]}
+                },
+            )
+            for person_id in (UUID(item) for item in requested_ids)
+        }
+
     def person(self, person_id: UUID) -> Person | None:
         with self.sessions() as session:
             row = session.get(PersonRow, str(person_id))

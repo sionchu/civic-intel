@@ -142,10 +142,34 @@ export type ProfileProjection = {
   semantics: "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE";
 };
 
+export type DiscoveryFacet = {
+  value: string;
+  claim_id: string;
+  evidence_ids: string[];
+  source_ids: string[];
+  as_of: string;
+};
+
+export type PeopleDiscovery = {
+  facets: {
+    role: DiscoveryFacet | null;
+    party: DiscoveryFacet | null;
+    district: DiscoveryFacet | null;
+    committees: DiscoveryFacet | null;
+    reelection: DiscoveryFacet | null;
+  };
+  as_of: string | null;
+  evidence_ids: string[];
+  source_ids: string[];
+  missing_fields: string[];
+  ambiguous_fields: string[];
+};
+
 export type Person = {
   id: string;
   canonical_name: string;
   identity_status: "RESOLVED" | "REVIEW" | "UNRESOLVED";
+  discovery?: PeopleDiscovery;
   claims?: Claim[];
   profile?: ProfileProjection;
 };

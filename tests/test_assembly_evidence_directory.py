@@ -19,6 +19,7 @@ from packages.domain.enums import (
     SourceRunStatus,
 )
 from packages.persistence import SqlAlchemyRepository
+from packages.verification.assembly_base_profile import AssemblyBaseProfilePublisher
 from packages.verification.claims import GateResult
 from packages.verification.materialization import MaterializationError
 from workers.assembly_roster import AssemblyRosterEnumerator
@@ -252,6 +253,43 @@ def test_same_name_birth_date_contradiction_is_hard_conflict_and_not_public(
 
     with TestClient(create_app(repository)) as client:
         assert len(client.get("/people").json()) == 1
+
+
+def test_reviewed_same_name_people_remain_distinct_in_discovery(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "same-name-reviewed.db")
+    result = AssemblyRosterEnumerator(
+        MultiPageRoster(
+            {
+                1: [
+                    member_row("M-001", "동명이인", birth_date="19700102", party="첫정당"),
+                    member_row("M-002", "동명이인", birth_date="19800102", party="둘째정당"),
+                ]
+            }
+        ).connector(),
+        repository,
+    ).enumerate_and_materialize()
+
+    conflict = result.materializations[1]
+    assert conflict.review_item_id is not None
+    reviewed = repository.resolve_assembly_distinct_person_review(
+        conflict.review_item_id,
+        resolution_note="공식 현재 명부의 서로 다른 생년월일을 확인하여 별도 Person으로 검토 처리",
+    )
+    assert reviewed.person_id is not None
+    AssemblyBaseProfilePublisher(repository).publish_latest_successful()
+
+    with TestClient(create_app(repository)) as client:
+        people = client.get("/people").json()
+
+    assert len(people) == 2
+    assert len({item["id"] for item in people}) == 2
+    assert {item["canonical_name"] for item in people} == {"동명이인"}
+    assert {item["discovery"]["facets"]["party"]["value"] for item in people} == {
+        "첫정당",
+        "둘째정당",
+    }
 
 
 def test_publication_gate_failure_rolls_back_source_specific_materialization(

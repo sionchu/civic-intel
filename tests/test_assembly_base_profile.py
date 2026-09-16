@@ -117,6 +117,18 @@ def test_base_profile_publishes_atomic_claims_and_projects_evidence(
         assert "TEL_NO" not in str(payload)
         assert "E_MAIL" not in str(payload)
 
+        list_payload = client.get("/people").json()
+        discovery = list_payload[0]["discovery"]
+        assert discovery["facets"]["role"]["value"] == "국회의원"
+        assert discovery["facets"]["party"]["value"] == "테스트정당"
+        assert discovery["facets"]["district"]["value"] == "서울 테스트구"
+        assert discovery["facets"]["committees"]["value"] == "테스트위원회"
+        assert discovery["facets"]["reelection"]["value"] == "초선"
+        assert discovery["as_of"]
+        assert discovery["source_ids"]
+        assert discovery["evidence_ids"]
+        assert "normalized" not in str(list_payload)
+
 
 def test_base_profile_rerun_is_idempotent(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "base-profile-rerun.db")
@@ -158,6 +170,13 @@ def test_base_profile_preserves_missingness_without_inference(tmp_path: Path) ->
         )
     assert section["status"] == "PARTIAL"
     assert [entry["details"]["field_name"] for entry in section["entries"]] == ["district"]
+    with TestClient(create_app(repository)) as client:
+        discovery = client.get("/people").json()[0]["discovery"]
+    assert discovery["facets"]["party"] is None
+    assert discovery["facets"]["district"]["value"] == "서울 테스트구"
+    assert discovery["facets"]["committees"] is None
+    assert discovery["facets"]["reelection"] is None
+    assert set(discovery["missing_fields"]) == {"party", "committees", "reelection"}
 
 
 def test_changed_observation_version_fails_closed(tmp_path: Path) -> None:

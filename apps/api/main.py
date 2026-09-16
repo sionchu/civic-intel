@@ -12,7 +12,10 @@ from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.enums import IdentityStatus
 from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
-from packages.rendering.profile_projection import build_profile_projection
+from packages.rendering.profile_projection import (
+    build_people_discovery_projection,
+    build_profile_projection,
+)
 from packages.verification.claims import validate_claim_publication
 
 
@@ -201,7 +204,36 @@ def create_app(
 
     @app.get("/people")
     def people() -> list[dict]:
-        return [item.model_dump(mode="json") for item in target.public_people()]
+        public_people = target.public_people()
+        contexts = target.published_person_claim_contexts(item.id for item in public_people)
+        all_evidence = [
+            evidence
+            for _, evidence_by_claim in contexts.values()
+            for evidence in evidence_by_claim.values()
+        ]
+        source_map = target.sources(item.source_id for evidence in all_evidence for item in evidence)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
+        payload: list[dict] = []
+        for item in public_people:
+            claims, evidence_by_claim = contexts.get(item.id, ((), {}))
+            eligible_claims = []
+            eligible_evidence = {}
+            for claim in claims:
+                evidence = list(evidence_by_claim.get(claim.id, ()))
+                if validate_claim_publication(claim, item, evidence, source_map, policy_map).publishable:
+                    eligible_claims.append(claim)
+                    eligible_evidence[claim.id] = tuple(evidence)
+            payload.append(
+                item.model_dump(mode="json")
+                | {
+                    "discovery": build_people_discovery_projection(
+                        item,
+                        eligible_claims,
+                        eligible_evidence,
+                    )
+                }
+            )
+        return payload
 
     @app.get("/people/{person_id}")
     def person(person_id: UUID) -> dict:
