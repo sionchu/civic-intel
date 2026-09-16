@@ -1,6 +1,6 @@
 # Collector Runtime Hardening v1
 
-Status: ACTIVE — local verification complete; CI pending
+Status: COMPLETE — local and CI verification passed
 Started: 2026-09-17
 Repository baseline: `3843cccf39565db20e7c997ac8378fd2f99542f2`
 
@@ -94,8 +94,8 @@ Run and record, without live staging access:
 - Local full verification passed: `355 passed, 1 skipped, 4 warnings`; Ruff passed; mypy passed
   for `60 source files`; Golden quality passed; web lint/typecheck/9 tests/production build
   passed; and the Railway specification TypeScript check passed.
-- Docker is unavailable on the local host. The CI Verify workflow now builds the API image and
-  runs the installed-entrypoint check from `/tmp`; no local Docker result is claimed.
+- Docker is unavailable on the local host. GitHub Actions Verify `35121587665` built the API
+  image and passed the installed-entrypoint check from `/tmp`.
 
 ## Future deployment shape (evaluation only)
 
@@ -106,12 +106,12 @@ API-service credential injection remain separate decisions.
 
 ## Current checkpoint
 
-M0 baseline reproduction, M1 runtime/CLI hardening and the local M2 matrix are complete. The
-source-tree versus installed-wheel difference and exact Alembic `CommandError` path-resolution
-failure are recorded above. Staging remains untouched; CI is the only remaining verification
-step before closure.
+M0 baseline reproduction, M1 runtime/CLI hardening, the local M2 matrix and CI container
+verification are complete. The source-tree versus installed-wheel difference and exact Alembic
+`CommandError` path-resolution failure are recorded above. Staging remains untouched.
 
 ## Next concrete action
 
-Create the coherent delivery commit, push it to `origin/master`, and record the CI Verify result
-including the container entrypoint regression.
+Before any future staging operation, obtain separate approval for one existing-resource rehearsal
+using normal `civic-sync assembly-roster`; do not use completed-checkpoint `--resume` as periodic
+sync.

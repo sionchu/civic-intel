@@ -1499,11 +1499,15 @@ Obtain separate approval for an existing-resource staging rehearsal of
 - Docker is unavailable on this host, so no local container PASS is claimed. Verify now includes
   a CI-only API-image regression that runs `civic-sync` from `/tmp` and checks its redacted
   missing-key receipt.
+- GitHub Actions Verify `35121587665` passed in `2m50s` for `95065c3`, including the new
+  installed-entrypoint container regression and all existing PostgreSQL, backup/restore and
+  deployment-artifact checks. Collector Runtime Hardening v1 is complete.
 - Docker is unavailable on this host (`docker` command not found), so no container result will
   be claimed until a container runtime is actually executed. The future collector shape remains
   private/manual-only evaluation; no collector service or scheduler is being created.
 
 ## Next concrete action
 
-Create the coherent delivery commit, push it to `origin/master`, and record the CI Verify result
-including the container entrypoint regression.
+Before any future staging operation, obtain separate approval for one existing-resource rehearsal
+using normal `civic-sync assembly-roster`; do not use completed-checkpoint `--resume` as periodic
+sync.
