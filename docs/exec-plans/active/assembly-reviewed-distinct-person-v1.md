@@ -1,7 +1,7 @@
 # Assembly reviewed distinct-Person resolution v1
 
-Status: in progress — staging backup/restore is complete; the source-specific operator resolution
-awaits deployment of the pushed API code.
+Status: completed on 2026-09-16 for local, CI, staging and browser evidence; the next implementation
+milestone is the existing Evidence Directory read-model path.
 
 ## Objective
 
@@ -71,10 +71,10 @@ provider-independent backup/restore and deployment-artifact checks.
 
 - [x] Capture a fresh provider-independent logical staging backup outside the repository before
       any database write; no Railway plan/resource change is allowed.
-- [ ] Deploy the pushed code to the existing staging API service only.
-- [ ] Resolve the exact review item through the explicit source-specific CLI operation.
-- [ ] Run the existing successful-roster Base Profile publisher for the newly linked observation.
-- [ ] Read-only verify counts, candidate preservation, review status, exact Claim/Evidence/
+- [x] Deploy the pushed code to the existing staging API service only.
+- [x] Resolve the exact review item through the explicit source-specific CLI operation.
+- [x] Run the existing successful-roster Base Profile publisher for the newly linked observation.
+- [x] Read-only verify counts, candidate preservation, review status, exact Claim/Evidence/
       Source/Snapshot provenance, subject XOR and privacy gates.
 
 M1 backup/restore evidence (2026-09-16): the pre-write staging baseline was read through the
@@ -102,10 +102,43 @@ resource or billing change occurred.
 
 ### M2 — staging/API/browser evidence
 
-- [ ] Verify `/people` exposes the new resolved Person and the existing candidate separately.
-- [ ] Verify the new profile shows only canonical Claim/Evidence output and the four Base Profile
+- [x] Verify `/people` exposes the new resolved Person and the existing candidate separately.
+- [x] Verify the new profile shows only canonical Claim/Evidence output and the four Base Profile
       fields; raw normalized provider payload and contact fields remain absent.
-- [ ] Record staging/browser evidence separately from CI, release and production claims.
+- [x] Record staging/browser evidence separately from CI, release and production claims.
+
+M1/M2 staging evidence (2026-09-16): the existing Railway staging `api` service was redeployed
+from source as deployment `5da14c38-4f77-4bc1-a247-3910c4fb03d7`, commit
+`013df121f3ff17c5ee2f251b0a79585123507a3c`, with status `SUCCESS`. No new service, plan, domain,
+schema revision or dependency was introduced.
+
+The approved source-specific operation resolved review item
+`b0b404b2-4c23-4577-8678-c9047cac7fe6` for provider record `H7X3372O` with action
+`REVIEWED_CREATE` and decision class `REVIEWED_DISTINCT_IDENTITY`. It created Person
+`8b5f1e48-e7be-47cb-994e-da89dfdbce55` and Claim
+`6ea439b2-cebd-553a-9be4-58936bf4fc94`. The existing candidate Person
+`1bd253ae-3de7-42de-81e5-b450c1fb8e8b` remained unchanged; the two same-name records retain
+their distinct birth dates and provider-scoped identity.
+
+The existing Base Profile publisher returned `SUCCESS` for run
+`4fa48daa-5b02-45eb-ad98-2fb01ee5c5f8`, considering 299 observations and publishing 1,195 claims
+with 1,191 unchanged claims. Final read-only QA found 299 resolved People, 299 observation links,
+one resolved review item, 1,496 Claims and 1,496 ClaimEvidence rows. Base Profile counts were
+`ASSEMBLY_PARTY=299`, `ASSEMBLY_DISTRICT=299`, `ASSEMBLY_COMMITTEES=298` and
+`ASSEMBLY_REELECTION=299`; the single missing committee field remained explicit.
+
+The new Person's role and four Base Profile Claims all point through the same official Assembly
+Source, SourceSnapshot and feeder observation for `H7X3372O`. Subject-XOR invalid count,
+ClaimEvidence provenance mismatch count, forbidden normalized contact-field count, fulltext row
+count and provider-key-as-Person-ID count were all `0`. Existing ALIO remained one Organization,
+15 observations and two organization Claims.
+
+The public staging Web rendered `299 resolved identities`. Both the existing candidate profile
+and the reviewed distinct profile opened separately; the latter showed the canonical identity,
+Assembly role, four Base Profile fields and visible Evidence traces. No raw normalized provider
+payload or contact fields appeared. This is staging/browser evidence, not a production coverage
+or publication claim. The private tunnel was closed and Railway reported zero registered SSH keys
+after verification.
 
 ## Acceptance gates
 

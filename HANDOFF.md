@@ -1340,3 +1340,30 @@ The next external action is to deploy the pushed code to the existing staging AP
 then apply the already-approved H7X3372O reviewed-resolution transaction and run Base Profile/API
 read QA. The current staging API remains on `10ef8317cd01ac3f1c8933647a0cfecdf1c7b69b`; do not
 start BTIS or another feeder.
+
+## Current checkpoint — Assembly reviewed distinct-Person staging closure (2026-09-16)
+
+- Existing staging `api` deployment `5da14c38-4f77-4bc1-a247-3910c4fb03d7` completed `SUCCESS`
+  from commit `013df121f3ff17c5ee2f251b0a79585123507a3c`; no new Railway resource, plan, domain,
+  schema revision or dependency was introduced.
+- The approved H7X3372O operation returned `SUCCESS`, `REVIEWED_CREATE` /
+  `REVIEWED_DISTINCT_IDENTITY`, created Person `8b5f1e48-e7be-47cb-994e-da89dfdbce55` and role
+  Claim `6ea439b2-cebd-553a-9be4-58936bf4fc94`, and resolved review item
+  `b0b404b2-4c23-4577-8678-c9047cac7fe6`. Existing candidate
+  `1bd253ae-3de7-42de-81e5-b450c1fb8e8b` was preserved.
+- Base Profile publish returned `SUCCESS` for run `4fa48daa-5b02-45eb-ad98-2fb01ee5c5f8`:
+  299 observations considered, 1,195 claims published and 1,191 unchanged. Final QA found 299
+  resolved People, 299 links, 1,496 Claims/ClaimEvidence, explicit committee missingness `1`,
+  subject-XOR/provenance/privacy/fulltext/provider-key violations `0`; ALIO remained one
+  Organization, 15 observations and two Claims.
+- Public staging Web rendered `299 resolved identities`; both same-name Assembly profiles opened
+  separately and the reviewed profile showed role, four Base Profile fields and Evidence traces
+  without raw normalized payload/contact fields. This remains staging/browser evidence.
+- Private tunnel was closed, raw tunnel logs were removed, and Railway reports zero registered SSH
+  keys. A local standard-name temporary key file remains pending exact-path cleanup approval by
+  the managed destructive-action guard.
+
+## Next concrete action
+
+Start the existing Evidence Directory read-model milestone using the canonical published
+People/Claims path; do not start BTIS, another feeder, or a raw-observation UI path.
