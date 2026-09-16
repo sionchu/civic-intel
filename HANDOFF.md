@@ -1365,5 +1365,7 @@ start BTIS or another feeder.
 
 ## Next concrete action
 
-Start the existing Evidence Directory read-model milestone using the canonical published
-People/Claims path; do not start BTIS, another feeder, or a raw-observation UI path.
+The Evidence Directory read-model milestone is already implemented through the canonical
+published People/Claims path; the focused API, roster, Base Profile and CHANGE regressions pass.
+The current approved execution plans are complete or explicitly blocked, so do not start BTIS,
+another feeder or a raw-observation UI path without a separately approved bounded milestone.
