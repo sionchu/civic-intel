@@ -1279,7 +1279,30 @@ existing successful-enumeration and source-specific materialization gates.
   including canonical verification, Alembic round trip, PostgreSQL load/API, backup/restore and
   deployment-artifact checks. The isolated worktree is clean and local HEAD equals `origin/master`.
 
+## Current checkpoint — Assembly conflict review (2026-09-16)
+
+- A read-only review of the staging `IdentityReviewItem`
+  `b0b404b2-4c23-4577-8678-c9047cac7fe6` confirmed `OPEN`,
+  `HARD_CONFLICT` and `EXACT_BIRTH_DATE_CONFLICT` for observation
+  `0fce4b39-95cf-4401-b0c2-e3583dad14b9` / provider record `H7X3372O`.
+- The same successful current-roster enumeration contains two distinct provider records with
+  the canonical name `박지원`: `8BF5855P` has birth date `1942-06-05`, district
+  `전남광주통합특별시 해남군완도군진도군` and `5선`; `H7X3372O` has birth date
+  `1987-07-28`, district `전북 군산시김제시부안군` and `초선`. The first observation is linked
+  by `AUTO_CREATE` to canonical Person `1bd253ae-3de7-42de-81e5-b450c1fb8e8b`; the second
+  remains unlinked and is not public.
+- The provider-key distinction and field differences are useful review evidence, but they do not
+  authorize an automatic merge or an automatic “distinct Person” assertion. The existing
+  repository/API exposes no reviewed-resolution write transaction; the current fail-closed gate
+  therefore remains unchanged, and no staging refresh, Person creation, Claim publication or
+  queue mutation was performed.
+- The private staging tunnel was closed after inspection. The temporary Railway SSH key and both
+  local key files were removed; Railway reported zero registered SSH keys. No database or source
+  data was changed by this review.
+
 ## Next concrete action
 
-Review the one open Assembly `EXACT_BIRTH_DATE_CONFLICT` queue item before the next roster refresh;
-keep the one missing committee value explicit and do not start BTIS or another feeder.
+Obtain an explicit operator decision on whether provider record `H7X3372O` may enter a
+source-specific reviewed “distinct Person” transaction; until that decision and transaction gate
+exist, keep the queue open, do not refresh/materialize the roster, keep the missing committee value
+explicit, and do not start BTIS or another feeder.
