@@ -27,6 +27,7 @@ civic-stage-corporate-dart = "workers.corporate_talent:main"
 civic-stage-public-institutions = "workers.public_institutions:main"
 civic-stage-alio-money = "workers.alio_business_expense:main"
 civic-import-alio-reviewed-claims = "workers.alio_reviewed_claim_import:main"
+civic-sync = "workers.sync:main"
 
 [build-system]
 requires = ["setuptools>=70"]

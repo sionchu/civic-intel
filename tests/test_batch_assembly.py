@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import httpx
@@ -18,6 +19,8 @@ from packages.domain.enums import SourceCollectionMode, SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.verification.policy import PolicyDenied
 from workers.assembly_roster import AssemblyCoverageError, AssemblyRosterEnumerator
+from workers.sync import main as sync_main
+from workers.sync import run_assembly_roster_sync
 
 SECRET = "batch-secret-must-not-persist"
 
@@ -158,6 +161,72 @@ def test_unchanged_full_rerun_is_observation_noop(tmp_path: Path) -> None:
             AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
         )
     ) == 3
+
+
+def test_sync_boundary_reports_operational_receipt_and_materialization(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "sync.db")
+    api = three_member_api()
+
+    receipt = run_assembly_roster_sync(api.connector(), repository)
+
+    payload = receipt.to_dict()
+    assert payload["source"] == AssemblyRosterEnumerator.FEEDER
+    assert payload["scope"] == AssemblyRosterEnumerator.SCOPE_KEY
+    assert payload["status"] == "SUCCESS"
+    assert payload["observed_count"] == 3
+    assert payload["committed_count"] == 3
+    assert payload["unchanged_count"] == 0
+    assert payload["conflict_review_count"] == 0
+    assert payload["checkpoint"] == "2"
+    assert payload["resume_requested"] is False
+    assert payload["error_reason"] is None
+    assert payload["materialization_outcomes"] == {
+        "AUTO_CREATE": 3,
+        "AUTO_LINK": 0,
+        "REVIEW_REQUIRED": 0,
+        "HARD_CONFLICT": 0,
+    }
+
+    unchanged = run_assembly_roster_sync(api.connector(), repository)
+
+    assert unchanged.to_dict()["status"] == "SUCCESS"
+    assert unchanged.to_dict()["committed_count"] == 0
+    assert unchanged.to_dict()["unchanged_count"] == 3
+    assert unchanged.to_dict()["resume_requested"] is False
+    assert unchanged.to_dict()["materialization_outcomes"] == {
+        "AUTO_CREATE": 0,
+        "AUTO_LINK": 3,
+        "REVIEW_REQUIRED": 0,
+        "HARD_CONFLICT": 0,
+    }
+    assert len(repository.public_people()) == 3
+    assert len(repository.claims(published_only=True)) == 3
+
+
+def test_sync_cli_emits_redacted_failure_receipt_without_credentials(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    database = tmp_path / "sync-failure.db"
+    migrated_repository(database)
+    monkeypatch.delenv("ASSEMBLY_API_KEY", raising=False)
+
+    exit_code = sync_main(
+        ["assembly-roster", "--database-url", f"sqlite:///{database.as_posix()}"]
+    )
+
+    output = capsys.readouterr().out
+    payload = json.loads(output)
+    assert exit_code == 1
+    assert payload["status"] == "FAILED"
+    assert payload["source_run_status"] == "FAILED"
+    assert payload["error_reason"]["phase"] == "source_fetch_parse_or_coverage"
+    assert payload["error_reason"]["code"] == "MissingAssemblyApiKey"
+    assert payload["checkpoint"] is None
+    assert SECRET not in output
 
 
 def test_changed_provider_record_creates_immutable_observation_version(tmp_path: Path) -> None:

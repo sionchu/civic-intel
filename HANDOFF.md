@@ -1423,3 +1423,53 @@ staging Web service only and run the 299-row People discovery browser smoke.
 
 Prepare and approve the next bounded milestone specification before starting any additional
 source or product surface.
+
+## Current checkpoint — Acquisition Sync v1 local closure (2026-09-16)
+
+- The next bounded milestone selected the existing National Assembly current-roster L3 lane,
+  because its official SourcePolicy, unfiltered provider-declared coverage, `MONA_CD` key,
+  pagination checks, persistent SourceRun/SourceCheckpoint path, resume/idempotency regressions
+  and existing materialization/publication gate are already closed. ALIO was deferred because
+  its current executive materialization remains intentionally `REVIEW_REQUIRED`.
+- Added the thin source-specific `civic-sync assembly-roster [--resume]` boundary in
+  `workers/sync.py` and registered it in `pyproject.toml`. It reuses
+  `AssemblyRosterEnumerator.enumerate_and_materialize()`, `SourceRun`, `SourceCheckpoint`,
+  `SourceSnapshot`, `FeederObservation`, canonical materialization and Claim/Evidence
+  publication. No generic scheduler, crawler, sync table, schema migration or dependency was
+  added.
+- Successful receipts expose source/scope, run timestamps/status, observed/created/unchanged
+  counts, materialization review/conflict counts, committed checkpoint cursor and resume intent.
+  Failure receipts keep policy, source fetch/parse/coverage, database/precondition and
+  publication phases distinct from empty coverage, preserve source-run/checkpoint state and
+  redact exception/request credentials. A changed normalized record creates an immutable
+  observation version; fetch time alone does not create a canonical fact or CHANGE.
+- Existing Assembly tests covered full coverage, unchanged rerun, changed immutable version,
+  partial checkpoint, resume, atomic persistence, coverage conflicts, policy denial and
+  publication rollback. The new boundary regression passed first sync, unchanged rerun and
+  canonical materialization receipt; the CLI failure regression passed redacted missing-key
+  behavior. Targeted batch/evidence/materialization verification passed `28 tests`.
+- Local completion evidence: Python `352 passed, 1 skipped, 4 warnings`; Ruff passed for all
+  Python source/test paths; mypy passed for `60 source files`; Golden quality passed; web lint,
+  typecheck, `9` web tests, production build and standalone artifact preparation passed;
+  `.railway` standalone contract check passed; disposable SQLite Alembic round trip passed;
+  `git diff --check` passed. GNU Make is unavailable on this Windows host, so its constituent
+  verification commands were run directly.
+- ASIDE A read-only visual review kept the current warm editorial evidence directory, Korean-safe
+  type, whitespace, thin dividers, restrained accent, explicit UNKNOWN/PARTIAL states and
+  evidence proximity. Future change is flatter/less nested People/detail rhythm with a compact
+  `DERIVED · MONEY` module; no UI code changed.
+- ASIDE B remains `NEEDS SOURCE GATE`: official Assembly member pages render profile images from
+  an opaque `/static/portal/img/openassm/new/` asset path tied to a page carrying `monaCd` and
+  term context, but the image path is not a provider identity or version contract. The official
+  copyright policy requires the applicable KOGL mark and attribution for free reuse, while
+  unmarked material requires prior consultation. Wikimedia Commons requires per-file creator,
+  license, attribution, revision/hash and withdrawal/deletion review; no image was selected or
+  ingested and no face-based identity or AI portrait path was introduced.
+- This milestone intentionally did not execute staging, add credentials, change Railway,
+  reload a database, create a public page, or start BTIS, CleanEye, MPM, assets, portraits,
+  admin, issue, MCP or community work. CI Verify is recorded after the delivery push.
+
+## Next concrete action
+
+Obtain separate approval for an existing-resource staging rehearsal of
+`civic-sync assembly-roster --resume`, then inspect its redacted receipt and source-run state.
