@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from importlib import import_module
 from pathlib import Path
 
@@ -7,7 +8,9 @@ import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 
+from apps.api.main import create_app
 from packages.connectors.open_assembly import OpenAssemblyMemberConnector
 from packages.domain.enums import (
     IdentityReviewStatus,
@@ -16,9 +19,11 @@ from packages.domain.enums import (
     PublicationStatus,
 )
 from packages.persistence import SqlAlchemyRepository
+from packages.verification.assembly_base_profile import AssemblyBaseProfilePublisher
 from packages.verification.claims import GateResult
 from packages.verification.materialization import MaterializationError
 from workers.assembly_roster import AssemblyRosterEnumerator
+from workers.assembly_roster import main as assembly_roster_main
 
 SECRET = "materialization-secret"
 repository_module = import_module("packages.persistence.repository")
@@ -245,3 +250,223 @@ def test_publication_gate_failure_rolls_back_person_claim_evidence_and_link(
             AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
         )
     ) == 1
+
+
+def test_reviewed_assembly_distinct_resolution_is_atomic_idempotent_and_public(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "reviewed-distinct.db")
+    roster = OnePageRoster(
+        [
+            member_row("M-001", "동명이인", birth_date="19700102"),
+            member_row("M-002", "동명이인", birth_date="19800102"),
+        ]
+    )
+    observations = enumerate_rows(repository, roster)
+    existing = repository.materialize_feeder_observation(observations[0].id)
+    conflict = repository.materialize_feeder_observation(observations[1].id)
+    assert existing.person_id is not None
+    assert conflict.review_item_id is not None
+    review = repository.identity_review_items(IdentityReviewStatus.OPEN)[0]
+
+    resolved = repository.resolve_assembly_distinct_person_review(
+        review.id,
+        resolution_note=(
+            "Operator reviewed the exact Assembly provider record and birth-date conflict; "
+            "retain a separate canonical Person without merging the existing candidate."
+        ),
+    )
+
+    assert resolved.created
+    assert resolved.person_id is not None
+    assert resolved.person_id != existing.person_id
+    assert resolved.claim_id is not None
+    assert resolved.review_item_id == review.id
+    assert resolved.decision.action == MaterializationAction.REVIEWED_CREATE
+    assert (
+        resolved.decision.decision_class
+        == MaterializationDecisionClass.REVIEWED_DISTINCT_IDENTITY
+    )
+    assert len(repository.public_people()) == 2
+    reviewed_person = repository.person(resolved.person_id)
+    assert reviewed_person is not None
+    assert reviewed_person.birth_date.isoformat() == "1980-01-02"
+    links = repository.person_observation_links(resolved.person_id)
+    assert len(links) == 1
+    assert links[0].action == MaterializationAction.REVIEWED_CREATE
+    assert links[0].decision_class == MaterializationDecisionClass.REVIEWED_DISTINCT_IDENTITY
+    assert links[0].review_item_id == review.id
+    role_claims = repository.claims(resolved.person_id, published_only=True, current_only=True)
+    assert len(role_claims) == 1
+    assert role_claims[0].id == resolved.claim_id
+    assert role_claims[0].qualifiers == {
+        "source_contract": "assembly_member_roster",
+        "source_scope": "current_member_roster",
+        "semantic_scope": "legislative_member_roster",
+        "provider_record_key": "M-002",
+        "immutable_observation_hash": observations[1].content_hash,
+    }
+    evidence = repository.evidence_for(resolved.claim_id)
+    assert len(evidence) == 1
+    assert evidence[0].snapshot_id == observations[1].snapshot_id
+    assert evidence[0].feeder_observation_id == observations[1].id
+    stored_review = repository.identity_review_items()[0]
+    assert stored_review.status == IdentityReviewStatus.RESOLVED
+    assert stored_review.resolved_at is not None
+    assert stored_review.resolution_note is not None
+    assert stored_review.details["resolution_action"] == MaterializationAction.REVIEWED_CREATE.value
+    assert stored_review.details["resolved_person_id"] == str(resolved.person_id)
+
+    repeated = repository.resolve_assembly_distinct_person_review(
+        review.id,
+        resolution_note="The already committed reviewed resolution is retried idempotently.",
+    )
+    assert not repeated.created
+    assert repeated.person_id == resolved.person_id
+    assert repeated.claim_id == resolved.claim_id
+    assert len(repository.public_people()) == 2
+    assert len(repository.claims(resolved.person_id)) == 1
+
+    profile_result = AssemblyBaseProfilePublisher(repository).publish_latest_successful()
+    assert profile_result.observations_considered == 2
+    assert profile_result.observations_published == 2
+    assert profile_result.published_claims == 8
+    assert {
+        claim.predicate
+        for claim in repository.claims(resolved.person_id, published_only=True, current_only=True)
+    } == {
+        "HELD_ROLE",
+        "ASSEMBLY_PARTY",
+        "ASSEMBLY_DISTRICT",
+        "ASSEMBLY_COMMITTEES",
+        "ASSEMBLY_REELECTION",
+    }
+    with TestClient(create_app(repository)) as client:
+        people = client.get("/people")
+        assert people.status_code == 200
+        assert len(people.json()) == 2
+        detail = client.get(f"/people/{resolved.person_id}")
+        assert detail.status_code == 200
+        payload = detail.json()
+        section = next(
+            item for item in payload["profile"]["sections"] if item["id"] == "assembly_base_profile"
+        )
+        assert section["status"] == "AVAILABLE"
+        assert len(section["entries"]) == 4
+        assert all(entry["evidence"] for entry in section["entries"])
+        assert "normalized" not in str(payload)
+        assert "TEL_NO" not in str(payload)
+        assert "E_MAIL" not in str(payload)
+
+
+def test_reviewed_assembly_distinct_resolution_rejects_stale_observation_version(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "reviewed-distinct-stale.db")
+    roster = OnePageRoster(
+        [
+            member_row("M-001", "동명이인", birth_date="19700102"),
+            member_row("M-002", "동명이인", birth_date="19800102"),
+        ]
+    )
+    observations = enumerate_rows(repository, roster)
+    repository.materialize_feeder_observation(observations[0].id)
+    repository.materialize_feeder_observation(observations[1].id)
+    review = repository.identity_review_items(IdentityReviewStatus.OPEN)[0]
+
+    roster.rows[1] = member_row("M-002", "동명이인", birth_date="19800102", party="변경정당")
+    enumerate_rows(repository, roster)
+
+    with pytest.raises(MaterializationError, match="current successful roster version"):
+        repository.resolve_assembly_distinct_person_review(
+            review.id,
+            resolution_note="This should fail closed after the provider observation changed.",
+        )
+
+    assert repository.identity_review_items(IdentityReviewStatus.OPEN)[0].id == review.id
+    assert len(repository.public_people()) == 1
+    assert len(repository.person_observation_links()) == 1
+
+
+def test_reviewed_assembly_distinct_resolution_rolls_back_on_publication_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = migrated_repository(tmp_path / "reviewed-distinct-rollback.db")
+    observations = enumerate_rows(
+        repository,
+        OnePageRoster(
+            [
+                member_row("M-001", "동명이인", birth_date="19700102"),
+                member_row("M-002", "동명이인", birth_date="19800102"),
+            ]
+        ),
+    )
+    repository.materialize_feeder_observation(observations[0].id)
+    repository.materialize_feeder_observation(observations[1].id)
+    review = repository.identity_review_items(IdentityReviewStatus.OPEN)[0]
+    monkeypatch.setattr(
+        repository_module,
+        "validate_claim_publication",
+        lambda *args, **kwargs: GateResult(False, ("synthetic_review_failure",)),
+    )
+
+    with pytest.raises(MaterializationError, match="synthetic_review_failure"):
+        repository.resolve_assembly_distinct_person_review(
+            review.id,
+            resolution_note="A failed publication gate must leave the review open.",
+        )
+
+    assert len(repository.public_people()) == 1
+    assert len(repository.person_observation_links()) == 1
+    assert len(repository.claims()) == 1
+    assert repository.identity_review_items(IdentityReviewStatus.OPEN)[0].id == review.id
+
+
+def test_reviewed_assembly_distinct_resolution_cli_is_explicit_and_idempotent(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = tmp_path / "reviewed-distinct-cli.db"
+    repository = migrated_repository(database)
+    observations = enumerate_rows(
+        repository,
+        OnePageRoster(
+            [
+                member_row("M-001", "동명이인", birth_date="19700102"),
+                member_row("M-002", "동명이인", birth_date="19800102"),
+            ]
+        ),
+    )
+    repository.materialize_feeder_observation(observations[0].id)
+    repository.materialize_feeder_observation(observations[1].id)
+    review = repository.identity_review_items(IdentityReviewStatus.OPEN)[0]
+    database_url = f"sqlite:///{database.as_posix()}"
+
+    assert assembly_roster_main(
+        [
+            "--resolve-review-item",
+            str(review.id),
+            "--resolution-note",
+            "Operator approved the exact source-specific distinct identity.",
+            "--database-url",
+            database_url,
+        ]
+    ) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["action"] == MaterializationAction.REVIEWED_CREATE.value
+    assert payload["decision_class"] == MaterializationDecisionClass.REVIEWED_DISTINCT_IDENTITY.value
+    assert payload["created"] is True
+
+    assert assembly_roster_main(
+        [
+            "--resolve-review-item",
+            str(review.id),
+            "--resolution-note",
+            "Retry the already committed review resolution.",
+            "--database-url",
+            database_url,
+        ]
+    ) == 0
+    repeated_payload = json.loads(capsys.readouterr().out)
+    assert repeated_payload["created"] is False
+    assert repeated_payload["person_id"] == payload["person_id"]
+    assert repeated_payload["claim_id"] == payload["claim_id"]

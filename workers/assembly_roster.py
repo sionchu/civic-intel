@@ -110,7 +110,16 @@ class AssemblyRosterMaterializationResult:
     materializations: tuple[MaterializationResult, ...]
 
     def outcome_counts(self) -> dict[str, int]:
-        counts = {action.value: 0 for action in MaterializationAction}
+        # This is the automatic full-enumeration report.  REVIEWED_CREATE is emitted only by
+        # the explicit operator resolution transaction and must not be counted as an automatic
+        # L3 materialization outcome.
+        automatic_actions = (
+            MaterializationAction.AUTO_CREATE,
+            MaterializationAction.AUTO_LINK,
+            MaterializationAction.REVIEW_REQUIRED,
+            MaterializationAction.HARD_CONFLICT,
+        )
+        counts = {action.value: 0 for action in automatic_actions}
         for result in self.materializations:
             counts[result.decision.action.value] += 1
         return counts
@@ -450,6 +459,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Publish the four source-specific base-profile fields from the latest successful roster.",
     )
+    parser.add_argument(
+        "--resolve-review-item",
+        type=UUID,
+        help="Resolve one exact Assembly birth-date conflict as a reviewed distinct Person.",
+    )
+    parser.add_argument(
+        "--resolution-note",
+        help="Required operator note for --resolve-review-item; it is stored on the review item.",
+    )
     parser.add_argument("--database-url")
     return parser
 
@@ -459,6 +477,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.materialize and not (args.enumerate or args.resume):
         parser.error("--materialize requires --enumerate or --resume")
+    if args.resolve_review_item is not None:
+        if any(
+            (
+                args.enumerate,
+                args.resume,
+                args.materialize,
+                args.publish_base_profile,
+                args.name,
+                args.party,
+                args.district,
+            )
+        ):
+            parser.error("--resolve-review-item is a separate operation and accepts no roster flags")
+        if not args.resolution_note or not args.resolution_note.strip():
+            parser.error("--resolve-review-item requires --resolution-note")
+    elif args.resolution_note is not None:
+        parser.error("--resolution-note requires --resolve-review-item")
     if args.publish_base_profile and any(
         (args.enumerate, args.resume, args.materialize, args.name, args.party, args.district)
     ):
@@ -471,22 +506,50 @@ def main(argv: list[str] | None = None) -> int:
         district=args.district,
     )
     try:
+        if args.resolve_review_item is not None:
+            assert isinstance(args.resolution_note, str)
+            resolution_note = args.resolution_note
+            result = SqlAlchemyRepository(
+                args.database_url
+            ).resolve_assembly_distinct_person_review(
+                args.resolve_review_item,
+                resolution_note=resolution_note,
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": "SUCCESS",
+                        "action": result.decision.action.value,
+                        "decision_class": result.decision.decision_class.value,
+                        "person_id": str(result.person_id) if result.person_id else None,
+                        "claim_id": str(result.claim_id) if result.claim_id else None,
+                        "review_item_id": (
+                            str(result.review_item_id) if result.review_item_id else None
+                        ),
+                        "created": result.created,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
         if args.publish_base_profile:
-            result = AssemblyBaseProfilePublisher(
+            profile_result = AssemblyBaseProfilePublisher(
                 SqlAlchemyRepository(args.database_url)
             ).publish_latest_successful()
             print(
                 json.dumps(
                     {
-                        "run_id": str(result.run_id),
+                        "run_id": str(profile_result.run_id),
                         "status": "SUCCESS",
-                        "observations_considered": result.observations_considered,
-                        "observations_published": result.observations_published,
-                        "published_claims": result.published_claims,
-                        "unchanged_claims": result.unchanged_claims,
-                        "missing_field_counts": result.missing_field_counts,
+                        "observations_considered": profile_result.observations_considered,
+                        "observations_published": profile_result.observations_published,
+                        "published_claims": profile_result.published_claims,
+                        "unchanged_claims": profile_result.unchanged_claims,
+                        "missing_field_counts": profile_result.missing_field_counts,
                         "skipped_observation_ids": [
-                            str(item) for item in result.skipped_observation_ids
+                            str(item) for item in profile_result.skipped_observation_ids
                         ],
                     },
                     ensure_ascii=False,

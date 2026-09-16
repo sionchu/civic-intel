@@ -18,6 +18,7 @@ implementation work.
 - [Batch ingestion DB target](architecture/BATCH_INGESTION_DB.md)
 - [National Assembly roster to Evidence Directory](exec-plans/active/assembly-roster-evidence-directory.md)
 - [Assembly Person Bootstrap v1](exec-plans/active/assembly-person-bootstrap-v1.md)
+- [Assembly reviewed distinct-Person resolution v1](exec-plans/active/assembly-reviewed-distinct-person-v1.md)
 - [Evidence Directory site v1](exec-plans/active/evidence-directory-site-v1.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
 - [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)

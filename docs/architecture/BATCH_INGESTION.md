@@ -281,6 +281,16 @@ items.
 
 Exact contradictions fail closed.
 
+### Source-specific reviewed resolution
+
+An operator may resolve an existing source-specific review item only through an explicit,
+bounded transaction that re-checks the exact observation, source contract, current successful
+checkpoint manifest and candidate conflict. Such a transaction may record `REVIEWED_CREATE` and
+`REVIEWED_DISTINCT_IDENTITY` on its observation link, create a distinct canonical Person and
+publish the exact Claim/Evidence packet atomically. It never changes the automatic decision
+function, merges into the candidate, uses name-only identity, or treats a newer immutable
+observation version as a correction. `REVIEWED_CREATE` is not an automatic enumeration outcome.
+
 ---
 
 ## Numeric scores

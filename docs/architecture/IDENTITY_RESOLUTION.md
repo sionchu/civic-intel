@@ -173,3 +173,9 @@ canonical Person only under its reviewed provider-identity rule. The materializa
 must create the Person, observation link and evidence-backed claim together, then pass the existing
 publication validator. Ambiguous names and exact contradictions remain review items or fail
 closed, and the resulting public profile still uses the normal Claim/Evidence projection.
+
+An explicit source-specific review transaction may resolve a bounded hard-conflict observation as
+a distinct Person when its exact provider record, current successful source checkpoint and
+candidate contradiction are revalidated. That outcome is recorded as `REVIEWED_CREATE` with
+`REVIEWED_DISTINCT_IDENTITY`; it is not emitted by the automatic gate and never merges the
+candidate Person.

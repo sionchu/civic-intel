@@ -1291,18 +1291,39 @@ existing successful-enumeration and source-specific materialization gates.
   `1987-07-28`, district `전북 군산시김제시부안군` and `초선`. The first observation is linked
   by `AUTO_CREATE` to canonical Person `1bd253ae-3de7-42de-81e5-b450c1fb8e8b`; the second
   remains unlinked and is not public.
-- The provider-key distinction and field differences are useful review evidence, but they do not
-  authorize an automatic merge or an automatic “distinct Person” assertion. The existing
-  repository/API exposes no reviewed-resolution write transaction; the current fail-closed gate
-  therefore remains unchanged, and no staging refresh, Person creation, Claim publication or
-  queue mutation was performed.
+- The provider-key distinction and field differences do not authorize an automatic merge or an
+  automatic “distinct Person” assertion. The automatic gate remains unchanged. No staging
+  refresh, Person creation, Claim publication or queue mutation was performed during this
+  read-only review.
 - The private staging tunnel was closed after inspection. The temporary Railway SSH key and both
   local key files were removed; Railway reported zero registered SSH keys. No database or source
   data was changed by this review.
 
+## Current checkpoint — Assembly reviewed distinct-Person resolution v1 (2026-09-16)
+
+- The active plan is `docs/exec-plans/active/assembly-reviewed-distinct-person-v1.md`. The local
+  implementation is committed on the isolated `codex/change-discovery-plan` branch; it has not
+  yet been pushed or deployed.
+- The automatic Assembly materialization function still emits only `AUTO_CREATE`, `AUTO_LINK`,
+  `REVIEW_REQUIRED` and `HARD_CONFLICT`. A separate source-specific operation
+  `resolve_assembly_distinct_person_review()` records `REVIEWED_CREATE` only for an open exact
+  birth-date conflict in the current successful roster checkpoint.
+- The transaction revalidates the official Assembly API SourcePolicy, source URL and snapshot
+  contract, exact provider identity (`MONA_CD`), current checkpoint manifest, candidate Person
+  and exact birth-date contradiction. It creates a new resolved Person, one published
+  `HELD_ROLE` Claim, exact ClaimEvidence and a reviewed observation link, then resolves the
+  original IdentityReviewItem atomically. It never changes or merges the candidate.
+- Retries validate the already committed Person/Claim/Evidence/Link and return an idempotent
+  result. A newer immutable observation version, malformed review state, existing provider link
+  or publication/policy failure is rejected without partial writes. No migration, new table,
+  dependency, public mutation endpoint, raw payload store or new feeder was added.
+- Local evidence: focused Assembly/materialization/API checks passed (36 tests), the reviewed
+  resolution module passed 10 tests, and the full Python suite passed with `349 passed, 1
+  skipped`. Ruff, mypy, Golden quality, web lint/typecheck/UI tests (9), production build and
+  standalone asset checks passed. No staging write has been made for this slice.
+
 ## Next concrete action
 
-Obtain an explicit operator decision on whether provider record `H7X3372O` may enter a
-source-specific reviewed “distinct Person” transaction; until that decision and transaction gate
-exist, keep the queue open, do not refresh/materialize the roster, keep the missing committee value
-explicit, and do not start BTIS or another feeder.
+Push the local reviewed-resolution commit, wait for the GitHub Verify result, then capture a fresh
+private logical staging backup before applying the already-approved H7X3372O reviewed-resolution
+transaction; do not start BTIS or another feeder.

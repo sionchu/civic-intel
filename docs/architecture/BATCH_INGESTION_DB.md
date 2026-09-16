@@ -653,9 +653,15 @@ Recommended:
 | same name exists but no exact provider link | `REVIEW_REQUIRED` |
 | cross-lane continuity only | `REVIEW_REQUIRED` for materialization |
 | DOB/provider hard contradiction | `HARD_CONFLICT` |
+| exact source-specific hard-conflict review explicitly accepted as a distinct Person | `REVIEWED_CREATE` in a reviewed resolution transaction |
 | fuzzy score only | never auto |
 
 No cross-person `AUTO_MERGE` required in this Epic.
+
+`REVIEWED_CREATE` is a persisted human-reviewed resolution outcome, not a fifth automatic
+materialization rule. It must retain the original `IdentityReviewItem`, exact
+`FeederObservation`/`SourceSnapshot` provenance and the operator resolution note; it cannot
+overwrite the candidate Person or relabel a newer immutable observation as a correction.
 
 ---
 
