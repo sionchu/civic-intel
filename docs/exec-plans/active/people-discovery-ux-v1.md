@@ -109,3 +109,41 @@ Completed 2026-09-16 at commit `6d0b0893f5dd488c2c1d7ecb46f4ed7aa587b9a2`.
   DOM reported `scrollWidth=375` for `innerWidth=390`; no console warning/error was captured.
 - GitHub Actions Verify run `35090241928` for this commit completed successfully in `2m23s`.
   No staging/production deployment or database write was made for this milestone.
+
+## DEPLOYED_STAGING
+
+Public staging smoke completed 2026-09-16 against
+`https://web-staging-efe2.up.railway.app` after the approved API redeploy.
+
+- Home `/` rendered the discovery entry and a working People link. `/people` rendered `299 of
+  299 profiles` and `299` resolved identity links.
+- The four published Base Profile facet selects were populated: party `9` options, district
+  `255`, committee `118`, and reelection status `7` (each includes its all-values option).
+- Actual filter checks returned: `박지원` `2`; no-match `0 of 299` with `검색 결과가 없습니다.`;
+  party `국민의힘` `109`; district `강원 동해시태백시삼척시정선군` `1`; committee
+  `법제사법위원회` `7`; reelection `초선` `137`; and the real combination
+  `더불어민주당` + `초선` `71`.
+- The two same-name cards stayed on separate canonical links:
+  `1bd253ae-3de7-42de-81e5-b450c1fb8e8b` showed the 전남광주통합특별시 해남군완도군진도군
+  district, 법제사법위원회·정보위원회 and 5선; `8b5f1e48-e7be-47cb-994e-da89dfdbce55`
+  showed the 전북 군산시김제시부안군을 district, 보건복지위원회·예산결산특별위원회 and
+  초선. Their profile links and IDs did not merge.
+- Both details rendered the Base Profile section with Claim/Evidence traces and the official
+  `국회 국회사무처_국회의원 정보 통합 API` Source provenance. The representative detail had
+  five evidence traces; no `FeederObservation.normalized`, provider contact, or telephone/email
+  field was present in the rendered page.
+- No-match and an unknown Person URL were distinct: the former rendered the empty search state;
+  `/people/00000000-0000-0000-0000-000000000000` rendered `Profile not found` with a People link.
+- Desktop capture used `1280x900` with `scrollWidth=1265`; the 390px capture used `390x844` with
+  `scrollWidth=375`. Long Korean district/committee text stayed within the viewport. Keyboard
+  focus advanced through skip link, home, People, search and party filter. Browser console
+  warnings/errors were empty, the hydration/framework overlay was absent, and the loaded
+  stylesheet and scripts had no broken image assets.
+- Railway read-only status showed Web deployment `bcda4eee-eb35-4de3-ba7c-9ea96df9057c` and API
+  deployment `044a2947-1c60-4157-88eb-c8440387b872`, both on commit
+  `4bb54554b9b9997f086b7f0573be8574eb38cb26`. PostgreSQL deployment
+  `172ec443-e3cc-44bb-a5c1-195f54f86824`, the existing Web domain/resource set and trial plan
+  were unchanged. The API was not stopped; no migration, database write, reload, resource or
+  cost change was made.
+- This staging evidence closes the People Discovery UX v1 deployment gate. The existing code
+  Verify run `35090241928` passed in `2m23s`; no new feeder or unsupported surface was started.

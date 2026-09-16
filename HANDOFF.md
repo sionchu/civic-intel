@@ -1389,3 +1389,37 @@ start BTIS or another feeder.
 
 Obtain approval to deploy commit `6d0b0893f5dd488c2c1d7ecb46f4ed7aa587b9a2` to the existing
 staging Web service only and run the 299-row People discovery browser smoke.
+
+## Current checkpoint — People Discovery UX v1 public staging closure (2026-09-16)
+
+- The approved public staging smoke completed at `https://web-staging-efe2.up.railway.app`.
+  Home `/` is the discovery entry, `/people` is the single directory, and the directory rendered
+  `299 of 299 profiles` with party `9`, district `255`, committee `118` and reelection `7`
+  select options.
+- Actual checks returned `박지원=2`, no-match `0 of 299` with `검색 결과가 없습니다.`,
+  `국민의힘=109`, `강원 동해시태백시삼척시정선군=1`, `법제사법위원회=7`, `초선=137`, and
+  `더불어민주당 + 초선=71`.
+- `1bd253ae-3de7-42de-81e5-b450c1fb8e8b` and
+  `8b5f1e48-e7be-47cb-994e-da89dfdbce55` remained separate cards and profiles. Their visible
+  party/district/committee/reelection values differentiated the 5선 전남광주통합특별시
+  해남군완도군진도군 profile from the 초선 전북 군산시김제시부안군을 profile.
+- Representative profile reads showed Base Profile, Claim/Evidence and the official Assembly
+  Source provenance. No raw `FeederObservation.normalized` or contact field appeared. The
+  unknown-Person `Profile not found` route remained distinct from no-match.
+- Desktop `1280x900` had no horizontal overflow (`scrollWidth=1265`); 390px had no overflow
+  (`scrollWidth=375`) and retained long Korean text. Keyboard focus reached skip link, home,
+  People, search and party filter. Console warnings/errors were empty; no hydration/framework
+  overlay or broken static asset was observed.
+- Railway read-only status recorded Web deployment
+  `bcda4eee-eb35-4de3-ba7c-9ea96df9057c` and API deployment
+  `044a2947-1c60-4157-88eb-c8440387b872`, both at
+  `4bb54554b9b9997f086b7f0573be8574eb38cb26`; PostgreSQL deployment
+  `172ec443-e3cc-44bb-a5c1-195f54f86824` and existing resources/domain/plan were unchanged.
+  The API was not stopped and no DB write, migration, reload, resource or cost change occurred.
+- People Discovery UX v1 is now `DEPLOYED_STAGING`. The existing code Verify run
+  `35090241928` passed; no new feeder, BTIS, portrait, admin, issue or MCP work began.
+
+## Next concrete action
+
+Prepare and approve the next bounded milestone specification before starting any additional
+source or product surface.
