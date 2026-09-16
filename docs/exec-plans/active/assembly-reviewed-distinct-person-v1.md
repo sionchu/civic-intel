@@ -1,7 +1,7 @@
 # Assembly reviewed distinct-Person resolution v1
 
-Status: in progress — one source-specific operator resolution for the current Assembly roster
-conflict.
+Status: in progress — staging backup/restore is complete; the source-specific operator resolution
+awaits deployment of the pushed API code.
 
 ## Objective
 
@@ -69,13 +69,36 @@ provider-independent backup/restore and deployment-artifact checks.
 
 ### M1 — staging reviewed resolution
 
-- [ ] Capture a fresh provider-independent logical staging backup outside the repository before
+- [x] Capture a fresh provider-independent logical staging backup outside the repository before
       any database write; no Railway plan/resource change is allowed.
 - [ ] Deploy the pushed code to the existing staging API service only.
 - [ ] Resolve the exact review item through the explicit source-specific CLI operation.
 - [ ] Run the existing successful-roster Base Profile publisher for the newly linked observation.
 - [ ] Read-only verify counts, candidate preservation, review status, exact Claim/Evidence/
       Source/Snapshot provenance, subject XOR and privacy gates.
+
+M1 backup/restore evidence (2026-09-16): the pre-write staging baseline was read through the
+existing private Railway tunnel at schema head `0006`, PostgreSQL `18.6`, with 26 public tables.
+It contained 298 People, 1 Organization, 7 Sources, 7 SourceSnapshots, 3 SourceRuns, 2
+SourceCheckpoints, 314 FeederObservations, 298 PersonObservationLinks, 1 open IdentityReviewItem,
+1,491 Claims and 1,491 ClaimEvidence rows. `asset_disclosures` and `asset_items` were empty.
+
+The provider-independent logical backup was captured from that staging database with
+`pg_dump --format=custom --no-owner` at `2026-09-16T09:52:17.5347818Z` (UTC), measured `349,651`
+bytes, SHA-256
+`CBDC5534E105E4695450A4044F75B34C679C479889D19867D834333576942973`. The dump remains in a
+private temporary path outside the repository and is not committed. The active staging API
+revision at capture was `10ef8317cd01ac3f1c8933647a0cfecdf1c7b69b`; the repository revision being
+prepared is `ac9fbc6a2391cec9a884cdd7db7472d8582e41b1`.
+
+The dump restored with `pg_restore --no-owner --exit-on-error` into a loopback-only disposable
+local PostgreSQL `18.6` `restore_target` in `0.451` seconds. Restored schema head/table set and
+all baseline counts matched. The restored read checks returned subject-XOR invalid `0`,
+ClaimEvidence provenance mismatches `0`, SourceSnapshot fulltext rows `0`, and the restored API
+returned `/ready 200`, `/health 200`, `/people 200` with 298 rows and unknown Person `404`.
+The disposable cluster was stopped and removed after the smoke; the staging database was not
+dropped, reset, migrated or written. Railway-managed backup/PITR remained unused and no new
+resource or billing change occurred.
 
 ### M2 — staging/API/browser evidence
 

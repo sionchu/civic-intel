@@ -1328,6 +1328,15 @@ existing successful-enumeration and source-specific materialization gates.
 
 ## Next concrete action
 
-Capture a fresh private logical staging backup, then deploy the pushed code to the existing
-staging API service and apply the already-approved H7X3372O reviewed-resolution transaction; do
-not start BTIS or another feeder.
+The fresh private logical staging backup and disposable restore drill are complete before any
+new write. The dump was custom format with `--no-owner`, 349,651 bytes and SHA-256
+`CBDC5534E105E4695450A4044F75B34C679C479889D19867D834333576942973`; restore to loopback-only
+PostgreSQL 18.6 `restore_target` took 0.451 seconds. Schema head `0006`, 26 tables, canonical
+counts, subject-XOR, ClaimEvidence provenance, fulltext privacy check and restored `/ready`,
+`/health`, `/people`/404 smoke all passed. The dump remains outside the repository; the
+disposable cluster was removed. No Railway plan/resource change or staging mutation occurred.
+
+The next external action is to deploy the pushed code to the existing staging API service only,
+then apply the already-approved H7X3372O reviewed-resolution transaction and run Base Profile/API
+read QA. The current staging API remains on `10ef8317cd01ac3f1c8933647a0cfecdf1c7b69b`; do not
+start BTIS or another feeder.
