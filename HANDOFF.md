@@ -1302,8 +1302,9 @@ existing successful-enumeration and source-specific materialization gates.
 ## Current checkpoint — Assembly reviewed distinct-Person resolution v1 (2026-09-16)
 
 - The active plan is `docs/exec-plans/active/assembly-reviewed-distinct-person-v1.md`. The local
-  implementation is committed on the isolated `codex/change-discovery-plan` branch; it has not
-  yet been pushed or deployed.
+  implementation is committed as `d81499f433256dc59f8fcf2dca0ec77a34ba2a01` on the isolated
+  `codex/change-discovery-plan` branch and is now pushed to `origin/master`; it has not been
+  deployed or applied to staging.
 - The automatic Assembly materialization function still emits only `AUTO_CREATE`, `AUTO_LINK`,
   `REVIEW_REQUIRED` and `HARD_CONFLICT`. A separate source-specific operation
   `resolve_assembly_distinct_person_review()` records `REVIEWED_CREATE` only for an open exact
@@ -1321,9 +1322,12 @@ existing successful-enumeration and source-specific materialization gates.
   resolution module passed 10 tests, and the full Python suite passed with `349 passed, 1
   skipped`. Ruff, mypy, Golden quality, web lint/typecheck/UI tests (9), production build and
   standalone asset checks passed. No staging write has been made for this slice.
+- GitHub Actions Verify run `35080092373` for the pushed commit completed successfully in 2m41s;
+  its canonical, Alembic, PostgreSQL load/API, backup/restore and deployment-artifact checks all
+  passed.
 
 ## Next concrete action
 
-Push the local reviewed-resolution commit, wait for the GitHub Verify result, then capture a fresh
-private logical staging backup before applying the already-approved H7X3372O reviewed-resolution
-transaction; do not start BTIS or another feeder.
+Capture a fresh private logical staging backup, then deploy the pushed code to the existing
+staging API service and apply the already-approved H7X3372O reviewed-resolution transaction; do
+not start BTIS or another feeder.

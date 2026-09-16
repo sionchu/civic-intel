@@ -54,13 +54,18 @@ Use the existing `IdentityReviewItem`, `PersonObservationLink`, `Person`, `Claim
 - [x] Cover success, candidate preservation, exact provenance, idempotent retry, stale-version
       rejection, publication rollback and public profile exposure.
 - [x] Inspect the complete diff and create the coherent local commit.
-- [ ] Push the coherent commit and record the CI result.
+- [x] Push the coherent commit and record the CI result.
 
 M0 local evidence (2026-09-16): the focused Assembly/materialization/API regression passed with
 36 tests and the reviewed-resolution module passed with 10 tests; the complete Python suite
 passed with `349 passed, 1 skipped`; Ruff and mypy passed; the Golden quality report passed; web
 lint, typecheck and nine UI tests passed; the production build and standalone asset preparation
 passed. No schema, migration or dependency change was made.
+
+M0 remote evidence (2026-09-16): commit `d81499f433256dc59f8fcf2dca0ec77a34ba2a01` was pushed
+to `origin/master`. GitHub Actions Verify run `35080092373` completed successfully in 2m41s,
+including canonical verification, Alembic round trip, PostgreSQL migration/load/API,
+provider-independent backup/restore and deployment-artifact checks.
 
 ### M1 — staging reviewed resolution
 
