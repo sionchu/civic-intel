@@ -22,6 +22,7 @@ implementation work.
 - [Evidence Directory site v1](exec-plans/active/evidence-directory-site-v1.md)
 - [People Discovery UX v1](exec-plans/active/people-discovery-ux-v1.md)
 - [Acquisition Sync v1](exec-plans/active/acquisition-sync-v1.md)
+- [Collector Runtime Hardening v1](exec-plans/active/collector-runtime-hardening-v1.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
 - [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)

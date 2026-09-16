@@ -4,11 +4,8 @@ import os
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
 from uuid import UUID, uuid5
 
-from alembic.config import Config
-from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, select, text
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session, sessionmaker
@@ -82,6 +79,9 @@ from packages.verification.policy import PolicyAction, PolicyDenied, require_pol
 
 class DatabaseNotReady(RuntimeError):
     pass
+
+
+EXPECTED_SCHEMA_REVISION = "0006"
 
 
 class GoldenSeedError(RuntimeError):
@@ -176,13 +176,9 @@ class BatchPageCommitResult:
 
 
 def _expected_schema_revision() -> str:
-    root = Path(__file__).resolve().parents[2]
-    config = Config(str(root / "alembic.ini"))
-    config.set_main_option("script_location", str(root / "migrations"))
-    revision = ScriptDirectory.from_config(config).get_current_head()
-    if revision is None:
-        raise DatabaseNotReady("Alembic has no current schema head")
-    return revision
+    """Return the runtime schema contract without resolving source-tree paths."""
+
+    return EXPECTED_SCHEMA_REVISION
 
 
 class SqlAlchemyRepository:

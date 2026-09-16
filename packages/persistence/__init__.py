@@ -1,4 +1,5 @@
 from .repository import (
+    EXPECTED_SCHEMA_REVISION,
     DatabaseNotReady,
     GoldenSeedError,
     OrganizationClaimImportError,
@@ -8,6 +9,7 @@ from .repository import (
 )
 
 __all__ = [
+    "EXPECTED_SCHEMA_REVISION",
     "DatabaseNotReady",
     "GoldenSeedError",
     "OrganizationClaimImportError",

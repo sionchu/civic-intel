@@ -5,6 +5,7 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
+from alembic.util.exc import CommandError
 from sqlalchemy.exc import SQLAlchemyError
 
 from packages.connectors.open_assembly import (
@@ -97,7 +98,7 @@ def _failure_phase(error: Exception) -> str:
         return "publication"
     if isinstance(error, AssemblyApiError):
         return "source_fetch_parse_or_coverage"
-    if isinstance(error, (SQLAlchemyError, RuntimeError, ValueError)):
+    if isinstance(error, (CommandError, SQLAlchemyError, RuntimeError, ValueError)):
         return "database_or_precondition"
     return "unexpected"
 
@@ -171,7 +172,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--resume",
         action="store_true",
-        help="resume the source from its latest committed checkpoint",
+        help=(
+            "resume only an interrupted or partial source run from its latest committed "
+            "checkpoint; use the normal command for periodic reconciliation"
+        ),
     )
     parser.add_argument("--database-url")
     return parser

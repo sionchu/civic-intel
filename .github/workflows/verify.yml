@@ -99,3 +99,19 @@ jobs:
           docker build --file deploy/Dockerfile.web --tag civic-intel-web:verify .
           docker compose --file compose.deploy.yml config --quiet
           npm run check --prefix .railway
+
+      - name: Verify installed sync entrypoint outside source tree
+        run: |
+          docker run --rm --entrypoint /bin/sh civic-intel-api:verify -lc '
+            set -eu
+            test "$(command -v civic-sync)" = "/usr/local/bin/civic-sync"
+            python -c "import importlib; module=importlib.import_module(\"packages.persistence.repository\"); assert \"site-packages\" in module.__file__; assert module._expected_schema_revision() == \"0006\""
+            python -c "from alembic import command; from alembic.config import Config; config=Config(\"/app/alembic.ini\"); config.set_main_option(\"script_location\", \"/app/migrations\"); config.set_main_option(\"sqlalchemy.url\", \"sqlite:////tmp/runtime.db\"); command.upgrade(config, \"head\")"
+            unset ASSEMBLY_API_KEY
+            set +e
+            civic-sync assembly-roster --database-url sqlite:////tmp/runtime.db >/tmp/civic-sync-receipt.json
+            status=$?
+            set -e
+            test "$status" -eq 1
+            python -c "import json; payload=json.load(open(\"/tmp/civic-sync-receipt.json\")); assert payload[\"error_reason\"][\"code\"] == \"MissingAssemblyApiKey\"; assert payload[\"error_reason\"][\"phase\"] == \"source_fetch_parse_or_coverage\"; assert payload[\"run_id\"] is not None; assert payload[\"committed_count\"] == 0; print(\"container-sync-entrypoint-regression=pass\")"
+          '

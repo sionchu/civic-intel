@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import NoReturn
 
 import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
+from alembic.util.exc import CommandError
 from sqlalchemy import select
 
 from packages.connectors.open_assembly import (
@@ -163,6 +165,43 @@ def test_unchanged_full_rerun_is_observation_noop(tmp_path: Path) -> None:
     ) == 3
 
 
+def test_completed_checkpoint_resume_fails_closed_without_fetch_or_manifest_change(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "completed-resume.db")
+    api = three_member_api()
+    enumerator = AssemblyRosterEnumerator(api.connector(), repository)
+    enumerator.enumerate()
+    calls_before = list(api.calls)
+    observations_before = repository.feeder_observations(
+        AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    )
+
+    with pytest.raises(AssemblyCoverageError, match="already covers the full roster"):
+        enumerator.enumerate(resume=True)
+
+    assert api.calls == calls_before
+    observations_after = repository.feeder_observations(
+        AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    )
+    assert [item.id for item in observations_after] == [item.id for item in observations_before]
+    assert [item.content_hash for item in observations_after] == [
+        item.content_hash for item in observations_before
+    ]
+    runs = repository.source_runs(
+        AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    )
+    assert len(runs) == 2
+    assert runs[-1].status == SourceRunStatus.FAILED
+    assert runs[-1].checkpoint_before == "2"
+    assert runs[-1].checkpoint_after is None
+    assert runs[-1].error_code == "AssemblyCoverageError"
+    checkpoint = repository.source_checkpoint(
+        AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    )
+    assert checkpoint is not None and checkpoint.cursor == "2"
+
+
 def test_sync_boundary_reports_operational_receipt_and_materialization(
     tmp_path: Path,
 ) -> None:
@@ -227,6 +266,31 @@ def test_sync_cli_emits_redacted_failure_receipt_without_credentials(
     assert payload["error_reason"]["code"] == "MissingAssemblyApiKey"
     assert payload["checkpoint"] is None
     assert SECRET not in output
+
+
+def test_sync_cli_classifies_alembic_command_error_as_database_precondition(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    database = tmp_path / "command-error.db"
+    migrated_repository(database)
+
+    def raise_command_error(*_args: object, **_kwargs: object) -> NoReturn:
+        raise CommandError("Path doesn't exist: /installed/site-packages/migrations")
+
+    monkeypatch.setattr("workers.sync.run_assembly_roster_sync", raise_command_error)
+    exit_code = sync_main(
+        ["assembly-roster", "--database-url", f"sqlite:///{database.as_posix()}"]
+    )
+
+    output = capsys.readouterr().out
+    payload = json.loads(output)
+    assert exit_code == 1
+    assert payload["error_reason"]["phase"] == "database_or_precondition"
+    assert payload["error_reason"]["code"] == "CommandError"
+    assert "Path doesn't exist" not in output
+    assert "migrations" not in output
 
 
 def test_changed_provider_record_creates_immutable_observation_version(tmp_path: Path) -> None:

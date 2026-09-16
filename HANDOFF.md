@@ -1476,3 +1476,34 @@ source or product surface.
 
 Obtain separate approval for an existing-resource staging rehearsal of
 `civic-sync assembly-roster --resume`, then inspect its redacted receipt and source-run state.
+
+## Current checkpoint — Collector Runtime Hardening v1 (2026-09-17)
+
+- Staging rehearsal is stopped. No additional staging command, deployment, DB write, Railway
+  change or Assembly live API call is part of this milestone.
+- Baseline reproduction confirmed that source-tree execution reaches the missing-credential
+  boundary, while the installed wheel's `packages.persistence.repository` resolves its migration
+  root below `site-packages`. Because that installed `migrations` directory is absent,
+  `ScriptDirectory.from_config` raises `alembic.util.exc.CommandError` before `SourceRun`
+  creation. The current CLI reports that error as `phase=unexpected`, with the observed
+  redacted receipt showing `run_id=null` and `committed_count=0`.
+- The implementation replaces runtime filesystem discovery with the canonical expected schema
+  revision `0006`, adds a CI/test check against the actual Alembic head, classifies Alembic
+  `CommandError` under `database_or_precondition`, and locks completed-checkpoint resume as a
+  fail-closed recovery-only path. Targeted regressions passed (`15 passed`).
+- Local verification passed: full Python `355 passed, 1 skipped, 4 warnings`; Ruff; mypy for
+  `60 source files`; Golden quality; web lint/typecheck/9 tests/production build; Railway
+  specification check; YAML parse; and disposable Alembic upgrade/downgrade/upgrade ending at
+  `0006`. The rebuilt installed wheel was run from outside the repository and reached the
+  redacted missing-key boundary with no migration-path `CommandError`.
+- Docker is unavailable on this host, so no local container PASS is claimed. Verify now includes
+  a CI-only API-image regression that runs `civic-sync` from `/tmp` and checks its redacted
+  missing-key receipt.
+- Docker is unavailable on this host (`docker` command not found), so no container result will
+  be claimed until a container runtime is actually executed. The future collector shape remains
+  private/manual-only evaluation; no collector service or scheduler is being created.
+
+## Next concrete action
+
+Create the coherent delivery commit, push it to `origin/master`, and record the CI Verify result
+including the container entrypoint regression.

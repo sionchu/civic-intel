@@ -3,7 +3,17 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, text
+
+from packages.persistence import EXPECTED_SCHEMA_REVISION
+
+
+def test_runtime_schema_contract_matches_alembic_head() -> None:
+    config = Config(str(Path("alembic.ini").resolve()))
+    config.set_main_option("script_location", str(Path("migrations").resolve()))
+
+    assert ScriptDirectory.from_config(config).get_current_head() == EXPECTED_SCHEMA_REVISION
 
 
 def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> None:
@@ -24,7 +34,10 @@ def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> Non
     } <= columns
     assert "published" not in columns
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0006"
+        assert (
+            connection.scalar(text("SELECT version_num FROM alembic_version"))
+            == EXPECTED_SCHEMA_REVISION
+        )
     tables = set(inspect(engine).get_table_names())
     assert {
         "source_runs",
