@@ -1544,7 +1544,8 @@ sync.
   concrete verification boundary.
 - Local web test `10/10`, lint, typecheck, production/standalone build, Python Ruff, mypy, Golden
   quality and full pytest completed successfully; full pytest exited `0` with one skipped test
-  observed. CI/HEAD closure will be added after push. No staging deployment was requested or made.
+  observed. GitHub Actions Verify run `35129642244` passed all jobs for
+  `0e5fcba561d5fdc87a5aba33bd8bd4e168da83a9`. No staging deployment was requested or made.
 
 ## Next concrete action
 

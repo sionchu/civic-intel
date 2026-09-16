@@ -1,6 +1,6 @@
 # Civic Intel Visual System v2
 
-Status: implementation complete locally; final CI verification pending
+Status: implementation complete; CI verified; 390px browser evidence pending
 
 ## Objective
 
@@ -121,5 +121,6 @@ verification passes, the final diff is clean-v0 reviewed, and CI Verify passes a
   follow-up.
 - Local verification completed with web test `10/10`, web lint, typecheck, production build,
   standalone contract check, Python Ruff, mypy, Golden quality and full pytest exit `0` with one
-  skipped test observed. `git diff --check` passed. No API, database, schema, dependency, feeder,
-  Railway or staging change was made. Final CI and HEAD are recorded after push.
+  skipped test observed. `git diff --check` passed. [GitHub Actions Verify run 35129642244](https://github.com/sionchu/civic-intel/actions/runs/35129642244)
+  passed all jobs for `0e5fcba561d5fdc87a5aba33bd8bd4e168da83a9`. No API, database, schema, dependency, feeder,
+  Railway or staging change was made. The 390px browser evidence remains the only bounded follow-up.
