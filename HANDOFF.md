@@ -1360,8 +1360,8 @@ start BTIS or another feeder.
   separately and the reviewed profile showed role, four Base Profile fields and Evidence traces
   without raw normalized payload/contact fields. This remains staging/browser evidence.
 - Private tunnel was closed, raw tunnel logs were removed, and Railway reports zero registered SSH
-  keys. A local standard-name temporary key file remains pending exact-path cleanup approval by
-  the managed destructive-action guard.
+  keys. The two local standard-name temporary key files used for this staging tunnel were removed
+  after the user-approved exact-path cleanup; no other SSH key was touched.
 
 ## Next concrete action
 
