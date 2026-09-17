@@ -1604,3 +1604,28 @@ Start the bounded Portrait Source Gate pilot before any portrait ingestion. Revi
 against the official Assembly portrait source and Wikimedia Commons file-level licensing,
 attribution and revision requirements; keep the work read-only and do not bind, store or publish
 an image until both rights and identity gates close.
+## Current checkpoint — Portrait Pilot v0 (2026-09-17)
+
+- One bounded Person-detail portrait is approved for implementation: canonical Person
+  `44745d09-398c-46ce-bc38-81f0f606c1d7` (안철수), exact Assembly crosswalk `MONA_CD=YOG1280B`,
+  and the individually reviewed Wikimedia Commons file `Ahn Cheol-soo March 2023 (cropped).jpg`.
+  The exact file-level creator, CC BY 3.0 license, attribution, revision, dimensions, bytes and
+  SHA-1 are recorded in the static presentation manifest; no Assembly image or remote runtime
+  URL is used.
+- Implementation is confined to the Person detail. `/people` remains initials-only, the
+  manifest is not an identity authority, and unresolved/other Persons keep the existing CI
+  fallback. No database/API/schema/dependency/Railway/staging change is in scope.
+- The work is in isolated `codex/change-discovery-plan`; the root checkout's user changes and
+  other worktrees remain untouched. Asset integrity, web/Python checks and the exact local Chrome
+  production-artifact browser smoke passed. At `1280×900` and `390×844`, the pilot image kept
+  400×534 ratio, attribution/source/license links and evidence dossier remained visible, fallback
+  and directory initials held, overflow/overlay/console checks were clean, and the 299-row
+  directory/search/facet regression remained intact.
+- No staging/Railway operation was performed. A worktree build runner hit an existing Windows
+  `.next/standalone` lock, so the same source was built and checked in a private temp mirror;
+  this environment limitation is not a product failure and must remain distinct from CI evidence.
+
+## Next concrete action
+
+Review the final diff, commit/push Portrait Pilot v0 and wait for CI Verify before closing the plan;
+do not deploy staging.

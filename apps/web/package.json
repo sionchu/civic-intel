@@ -6,10 +6,11 @@
     "dev": "next dev",
     "build": "next build && node scripts/prepare-standalone.mjs",
     "check:standalone": "node scripts/check-standalone.mjs",
+    "check:portraits": "node scripts/check-portrait-assets.mjs",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/ui.test.mjs"
+    "test": "node scripts/check-portrait-assets.mjs && node --test tests/ui.test.mjs"
   },
   "dependencies": {
     "next": "^16.1.0",

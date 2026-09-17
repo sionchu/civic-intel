@@ -84,6 +84,16 @@ fields, evidence/as-of metadata and a clear profile link. Profile claims and sou
 panels. Review cards remain visibly read-only and keep operational IDs in expandable audit
 details.
 
+### Reviewed portraits
+
+Portraits are an optional Person-detail presentation asset only. A portrait is displayed only
+after an individual file-level rights review and an exact binding to a resolved canonical Person
+ID; the visible creator, source-file and license links remain beside the image. The local copy
+keeps the reviewed aspect ratio without an additional crop and falls back to the existing
+initials/CI stamp when the review is absent or withdrawn. Portrait coverage has no semantic
+meaning, is not used by directory search, and never comes from face recognition, a generated
+likeness or a name-only match.
+
 ### Navigation
 
 The global header exposes the public directory only. Profile-local navigation is an anchor list

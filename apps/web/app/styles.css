@@ -275,6 +275,11 @@ main { flex: 1; }
 .profile-stamp { display: grid; min-width: 170px; gap: 7px; justify-items: end; color: var(--color-ink-muted); font-size: 11px; text-align: right; }
 .profile-stamp .micro-label { color: var(--color-ink-muted); font-size: 9px; }
 .profile-stamp strong { color: var(--color-accent); font-family: Georgia, serif; font-size: 58px; line-height: .8; letter-spacing: -.08em; }
+.profile-portrait { display: grid; width: min(180px, 30vw); gap: 8px; margin: 0; }
+.profile-portrait img { display: block; width: 100%; height: auto; aspect-ratio: 400 / 534; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); }
+.portrait-credit { color: var(--color-ink-muted); font-size: 10px; line-height: 1.45; text-align: right; overflow-wrap: anywhere; }
+.portrait-credit a { color: var(--color-ink); text-decoration-color: var(--color-line-strong); text-underline-offset: 3px; }
+.portrait-credit a:hover { color: var(--color-accent); }
 .profile-layout { display: grid; grid-template-columns: minmax(190px, 240px) minmax(0, 1fr); gap: clamp(28px, 6vw, 78px); padding-top: 48px; }
 .profile-index { position: sticky; top: 104px; align-self: start; padding: 19px 18px; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: rgba(255, 253, 248, .68); }
 .index-heading { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--color-line); color: var(--color-ink-muted); font-size: 10px; }
@@ -375,7 +380,7 @@ main { flex: 1; }
   .row-facts, .row-secondary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; }
   .profile-sections, .source-grid, .review-grid, .organization-claim-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .profile-layout { grid-template-columns: 1fr; }.profile-index { position: static; }.profile-index ol { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
-  .profile-index li a { grid-template-columns: 23px minmax(0, 1fr); }.profile-header, .people-header, .review-header { align-items: start; flex-direction: column; }.profile-stamp, .review-lock { justify-items: start; text-align: left; }.review-lock { min-width: 0; }
+  .profile-index li a { grid-template-columns: 23px minmax(0, 1fr); }.profile-header, .people-header, .review-header { align-items: start; flex-direction: column; }.profile-stamp, .review-lock { justify-items: start; text-align: left; }.profile-portrait { width: min(180px, 42vw); }.portrait-credit { text-align: left; }.review-lock { min-width: 0; }
 }
 @media (max-width: 600px) {
   .header-inner { min-height: 68px; }.global-nav { gap: 12px; }.nav-status { display: none; }

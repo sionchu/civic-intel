@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { getPerson, getSource } from "../../data";
 import ReadState from "../../components/read-state";
+import { getReviewedPortrait } from "../../portrait";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
   }
   const person = personResult.data;
+  const portrait = await getReviewedPortrait(person);
 
   const sectionSourceIds =
     person.profile?.sections.flatMap((section) =>
@@ -44,11 +46,35 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </div>
           <p className="profile-lede">canonical identity에 연결된 published evidence를 현재 읽기 화면으로 투영합니다.</p>
         </div>
-        <div className="profile-stamp" aria-hidden="true">
-          <span className="micro-label">PUBLIC RECORD</span>
-          <strong>CI</strong>
-          <span>directory / 01</span>
-        </div>
+        {portrait ? (
+          <figure className="profile-portrait">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={portrait.local_path}
+              width={portrait.source_width}
+              height={portrait.source_height}
+              alt={`${person.canonical_name} 공개 사진`}
+            />
+            <figcaption className="portrait-credit">
+              <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · Wikimedia Commons</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
+              <details className="audit-details">
+                <summary>Portrait source audit</summary>
+                <small>
+                  File {portrait.file_title}<br />
+                  Revision {portrait.source_revision_timestamp}<br />
+                  SHA-1 {portrait.source_sha1}<br />
+                  {portrait.modification_note}
+                </small>
+              </details>
+            </figcaption>
+          </figure>
+        ) : (
+          <div className="profile-stamp" aria-hidden="true">
+            <span className="micro-label">PUBLIC RECORD</span>
+            <strong>CI</strong>
+            <span>directory / 01</span>
+          </div>
+        )}
       </header>
 
       {profile ? (

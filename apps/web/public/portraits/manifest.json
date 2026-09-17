@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "portraits": [
+    {
+      "person_id": "44745d09-398c-46ce-bc38-81f0f606c1d7",
+      "canonical_name": "안철수",
+      "local_path": "/portraits/44745d09-398c-46ce-bc38-81f0f606c1d7.jpg",
+      "source_kind": "WIKIMEDIA_COMMONS_REVIEWED",
+      "file_title": "Ahn Cheol-soo March 2023 (cropped).jpg",
+      "source_page_url": "https://commons.wikimedia.org/wiki/File:Ahn_Cheol-soo_March_2023_%28cropped%29.jpg",
+      "source_original_url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Ahn_Cheol-soo_March_2023_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "creator": "이데일리TV",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "attribution_text": "사진: 이데일리TV · Wikimedia Commons · CC BY 3.0",
+      "commercial_use_allowed": true,
+      "derivatives_allowed": true,
+      "modification_note": "Commons-provided cropped derivative. Civic Intel performs no additional crop.",
+      "source_sha1": "46f16ce27199a761bb472cb0f68a763a3afa16db",
+      "source_byte_size": 38558,
+      "source_width": 400,
+      "source_height": 534,
+      "source_mime": "image/jpeg",
+      "source_revision_timestamp": "2024-12-22T05:13:12Z",
+      "rights_checked_at": "2026-09-17",
+      "identity_checked_at": "2026-09-17",
+      "assembly_profile_url": "https://www.assembly.go.kr/members/22nd/AHNCHEOLSOO/",
+      "assembly_mona_cd": "YOG1280B",
+      "review_status": "ELIGIBLE"
+    }
+  ]
+}

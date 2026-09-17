@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -15,6 +16,33 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /correction_semantics/);
   assert.match(page, /UNKNOWN/);
   assert.match(page, /Evidence & audit/);
+});
+
+test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", async () => {
+  const manifest = JSON.parse(await readFile(new URL("../public/portraits/manifest.json", import.meta.url), "utf8"));
+  const portrait = manifest.portraits.find((item) => item.person_id === "44745d09-398c-46ce-bc38-81f0f606c1d7");
+  const loader = await readFile(new URL("../app/portrait.ts", import.meta.url), "utf8");
+  const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
+  assert.ok(portrait);
+  assert.equal(portrait.canonical_name, "안철수");
+  assert.equal(portrait.review_status, "ELIGIBLE");
+  assert.equal(portrait.local_path, "/portraits/44745d09-398c-46ce-bc38-81f0f606c1d7.jpg");
+  const bytes = await readFile(new URL(`../public${portrait.local_path}`, import.meta.url));
+  assert.equal(bytes.byteLength, 38558);
+  assert.equal(createHash("sha1").update(bytes).digest("hex"), "46f16ce27199a761bb472cb0f68a763a3afa16db");
+  assert.match(loader, /person\.identity_status !== "RESOLVED"/);
+  assert.match(loader, /candidate\.person_id === person\.id/);
+  assert.doesNotMatch(loader, /canonical_name\s*===|person\.canonical_name\s*===/);
+  assert.match(profile, /getReviewedPortrait\(person\)/);
+  assert.match(profile, /src=\{portrait\.local_path\}/);
+  assert.match(profile, /alt=\{`\$\{person\.canonical_name\} 공개 사진`\}/);
+  assert.match(profile, /Wikimedia Commons/);
+  assert.match(profile, /portrait\.license_url/);
+  assert.doesNotMatch(profile, /src=\{portrait\.source_original_url\}/);
+  assert.match(profile, /profile-stamp/);
+  assert.match(roster, /className="row-avatar"/);
+  assert.doesNotMatch(roster, /portrait/);
 });
 
 test("UI does not implement publication decisions", async () => {

@@ -23,6 +23,7 @@ implementation work.
 - [People Discovery UX v1](exec-plans/active/people-discovery-ux-v1.md)
 - [Visual System v2](exec-plans/active/visual-system-v2.md)
 - [Portrait Source Gate v0](exec-plans/active/portrait-source-gate-v0.md)
+- [Portrait Pilot v0](exec-plans/active/portrait-pilot-v0.md)
 - [Acquisition Sync v1](exec-plans/active/acquisition-sync-v1.md)
 - [Collector Runtime Hardening v1](exec-plans/active/collector-runtime-hardening-v1.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
