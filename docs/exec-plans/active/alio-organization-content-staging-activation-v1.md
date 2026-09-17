@@ -121,7 +121,9 @@ complete checkpoint, and perform the importer dry-run before any explicit commit
   were run directly: Ruff passed, mypy passed for `63` source files, Python passed with
   `367 passed, 1 skipped, 4 warnings`, Golden quality passed, and Web lint, typecheck, `11`
   UI tests and standalone production build passed. `git diff --cached --check` passed before
-  commit; the post-push CI Verify remains the final repository-hosted check.
+  commit. Documentation closure commit `3e5c0650d4e55225e68f87272491d767e2bf112e` was pushed
+  to `origin/master`; GitHub Actions Verify `35254010476` completed successfully, and the
+  isolated worktree ended clean with local HEAD equal to `origin/master`.
 
 ## Next concrete action
 
