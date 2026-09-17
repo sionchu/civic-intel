@@ -1537,11 +1537,13 @@ sync.
   Same-name rows kept separate canonical links; a representative dossier showed Base Profile,
   Claim/Evidence and Source provenance without raw normalized/contact fields. Skip-link keyboard
   focus, static assets, no overflow and no console warning/error were observed.
-- A real 390px browser viewport was not available through the current CUA surface; an attempted
-  temporary wrapper was rejected by browser security policy and was not used as a workaround.
-  Mobile is therefore not claimed as browser PASS. The responsive CSS rules are present and
-  deterministic source regression remains green, but a viewport-capable browser check is the next
-  concrete verification boundary.
+- A rebuilt standalone production artifact was inspected with an explicit `390x844` browser
+  viewport. Home and People rendered without horizontal overflow; People showed 299 rows, facet
+  options `4/300/5/6`, `박지원=2`, no-match `0`, and facet results `100/1/75/60/25`. Keyboard focus
+  reached the skip link. A representative dossier showed Base Profile, Claim/Evidence and Source
+  provenance without raw normalized/contact fields; unknown Person stayed distinct from no-match.
+  Long Korean text remained readable, error/hydration overlays were absent, styles loaded, and
+  browser console warnings/errors were empty.
 - Local web test `10/10`, lint, typecheck, production/standalone build, Python Ruff, mypy, Golden
   quality and full pytest completed successfully; full pytest exited `0` with one skipped test
   observed. GitHub Actions Verify run `35129642244` passed all jobs for
@@ -1549,5 +1551,6 @@ sync.
 
 ## Next concrete action
 
-Run one real `390x844` browser smoke against the current Visual System v2 commit with a
-viewport-capable browser, then record only that responsive result before changing scope.
+Obtain separate approval before deploying commit `e6cad01a42249a26c36a7a130eba3451d2b54c7b` to the
+existing staging Web service; keep API/PostgreSQL unchanged and do not begin a new feeder or
+product surface in that operation.

@@ -1,6 +1,6 @@
 # Civic Intel Visual System v2
 
-Status: implementation complete; CI verified; 390px browser evidence pending
+Status: implementation complete; CI and responsive browser smoke verified
 
 ## Objective
 
@@ -114,13 +114,18 @@ verification passes, the final diff is clean-v0 reviewed, and CI Verify passes a
   The unknown Person route rendered `Profile not found`, separate from the directory no-match
   state. Keyboard focus reached the skip link. Next standalone static assets loaded and no
   hydration/framework overlay was observed.
-- A real 390px browser viewport could not be created with the available CUA surface. The attempted
-  data-URL wrapper was rejected by browser security policy and was not pursued as a workaround.
-  Therefore 390px is not claimed as browser PASS; the `max-width: 820px` and `max-width: 600px`
-  layout rules remain covered by the source regression and require a browser viewport-capable
-  follow-up.
+- The rebuilt standalone production artifact was inspected with an explicit `390x844` browser
+  viewport. Home rendered the 299-person coverage without horizontal overflow; People rendered
+  299 rows with facet option counts `4/300/5/6` including the all-values options. `박지원` returned
+  two separate canonical links, no-match returned `0명` with `검색 결과가 없습니다.`, and the
+  party, district, committee, reelection and party+committee filters returned `100/1/75/60/25`.
+  Keyboard focus reached the skip link. A representative Person dossier showed Base Profile,
+  Claim/Evidence and Source provenance without raw normalized/contact fields; unknown Person showed
+  `Profile not found` separately from no-match. Long Korean text remained readable, scroll width
+  stayed within the 390px viewport, error/hydration overlays were absent, static styles loaded,
+  and browser console warnings/errors were empty.
 - Local verification completed with web test `10/10`, web lint, typecheck, production build,
   standalone contract check, Python Ruff, mypy, Golden quality and full pytest exit `0` with one
   skipped test observed. `git diff --check` passed. [GitHub Actions Verify run 35129642244](https://github.com/sionchu/civic-intel/actions/runs/35129642244)
   passed all jobs for `0e5fcba561d5fdc87a5aba33bd8bd4e168da83a9`. No API, database, schema, dependency, feeder,
-  Railway or staging change was made. The 390px browser evidence remains the only bounded follow-up.
+  Railway or staging change was made. The final responsive browser evidence is now closed.
