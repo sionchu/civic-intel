@@ -41,6 +41,9 @@ export type Claim = {
   person_id?: string | null;
   organization_id?: string | null;
   proposition: string;
+  subject: string;
+  predicate: string;
+  object_text: string;
   epistemic_status: Status;
   publication_status: "DRAFT" | "REVIEW" | "PUBLISHED" | "WITHHELD";
   asserted_as_true: boolean;
@@ -58,6 +61,17 @@ export type Organization = {
   recorded_at: string;
   superseded_at: string | null;
   claims: Claim[];
+};
+
+export type OrganizationSummary = {
+  id: string;
+  name: string;
+  classification: string | null;
+  classification_code: string | null;
+  executive_count: number;
+  published_claim_count: number;
+  as_of: string | null;
+  evidence_count: number;
 };
 
 export type MoneyInput = {

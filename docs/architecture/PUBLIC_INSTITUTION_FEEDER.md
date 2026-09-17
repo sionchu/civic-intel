@@ -248,6 +248,8 @@ Do not emit:
 - SourceRun / SourceCheckpoint / FeederObservation persistence and resume
 - role-category compensation staging
 - executive-only reemployment identity staging
-- no automatic Person creation/merge or publication
+- source-specific, operator-run item 4 Organization Claim publication through the canonical
+  Claim/Evidence path; this does not create or merge Persons
+- no generic Organization registry, automatic Person creation/merge or unbounded publication
 - no generic ALIO crawler
 - no board-minutes NLP or political-patronage model

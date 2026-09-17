@@ -149,16 +149,16 @@ test("public reads preserve distinct error states without blanket fallbacks", as
   assert.match(state, /자료 없음이나 UNKNOWN으로 처리하지 않았습니다/);
 });
 
-test("organization page does not add binding or organization enumeration controls", async () => {
+test("organization page stays read-only while the directory is navigable", async () => {
   const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(page, /<button|onClick|create|bind|enumerate/i);
-  assert.doesNotMatch(layout, /organizations/);
+  assert.match(layout, /organizations/);
 });
 
 test("UI stays within the directory scope", async () => {
   const files = await Promise.all(
-    ["../app/page.tsx", "../app/people/page.tsx", "../app/people/[id]/page.tsx", "../app/components/roster-grid.tsx", "../app/organizations/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
+    ["../app/page.tsx", "../app/people/page.tsx", "../app/people/[id]/page.tsx", "../app/components/roster-grid.tsx", "../app/organizations/page.tsx", "../app/organizations/[id]/page.tsx", "../app/admin/review/page.tsx"].map((path) =>
       readFile(new URL(path, import.meta.url), "utf8"),
     ),
   );

@@ -31,6 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </Link>
               <nav className="global-nav" aria-label="주요 메뉴">
                 <Link className="nav-link" href="/people">People</Link>
+                <Link className="nav-link" href="/organizations">Organizations</Link>
                 <span className="nav-status">읽기 전용 공개 기록</span>
               </nav>
             </div>

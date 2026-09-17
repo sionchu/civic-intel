@@ -1,12 +1,14 @@
 # Organization-Scoped Claim and Evidence
 
-Status: governing contract and bounded ALIO Item 12 implementation proof, including the
-Claim-backed read-only projection, on 2026-09-14.
+Status: governing contract and bounded ALIO Item 12 plus item-4 implementation proof, including
+the Claim-backed read-only projections, on 2026-09-18.
 
 This document defines the smallest extension needed for a public record whose subject is an
 organization rather than a Person. It reuses the existing Claim, ClaimEvidence, Source,
 SourcePolicy, SourceSnapshot and FeederObservation path. It does not create an
-`OrganizationClaim` table, a generic money schema or an automatic organization registry.
+`OrganizationClaim` table, a generic money schema or a generic organization registry. A
+source-specific importer may make a bounded deterministic Organization decision only when its
+own reviewed provider identity contract authorizes it.
 
 ## Subject contract
 
@@ -35,6 +37,16 @@ For the ALIO institution-head business-expense lane:
   retains the `apbaId` in Claim qualifiers as source-scoped context.
 - The builder never resolves or creates an Organization from `apbaId`, name, or table position.
 - The existing bounded worker continues to create observations only; it never publishes Claims.
+
+For the separate ALIO item 4 current-executive lane, the reviewed operator command may use a fixed
+UUID namespace plus the exact provider `apbaId` as a source-specific Organization key. It may
+reuse an existing row only through an exact current published ALIO item-4 Claim carrying the same
+`alio_apba_id`; a same-name row without that binding fails closed. This exception is not a
+general provider-ID resolver and never materializes an executive name as a Person. The command
+reads a successful complete item-4 checkpoint and already committed observations, then publishes
+institution classification and named executive disclosure Claims with exact snapshot and
+observation Evidence. Masked/vacant, no-current and correction-only outcomes do not create named
+Claims.
 
 An annual direct-disclosure proposition may be represented as a `FACT` only when the official
 aggregate row, current Organization binding, SourcePolicy, Source, SourceSnapshot and exact
@@ -86,20 +98,24 @@ Current public organization reads filter to `PUBLISHED` and non-superseded Claim
 GET /organizations/{organization_id}
 GET /organizations/{organization_id}/claims
 GET /organizations/{organization_id}/money?earlier_fiscal_year=2024&later_fiscal_year=2025
+GET /organizations
 ```
 
-There is no organization list endpoint and no generic `/money` bypass. The organization MONEY
-route is read-only, requires an existing current Organization and returns only when the requested
-years can be derived from published annual organization Claims. The bounded worker still creates
-observations only; it does not bind ALIO institutions or publish annual Claims. The separate
-reviewed importer does publish exactly the operator-selected annual pair after an existing
-Organization binding; the C0908 staging smoke is proof of that narrow route, not automatic
-organization coverage.
+The organization list is a read-only projection of current canonical Organizations with at least
+one eligible published Claim; it is not an enumeration or binding command. There is no generic
+`/money` bypass. The organization MONEY route is read-only, requires an existing current
+Organization and returns only when the requested years can be derived from published annual
+organization Claims. The bounded Item 12 worker still creates observations only and the reviewed
+Item 12 importer still requires an existing Organization binding. The separate item 4 importer is
+the source-specific exception described above; its organization directory and executive Claims
+are not an Item 12 binding or an automatic Person path.
 
-The public web may render an explicit `/organizations/{organization_id}` record page using these
-existing reads. That page is a direct-ID read surface only: it does not add organization search or
-enumeration, a slug registry, a binding action, or a new publication path. An unavailable derived
-MONEY result remains unavailable in the UI and is never replaced with observation-only data.
+The public web may render the read-only `/organizations` directory and an explicit
+`/organizations/{organization_id}` record page using these existing reads. The directory is a
+projection of already published content, not an organization binding or collection action; the
+detail page does not add a slug registry, binding action or new publication path. An unavailable
+derived MONEY result remains unavailable in the UI and is never replaced with observation-only
+data.
 
 ## Derived MONEY boundary
 
@@ -115,14 +131,15 @@ available, the route returns no MONEY result rather than falling back to observa
 
 This contract does not authorize:
 
-- automatic `apbaId` to Organization identity resolution;
+- generic or cross-source `apbaId` to Organization identity resolution;
 - Person creation for an institution head or any other disclosure staff member;
 - a generic `Expense`, `Transaction`, asset or financial framework;
 - publication of raw ALIO report HTML, XLS/XLSX bytes or contact fields;
-- organization enumeration, scheduled synchronization or a full 355-institution annual-row claim
-  run;
+- generic organization enumeration, scheduled synchronization or a full 355-institution annual-row
+  Claim run;
 - turning a derived amount change into a Claim or an accusation.
 
-The remaining product gate is therefore narrow: establish reviewed canonical Organization
+The remaining Item 12 product gate is therefore narrow: establish reviewed canonical Organization
 bindings and publish annual Claims through the existing importer before the route can return live
-ALIO MONEY results. No automatic ALIO binding or organization-wide claim run is implied.
+ALIO MONEY results. The item 4 operator path does not change that gate, create a generic binding
+framework or imply an organization-wide scheduled claim run.

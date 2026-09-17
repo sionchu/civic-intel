@@ -5,6 +5,9 @@ import { getOrganization, getOrganizationMoney, getSource } from "../../data";
 import ReadState from "../../components/read-state";
 import type { Claim, Evidence, MoneyProjection, Source } from "../../types";
 
+const ALIO_EXECUTIVE_PREDICATE = "ALIO_CURRENT_EXECUTIVE_DISCLOSURE";
+const ALIO_CLASSIFICATION_PREDICATE = "ALIO_INSTITUTION_CLASSIFICATION";
+
 export const dynamic = "force-dynamic";
 
 function formatKrw(value: number): string {
@@ -80,6 +83,36 @@ function OrganizationClaimCard({
       </div>
       <p className="claim-title">{claim.proposition}</p>
       {claim.resolution_note && <p className="resolution">{claim.resolution_note}</p>}
+      <EvidenceTrace evidence={claim.evidence} sourceById={sourceById} claimId={claim.id} />
+    </article>
+  );
+}
+
+function ExecutiveDisclosureCard({
+  claim,
+  sourceById,
+}: {
+  claim: Claim;
+  sourceById: Map<string, Source>;
+}) {
+  const qualifiers = claim.qualifiers;
+  return (
+    <article className="claim organization-claim-card executive-disclosure-card">
+      <div className="claim-heading">
+        <span className="claim-kind">ALIO CURRENT EXECUTIVE</span>
+        <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>
+      </div>
+      <div className="organization-claim-meta">
+        <span>{qualifiers.position_text || "직위 정보 없음"}</span>
+        <span>{qualifiers.executive_kind || "역할 범주 정보 없음"}</span>
+        <span>기준일 {qualifiers.as_of || "정보 없음"}</span>
+      </div>
+      <h3 className="executive-name">{qualifiers.canonical_name || "공개 이름 없음"}</h3>
+      <p className="executive-title">{qualifiers.title || "직책 정보 없음"}</p>
+      <dl className="executive-facts">
+        <div><dt>임기</dt><dd>{qualifiers.term_start || "시작일 정보 없음"} — {qualifiers.term_end || "종료일 정보 없음"}</dd></div>
+        <div><dt>공시번호</dt><dd>{qualifiers.disclosure_no}</dd></div>
+      </dl>
       <EvidenceTrace evidence={claim.evidence} sourceById={sourceById} claimId={claim.id} />
     </article>
   );
@@ -183,7 +216,7 @@ export default async function OrganizationPage({
     if (organizationResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
     return (
       <div className="site-page organization-page">
-        <Link href="/" className="back-link"><span aria-hidden="true">←</span> Directory</Link>
+        <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> Organizations</Link>
         <ReadState error={organizationResult.error} />
       </div>
     );
@@ -199,6 +232,8 @@ export default async function OrganizationPage({
         : "service unavailable";
 
   const claims = organization.claims ?? [];
+  const executiveClaims = claims.filter((claim) => claim.predicate === ALIO_EXECUTIVE_PREDICATE);
+  const classificationClaim = claims.find((claim) => claim.predicate === ALIO_CLASSIFICATION_PREDICATE);
   const claimSourceIds = claims.flatMap((claim) => [
     ...claim.source_ids,
     ...claim.evidence.map((item) => item.source_id),
@@ -211,7 +246,7 @@ export default async function OrganizationPage({
 
   return (
     <div className="site-page organization-page">
-      <Link href="/" className="back-link"><span aria-hidden="true">←</span> Directory</Link>
+      <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> Organizations</Link>
       <header className="profile-header organization-header">
         <div>
           <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Organization record / Published evidence</div>
@@ -244,6 +279,31 @@ export default async function OrganizationPage({
           <strong>{sources.length}</strong>
           <span>linked source records</span>
         </div>
+      </section>
+
+      <section className="organization-section" id="overview" aria-labelledby="organization-overview-title">
+        <div className="section-intro">
+          <div><span className="eyebrow">Overview</span><h2 id="organization-overview-title">기관 기본 정보</h2></div>
+          <p>기관 분류와 현재 임원 공개 건수는 published organization Claim에서만 투영합니다.</p>
+        </div>
+        <div className="organization-overview-card">
+          <div><span className="micro-label">ALIO classification</span><strong>{classificationClaim?.object_text ?? "공개 정보 없음"}</strong></div>
+          <div><span className="micro-label">Current executive disclosures</span><strong>{executiveClaims.length}건</strong></div>
+        </div>
+      </section>
+
+      <section className="organization-section" id="executives" aria-labelledby="organization-executives-title">
+        <div className="section-intro">
+          <div><span className="eyebrow">Current executives</span><h2 id="organization-executives-title">현재 임원현황</h2></div>
+          <p>ALIO가 해당 기관에 대해 공개한 직위·성명·직책과 기준일을 표시합니다. 개인 Person으로 자동 연결하지 않습니다.</p>
+        </div>
+        {executiveClaims.length === 0 ? (
+          <div className="empty-state"><span className="empty-state-mark" aria-hidden="true">∅</span><div><strong>현재 임원 이름 공개 기록이 없습니다.</strong><p><span className="status UNKNOWN">UNKNOWN</span> 공석·마스킹·정정 공시는 이름을 만들지 않습니다.</p></div></div>
+        ) : (
+          <div className="organization-claim-list">
+            {executiveClaims.map((claim) => <ExecutiveDisclosureCard key={claim.id} claim={claim} sourceById={sourceById} />)}
+          </div>
+        )}
       </section>
 
       <section className="organization-section" id="claims" aria-labelledby="organization-claims-title">

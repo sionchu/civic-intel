@@ -314,7 +314,7 @@ The following inventory is based on the current repository, not a proposed unive
 | Assembly historical member career | `packages/connectors/open_assembly_historical.py`; `packages/verification/assembly_historical_review.py`; bounded fixture in `tests/fixtures/assembly_historical_known_positive_001.json` | Packet-only typed parsing and reviewed Claim/Evidence proof for one resolved Assembly Person; immutable snapshots are required, provider row identity/correction semantics remain unavailable, and no live worker/migration/L3 run exists |
 | Gwanbo personnel notices | `packages/connectors/gwanbo_personnel.py`, `workers/gwanbo_personnel.py` | Bounded HTML/POST notice parser keyed by notice ID; metadata-only observation; no Person |
 | NEC candidates/winners | `packages/connectors/nec_local_elections.py`, `workers/local_elections.py` | Source-specific API parsers keyed by NEC `huboid` within election scope; candidate-submitted semantics preserved |
-| ALIO public-institution executives | `packages/connectors/alio_disclosures.py`, `workers/public_institutions.py` | Directory/report/document/table parsing; `disclosure_no:ordinal` observation keys; vacancies, masks and corrections explicit |
+| ALIO public-institution executives | `packages/connectors/alio_disclosures.py`, `workers/public_institutions.py`, `workers/alio_current_executive_claim_import.py`, `packages/rendering/alio_organization_content.py` | Directory/report/document/table parsing; `disclosure_no:ordinal` observation keys; vacancies, masks and corrections explicit; a dry-run/operator-only source-specific Organization Claim path reuses exact SourceSnapshot/FeederObservation provenance and never creates Persons |
 | ALIO institution-head business expense | `packages/connectors/alio_disclosures.py`, `workers/alio_business_expense.py`, `packages/rendering/money_projection.py` | Bounded Item 12 directory/report parsing for three known-positive institutions; `disclosureNo:fiscal_year` after exact report/unique-year validation; aggregate only, no Person attribution; organization Claim builder/read path and Claim-gated `/organizations/{organization_id}/money` projection reuse exact provenance, with no automatic organization binding or generic `/money` route |
 | OpenDART executives and related disclosures | `packages/connectors/open_dart_corporate.py`, `workers/corporate_talent.py` | XML/JSON corp master and report parsers; company/report/row keys; Person materialization remains review-gated |
 | Civil service and MPM staging | `packages/connectors/civil_service_records.py`, `workers/civil_service.py` | Typed personnel/employment-review records; anonymous MPM rows remain source-level; no canonical event fabrication |
@@ -376,6 +376,10 @@ The existing tests are the evidence for the current source-specific architecture
   Person/Organization Claim subject contract, the reviewed Organization binding gate, exact
   organization Claim/Evidence import, immutable-version rejection, Claim-backed MONEY
   projection and read-only organization routes.
+- `test_alio_organization_activation.py` covers complete item-4 checkpoint preflight, deterministic
+  source-specific Organization identity, exact binding reuse, atomic Claim/Evidence import,
+  idempotency, masked/no-current/correction-only outcomes, immutable version conflicts and the
+  public organization projection without Person creation or normalized-payload exposure.
 - Domain, repository, materialization, migration and identity tests cover canonical contracts,
   publication gates, Alembic head checks, fail-closed identity and the boundary between research
   identity and canonical Person materialization.
@@ -387,7 +391,9 @@ relative-link check. The Assembly packet proof may produce a derived CHANGE in t
 only; do not run a live historical-career fetch, add a fixture that implies a complete history
 universe, download a new packet, or treat the proof as L3/live coverage. The ALIO Item 12 live
 proof is limited to its three selected institutions and does not promote the complete directory
-or create live organization Claim data for the public MONEY route.
+or create organization Claim data for the public Item 12 MONEY route. The separate item-4
+operator import is source-specific, offline over already committed observations and does not
+change the Item 12 binding gate.
 
 ## Boundary checklist for a future source
 

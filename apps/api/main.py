@@ -11,6 +11,10 @@ from sqlalchemy import text
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.enums import IdentityStatus
 from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
+from packages.rendering.alio_organization_content import (
+    ALIO_CLASSIFICATION_PREDICATE,
+    ALIO_EXECUTIVE_PREDICATE,
+)
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -269,6 +273,73 @@ def create_app(
             "relationship_ids": [relationship["id"] for relationship in relationships],
             "asset_disclosure_ids": [],
         }
+
+    @app.get("/organizations")
+    def organizations() -> list[dict]:
+        current_organizations = target.public_organizations()
+        contexts = target.published_organization_claim_contexts(
+            item.id for item in current_organizations
+        )
+        payload: list[dict] = []
+        for item in current_organizations:
+            claims, evidence_by_claim = contexts.get(item.id, ((), {}))
+            all_evidence = [
+                evidence
+                for evidence_items in evidence_by_claim.values()
+                for evidence in evidence_items
+            ]
+            source_map = target.sources(evidence.source_id for evidence in all_evidence)
+            policy_map = target.policies(source.policy_id for source in source_map.values())
+            eligible_claims = [
+                claim
+                for claim in claims
+                if validate_claim_publication(
+                    claim,
+                    item,
+                    list(evidence_by_claim.get(claim.id, ())),
+                    source_map,
+                    policy_map,
+                ).publishable
+            ]
+            if not eligible_claims:
+                continue
+            classification = next(
+                (
+                    claim
+                    for claim in eligible_claims
+                    if claim.predicate == ALIO_CLASSIFICATION_PREDICATE
+                ),
+                None,
+            )
+            executive_count = sum(
+                claim.predicate == ALIO_EXECUTIVE_PREDICATE for claim in eligible_claims
+            )
+            as_of_values = sorted(
+                {
+                    claim.qualifiers["as_of"]
+                    for claim in eligible_claims
+                    if claim.qualifiers.get("as_of")
+                }
+            )
+            payload.append(
+                {
+                    "id": str(item.id),
+                    "name": item.name,
+                    "classification": classification.object_text if classification else None,
+                    "classification_code": (
+                        classification.qualifiers.get("classification")
+                        if classification
+                        else None
+                    ),
+                    "executive_count": executive_count,
+                    "published_claim_count": len(eligible_claims),
+                    "as_of": as_of_values[-1] if as_of_values else None,
+                    "evidence_count": sum(
+                        len(evidence_by_claim.get(claim.id, ())) for claim in eligible_claims
+                    ),
+                }
+            )
+        return sorted(payload, key=lambda item: (item["name"], item["id"]))
 
     @app.get("/people/{person_id}/claims")
     def claims(person_id: UUID) -> list[dict]:

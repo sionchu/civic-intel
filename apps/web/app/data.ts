@@ -3,6 +3,7 @@ import type {
   ApiResult,
   MoneyProjection,
   Organization,
+  OrganizationSummary,
   Person,
   ReviewReport,
   Source,
@@ -48,6 +49,9 @@ export function getPeople(): Promise<ApiResult<Person[]>> { return getJson("/peo
 export function getPerson(id: string): Promise<ApiResult<Person>> { return getJson(`/people/${id}`); }
 export function getOrganization(id: string): Promise<ApiResult<Organization>> {
   return getJson(`/organizations/${id}`);
+}
+export function getOrganizations(): Promise<ApiResult<OrganizationSummary[]>> {
+  return getJson("/organizations");
 }
 export function getOrganizationMoney(
   id: string,

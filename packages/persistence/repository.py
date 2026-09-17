@@ -182,6 +182,15 @@ class BatchPageCommitResult:
     observations_unchanged: int
 
 
+@dataclass(frozen=True)
+class OrganizationClaimBatchResult:
+    claims: tuple[Claim, ...]
+    organizations_created: int
+    organizations_reused: int
+    claims_created: int
+    claims_reused: int
+
+
 def _expected_schema_revision() -> str:
     """Return the runtime schema contract without resolving source-tree paths."""
 
@@ -422,6 +431,41 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             row = session.get(FeederObservationRow, str(observation_id))
             return self._observation(row) if row else None
+
+    def feeder_observation_contexts(
+        self,
+        observation_ids: Iterable[UUID],
+    ) -> dict[UUID, tuple[FeederObservation, SourceSnapshot, Source, SourcePolicy]]:
+        """Load exact observation-to-source provenance for a bounded batch."""
+
+        requested_ids = tuple(sorted({str(observation_id) for observation_id in observation_ids}))
+        if not requested_ids:
+            return {}
+        statement = (
+            select(
+                FeederObservationRow,
+                SourceSnapshotRow,
+                SourceRow,
+                SourcePolicyRow,
+            )
+            .join(SourceSnapshotRow, SourceSnapshotRow.id == FeederObservationRow.snapshot_id)
+            .join(SourceRow, SourceRow.id == SourceSnapshotRow.source_id)
+            .join(SourcePolicyRow, SourcePolicyRow.id == SourceRow.policy_id)
+            .where(FeederObservationRow.id.in_(requested_ids))
+        )
+        contexts: dict[UUID, tuple[FeederObservation, SourceSnapshot, Source, SourcePolicy]] = {}
+        with self.sessions() as session:
+            for observation_row, snapshot_row, source_row, policy_row in session.execute(statement):
+                observation = self._observation(observation_row)
+                if observation.id in contexts:
+                    raise ValueError("feeder observation has multiple provenance contexts")
+                contexts[observation.id] = (
+                    observation,
+                    self._snapshot(snapshot_row),
+                    self._source(source_row),
+                    self._policy(policy_row),
+                )
+        return contexts
 
     def person_observation_links(
         self, person_id: UUID | None = None
@@ -2709,6 +2753,164 @@ class SqlAlchemyRepository:
                     "organization claim pair collided with a non-equivalent concurrent write"
                 ) from retry_exc
 
+    @staticmethod
+    def _add_organization_row(session: Session, organization: Organization) -> None:
+        session.add(
+            OrganizationRow(
+                id=str(organization.id),
+                name=organization.name,
+                **SqlAlchemyRepository._temporal(organization),
+            )
+        )
+
+    def import_organization_claim_batch(
+        self,
+        organizations: Sequence[Organization],
+        items: Sequence[tuple[Organization, Claim, Sequence[ClaimEvidence]]],
+    ) -> OrganizationClaimBatchResult:
+        """Atomically materialize supplied Organizations and import exact Claim/Evidence rows.
+
+        The caller owns source-specific identity decisions. This seam only persists the supplied
+        current canonical rows and applies the existing organization publication validation.
+        """
+
+        self.assert_ready()
+        organization_by_id = {organization.id: organization for organization in organizations}
+        if len(organization_by_id) != len(organizations):
+            raise OrganizationClaimImportError("organization batch contains duplicate ids")
+        if any(organization.id not in organization_by_id for organization, _, _ in items):
+            raise OrganizationClaimImportError("organization claim batch has an unknown subject")
+
+        requested_keys = [self._claim_import_key(claim) for _, claim, _ in items]
+        if len(set(requested_keys)) != len(requested_keys):
+            raise OrganizationClaimImportError("organization claim batch contains duplicate source keys")
+
+        with self.sessions() as session:
+            try:
+                created_organizations = 0
+                reused_organizations = 0
+                for organization in organizations:
+                    organization_row = session.get(OrganizationRow, str(organization.id))
+                    if organization_row is None:
+                        same_name = list(
+                            session.scalars(
+                                select(OrganizationRow).where(
+                                    OrganizationRow.name == organization.name,
+                                    OrganizationRow.superseded_at.is_(None),
+                                )
+                            )
+                        )
+                        if same_name:
+                            raise OrganizationClaimImportError(
+                                "organization batch refuses a same-name canonical row without an exact binding"
+                            )
+                        self._add_organization_row(session, organization)
+                        created_organizations += 1
+                    else:
+                        stored_organization = self._organization(organization_row)
+                        if (
+                            stored_organization.name != organization.name
+                            or stored_organization.superseded_at is not None
+                        ):
+                            raise OrganizationClaimImportError(
+                                "organization batch Organization is not the current canonical row"
+                            )
+                        reused_organizations += 1
+                session.flush()
+
+                existing_rows = list(
+                    session.scalars(
+                        select(ClaimRow).where(
+                            ClaimRow.organization_id.is_not(None),
+                            ClaimRow.superseded_at.is_(None),
+                        )
+                    )
+                )
+                existing_by_key: dict[tuple[UUID, str, str, str], list[ClaimRow]] = {}
+                source_key_owners: dict[tuple[str, str, str], set[UUID]] = {}
+                for claim_row in existing_rows:
+                    stored_claim = self._claim(claim_row)
+                    try:
+                        key = self._claim_import_key(stored_claim)
+                    except OrganizationClaimImportError:
+                        continue
+                    existing_by_key.setdefault(key, []).append(claim_row)
+                    source_key_owners.setdefault(key[1:], set()).add(key[0])
+
+                results: list[Claim] = []
+                created_claims = 0
+                reused_claims = 0
+                for organization, claim, evidence in items:
+                    key = self._claim_import_key(claim)
+                    owners = source_key_owners.get(key[1:], set())
+                    if owners and owners != {organization.id}:
+                        raise OrganizationClaimImportError(
+                            "organization claim source record key is bound to another Organization"
+                        )
+                    self._validate_organization_claim(session, organization, claim, evidence)
+                    matching = existing_by_key.get(key, [])
+                    if len(matching) > 1:
+                        raise OrganizationClaimImportError(
+                            "organization claim batch found duplicate canonical source record keys"
+                        )
+                    if matching:
+                        stored = self._claim(matching[0])
+                        stored_evidence = [
+                            self._evidence(row)
+                            for row in session.scalars(
+                                select(ClaimEvidenceRow).where(
+                                    ClaimEvidenceRow.claim_id == str(stored.id)
+                                )
+                            )
+                        ]
+                        if (
+                            self._claim_import_semantics(stored)
+                            != self._claim_import_semantics(claim)
+                            or self._evidence_import_semantics(stored_evidence)
+                            != self._evidence_import_semantics(evidence)
+                        ):
+                            raise OrganizationClaimImportError(
+                                "organization claim source record key conflicts with stored semantics"
+                            )
+                        results.append(stored)
+                        reused_claims += 1
+                        continue
+
+                    if session.get(ClaimRow, str(claim.id)) is not None:
+                        raise OrganizationClaimImportError(
+                            "organization claim ID already exists with different semantics"
+                        )
+                    for item in evidence:
+                        if session.get(ClaimEvidenceRow, str(item.id)) is not None:
+                            raise OrganizationClaimImportError(
+                                f"organization evidence ID already exists: {item.id}"
+                            )
+                    self._add_organization_claim_rows(session, claim, evidence)
+                    created_claim_row = session.get(ClaimRow, str(claim.id))
+                    if created_claim_row is None:
+                        raise OrganizationClaimImportError("organization claim row was not persisted")
+                    existing_by_key.setdefault(key, []).append(created_claim_row)
+                    source_key_owners.setdefault(key[1:], set()).add(organization.id)
+                    results.append(claim)
+                    created_claims += 1
+
+                session.commit()
+                return OrganizationClaimBatchResult(
+                    claims=tuple(results),
+                    organizations_created=created_organizations,
+                    organizations_reused=reused_organizations,
+                    claims_created=created_claims,
+                    claims_reused=reused_claims,
+                )
+            except (IntegrityError, OperationalError) as exc:
+                session.rollback()
+                raise OrganizationClaimImportError(
+                    "organization claim batch database commit failed"
+                ) from exc
+            except Exception:
+                session.rollback()
+                raise
+
     def people(self) -> list[Person]:
         with self.sessions() as session:
             return [
@@ -2729,6 +2931,33 @@ class SqlAlchemyRepository:
         )
         with self.sessions() as session:
             return [self._person(row) for row in session.scalars(statement)]
+
+    def organizations(self, *, current_only: bool = False) -> list[Organization]:
+        statement = select(OrganizationRow)
+        if current_only:
+            statement = statement.where(OrganizationRow.superseded_at.is_(None))
+        with self.sessions() as session:
+            return [
+                self._organization(row)
+                for row in session.scalars(statement.order_by(OrganizationRow.id))
+            ]
+
+    def public_organizations(self) -> list[Organization]:
+        """Return current Organizations with at least one current published Claim."""
+
+        statement = (
+            select(OrganizationRow)
+            .join(ClaimRow, ClaimRow.organization_id == OrganizationRow.id)
+            .where(
+                OrganizationRow.superseded_at.is_(None),
+                ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                ClaimRow.superseded_at.is_(None),
+            )
+            .distinct()
+            .order_by(OrganizationRow.id)
+        )
+        with self.sessions() as session:
+            return [self._organization(row) for row in session.scalars(statement)]
 
     def published_person_claim_contexts(
         self,
@@ -2786,6 +3015,64 @@ class SqlAlchemyRepository:
                 },
             )
             for person_id in (UUID(item) for item in requested_ids)
+        }
+
+    def published_organization_claim_contexts(
+        self,
+        organization_ids: Iterable[UUID],
+    ) -> dict[UUID, tuple[tuple[Claim, ...], dict[UUID, tuple[ClaimEvidence, ...]]]]:
+        """Load current published Organization Claim/Evidence context in two bounded reads."""
+
+        requested_ids = tuple(sorted({str(organization_id) for organization_id in organization_ids}))
+        if not requested_ids:
+            return {}
+
+        with self.sessions() as session:
+            claim_rows = list(
+                session.scalars(
+                    select(ClaimRow)
+                    .where(
+                        ClaimRow.organization_id.in_(requested_ids),
+                        ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                        ClaimRow.superseded_at.is_(None),
+                    )
+                    .order_by(ClaimRow.organization_id, ClaimRow.id)
+                )
+            )
+            claims_by_organization: dict[UUID, list[Claim]] = {
+                UUID(organization_id): [] for organization_id in requested_ids
+            }
+            claims_by_id: dict[UUID, Claim] = {}
+            for row in claim_rows:
+                claim = self._claim(row)
+                assert claim.organization_id is not None
+                claims_by_organization[claim.organization_id].append(claim)
+                claims_by_id[claim.id] = claim
+
+            evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {
+                claim_id: [] for claim_id in claims_by_id
+            }
+            if claims_by_id:
+                evidence_rows = session.scalars(
+                    select(ClaimEvidenceRow)
+                    .where(ClaimEvidenceRow.claim_id.in_([str(item) for item in claims_by_id]))
+                    .order_by(ClaimEvidenceRow.claim_id, ClaimEvidenceRow.id)
+                )
+                for evidence_row in evidence_rows:
+                    claim_id = UUID(evidence_row.claim_id)
+                    if claim_id in evidence_by_claim:
+                        evidence_by_claim[claim_id].append(self._evidence(evidence_row))
+
+        return {
+            organization_id: (
+                tuple(claims_by_organization[organization_id]),
+                {
+                    claim_id: tuple(items)
+                    for claim_id, items in evidence_by_claim.items()
+                    if claim_id in {claim.id for claim in claims_by_organization[organization_id]}
+                },
+            )
+            for organization_id in (UUID(item) for item in requested_ids)
         }
 
     def person(self, person_id: UUID) -> Person | None:

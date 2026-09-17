@@ -1654,3 +1654,32 @@ deployment approval is granted; do not expand this pilot into bulk portrait acqu
 
 Expand the existing bounded reviewed Assembly historical-career packet to one additional Person,
 keeping the L1 reviewed-Claim path and its coverage limits unchanged.
+
+## Current checkpoint — ALIO Organization & Executive Content Activation v1 (2026-09-18)
+
+- The active plan `docs/exec-plans/active/alio-organization-executive-content-activation-v1.md`
+  is complete from `fabe85d6bd87c60a47ef506b4bd968ade48f8c12`. Work was isolated in
+  `.worktrees/alio-organization-activation`; the root checkout, its dirty user changes and
+  other worktrees were preserved.
+- Existing complete ALIO item-4 observations now have a source-specific, dry-run-by-default
+  operator import into canonical Organization Claims. Exact `apbaId`-derived Organization IDs,
+  exact published item-4 binding reuse, same-name rejection, immutable observation-version
+  conflicts and one atomic Organization plus Claim/Evidence transaction are enforced. ALIO
+  executive names remain organization Claim qualifiers and do not create or merge Persons.
+- Named executive rows and institution classification use the existing
+  `SourcePolicy → Source → SourceSnapshot → FeederObservation → Claim/Evidence` path. Masked,
+  vacant, no-current and correction-only outcomes do not produce named Claims. The public
+  `/organizations` projection and existing detail page use published Claims/Evidence only; raw
+  normalized observations, report HTML, attachments and contacts are not exposed.
+- The existing C0908 Item-12 reviewed binding/MONEY path and Assembly paths remain unchanged.
+  No migration, dependency, live ALIO request, staging/database write, Railway operation or new
+  feeder was performed.
+- Fixture-backed activation tests passed (`8 passed`); the full Python suite exited `0` with the
+  existing PostgreSQL-only skip. Ruff, mypy, Golden quality, web lint/typecheck/UI tests (`11
+  passed`), standalone production build and standalone contract check passed. Final commit/CI
+  evidence is recorded after publication.
+
+## Next concrete action
+
+Define one reviewed cross-lane Person-linking packet for an ALIO executive row using exact
+non-name identity evidence; keep name-only linking prohibited and do not begin another feeder.

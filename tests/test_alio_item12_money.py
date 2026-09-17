@@ -609,11 +609,11 @@ def test_item12_money_zero_baseline_is_explicitly_unavailable() -> None:
     assert result["details"]["percent_change"] is None
 
 
-def test_item12_public_api_has_no_organization_money_bypass() -> None:
+def test_public_organization_directory_does_not_bypass_item12_money() -> None:
     paths = {route.path for route in create_app().routes}
 
     assert "/money" not in paths
-    assert "/organizations" not in paths
+    assert "/organizations" in paths
     assert "/organizations/{organization_id}" in paths
     assert "/organizations/{organization_id}/claims" in paths
     assert "/organizations/{organization_id}/money" in paths
