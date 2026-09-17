@@ -1684,3 +1684,27 @@ keeping the L1 reviewed-Claim path and its coverage limits unchanged.
 
 Define one reviewed cross-lane Person-linking packet for an ALIO executive row using exact
 non-name identity evidence; keep name-only linking prohibited and do not begin another feeder.
+
+## Current checkpoint — ALIO Organization Content Staging Activation v1 (2026-09-18)
+
+- The separate staging activation plan is blocked before ALIO item-4 acquisition. The exact
+  `ca1ff36e5dd6cebab018b3bdc1c4e7e4c160d410` source archive was deployed to the existing API and
+  Web services (`76ec8f69-8874-4fbb-a67c-eeda55d0fd19` and
+  `8fad7294-d590-4aee-9381-71c5f3bfca6f`); Postgres remained
+  `172ec443-e3cc-44bb-a5c1-195f54f86824`. Local archive uploads have null Railway commit
+  metadata, so the archive revision is the source identity.
+- A fresh logical dump/restore passed before acquisition: `350919` bytes,
+  SHA-256 `e5c89bb0ee9168328f86753033bbd05d91ca25b0236ee3388561d1533db19878`, local disposable
+  restore `568 ms`, schema `0006`, People `299`, Organizations `1`, Claims `1496`, and subject
+  XOR `0`. No staging reset or reload occurred.
+- One normal `python -m workers.public_institutions` attempt timed out reaching the official
+  ALIO endpoint (`ConnectTimeout`); the worker recorded one failed run with zero observations
+  and zero checkpoint rows. Importer dry-run/commit was not run. People, Organizations, Claims,
+  C0908 Item-12 data and public read paths remain unchanged.
+- Temporary activation SSH registrations and task-owned sensitive artifacts were removed;
+  Railway retains only the pre-existing `dev.new` key. No new Railway resource, domain, plan,
+  migration or API acquisition credential was added.
+
+## Next concrete action
+
+Restore private reachability from the approved acquisition boundary to the official ALIO item-4 endpoint, then take a fresh backup and run one new normal bounded enumeration before any importer action.

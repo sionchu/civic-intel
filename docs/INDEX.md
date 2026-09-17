@@ -63,6 +63,7 @@ implementation work.
 - [Completed NEC local-candidate L3 plan](exec-plans/active/nec-local-candidates-l3.md)
 - [Completed ALIO public-institution executives L3 plan](exec-plans/active/alio-public-institution-executives-l3.md)
 - [ALIO Organization & Executive Content Activation v1](exec-plans/active/alio-organization-executive-content-activation-v1.md)
+- [ALIO Organization Content Staging Activation v1](exec-plans/active/alio-organization-content-staging-activation-v1.md)
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)
 - [Government Public Ethics Committee retired-public-official employment-review source-gate plan](exec-plans/active/government-public-ethics-employment-review-l3.md)
 - [National Assembly asset-disclosure source-gate plan](exec-plans/active/national-assembly-asset-disclosure-source-gate.md)
