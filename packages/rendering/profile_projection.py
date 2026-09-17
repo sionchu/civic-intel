@@ -24,6 +24,10 @@ from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_legislative_activity import (
+    ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
+    ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
+)
 
 CHANGE_METHOD_VERSION = "change.role-sequence.v1"
 
@@ -42,6 +46,15 @@ SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("hearing_questions", "인사청문·검증 질문"),
     ("forecast", "전망과 시나리오"),
     ("limitations", "한계 및 미확인"),
+)
+
+ASSEMBLY_MEMBER_SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
+    ("overview", "개요"),
+    ("current_role", "현재 역할"),
+    ("career_timeline", "경력 타임라인"),
+    ("legislative_activity", "입법 활동"),
+    ("recent_changes", "최근 변화"),
+    ("limitations", "근거 범위와 한계"),
 )
 
 SUMMARY_PREDICATES = frozenset(
@@ -102,6 +115,27 @@ def _claim_entry(
 ) -> dict[str, Any]:
     evidence = tuple(evidence_by_claim.get(claim.id, ()))
     stances = {item.stance.value for item in evidence}
+    details: dict[str, Any] = {
+        "predicate": claim.predicate,
+        "object_text": claim.object_text,
+        "field_name": claim.qualifiers.get("field_name"),
+        "publication_status": claim.publication_status.value,
+        "asserted_as_true": claim.asserted_as_true,
+        "resolution_note": claim.resolution_note,
+    }
+    if claim.predicate == ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE:
+        for key in (
+            "bill_no",
+            "proposed_date",
+            "committee",
+            "committee_id",
+            "process_result",
+            "detail_url",
+            "participation_role",
+        ):
+            value = claim.qualifiers.get(key)
+            if value is not None:
+                details[key] = value
     return {
         "id": f"claim:{claim.id}",
         "kind": "CLAIM",
@@ -112,15 +146,8 @@ def _claim_entry(
         "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
         "evidence": [_evidence_trace(item) for item in evidence],
         "source_conflict": {"SUPPORT", "REFUTE"} <= stances,
-        "date": claim.qualifiers.get("date"),
-        "details": {
-            "predicate": claim.predicate,
-            "object_text": claim.object_text,
-            "field_name": claim.qualifiers.get("field_name"),
-            "publication_status": claim.publication_status.value,
-            "asserted_as_true": claim.asserted_as_true,
-            "resolution_note": claim.resolution_note,
-        },
+        "date": claim.qualifiers.get("date") or claim.qualifiers.get("proposed_date"),
+        "details": details,
     }
 
 
@@ -233,11 +260,12 @@ def build_people_discovery_projection(
             or not claim.asserted_as_true
         ):
             continue
-        if (
+        is_current_assembly_roster_claim = (
             claim.qualifiers.get("source_contract") == ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
             and claim.qualifiers.get("source_scope") == ASSEMBLY_BASE_PROFILE_SCOPE
             and claim.qualifiers.get("semantic_scope") == ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE
-        ):
+        )
+        if is_current_assembly_roster_claim:
             field_name = claim.qualifiers.get("field_name")
             definition = field_definitions.get(field_name or "")
             if (
@@ -246,6 +274,11 @@ def build_people_discovery_projection(
                 and claim.predicate == definition.predicate
             ):
                 field_claims[field_name].append(claim)
+            elif (
+                claim.predicate == "HELD_ROLE"
+                and claim.qualifiers.get("provider_record_key")
+            ):
+                role_claims.append(claim)
         elif (
             claim.predicate == "HELD_ROLE"
             and claim.qualifiers.get("source_contract")
@@ -423,6 +456,84 @@ def _explicit_claim_date(claim: Claim) -> date | None:
         return date.fromisoformat(value)
     except ValueError:
         return None
+
+
+def _assembly_role_entries(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    selected = [
+        claim
+        for claim in claims
+        if claim.predicate == "HELD_ROLE"
+        and claim.qualifiers.get("source_contract")
+        in {None, ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT}
+        and claim.qualifiers.get("source_scope") == ASSEMBLY_BASE_PROFILE_SCOPE
+        and claim.qualifiers.get("provider_record_key")
+    ]
+    selected.sort(key=lambda item: (item.qualifiers.get("date", ""), str(item.id)))
+    return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _assembly_dated_career_entries(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    selected: list[Claim] = []
+    for claim in claims:
+        if claim.predicate not in CAREER_PREDICATES:
+            continue
+        if _explicit_claim_date(claim) is None:
+            continue
+        if (
+            claim.qualifiers.get("source_contract") == ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+            and claim.qualifiers.get("source_scope") == ASSEMBLY_BASE_PROFILE_SCOPE
+        ):
+            continue
+        selected.append(claim)
+    selected.sort(key=lambda item: (_explicit_claim_date(item) or date.min, str(item.id)))
+    return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _assembly_activity_entries(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    selected = [
+        claim
+        for claim in claims
+        if claim.predicate == ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE
+        and claim.qualifiers.get("source_contract") == ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT
+        and claim.qualifiers.get("provider_identity_namespace") == "assembly_mona_cd"
+    ]
+    selected.sort(
+        key=lambda item: (
+            item.qualifiers.get("proposed_date", ""),
+            item.qualifiers.get("bill_id", ""),
+            item.qualifiers.get("participation_role", ""),
+            str(item.id),
+        )
+    )
+    return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _assembly_limitation(
+    limitation_id: str,
+    title: str,
+    *,
+    section_id: str,
+) -> dict[str, Any]:
+    return {
+        "id": f"limitation:{limitation_id}",
+        "kind": "LIMITATION",
+        "title": title,
+        "epistemic_status": EpistemicStatus.UNKNOWN.value,
+        "claim_id": None,
+        "evidence_ids": [],
+        "source_ids": [],
+        "date": None,
+        "details": {"section_id": section_id},
+    }
 
 
 def _normalized_role_text(value: str) -> str:
@@ -654,6 +765,176 @@ def build_profile_projection(
     episode_entries = _decision_episode_entries(decision_episodes, claims, evidence_by_claim)
     stakeholder_entries = _relationship_entries(relationships, evidence_by_claim)
     controversy_entries = _controversy_entries(claims, evidence_by_claim)
+
+    assembly_role_entries = _assembly_role_entries(claims, evidence_by_claim)
+    assembly_career_entries = _assembly_dated_career_entries(claims, evidence_by_claim)
+    assembly_activity_entries = _assembly_activity_entries(claims, evidence_by_claim)
+    is_assembly_member = bool(
+        assembly_base_profile_entries or assembly_role_entries or assembly_activity_entries
+    )
+
+    if is_assembly_member:
+        overview_entries = [
+            item
+            for item in assembly_base_profile_entries
+            if item.get("details", {}).get("field_name") in {"party", "district", "reelection"}
+        ]
+        committee_entries = [
+            item
+            for item in assembly_base_profile_entries
+            if item.get("details", {}).get("field_name") == "committees"
+        ]
+        overview_fields = {
+            item.get("details", {}).get("field_name") for item in overview_entries
+        }
+        current_role_entries = [*assembly_role_entries, *committee_entries]
+        current_role_fields: set[str] = set()
+        if assembly_role_entries:
+            current_role_fields.add("role")
+        if committee_entries:
+            current_role_fields.add("committees")
+        assembly_sections: list[dict[str, Any]] = [
+            _section(
+                "overview",
+                "개요",
+                overview_entries,
+                status=(
+                    "AVAILABLE"
+                    if overview_fields >= {"party", "district", "reelection"}
+                    else "PARTIAL"
+                    if overview_entries
+                    else "UNKNOWN"
+                ),
+                note=(
+                    "현재 published Assembly Base Profile Claim만 빠른 개요로 투영합니다."
+                    if overview_entries
+                    else "현재 published Assembly Base Profile 개요 Claim이 없습니다."
+                ),
+            ),
+            _section(
+                "current_role",
+                "현재 역할",
+                current_role_entries,
+                status=(
+                    "AVAILABLE"
+                    if current_role_fields >= {"role", "committees"}
+                    else "PARTIAL"
+                    if current_role_entries
+                    else "UNKNOWN"
+                ),
+                note=(
+                    "현재 역할과 위원회 소속만 published Claim에서 표시하며, 정책 성향이나 영향력은 해석하지 않습니다."
+                    if current_role_entries
+                    else "현재 역할·위원회 published Claim이 없습니다."
+                ),
+            ),
+            _section(
+                "career_timeline",
+                "경력 타임라인",
+                assembly_career_entries,
+                status="AVAILABLE" if assembly_career_entries else "PARTIAL",
+                note=(
+                    "명시적 날짜가 있는 reviewed career Claim만 시간순으로 표시합니다."
+                    if assembly_career_entries
+                    else "현재 roster는 현직 상태만 나타내며, 과거 경력 전체를 의미하지 않습니다."
+                ),
+            ),
+            _section(
+                "legislative_activity",
+                "입법 활동",
+                assembly_activity_entries,
+                status="AVAILABLE" if assembly_activity_entries else "UNKNOWN",
+                note=(
+                    "공식 의안정보의 정확한 MONA_CD 연결 Claim을 대표 발의와 공동 발의로 구분해 표시합니다."
+                    if assembly_activity_entries
+                    else "현재 published 법안 참여 Claim이 없습니다."
+                ),
+            ),
+        ]
+        if recent_changes:
+            assembly_sections.append(
+                _section(
+                    "recent_changes",
+                    "최근 변화",
+                    recent_changes,
+                    status="AVAILABLE",
+                    note="서로 다른 날짜의 reviewed historical Claim 쌍에서만 변화로 표시합니다.",
+                )
+            )
+
+        assembly_limitations: list[dict[str, Any]] = []
+        for field_name, label in (
+            ("party", "정당"),
+            ("district", "지역구"),
+            ("reelection", "초선·재선"),
+        ):
+            if field_name not in overview_fields:
+                assembly_limitations.append(
+                    _assembly_limitation(
+                        f"overview-{field_name}",
+                        f"개요의 {label} Claim이 현재 공개 profile에 없습니다.",
+                        section_id="overview",
+                    )
+                )
+        if "committees" not in current_role_fields:
+            assembly_limitations.append(
+                _assembly_limitation(
+                    "current-role-committees",
+                    "현재 위원회 Claim이 현재 공개 profile에 없습니다.",
+                    section_id="current_role",
+                )
+            )
+        if not assembly_career_entries:
+            assembly_limitations.append(
+                _assembly_limitation(
+                    "career-coverage",
+                    "국회 historical career coverage가 없어 현직 roster를 경력 전체로 표시하지 않습니다.",
+                    section_id="career_timeline",
+                )
+            )
+        if not recent_changes:
+            assembly_limitations.append(
+                _assembly_limitation(
+                    "recent-changes-none",
+                    "확인된 최근 변경 기록 없음",
+                    section_id="recent_changes",
+                )
+            )
+        if not assembly_activity_entries:
+            assembly_limitations.append(
+                _assembly_limitation(
+                    "legislative-activity-none",
+                    "현재 공개된 법안 참여 Claim이 없습니다.",
+                    section_id="legislative_activity",
+                )
+            )
+        for claim in claims:
+            if claim.epistemic_status in {
+                EpistemicStatus.UNKNOWN,
+                EpistemicStatus.ENTITY_UNRESOLVED,
+            }:
+                assembly_limitations.append(_claim_entry(claim, evidence_by_claim))
+        assembly_sections.append(
+            _section(
+                "limitations",
+                "근거 범위와 한계",
+                assembly_limitations,
+                status="AVAILABLE" if assembly_limitations else "UNKNOWN",
+                note="공개 화면은 현재 published Claim/Evidence 범위만 표시하며, 빈 값을 추론으로 채우지 않습니다.",
+            )
+        )
+        statuses = [section["status"] for section in assembly_sections]
+        return {
+            "profile_kind": "ASSEMBLY_MEMBER",
+            "section_order": [section["id"] for section in assembly_sections],
+            "sections": assembly_sections,
+            "coverage": {
+                "available": statuses.count("AVAILABLE"),
+                "partial": statuses.count("PARTIAL"),
+                "unknown": statuses.count("UNKNOWN"),
+            },
+            "semantics": "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE",
+        }
 
     sections: list[dict[str, Any]] = [
         _section("identity", "신원", identity_entries, status="AVAILABLE", note=identity_note),

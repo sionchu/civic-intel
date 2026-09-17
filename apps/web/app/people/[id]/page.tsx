@@ -94,14 +94,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 ))}
               </ol>
             </nav>
+            <a className="profile-source-index-link" href="#sources-title">Evidence &amp; Sources</a>
           </aside>
 
           <div className="profile-content">
             <section className="coverage-overview" aria-labelledby="coverage-title">
               <div className="overview-heading">
                 <span className="eyebrow">Coverage</span>
-                <h2 id="coverage-title">What the directory can show</h2>
-                <p>근거가 있는 섹션과 아직 비어 있는 섹션을 같은 화면에서 구분합니다.</p>
+                <h2 id="coverage-title">{profile.profile_kind === "ASSEMBLY_MEMBER" ? "What this profile can show" : "What the directory can show"}</h2>
+                <p>published Claim/Evidence 범위와 아직 비어 있는 영역을 구분합니다.</p>
               </div>
               <div className="coverage">
                 <div className="coverage-card available-card"><span className="status AVAILABLE">AVAILABLE</span><strong>{profile.coverage.available}</strong><small>sections with entries</small></div>
@@ -131,6 +132,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                         coverage?: { eligible_claim_count?: number; comparison?: string };
                         limitations?: string[];
                       } : null;
+                      const isLegislativeActivity = !changeDetails && entry.details.predicate === "ASSEMBLY_BILL_PARTICIPATION";
+                      const activityRole = isLegislativeActivity && typeof entry.details.participation_role === "string"
+                        ? entry.details.participation_role === "REPRESENTATIVE_PROPOSER" ? "대표 발의" : "공동 발의"
+                        : null;
+                      const activityTitle = isLegislativeActivity && typeof entry.details.object_text === "string"
+                        ? entry.details.object_text
+                        : null;
                       return (
                       <article className={`claim${changeDetails ? " change-card" : ""}`} key={entry.id}>
                         <div className="claim-heading">
@@ -171,6 +179,22 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                                 {(changeDetails.limitations ?? []).map((item) => <span key={item}>{item}<br /></span>)}
                               </small>
                             </details>
+                          </>
+                        ) : isLegislativeActivity ? (
+                          <>
+                            <div className="activity-badges">
+                              <span className="status AVAILABLE">{activityRole}</span>
+                              <span className="claim-kind">OFFICIAL BILL RECORD</span>
+                            </div>
+                            <p className="claim-title">{activityTitle ?? entry.title}</p>
+                            <p className="activity-assertion">{entry.title}</p>
+                            {entry.date && <small className="claim-date">Proposal date / {entry.date}</small>}
+                            <dl className="activity-facts">
+                              {typeof entry.details.bill_no === "string" && <div><dt>Bill no.</dt><dd>{entry.details.bill_no}</dd></div>}
+                              {typeof entry.details.committee === "string" && <div><dt>Committee</dt><dd>{entry.details.committee}</dd></div>}
+                              {typeof entry.details.process_result === "string" && <div><dt>Result / status</dt><dd>{entry.details.process_result}</dd></div>}
+                            </dl>
+                            {typeof entry.details.detail_url === "string" && <a className="activity-link" href={entry.details.detail_url} target="_blank" rel="noreferrer">Official bill detail <span aria-hidden="true">↗</span></a>}
                           </>
                         ) : (
                           <>

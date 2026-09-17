@@ -1630,3 +1630,27 @@ an image until both rights and identity gates close.
 Portrait Pilot v0 is closed: commit `73d5ec8a4db2537bccbeb6201bfb3ab09f62ac37` is on `master` and
 GitHub Actions Verify run `35192739443` passed. Keep staging undeployed until a separate Web-only
 deployment approval is granted; do not expand this pilot into bulk portrait acquisition.
+
+## Current checkpoint — Assembly Member Profile Substance v1 (2026-09-17)
+
+- Implemented the bounded Assembly profile substance slice in isolated worktree
+  `codex/change-discovery-plan`. Existing published Base Profile Claims now drive a deterministic
+  Assembly overview/current-role projection; explicit dated reviewed Claims drive career; and the
+  existing bill-participation observations can publish representative/co-sponsored descriptive
+  activity through Claim/Evidence after an exact reviewed current-roster `MONA_CD` crosswalk.
+- `MONA_CD` remains a provider identity, `BILL_ID` remains the provider bill key, and
+  `RST_MONA_CD`/`PUBL_MONA_CD` remain representative/co-proposer roles. No name-only linking,
+  ranking, AI summary, raw normalized observation, contact field, schema, migration, or new
+  feeder was added.
+- Assembly profiles use role-aware sections and compact coverage states; unsupported generic
+  sections are hidden. The web fixture and regression coverage include three resolved People,
+  same-name separation, representative/co-sponsored separation, exact provenance, and unknown
+  versus no-match behavior.
+- Python/web checks and a disposable standalone production browser smoke passed. Exact mobile
+  `390x844` and desktop `1440x900` checks had no overflow, console errors, or hydration overlay;
+  screenshots were captured outside the repository. No staging or Railway change was made.
+
+## Next concrete action
+
+Expand the existing bounded reviewed Assembly historical-career packet to one additional Person,
+keeping the L1 reviewed-Claim path and its coverage limits unchanged.

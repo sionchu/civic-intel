@@ -136,6 +136,7 @@ export type ProfileSection = {
 };
 
 export type ProfileProjection = {
+  profile_kind?: "ASSEMBLY_MEMBER" | "LEGACY_PERSON";
   section_order: string[];
   sections: ProfileSection[];
   coverage: { available: number; partial: number; unknown: number };

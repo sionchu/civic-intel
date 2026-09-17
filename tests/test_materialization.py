@@ -345,15 +345,25 @@ def test_reviewed_assembly_distinct_resolution_is_atomic_idempotent_and_public(
         people = client.get("/people")
         assert people.status_code == 200
         assert len(people.json()) == 2
+        resolved_discovery = next(
+            item["discovery"] for item in people.json() if item["id"] == str(resolved.person_id)
+        )
+        assert resolved_discovery["facets"]["role"]["value"] == "국회의원"
+        assert "role" not in resolved_discovery["missing_fields"]
         detail = client.get(f"/people/{resolved.person_id}")
         assert detail.status_code == 200
         payload = detail.json()
-        section = next(
-            item for item in payload["profile"]["sections"] if item["id"] == "assembly_base_profile"
+        overview = next(
+            item for item in payload["profile"]["sections"] if item["id"] == "overview"
         )
-        assert section["status"] == "AVAILABLE"
-        assert len(section["entries"]) == 4
-        assert all(entry["evidence"] for entry in section["entries"])
+        assert overview["status"] == "AVAILABLE"
+        assert len(overview["entries"]) == 3
+        assert all(entry["evidence"] for entry in overview["entries"])
+        current_role = next(
+            item for item in payload["profile"]["sections"] if item["id"] == "current_role"
+        )
+        assert current_role["status"] == "AVAILABLE"
+        assert len(current_role["entries"]) == 2
         assert "normalized" not in str(payload)
         assert "TEL_NO" not in str(payload)
         assert "E_MAIL" not in str(payload)

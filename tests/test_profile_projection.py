@@ -269,3 +269,77 @@ def test_limitations_surface_unknown_sections_instead_of_filling_them() -> None:
     assert "forecast" in limited_sections
     assert "hearing_questions" in limited_sections
     assert profile["coverage"]["unknown"] > 0
+
+
+def test_assembly_profile_uses_role_aware_content_and_dated_career_only() -> None:
+    assembly_person = Person(
+        id=UUID("00000000-0000-0000-0000-000000000199"),
+        canonical_name="국회회원",
+        identity_status=IdentityStatus.RESOLVED,
+    )
+    roster_role = Claim(
+        id=UUID("30000000-0000-0000-0000-000000000199"),
+        person_id=assembly_person.id,
+        proposition="국회회원은 국회의원 명부에 등재되어 있다.",
+        subject="국회회원",
+        predicate="HELD_ROLE",
+        object_text="국회의원",
+        qualifiers={
+            "source_scope": "current_member_roster",
+            "provider_record_key": "M-199",
+        },
+        epistemic_status=EpistemicStatus.FACT,
+        publication_status=PublicationStatus.PUBLISHED,
+        asserted_as_true=True,
+    )
+    party = Claim(
+        id=UUID("30000000-0000-0000-0000-000000000200"),
+        person_id=assembly_person.id,
+        proposition="국회회원의 소속 정당은 테스트정당이다.",
+        subject="국회회원",
+        predicate="ASSEMBLY_PARTY",
+        object_text="테스트정당",
+        qualifiers={
+            "source_contract": "assembly_member_roster",
+            "source_scope": "current_member_roster",
+            "field_name": "party",
+        },
+        epistemic_status=EpistemicStatus.FACT,
+        publication_status=PublicationStatus.PUBLISHED,
+        asserted_as_true=True,
+    )
+    historical = Claim(
+        id=UUID("30000000-0000-0000-0000-000000000201"),
+        person_id=assembly_person.id,
+        proposition="국회회원은 과거 위원회 보좌관으로 근무했다.",
+        subject="국회회원",
+        predicate="WORKED_AS",
+        object_text="위원회 보좌관",
+        qualifiers={"date": "2020-01-02"},
+        epistemic_status=EpistemicStatus.FACT,
+        publication_status=PublicationStatus.PUBLISHED,
+        asserted_as_true=True,
+    )
+    profile = build_profile_projection(
+        assembly_person,
+        [roster_role, party, historical],
+        {},
+        [],
+        [],
+    )
+
+    assert [item["id"] for item in profile["sections"]] == [
+        "overview",
+        "current_role",
+        "career_timeline",
+        "legislative_activity",
+        "limitations",
+    ]
+    assert section(profile, "career_timeline")["entries"][0]["claim_id"] == str(historical.id)
+    assert all(
+        item["id"] not in {"appointment_logic", "hearing_questions", "forecast", "stakeholders"}
+        for item in profile["sections"]
+    )
+    assert "국회회원은 국회의원 명부에 등재되어 있다." not in str(
+        section(profile, "career_timeline")
+    )

@@ -18,6 +18,10 @@ from packages.connectors.open_assembly_bills import (
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
+from packages.verification.assembly_legislative_activity import (
+    AssemblyLegislativeActivityError,
+    AssemblyLegislativeActivityPublisher,
+)
 from packages.verification.identity import IdentityCandidate
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
@@ -633,7 +637,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--name")
     parser.add_argument("--member-code")
-    parser.add_argument("--age", required=True, type=int)
+    parser.add_argument("--age", type=int)
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--max-pages", type=int, default=100)
     parser.add_argument(
@@ -646,6 +650,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Resume bill enumeration from the last committed page.",
     )
+    parser.add_argument(
+        "--publish-claims",
+        action="store_true",
+        help="Publish exact Claims from the latest successful bill-observation manifest.",
+    )
     parser.add_argument("--database-url")
     return parser
 
@@ -653,6 +662,34 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.publish_claims:
+        if any((args.enumerate_bills, args.resume, args.name, args.member_code, args.age is not None)):
+            parser.error("--publish-claims is a separate operation and accepts no fetch flags")
+        try:
+            publication_result = AssemblyLegislativeActivityPublisher(
+                SqlAlchemyRepository(args.database_url)
+            ).publish_latest_successful()
+        except (AssemblyLegislativeActivityError, PolicyDenied, ValueError) as exc:
+            parser.error(str(exc))
+        print(
+            json.dumps(
+                {
+                    "run_id": str(publication_result.run_id),
+                    "status": "SUCCESS",
+                    "observations_considered": publication_result.observations_considered,
+                    "observations_published": publication_result.observations_published,
+                    "published_claims": publication_result.published_claims,
+                    "unchanged_claims": publication_result.unchanged_claims,
+                    "unresolved_member_codes": list(publication_result.unresolved_member_codes),
+                },
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+    if args.age is None:
+        parser.error("--age is required for bill enumeration or review staging")
     connector = OpenAssemblyBillConnector(
         assembly_age=args.age,
         page_index=1,

@@ -93,7 +93,13 @@ The feeder does not:
 - infer faction, alliance, influence or responsibility from co-proposal.
 
 Canonical publication still requires the existing Person/Claim/ClaimEvidence/Source/SourcePolicy
-path and an accepted exact member identity.
+path and an accepted exact member identity. The source-specific
+`AssemblyLegislativeActivityPublisher` is the bounded publication seam: it consumes only the
+latest successful full-enumeration checkpoint, resolves `MONA_CD` through the current-roster
+observation link, and emits one immutable descriptive Claim per exact person/bill/role. A
+missing or ambiguous crosswalk produces no Claim. Changed bill observation hashes conflict with
+the current logical Claim rather than overwriting it. The public renderer reads those Claims and
+their evidence only; it never reads `FeederObservation.normalized`.
 
 ## Run and resume
 
@@ -125,4 +131,12 @@ civic-stage-legislative --age 22 --page-size 1000 --resume \
 ```
 
 These commands collect metadata into the batch foundation. They do not scrape detail pages or
-publish profile content.
+publish profile content. After a successful complete run, the separate publication operation is
+explicit and does not fetch the provider again:
+
+```bash
+civic-stage-legislative --publish-claims \
+  --database-url sqlite:///civic-intel.db
+```
+
+This operation is not a scheduler and does not replace the source-run/checkpoint gate.

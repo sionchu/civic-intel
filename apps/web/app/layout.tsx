@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     template: "%s — Civic Intel",
   },
   description: "공개 기록과 근거를 따라가는 Civic Intel Evidence Directory",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

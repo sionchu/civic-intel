@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import ClassVar
 from urllib.parse import parse_qs, urlencode, urlparse
-from uuid import UUID
 
 import httpx
 
+from packages.connectors.open_assembly import POLICY_ID as ASSEMBLY_SOURCE_POLICY_ID
 from packages.domain.contracts import SourcePolicy
 from packages.domain.enums import SourceCollectionMode
 
@@ -57,7 +57,9 @@ class AssemblyBillRecord:
         return None
 
 
-POLICY_ID = UUID("11000000-0000-0000-0000-000000000002")
+# Both Assembly API lanes share the host-level SourcePolicy. The endpoint and source contract
+# remain distinct in Source/SourceSnapshot/FeederObservation metadata.
+POLICY_ID = ASSEMBLY_SOURCE_POLICY_ID
 
 
 def national_assembly_bill_policy() -> SourcePolicy:

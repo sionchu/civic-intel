@@ -149,10 +149,10 @@ def test_successful_roster_materializes_and_reaches_public_evidence_directory(
         detail = client.get(f"/people/{materialized.person_id}")
         assert detail.status_code == 200
         payload = detail.json()
-        timeline = next(
-            section for section in payload["profile"]["sections"] if section["id"] == "career_timeline"
+        current_role = next(
+            section for section in payload["profile"]["sections"] if section["id"] == "current_role"
         )
-        entry = next(item for item in timeline["entries"] if item["kind"] == "CLAIM")
+        entry = next(item for item in current_role["entries"] if item["kind"] == "CLAIM")
         assert entry["details"]["predicate"] == "HELD_ROLE"
         assert entry["evidence"][0]["feeder_observation_id"] == str(
             result.enumeration.observation_ids[0]
@@ -160,6 +160,10 @@ def test_successful_roster_materializes_and_reaches_public_evidence_directory(
         assert payload["claims"][0]["evidence"][0]["snapshot_id"] == str(
             evidence[0].snapshot_id
         )
+        career = next(
+            section for section in payload["profile"]["sections"] if section["id"] == "career_timeline"
+        )
+        assert career["entries"] == []
 
         source_id = payload["claims"][0]["evidence"][0]["source_id"]
         source = client.get(f"/sources/{source_id}")

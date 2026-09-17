@@ -59,6 +59,7 @@ implementation work.
 - [Codex entrypoint for the batch foundation](exec-plans/active/batch-ingestion-l3-codex.md)
 - [Completed NEC local-winner L3 plan](exec-plans/active/nec-local-winners-l3.md)
 - [Completed Assembly bill-participation L3 plan](exec-plans/active/assembly-bill-participation-l3.md)
+- [Assembly Member Profile Substance v1](exec-plans/active/assembly-member-profile-substance-v1.md)
 - [Completed NEC local-candidate L3 plan](exec-plans/active/nec-local-candidates-l3.md)
 - [Completed ALIO public-institution executives L3 plan](exec-plans/active/alio-public-institution-executives-l3.md)
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)

@@ -104,15 +104,26 @@ def test_base_profile_publishes_atomic_claims_and_projects_evidence(
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{person_id}").json()
         profile = payload["profile"]
-        section = next(item for item in profile["sections"] if item["id"] == "assembly_base_profile")
-        assert section["status"] == "AVAILABLE"
-        assert [entry["details"]["field_name"] for entry in section["entries"]] == [
+        assert profile["profile_kind"] == "ASSEMBLY_MEMBER"
+        assert [item["id"] for item in profile["sections"]] == [
+            "overview",
+            "current_role",
+            "career_timeline",
+            "legislative_activity",
+            "limitations",
+        ]
+        overview = next(item for item in profile["sections"] if item["id"] == "overview")
+        assert overview["status"] == "AVAILABLE"
+        assert [entry["details"]["field_name"] for entry in overview["entries"]] == [
             "party",
             "district",
-            "committees",
             "reelection",
         ]
-        assert all(entry["evidence"][0]["feeder_observation_id"] for entry in section["entries"])
+        current_role = next(item for item in profile["sections"] if item["id"] == "current_role")
+        assert current_role["status"] == "AVAILABLE"
+        assert current_role["entries"][0]["details"]["predicate"] == "HELD_ROLE"
+        assert current_role["entries"][1]["details"]["field_name"] == "committees"
+        assert all(entry["evidence"][0]["feeder_observation_id"] for entry in overview["entries"])
         assert "normalized" not in str(payload)
         assert "TEL_NO" not in str(payload)
         assert "E_MAIL" not in str(payload)
@@ -163,13 +174,16 @@ def test_base_profile_preserves_missingness_without_inference(tmp_path: Path) ->
     }
     person = repository.public_people()[0]
     with TestClient(create_app(repository)) as client:
-        section = next(
+        profile = client.get(f"/people/{person.id}").json()["profile"]
+        overview = next(
             item
-            for item in client.get(f"/people/{person.id}").json()["profile"]["sections"]
-            if item["id"] == "assembly_base_profile"
+            for item in profile["sections"]
+            if item["id"] == "overview"
         )
-    assert section["status"] == "PARTIAL"
-    assert [entry["details"]["field_name"] for entry in section["entries"]] == ["district"]
+    assert overview["status"] == "PARTIAL"
+    assert [entry["details"]["field_name"] for entry in overview["entries"]] == ["district"]
+    current_role = next(item for item in profile["sections"] if item["id"] == "current_role")
+    assert current_role["status"] == "PARTIAL"
     with TestClient(create_app(repository)) as client:
         discovery = client.get("/people").json()[0]["discovery"]
     assert discovery["facets"]["party"] is None
