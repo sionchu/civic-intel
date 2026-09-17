@@ -1,6 +1,6 @@
 # Civic Intel Portrait Pilot v0
 
-Status: implementation complete; local production artifact verified; awaiting commit/CI closure
+Status: complete; CI Verify passed (35192739443)
 
 ## Objective and boundary
 
@@ -84,6 +84,11 @@ this plan.
   `portrait-detail-desktop-1280x900.png`, `portrait-detail-mobile-390x844.png`,
   `portrait-home-desktop-1280x900.png`, `portrait-home-mobile-390x844.png` and
   `portrait-people-desktop-1280x900.png`.
+- Commit `73d5ec8a4db2537bccbeb6201bfb3ab09f62ac37` is on `master`. GitHub Actions [Verify run
+  35192739443](https://github.com/sionchu/civic-intel/actions/runs/35192739443) passed in `2m37s`,
+  including canonical verification, Alembic round trip, PostgreSQL migration/load/API,
+  PostgreSQL backup/restore, deployment-artifact checks and the installed sync-entrypoint
+  regression.
 
 ## Completion gate
 

@@ -1627,5 +1627,6 @@ an image until both rights and identity gates close.
 
 ## Next concrete action
 
-Review the final diff, commit/push Portrait Pilot v0 and wait for CI Verify before closing the plan;
-do not deploy staging.
+Portrait Pilot v0 is closed: commit `73d5ec8a4db2537bccbeb6201bfb3ab09f62ac37` is on `master` and
+GitHub Actions Verify run `35192739443` passed. Keep staging undeployed until a separate Web-only
+deployment approval is granted; do not expand this pilot into bulk portrait acquisition.
