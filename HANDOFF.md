@@ -1676,8 +1676,9 @@ keeping the L1 reviewed-Claim path and its coverage limits unchanged.
   feeder was performed.
 - Fixture-backed activation tests passed (`8 passed`); the full Python suite exited `0` with the
   existing PostgreSQL-only skip. Ruff, mypy, Golden quality, web lint/typecheck/UI tests (`11
-  passed`), standalone production build and standalone contract check passed. Final commit/CI
-  evidence is recorded after publication.
+  passed`), standalone production build and standalone contract check passed. Commit
+  `2a34791bebb2c76830bb197d61315792d6f820bf` is on `master`, and GitHub Actions Verify run
+  `35245137821` passed, including PostgreSQL and container checks.
 
 ## Next concrete action
 

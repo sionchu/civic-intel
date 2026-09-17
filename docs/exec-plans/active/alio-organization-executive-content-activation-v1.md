@@ -121,7 +121,8 @@ Add a directory link without creating a parallel organization model or page abst
   check passed. The build included `/organizations` and `/organizations/[id]`; no schema,
   dependency or Railway/staging operation was performed.
 - Governing source/organization documents, INDEX and HANDOFF were updated minimally. `git
-  diff --check` passed. The final commit and CI result are added after push.
+  diff --check` passed. Commit `2a34791bebb2c76830bb197d61315792d6f820bf` is on `master`;
+  GitHub Actions Verify run `35245137821` passed.
 
 The closure records a source-specific, operator-run Organization content lane. The next action is
 one reviewed cross-lane Person-linking path using exact non-name identity evidence; do not infer
