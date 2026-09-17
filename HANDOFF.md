@@ -1572,3 +1572,35 @@ surface in that operation.
   `Profile not found`. Console error/warning logs and hydration/framework overlays were empty.
   Home, People and Person screenshots were captured inline during the run. No API, DB, schema,
   dependency, Railway or staging change occurred.
+
+## Current checkpoint — Visual System v2 staging closure (2026-09-17)
+
+- The earlier pre-deployment Visual System v2 next action is superseded by this closure. The
+  separately approved existing-service Web deployment completed from exact code revision
+  `4e7477d242ef2035c576e3085d4eb73956c06ceb`; Railway Web deployment
+  `ea8f2508-5c25-4138-9cbf-1369a080a5e8` reached `SUCCESS` on the existing staging target.
+- API deployment `d6f246c2-873f-4203-9f61-025b02dc484a` and PostgreSQL deployment
+  `172ec443-e3cc-44bb-a5c1-195f54f86824` remained unchanged and private. No service, domain,
+  resource, plan, configuration or variable was added or changed.
+- Live staging browser verification covered `/`, `/people`, both same-name `박지원` Person routes
+  and an unknown Person route at desktop `1440x900` and mobile `390x844`. The directory rendered
+  all `299` People; `박지원=2`; the exact facet checks returned `국민의힘=109`,
+  `강원 동해시태백시삼척시정선군=1`, `법제사법위원회=7`, `초선=137`, and
+  `더불어민주당 + 초선=71`; a nonexistent name returned zero with
+  `검색 결과가 없습니다.`. Same-name records retained separate canonical Person IDs.
+- Representative Person reads preserved Base Profile → Claim → Evidence → Source provenance and
+  exposed no raw normalized/contact payload. Unknown Person remained `Profile not found`, distinct
+  from directory no-match. At `390x844`, `innerWidth=390` and document/body `scrollWidth=375`;
+  no horizontal overflow, hydration/framework overlay or console warning/error was observed.
+  Keyboard focus visibly reached the skip link with a `3px` outline.
+- The staged Home/People presentation showed the v2 content-first visual system without the old
+  dark decorated hero, gradient/ring/dot/cross treatment or floating signal strip. `/favicon.ico`
+  still returns `404`; this is non-blocking P2 polish and does not affect milestone acceptance.
+- Visual System v2 is now `DEPLOYED_STAGING — PASS` and the milestone is closed.
+
+## Next concrete action
+
+Start the bounded Portrait Source Gate pilot before any portrait ingestion. Review a tiny sample
+against the official Assembly portrait source and Wikimedia Commons file-level licensing,
+attribution and revision requirements; keep the work read-only and do not bind, store or publish
+an image until both rights and identity gates close.
