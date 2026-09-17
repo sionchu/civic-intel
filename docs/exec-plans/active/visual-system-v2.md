@@ -129,3 +129,11 @@ verification passes, the final diff is clean-v0 reviewed, and CI Verify passes a
   skipped test observed. `git diff --check` passed. [GitHub Actions Verify run 35129642244](https://github.com/sionchu/civic-intel/actions/runs/35129642244)
   passed all jobs for `0e5fcba561d5fdc87a5aba33bd8bd4e168da83a9`. No API, database, schema, dependency, feeder,
   Railway or staging change was made. The final responsive browser evidence is now closed.
+- Final closure was re-run once on the current remote documentation successor
+  `547d905e7aa5abeaa68263d4f084d7d5a4afbafa` with a Codex in-app browser Playwright viewport of
+  exactly `390x844`: `/`, `/people`, representative Person detail and unknown Person all stayed
+  within the viewport; 299 People, `박지원=2`, no-match, facet results `100/1/75/60/25`, visible
+  skip-link focus, Base Profile/Claim/Evidence/Source provenance, no raw normalized/contact data,
+  no console errors/warnings and no hydration/framework overlay were observed. Inline screenshots
+  were captured for the three primary routes. This was evidence-only; no application, API, DB,
+  schema, dependency, Railway or staging change occurred.

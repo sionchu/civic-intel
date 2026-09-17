@@ -1551,6 +1551,24 @@ sync.
 
 ## Next concrete action
 
-Obtain separate approval before deploying commit `e6cad01a42249a26c36a7a130eba3451d2b54c7b` to the
-existing staging Web service; keep API/PostgreSQL unchanged and do not begin a new feeder or
-product surface in that operation.
+Obtain separate approval before deploying the current Visual System v2 code to the existing
+staging Web service; keep API/PostgreSQL unchanged and do not begin a new feeder or product
+surface in that operation.
+
+## Final mobile browser evidence closure — 2026-09-17
+
+- Revalidated the current remote head `547d905e7aa5abeaa68263d4f084d7d5a4afbafa` (the expected
+  `e6cad01a42249a26c36a7a130eba3451d2b54c7b` is its documentation-only predecessor) without
+  changing application code.
+- A Codex in-app browser using the Playwright viewport capability ran one exact `390x844` smoke
+  against the standalone production artifact for `/`, `/people`, representative Person detail,
+  and the unknown-Person state. Home and People had no horizontal overflow; People showed 299
+  rows, `박지원` remained two canonical profiles, no-match remained distinct, and party/district/
+  committee/reelection plus a valid combined facet returned `100/1/75/60/25` rows. Long Korean
+  values stayed within the row layout, initials fallback rendered, and the four controls remained
+  inside the viewport.
+- Skip-link focus was visible by keyboard, the Person shell/Base Profile/Claim/Evidence/Source
+  trace remained intact, raw normalized/contact fields were absent, and unknown Person rendered
+  `Profile not found`. Console error/warning logs and hydration/framework overlays were empty.
+  Home, People and Person screenshots were captured inline during the run. No API, DB, schema,
+  dependency, Railway or staging change occurred.
