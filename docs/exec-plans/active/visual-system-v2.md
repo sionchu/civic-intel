@@ -1,6 +1,6 @@
 # Civic Intel Visual System v2
 
-Status: implementation complete; CI and responsive browser smoke verified
+Status: DEPLOYED_STAGING — PASS
 
 ## Objective
 
@@ -9,7 +9,8 @@ evidence-centric directory. Preserve the current published People read model, fi
 separation, error states, accessibility behavior and Person evidence dossier.
 
 This is a web-only milestone. It does not add a feeder, API/database contract, schema, migration,
-portrait source, search service, dependency, admin surface or staging deployment.
+portrait source, search service, dependency, admin surface or deployment machinery. A separately
+approved Web-only staging deployment closure is recorded below.
 
 ## Baseline
 
@@ -137,3 +138,28 @@ verification passes, the final diff is clean-v0 reviewed, and CI Verify passes a
   no console errors/warnings and no hydration/framework overlay were observed. Inline screenshots
   were captured for the three primary routes. This was evidence-only; no application, API, DB,
   schema, dependency, Railway or staging change occurred.
+
+## Staging deployment closure — 2026-09-17
+
+- The separately approved Web-only staging deployment completed successfully from exact code
+  revision `4e7477d242ef2035c576e3085d4eb73956c06ceb`. Railway Web deployment
+  `ea8f2508-5c25-4138-9cbf-1369a080a5e8` reached `SUCCESS` on the existing public staging domain.
+  API deployment `d6f246c2-873f-4203-9f61-025b02dc484a` and PostgreSQL deployment
+  `172ec443-e3cc-44bb-a5c1-195f54f86824` remained unchanged and private. No service, domain,
+  resource, plan, configuration or variable was added or changed.
+- Actual staging browser checks exercised `/`, `/people`, both same-name `박지원` profiles and an
+  unknown Person route at desktop `1440x900` and mobile `390x844`. The directory rendered all
+  `299` People; `박지원=2`; the exact facet checks returned `국민의힘=109`,
+  `강원 동해시태백시삼척시정선군=1`, `법제사법위원회=7`, `초선=137`, and
+  `더불어민주당 + 초선=71`; a nonexistent name returned zero with
+  `검색 결과가 없습니다.`. The two same-name rows retained separate canonical Person IDs.
+- Representative Person reads preserved Base Profile → Claim → Evidence → Source provenance and
+  exposed no raw normalized/contact payload. Unknown Person remained `Profile not found`, distinct
+  from directory no-match. Mobile document/body `scrollWidth` stayed `375` at `innerWidth=390`;
+  no horizontal overflow, hydration/framework overlay or console warning/error was observed, and
+  keyboard focus visibly reached the skip link with a `3px` outline.
+- The staged Home/People presentation showed the v2 content-first visual system and no longer
+  rendered the previous dark decorated hero, gradient/ring/dot/cross treatment or floating signal
+  strip. `/favicon.ico` still returns `404`; this is recorded as non-blocking P2 polish and does
+  not affect the milestone acceptance criteria.
+- Visual System v2 is `DEPLOYED_STAGING — PASS`; this milestone is closed.
