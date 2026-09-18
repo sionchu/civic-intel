@@ -1,0 +1,18 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "HUMAN_REVIEWED",
+  "source": {
+    "committee_name": "과학기술정보방송통신위원회",
+    "ntt_id": "3078699",
+    "detail_url": "https://science.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078699&menuNo=2000030&pageIndex=1",
+    "title": "2026년도 국정감사계획서",
+    "published_date": "2026-09-15",
+    "atch_file_id": "7938f3a874d5441892124093d19da1df",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사계획서.pdf",
+    "rights_mark": "KOGL_TYPE_1",
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [],
+  "witness_rows_included": false
+}
