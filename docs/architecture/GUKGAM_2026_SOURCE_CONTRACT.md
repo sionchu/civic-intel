@@ -2,7 +2,7 @@
 
 ## Status
 
-`RECONNAISSANCE / DISCOVERY_ONLY`
+`RECONNAISSANCE / ONE CURRENT POST RIGHTS-REVIEWED`
 
 This document records the official-source shape observed during the first Gukgam 2026 release
 slice. It does **not** authorize a live feeder, attachment full-text storage, AI processing or
@@ -18,8 +18,37 @@ Observed official committee pages use `*.na.go.kr` hosts, including the shared c
 platform exposed through pages such as `science.na.go.kr`. Detailed records expose stable-looking
 `nttId` query parameters and may provide HWP/HWPX/PDF attachments.
 
-These are reconnaissance observations only. Exact 2026 attachment version/correction semantics
-must be pinned against a current committee plan before acquisition reaches L3.
+The first current source has now been pinned for the Science, ICT, Broadcasting and Communications
+Committee (과학기술정보방송통신위원회):
+
+```text
+post:
+https://science.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078699&menuNo=2000030&pageIndex=1
+
+nttId:
+3078699
+
+title:
+2026년도 국정감사계획서
+
+published:
+2026-09-15
+
+attachment family:
+atchFileId = 7938f3a874d5441892124093d19da1df
+fileSn=1 = 2026년도 국정감사계획서.hwp
+fileSn=2 = 2026년도 국정감사계획서.pdf
+```
+
+The public page exposes preview locators using `atchFileId + fileSn + viewType=CONTBODY`.
+The actual download control is JavaScript-driven (`downloadFile(...)`) and posts through the
+board form; there is no reviewed standalone GET download URL. A connector must preserve the
+provider attachment identifiers and must not invent a download URL.
+
+No separate institution-witness, general-witness or reference-person attachment is present on
+this exact post. Such material must be discovered as separate official records when published.
+
+Correction/replacement semantics across later posts remain an open gate before L3.
 
 ## Critical committee-identity rule
 
@@ -67,25 +96,37 @@ Attachment-level candidate:
 parent nttId + official attachment identifier/URL + filename
 ```
 
-The exact attachment identifier and correction/replacement semantics remain an open gate.
+For the reviewed Science Committee plan, the exact attachment identity is:
+
+```text
+parent nttId + atchFileId + fileSn
+```
+
+The preview path is a locator, not a permanent content identity. Correction/replacement semantics
+across later posts remain an open gate.
 
 ## Rights gate
 
 Do not generalize a reuse notice visible on one National Assembly page to every attachment.
 
-The exact current 2026 audit-plan/witness post and attachment must be reviewed before automated
-acquisition, storage, AI use, excerpt display or commercial reuse is enabled.
+The National Assembly copyright policy states that Assembly-owned works carrying the KOGL
+Type-1 mark may be reused with source attribution, including commercial use and modification.
+The exact reviewed Science Committee post visibly renders the `KOGL_Type1.gif` public-nuri mark.
 
-Until that source-specific review closes:
+For this v0 source contract:
 
 ```text
-collection_mode = DISCOVERY_ONLY
-automated full acquisition = disabled
-fulltext storage = disabled
-AI processing = disabled
-excerpt display = disabled
-commercial reuse = disabled unless the exact source license permits it
+official post/attachment metadata fetch = permitted
+normalized public-governance metadata storage = permitted
+raw/full attachment storage = disabled
+public excerpt display = disabled
+raw attachment republication = disabled
+source attribution = required
 ```
+
+This narrow decision applies to the reviewed post family and does not automatically license every
+National Assembly attachment. Each additional committee source family must preserve the visible
+license/rights state, and third-party rights/privacy restrictions still override the general mark.
 
 Browser reconnaissance may identify official URLs, post structure and attachment metadata without
 creating canonical facts.
@@ -104,12 +145,13 @@ A witness row remains source-scoped until the existing identity gate resolves it
 
 ## Next source task
 
-Review one **current 2026** committee plan/witness source end to end and pin:
+Finish the reviewed Science Committee plan structure and pin:
 
-1. official post identifier;
-2. attachment identifier and correction/version behavior;
-3. exact rights/reuse notice for the post and attachment;
-4. plan/witness row structure;
-5. coverage denominator/pagination.
+1. audit-schedule table headings and row semantics;
+2. audited-organization grouping/count semantics;
+3. whether witness/reference rows are embedded in the plan or always separate records;
+4. correction/replacement behavior across newer official posts;
+5. committee-list coverage denominator/pagination.
 
-Only then may the first source-specific Gukgam collector be activated.
+Then implement only the first source-specific metadata collector. Do not generalize to a universal
+committee scraper until a second committee proves the same contract.
