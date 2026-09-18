@@ -202,6 +202,15 @@ and staging smoke; that runtime capture is not a shipped/public product artifact
 `/organizations/{organization_id}/money`, consumes published annual organization Claims only and
 has no generic `/money` bypass; without a reviewed binding and those Claims it returns no result.
 
+The identity contract is source-lane specific. For Item 4, `apbaId` may resolve through
+`organization_id_for_alio_apba_id()` to the deterministic Organization identity used by that
+materialized executive corpus. That helper is not a global ALIO Organization registry resolver.
+For reviewed Item 12 publication, the operator supplies an existing canonical Organization ID and
+the importer proves the exact `institution_code`/`apbaId`, source institution name and
+Claim-to-Evidence-to-FeederObservation provenance before publication. An Item 12 reviewed binding
+therefore remains valid even when its canonical Organization ID differs from the Item 4 helper ID;
+the two lanes must not be joined by helper derivation or name matching.
+
 ## Reemployment disclosure
 
 ALIO item 7-1 is separate from the Government Public Ethics Committee employment review.

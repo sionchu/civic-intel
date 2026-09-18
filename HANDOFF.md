@@ -1856,3 +1856,29 @@ The full blocked evidence and reopen condition are in
 
 Review and correct the C0908 Organization identity acceptance contract against the existing
 explicit reviewed binding before any further staging execution.
+
+## Current checkpoint — C0908 Identity Acceptance Contract Fix v1 (2026-09-18)
+
+- The historical C0908 blocker was an acceptance mismatch: Item 4's deterministic
+  `organization_id_for_alio_apba_id("C0908")` is not the resolver for the explicit reviewed Item
+  12 Organization binding.
+- The new regression proves that the existing reviewed canonical Organization
+  `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` can publish the bounded 2024/2025 Item 12 pair with exact
+  `institution_code=C0908` and Claim → Evidence → SourceSnapshot → FeederObservation provenance
+  even when the Item 4 helper UUID differs. It also proves the helper-derived ID remains absent in
+  the Item 12-only fixture and its API routes remain 404.
+- Read-only public staging browser evidence showed the reviewed organization detail/Claims/MONEY
+  views, two C0908 annual Claims, ALIO source policy/provenance, 347 organizations and 299 People;
+  the helper route showed `Profile not found`. No raw normalized observation/contact fields were
+  rendered.
+- No importer, staging DB write, schema change, deployment or Railway resource change occurred in
+  this fix. Targeted ALIO tests passed: 46 passed.
+- `ALIO_ORGANIZATION_CONTENT_DEPLOYED_STAGING — PASS` is closed in
+  `docs/exec-plans/active/alio-organization-live-staging-publication-v1.md` and the dedicated
+  contract plan.
+
+## Next concrete action
+
+Select one reviewed cross-lane Person-linking packet from the already published ALIO executive
+corpus using exact non-name identity evidence; keep name-only linking prohibited and do not begin
+another feeder.

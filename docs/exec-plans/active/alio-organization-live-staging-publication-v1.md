@@ -1,9 +1,10 @@
 # Civic Intel — First Live Staging ALIO Organization Publication v1
 
-Status: BLOCKED — `ALIO_ORGANIZATION_CONTENT_DEPLOYED_STAGING — BLOCKED` (2026-09-18).
-The one approved live commit completed and the published staging counts are present, but
-closure is blocked by the required C0908 helper-ID API acceptance. The observed staging state
-was preserved; no rollback, reset, compensating write, second commit or deployment was run.
+Status: COMPLETE — `ALIO_ORGANIZATION_CONTENT_DEPLOYED_STAGING — PASS` (2026-09-18).
+The original post-publication acceptance was blocked by an incorrect C0908 helper-ID contract.
+That historical state was preserved and resolved through a source-lane-specific acceptance
+regression and read-only staging verification; no rollback, reset, compensating write, second
+commit or deployment was run.
 
 ## Objective and boundary
 
@@ -75,7 +76,7 @@ live commit used the existing `alio_public_institution_executives` source and
 - The existing reviewed C0908 binding
   `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` returned detail/claims/MONEY `200` with two Claims.
 
-## Blocking acceptance and diagnosis
+## Historical blocking acceptance and diagnosis
 
 The required helper calculation
 `organization_id_for_alio_apba_id("C0908")` returned
@@ -85,9 +86,30 @@ corpus contains `346` distinct `alio_apba_id` values and no C0908 item-4 Claim. 
 existing Item-12 Claims are attached to the explicit reviewed binding above, not to the
 helper-derived ID.
 
-This is a contract mismatch between the requested acceptance and the current canonical
+This was a contract mismatch between the requested acceptance and the current canonical
 reviewed-Organization identity path. It was not repaired ad hoc after publication. The live
-staging state remains intact for a separate identity-contract decision.
+staging state remained intact for the separate identity-contract decision.
+
+## Resolved acceptance
+
+The corrected acceptance uses the existing reviewed canonical binding, not the Item 4 helper
+identity:
+
+- reviewed Organization: `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11`;
+- public staging organization detail, Claims and MONEY views returned successfully;
+- two published C0908 annual Claims were visible for 2024 and 2025, with the exact `C0908`
+  institution qualifier and ALIO Item 12 Source/Evidence trace;
+- the public source card showed the ALIO source policy and permitted metadata/fulltext boundary;
+- the helper-derived C0908 route `3059f7f9-94d5-5e32-83e2-4b7aa37fee9a` remained `Profile not found`;
+- the public organization directory showed 347 records and the home directory showed 299 People;
+- raw normalized observation/contact fields were not rendered in the reviewed organization page;
+- no second Organization, Claim migration, importer run, database write, schema change or
+  deployment was performed for this fix.
+
+The acceptance contract is now closed as
+`ALIO_ORGANIZATION_CONTENT_DEPLOYED_STAGING — PASS`. The exact regression is in
+`tests/test_alio_item12_money.py` and proves that an explicit reviewed Organization UUID can
+publish the bounded Item 12 pair even when it differs from the Item 4 deterministic helper UUID.
 
 ## Cleanup and closure
 
@@ -96,7 +118,8 @@ staging state remains intact for a separate identity-contract decision.
 - Sandbox `6347251a-b116-4d60-b832-d818f497fbcc` was destroyed; final sandbox list was empty.
 - Railway deployment IDs, service topology, domain, volume/resource identity and plan remained
   unchanged. No API/Web deployment, migration, credential or permanent resource change occurred.
-- Because the post-commit C0908 acceptance failed, the required PASS marker is not emitted.
+- At the original checkpoint the post-commit C0908 acceptance failed, so the PASS marker was not
+  emitted then; the resolved acceptance above now supplies the marker without changing live data.
 
 ## Reopen condition
 
@@ -107,5 +130,6 @@ that contract is reviewed.
 
 ## Next concrete action
 
-Review and correct the C0908 Organization identity acceptance contract against the existing
-explicit reviewed binding before any further staging execution.
+Select one reviewed cross-lane Person-linking packet from the already published ALIO executive
+corpus using exact non-name identity evidence; keep name-only linking prohibited and do not begin
+another feeder.

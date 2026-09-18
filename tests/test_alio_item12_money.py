@@ -41,6 +41,7 @@ from packages.domain.db import (
 )
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import OrganizationClaimImportError, SqlAlchemyRepository
+from packages.rendering.alio_organization_content import organization_id_for_alio_apba_id
 from packages.rendering.money_projection import (
     build_alio_head_expense_claim,
     build_alio_head_expense_money,
@@ -1145,6 +1146,91 @@ def test_reviewed_claim_import_commit_uses_existing_claim_importer(
     evidence = [item for claim in claims for item in repository.evidence_for(claim.id)]
     assert len(evidence) == 2
     assert all(item.feeder_observation_id is not None for item in evidence)
+
+
+def test_item12_reviewed_binding_does_not_require_item4_deterministic_organization_id(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = seed_reviewed_import_repository(
+        tmp_path / "reviewed-import-explicit-binding.db"
+    )
+    reviewed_organization_id = UUID("60000000-0000-0000-0000-000000000012")
+    item4_helper_id = organization_id_for_alio_apba_id("C0908")
+    assert reviewed_organization_id != item4_helper_id
+    assert repository.organization(item4_helper_id) is None
+    insert_organization(repository, reviewed_organization_id, "테스트정보기관")
+
+    assert (
+        reviewed_claim_import_main(
+            [
+                "--organization-id",
+                str(reviewed_organization_id),
+                "--institution-code",
+                "C0908",
+                "--earlier-fiscal-year",
+                "2024",
+                "--later-fiscal-year",
+                "2025",
+                "--database-url",
+                database_url,
+                "--commit",
+            ]
+        )
+        == 0
+    )
+
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt["status"] == "COMMITTED"
+    claims = repository.claims(
+        organization_id=reviewed_organization_id,
+        published_only=True,
+        current_only=True,
+    )
+    assert len(claims) == 2
+    assert {claim.qualifiers["institution_code"] for claim in claims} == {"C0908"}
+
+    evidence_by_claim = {
+        claim.id: repository.evidence_for(claim.id) for claim in claims
+    }
+    assert all(len(items) == 1 for items in evidence_by_claim.values())
+    evidence_items = [items[0] for items in evidence_by_claim.values()]
+    observation_ids = [item.feeder_observation_id for item in evidence_items]
+    assert all(item is not None for item in observation_ids)
+    contexts = repository.feeder_observation_contexts(observation_ids)
+    for claim_id, evidence_items in evidence_by_claim.items():
+        evidence = evidence_items[0]
+        assert evidence.feeder_observation_id is not None
+        observation, snapshot, source, policy = contexts[evidence.feeder_observation_id]
+        assert evidence.claim_id == claim_id
+        assert evidence.source_id == source.id
+        assert evidence.snapshot_id == snapshot.id == observation.snapshot_id
+        assert snapshot.source_id == source.id
+        assert source.policy_id == policy.id
+        assert observation.normalized["institution_code"] == "C0908"
+
+    with TestClient(create_app(repository)) as client:
+        detail = client.get(f"/organizations/{reviewed_organization_id}")
+        claims_response = client.get(f"/organizations/{reviewed_organization_id}/claims")
+        money_response = client.get(
+            f"/organizations/{reviewed_organization_id}/money"
+            "?earlier_fiscal_year=2024&later_fiscal_year=2025"
+        )
+        assert detail.status_code == 200
+        assert claims_response.status_code == 200
+        assert money_response.status_code == 200
+        assert len(claims_response.json()) == 2
+        assert money_response.json()["availability"] == "AVAILABLE"
+
+        for path in (
+            f"/organizations/{item4_helper_id}",
+            f"/organizations/{item4_helper_id}/claims",
+            (
+                f"/organizations/{item4_helper_id}/money"
+                "?earlier_fiscal_year=2024&later_fiscal_year=2025"
+            ),
+        ):
+            assert client.get(path).status_code == 404
 
 
 def test_reviewed_claim_pair_rolls_back_when_second_write_fails(
