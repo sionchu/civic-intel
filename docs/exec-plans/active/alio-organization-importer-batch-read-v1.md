@@ -1,6 +1,6 @@
 # ALIO Organization Importer Batch-Read Fix v1
 
-Status: READY FOR STAGING DRY-RUN — local bounded-read fix and CI gate pending.
+Status: COMPLETE — ALIO_ORGANIZATION_IMPORTER_DRY_RUN — PASS (2026-09-18).
 
 ## Objective and boundary
 
@@ -84,15 +84,49 @@ out of scope. Even after a successful dry-run, stop before `--commit`.
 - Full local verification passed: `368 passed, 1 skipped, 4 warnings`; Ruff passed, mypy passed
   for `63` source files, Golden quality passed, Web lint/typecheck passed, all `11` Web UI tests
   passed, and the standalone production build passed.
-- No schema, dependency, API, Web, Railway or acquisition change was made. The staging gate has
-  not been rerun and no `--commit` was executed.
+- No schema, dependency, API, Web, Railway or acquisition change was made. The staging gate was
+  executed only after CI passed and no `--commit` was executed.
+
+## Staging no-commit gate
+
+Passed once after the code commit and GitHub Verify success.
+
+- Fresh logical backup/restore passed in one new private Sandbox before the importer gate. Dump
+  size was `1290509` bytes, SHA-256 was
+  `6b4c86132ae627354c82b527b56f5fa790fbc4987f585ed69f3837eee3643a9b`, dump duration was `20s`,
+  and loopback restore duration was `0s`. Restore checks matched schema `0006`, People `299`,
+  Organizations `1`, Claims `1496`, ClaimEvidence `1496`, subject-XOR violations `0`, item-4
+  observations `3799`, and C0908 item-12 `5` observations / `2` Claims.
+- The updated importer ran exactly once without `--commit` under the `180s` operational budget.
+  It exited `0` in `17s` and returned a redacted `DRY_RUN` receipt:
+  - source `alio_public_institution_executives`
+  - scope `item_4_current_all_institutions`
+  - run `e57f88d4-953b-4de5-bf1c-13fa4b3e43db`
+  - `observed_count=3798`
+  - `named_rows=3624`
+  - `masked_or_vacant_rows=174`
+  - `organizations=346`
+  - `claims=3970`
+  - `organizations_created=346`
+  - `organizations_reused=0`
+  - `claims_created=0`
+  - `claims_reused=0`
+- Post-run read-only checks remained schema `0006`, People `299`, Organizations `1`, Claims
+  `1496`, ClaimEvidence `1496`, item-4 observations `3799`, checkpoint count `1`, successful
+  item-4 run count `1`, and C0908 item-12 `5` observations / `2` Claims. No Organization Claim,
+  Person, Claim or ClaimEvidence write occurred.
+- Sandbox `bf3adb1f-eac7-4841-a3ca-401b613cdba2` in `us-west2` was destroyed by exact ID;
+  final Sandbox list was `[]`. No acquisition rerun, API/Web deployment, Railway topology
+  change or public acceptance was performed.
 
 ## Closure marker
 
 Use `ALIO_ORGANIZATION_IMPORTER_DRY_RUN — PASS` only after the code, CI, bounded staging
 dry-run receipt, zero-write count checks and Sandbox cleanup all pass.
 
+This plan satisfies that marker. The separate batch-write path remains unapproved and unrun.
+
 ## Next concrete action
 
-Run the targeted ALIO activation and batch-executive regression tests against the one-read
-implementation, then inspect the diff before full verification.
+Profile and remove the known per-Organization/per-Claim database round trips in
+`SqlAlchemyRepository.import_organization_claim_batch()` before any staging `--commit`.

@@ -1761,7 +1761,8 @@ Organization Claim publication.
   1 skipped, 4 warnings`, Ruff, mypy (`63` source files), Golden quality, Web lint/typecheck,
   Web UI (`11/11`) and standalone production build.
 - No schema, dependency, acquisition, API, Web or Railway change was made. The staging
-  importer dry-run and `--commit` remain unrun after the code fix.
+  importer was intentionally deferred until CI; its later no-commit PASS is recorded below, and
+  `--commit` was not executed.
 
 The active plan and exact query-shape contract are in
 `docs/exec-plans/active/alio-organization-importer-batch-read-v1.md`.
@@ -1770,3 +1771,27 @@ The active plan and exact query-shape contract are in
 
 Commit/push this bounded-read fix, require GitHub Verify success, then perform the fresh
 backup/restore and one `DRY_RUN`-only staging gate with a hard `180s` deadline.
+
+## Current checkpoint — ALIO Organization Importer Batch-Read Fix closure (2026-09-18)
+
+- Commit `40b27b17e2d4d75763eb70c2896d6797c4d91cc3` is on `origin/master`; GitHub Verify
+  `35309262908` passed. The local isolated worktree is clean and HEAD equals `origin/master`.
+- One fresh private Sandbox backup/restore passed: dump `1290509` bytes, SHA-256
+  `6b4c86132ae627354c82b527b56f5fa790fbc4987f585ed69f3837eee3643a9b`, schema `0006`, People
+  `299`, Organizations `1`, Claims `1496`, ClaimEvidence `1496`, subject-XOR `0`, item-4
+  observations `3799`, and C0908 `5/2`.
+- The updated importer ran once without `--commit` and returned `DRY_RUN` in `17s` (under the
+  `180s` budget): `observed_count=3798`, `named_rows=3624`, `masked_or_vacant_rows=174`,
+  `organizations=346`, `claims=3970`, `organizations_created=346`, `claims_created=0`, and
+  `claims_reused=0`; the run was `e57f88d4-953b-4de5-bf1c-13fa4b3e43db`.
+- Post-run counts and item-4 checkpoint/run state were unchanged. No Organization Claim,
+  Person, Claim or ClaimEvidence write occurred. Sandbox
+  `bf3adb1f-eac7-4841-a3ca-401b613cdba2` was destroyed and final `sandbox list` was empty.
+
+`ALIO_ORGANIZATION_IMPORTER_DRY_RUN — PASS` is now closed. Staging `--commit` remains prohibited
+until the separate batch-write path has its own bounded regression and operational proof.
+
+## Next concrete action
+
+Profile and remove the known per-Organization/per-Claim database round trips in
+`SqlAlchemyRepository.import_organization_claim_batch()` before any staging `--commit`.
