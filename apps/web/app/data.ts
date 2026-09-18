@@ -2,6 +2,7 @@ import type {
   ApiErrorCode,
   ApiResult,
   MoneyProjection,
+  OntologyGraph,
   Organization,
   OrganizationSummary,
   Person,
@@ -47,6 +48,9 @@ async function getJson<T>(path: string): Promise<ApiResult<T>> {
 
 export function getPeople(): Promise<ApiResult<Person[]>> { return getJson("/people"); }
 export function getPerson(id: string): Promise<ApiResult<Person>> { return getJson(`/people/${id}`); }
+export function getPersonOntology(id: string): Promise<ApiResult<OntologyGraph>> {
+  return getJson(`/ontology/people/${id}`);
+}
 export function getOrganization(id: string): Promise<ApiResult<Organization>> {
   return getJson(`/organizations/${id}`);
 }

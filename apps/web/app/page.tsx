@@ -42,6 +42,19 @@ export default async function HomePage() {
 
       {peopleResult.state === "error" && <div className="home-read-state"><ReadState error={peopleResult.error} /></div>}
 
+      <section className="event-invite" aria-labelledby="gukgam-invite-title">
+        <div className="event-invite-copy">
+          <span className="eyebrow">Event surface / 2026</span>
+          <h2 id="gukgam-invite-title">국감 2026</h2>
+          <p>국정감사에서 만나는 인물과 기관을 기존 공개 기록, 공식 연결, Evidence와 함께 살펴보는 Civic Intel의 첫 이벤트 탐색 화면입니다.</p>
+        </div>
+        <div className="event-invite-meta">
+          <span className="micro-label">Evidence first</span>
+          <p>위원회 계획·피감기관·증인·참고인 자료는 출처 정책을 통과한 공식 기록만 순차 반영합니다.</p>
+          <Link className="inline-action" href="/gukgam/2026">국감 2026 탐색 <span aria-hidden="true">↗</span></Link>
+        </div>
+      </section>
+
       <section className="directory-invite" aria-labelledby="directory-invite-title">
         <div>
           <p className="eyebrow">People / current public directory</p>
