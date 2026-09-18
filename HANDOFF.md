@@ -1726,3 +1726,26 @@ Restore private reachability from the approved acquisition boundary to the offic
 ## Next concrete action
 
 Make the private key corresponding to the already-registered `dev.new` Railway key available to the approved local runner, then repeat fresh backup/restore before any tunnel acquisition or ALIO write.
+
+## Current checkpoint — ALIO Railway Sandbox Recovery v1 (2026-09-18)
+
+- Aside and the bounded ALIO connector reached the official item-4 source and confirmed the
+  provider-declared `355` institution directory rows.
+- Exactly one private Railway Sandbox was used for the approved rehearsal. The fresh logical
+  backup/restore passed, and a fresh normal enumeration completed with `355/355` checkpoint
+  coverage, run `e57f88d4-953b-4de5-bf1c-13fa4b3e43db`, and `3799` item-4 observations.
+- The existing no-commit Organization Claim importer did not produce a `DRY_RUN` receipt after
+  about `2408s` of sequential database socket polling. It was terminated inside the disposable
+  Sandbox; no `--commit`, Organization creation, Person write or public ALIO acceptance occurred.
+- Read-only post-checks remained schema `0006`, People `299`, Organizations `1`, Claims `1496`,
+  ClaimEvidence `1496`, and C0908 item-12 `5` observations / `2` Claims. The Sandbox was
+  destroyed and final `sandbox list` was empty.
+
+The full evidence and reopen condition are in
+`docs/exec-plans/active/alio-railway-sandbox-recovery-v1.md`.
+
+## Next concrete action
+
+Profile and fix the existing ALIO Organization Claim dry-run's sequential database access in a
+local/disposable test first, then repeat only the no-commit receipt gate before any staging
+Organization Claim publication.
