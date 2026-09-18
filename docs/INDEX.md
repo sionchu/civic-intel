@@ -8,6 +8,7 @@ implementation work.
 
 - [Architecture](../ARCHITECTURE.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
+- [Governance ontology projection](architecture/GOVERNANCE_ONTOLOGY.md)
 - [Career facets](architecture/CAREER_FACETS.md)
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
@@ -69,6 +70,7 @@ implementation work.
 - [C0908 identity acceptance contract v1](exec-plans/active/c0908-identity-acceptance-contract-v1.md)
 - [Reviewed cross-lane Kim Dong-cheol packet v1](exec-plans/active/alio-assembly-cross-lane-kim-dongcheol-v1.md)
 - [Cross-lane identity candidate pipeline v0](exec-plans/active/cross-lane-identity-candidate-pipeline-v0.md)
+- [Gukgam 2026 Governance Ontology + Visual Explorer v0](exec-plans/active/gukgam-2026-governance-ontology-visual-explorer-v0.md)
 - [ALIO Local Acquisition Recovery v1](exec-plans/active/alio-local-acquisition-recovery-v1.md)
 - [ALIO Railway Sandbox Recovery v1](exec-plans/active/alio-railway-sandbox-recovery-v1.md)
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)
