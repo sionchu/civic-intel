@@ -90,6 +90,15 @@ Cross-lane identity cannot be resolved from:
 
 Those signals may be useful for discovery in other contexts but are not identity evidence.
 
+### Discovery-only candidate reduction
+
+An approved source-specific discovery stage may use exact canonical-name overlap to reduce a
+bounded research universe. That overlap remains discovery metadata only: it must be passed to the
+existing cross-lane resolver with no bridge evidence, producing `REVIEW / CONTEXT_REVIEW`. The
+stage must not score, fuzz, resolve, merge, materialize or persist a canonical identity. Only a
+later reviewed official bridge can move a reduced candidate into the existing research-resolution
+path.
+
 ## Decision-class boundary
 
 Identity resolution uses explicit branch classes, not a numeric score or threshold.

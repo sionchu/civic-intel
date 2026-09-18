@@ -1922,3 +1922,32 @@ The active plan is `docs/exec-plans/active/alio-assembly-cross-lane-kim-dongcheo
 Perform only the read-only canonical Person collision/materialization preflight for 김동철: search
 existing People, inspect same-name and birth-date conflicts, and choose among `LINK_EXISTING`,
 `REVIEWED_ONBOARD` or `KEEP_RESEARCH_ONLY`; do not write.
+
+## Current checkpoint — Cross-Lane Identity Candidate Pipeline v0 (2026-09-19)
+
+- The Kim Dong-cheol-specific materialization preflight was not started. The new bounded
+  source-specific pipeline reduces published ALIO item-4 executive Claims against current public
+  People using one Organization read, one bounded Organization Claim/Evidence context read and
+  one public People read. It does not load raw normalized observations or persist candidates.
+- `packages/verification/alio_person_candidates.py` defines immutable non-persistent candidate and
+  report contracts. Exact Unicode-preserving canonical-name overlap is discovery-only. Every pair
+  calls `resolve_cross_lane_identity()` with empty bridge evidence and remains
+  `REVIEW/CONTEXT_REVIEW`; unexpected resolution fails closed.
+- `workers/alio_cross_lane_identity_candidates.py` is read-only and has no `--commit` option. The
+  JSON receipt contains safe counts and candidate provenance IDs only; no credentials, raw payload,
+  contact data or source fulltext is emitted.
+- Focused candidate/resolver/profile tests pass, including distinct Claim-key de-duplication,
+  masked/vacant exclusion, non-ALIO exclusion, no-write command behavior, deterministic JSON and
+  fail-closed unexpected resolution. Full local verification passed: pytest `386 passed, 1 skipped`,
+  Ruff, mypy, Golden quality, Web lint/typecheck/UI `11/11`, production build and standalone
+  contract check. Markdown relative links checked `70`.
+- A disposable migrated SQLite CLI smoke returned `REVIEW_ONLY` with zero Claims, People and
+  candidate pairs. No staging read or write has occurred yet; CI and the approved staging
+  read-only proof remain pending.
+
+The active plan is `docs/exec-plans/active/cross-lane-identity-candidate-pipeline-v0.md`.
+
+## Next concrete action
+
+Commit and push this bounded implementation, require GitHub Verify success, then run the candidate
+command once through the approved staging read-only boundary and record safe before/after counts.
