@@ -56,6 +56,20 @@ The first executable slice projects only relation predicates already supported b
 Person Claims. Later source slices may add more of the vocabulary only after their Claim/Evidence
 contracts exist.
 
+A nomination or designation event is not rewritten as `HELD_ROLE`. The v0 mapping omits
+`NOMINATED_AS` and `DESIGNATED_AS` until an exact event relation is modeled.
+
+## Public edge gate
+
+A v0 public ontology edge is created only from a current `PUBLISHED` Claim whose epistemic
+status is `FACT` or attributable `CLAIM`, with non-empty ClaimEvidence and Source provenance.
+
+`UNKNOWN`, `ENTITY_UNRESOLVED`, `INFERENCE` and `HYPOTHESIS` remain visible through their
+normal evidence/profile surfaces when eligible, but they do not become public connection edges.
+
+If supporting and refuting ClaimEvidence are both present, the projection retains
+`source_conflict=true`; the graph must not hide that disagreement.
+
 ## Identity and relationship rules
 
 - Name overlap may reduce a research candidate universe but never creates an ontology identity edge.
@@ -84,6 +98,11 @@ Search
 ```
 
 The graph is supplemental. Equivalent textual relation lists remain available for accessibility.
+
+The v0 Person route currently uses Claim-scoped noncanonical targets. Therefore cross-Person path
+search is deliberately deferred: two Claim-scoped nodes with the same label must not be merged by
+string equality. Path search becomes eligible only after the corresponding shared institution or
+event has an exact canonical/source-scoped binding contract.
 
 ## Storage and query boundary
 

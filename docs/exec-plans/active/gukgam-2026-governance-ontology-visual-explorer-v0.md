@@ -32,18 +32,24 @@ Target beta date: 2026-09-29.
 
 ### Official Gukgam source reconnaissance
 
-The National Assembly's official audit pages are the target source family for committee plans,
-audited organizations and witness/reference-person attachments. The site exposes committee/year
-search over the 국정감사/국정감사계획서 area; source-specific locator and attachment semantics are
-being verified against a current 2026 committee plan before acquisition code is authorized.
+The National Assembly's official committee pages are the source family for committee plans,
+audited organizations and witness/reference-person attachments.
 
-Current public reporting confirms that committee plans are being adopted and published in
-September; the canonical collector will rely on the Assembly source itself rather than reporting
-for dates, target organizations or witness rows.
+The source contract is recorded in
+`docs/architecture/GUKGAM_2026_SOURCE_CONTRACT.md`.
+
+Current gate:
+
+```text
+RECONNAISSANCE / DISCOVERY_ONLY
+```
+
+The exact current 2026 post/attachment rights, stable attachment ID and correction semantics still
+need one end-to-end source review before live acquisition is authorized.
 
 ### Ontology projection
 
-Branch `work/gukgam-ontology-slice0` now contains:
+Branch `work/gukgam-ontology-slice0` contains:
 
 - `packages/rendering/governance_ontology.py`;
 - public `GET /ontology/people/{person_id}`;
@@ -53,19 +59,33 @@ Branch `work/gukgam-ontology-slice0` now contains:
 The first projection creates only Claim-scoped target nodes for already-supported Person relation
 predicates. It does not invent canonical Organization/School/Company identities from text.
 
+Independent review tightened the semantics:
+
+- `NOMINATED_AS` / `DESIGNATED_AS` are not rewritten as `HELD_ROLE`;
+- `UNKNOWN`, `ENTITY_UNRESOLVED`, `INFERENCE`, `HYPOTHESIS` do not become connection edges;
+- SUPPORT+REFUTE ClaimEvidence is preserved as `source_conflict=true`;
+- cross-Person path search is deferred until shared institution/event identity can be bound without
+  label-based merging.
+
 ### Visual library gate
 
-Cytoscape.js is the preferred v0 renderer. Dependency addition is deferred until the lockfile can
-be updated through a normal npm execution boundary. Do not hand-edit the lockfile.
+Cytoscape.js remains the preferred v0 renderer. Dependency addition is deferred until real eligible
+graph data is ready for a public visual surface and the lockfile can be updated through a normal npm
+execution boundary. Do not hand-edit the lockfile.
 
 ## Verification
 
-PR #63 is the independent CI boundary for Slice 0. The implementation is not merge-ready until
-Verify succeeds and the final diff is reviewed for publication-gate bypass, raw-data exposure and
-ontology overreach.
+PR #63 is the independent CI boundary for Slice 0.
+
+Required closure:
+
+- full Verify succeeds after independent-review fixes;
+- final diff has no publication-gate bypass;
+- no raw evidence excerpt appears in ontology output;
+- no identity merge is introduced;
+- no schema, migration, dependency or deployment change.
 
 ## Next concrete action
 
-Finish the exact official Assembly plan locator/attachment contract for one 2026 committee, then
-use that evidence to implement the first source-specific Gukgam plan parser/enumerator while Slice
-0 CI runs.
+Close Slice 0 with Verify, then review one exact current 2026 committee audit-plan/witness
+post+attachment end to end and activate only that source-specific collection path.

@@ -5,7 +5,12 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from packages.domain.contracts import Claim, ClaimEvidence, Person
-from packages.domain.enums import IdentityStatus, PublicationStatus
+from packages.domain.enums import (
+    EpistemicStatus,
+    EvidenceStance,
+    IdentityStatus,
+    PublicationStatus,
+)
 
 
 class GovernanceOntologyError(ValueError):
@@ -42,6 +47,7 @@ class OntologyEdge:
     source_ids: tuple[UUID, ...]
     epistemic_status: str
     publication_status: str
+    source_conflict: bool
     valid_from: str | None
     valid_to: str | None
 
@@ -57,6 +63,7 @@ class OntologyEdge:
             "source_ids": [str(item) for item in self.source_ids],
             "epistemic_status": self.epistemic_status,
             "publication_status": self.publication_status,
+            "source_conflict": self.source_conflict,
             "valid_from": self.valid_from,
             "valid_to": self.valid_to,
         }
@@ -77,14 +84,12 @@ class OntologyGraph:
             "semantics": self.semantics,
             "limitations": [
                 "Only source-backed published relations explicitly mapped by the ontology projection are shown.",
-                "A displayed path or shared institution does not establish friendship, influence, or motive.",
+                "A displayed relation or shared institution does not establish friendship, influence, or motive.",
             ],
         }
 
 
 _RELATION_MAPPING: dict[str, tuple[str, str]] = {
-    "NOMINATED_AS": ("HELD_ROLE", "OFFICE"),
-    "DESIGNATED_AS": ("HELD_ROLE", "OFFICE"),
     "APPOINTED_AS": ("HELD_ROLE", "OFFICE"),
     "ELECTED_AS": ("HELD_ROLE", "OFFICE"),
     "CURRENT_OFFICE": ("HELD_ROLE", "OFFICE"),
@@ -139,6 +144,7 @@ def build_person_governance_ontology(
             if claim.person_id == person.id
             and claim.organization_id is None
             and claim.publication_status == PublicationStatus.PUBLISHED
+            and claim.epistemic_status in {EpistemicStatus.FACT, EpistemicStatus.CLAIM}
             and claim.superseded_at is None
             and claim.predicate in _RELATION_MAPPING
             and claim.object_text.strip()
@@ -167,6 +173,7 @@ def build_person_governance_ontology(
                 claim_ids=(claim.id,),
             )
         )
+        stances = {item.stance for item in evidence}
         edges.append(
             OntologyEdge(
                 id=f"edge:{claim.id}",
@@ -179,6 +186,7 @@ def build_person_governance_ontology(
                 source_ids=_ordered_unique(tuple(item.source_id for item in evidence)),
                 epistemic_status=claim.epistemic_status.value,
                 publication_status=claim.publication_status.value,
+                source_conflict={EvidenceStance.SUPPORT, EvidenceStance.REFUTE} <= stances,
                 valid_from=_iso(claim.valid_from),
                 valid_to=_iso(claim.valid_to),
             )
