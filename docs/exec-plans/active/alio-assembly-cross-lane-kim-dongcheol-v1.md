@@ -87,12 +87,16 @@ No canonical Person materialization, merge, supersession or staging operation fo
 - Full repository verification passes: `pytest` 376 passed, 1 skipped; Ruff; mypy; Golden quality;
   Web lint, typecheck, UI tests (11/11), production build and standalone contract check. Markdown
   relative-link validation checked 69 links, and `git diff --check` passed.
-- GitHub Verify and final commit/push parity are the remaining repository closure gates.
+- Commit `d59c34f2d04ed29aca2a7fe0127aacbf04a6b243` is on `origin/master`. GitHub Verify
+  `35365121796` passed in 2m51s, including canonical verification, Alembic round-trip,
+  PostgreSQL migration/load/API and backup/restore, deployment artifacts and installed sync
+  entrypoint checks. The isolated worktree was clean and HEAD matched `origin/master` before this
+  closure note.
 
 ## Closure marker
 
-Emit `REVIEWED_CROSS_LANE_PERSON_PACKET_KIM_DONGCHEOL — PASS` only after the source checks,
-negative controls, ProfileResearchTarget proof, full verification and GitHub Verify all pass.
+`REVIEWED_CROSS_LANE_PERSON_PACKET_KIM_DONGCHEOL — PASS` is closed: source checks, negative
+controls, ProfileResearchTarget proof, full verification and GitHub Verify all pass.
 
 ## Next concrete action
 

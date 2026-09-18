@@ -1906,13 +1906,19 @@ another feeder.
   Claim was written. No importer, staging write, feeder or production-code/schema change occurred.
 - Local verification passed: pytest `376 passed, 1 skipped`; Ruff; mypy; Golden quality; Web lint,
   typecheck, UI tests `11/11`, production build and standalone contract check. Markdown relative
-  links checked `69`; `git diff --check` passed. Commit/push and GitHub Verify are the remaining
-  closure gates.
+  links checked `69`; `git diff --check` passed.
+- Commit `d59c34f2d04ed29aca2a7fe0127aacbf04a6b243` was pushed to `origin/master`. GitHub Verify
+  `35365121796` passed in `2m51s`, including canonical verification, Alembic round-trip,
+  PostgreSQL migration/load/API and backup/restore, deployment artifacts and installed sync
+  entrypoint checks. The isolated worktree was clean and HEAD matched `origin/master` before this
+  closure note.
+- `REVIEWED_CROSS_LANE_PERSON_PACKET_KIM_DONGCHEOL — PASS` is closed. No staging write, importer,
+  feeder, production-code or schema change occurred.
 
 The active plan is `docs/exec-plans/active/alio-assembly-cross-lane-kim-dongcheol-v1.md`.
 
 ## Next concrete action
 
-Commit and push the bounded fixture/test/documentation change, then require GitHub Verify success
-and final `HEAD == origin/master` with a clean isolated worktree. After PASS, perform only the
-read-only canonical Person collision/materialization preflight for 김동철; do not write.
+Perform only the read-only canonical Person collision/materialization preflight for 김동철: search
+existing People, inspect same-name and birth-date conflicts, and choose among `LINK_EXISTING`,
+`REVIEWED_ONBOARD` or `KEEP_RESEARCH_ONLY`; do not write.
