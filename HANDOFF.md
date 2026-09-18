@@ -1749,3 +1749,24 @@ The full evidence and reopen condition are in
 Profile and fix the existing ALIO Organization Claim dry-run's sequential database access in a
 local/disposable test first, then repeat only the no-commit receipt gate before any staging
 Organization Claim publication.
+
+## Current checkpoint — ALIO Organization Importer Batch-Read Fix v1 (2026-09-18)
+
+- The importer now reads the bounded ALIO item-4 feeder/scope once, indexes immutable versions
+  by provider record key, and resolves only the successful checkpoint manifest. The repeated
+  provider-key read loop was removed; immutable-version and manifest mismatch failures remain
+  fail-closed.
+- A direct regression proves one scope-wide observation read and zero provider-key reads.
+- Targeted ALIO tests passed (`15 passed`). Full local verification passed: Python `368 passed,
+  1 skipped, 4 warnings`, Ruff, mypy (`63` source files), Golden quality, Web lint/typecheck,
+  Web UI (`11/11`) and standalone production build.
+- No schema, dependency, acquisition, API, Web or Railway change was made. The staging
+  importer dry-run and `--commit` remain unrun after the code fix.
+
+The active plan and exact query-shape contract are in
+`docs/exec-plans/active/alio-organization-importer-batch-read-v1.md`.
+
+## Next concrete action
+
+Commit/push this bounded-read fix, require GitHub Verify success, then perform the fresh
+backup/restore and one `DRY_RUN`-only staging gate with a hard `180s` deadline.

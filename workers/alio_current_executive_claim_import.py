@@ -110,17 +110,25 @@ def _current_observations(
     repository: SqlAlchemyRepository,
     provider_hashes: dict[str, str],
 ) -> tuple[FeederObservation, ...]:
+    all_versions = repository.feeder_observations(
+        ALIO_EXECUTIVE_FEEDER,
+        ALIO_EXECUTIVE_SCOPE,
+    )
+    versions_by_key: dict[str, list[FeederObservation]] = defaultdict(list)
+    for observation in all_versions:
+        versions_by_key[observation.provider_record_key].append(observation)
+
     selected: list[FeederObservation] = []
     for provider_key, content_hash in sorted(provider_hashes.items()):
-        versions = repository.feeder_observations(
-            ALIO_EXECUTIVE_FEEDER,
-            ALIO_EXECUTIVE_SCOPE,
-            provider_key,
-        )
+        versions = versions_by_key.get(provider_key, [])
         matching = [item for item in versions if item.content_hash == content_hash]
         if len(matching) != 1:
             raise AlioOrganizationContentError(
                 "ALIO item-4 checkpoint provider manifest does not resolve exactly one observation"
+            )
+        if len({item.content_hash for item in versions}) > 1:
+            raise AlioOrganizationContentError(
+                "ALIO item-4 immutable observation version requires explicit replacement"
             )
         selected.append(matching[0])
     return tuple(selected)
@@ -192,16 +200,6 @@ def prepare_import(repository: SqlAlchemyRepository) -> PreparedAlioOrganization
     repository.assert_ready()
     _, run, provider_hashes, institution_codes, seen_disclosures = _complete_item4_run(repository)
     observations = _current_observations(repository, provider_hashes)
-    for observation in observations:
-        versions = repository.feeder_observations(
-            ALIO_EXECUTIVE_FEEDER,
-            ALIO_EXECUTIVE_SCOPE,
-            observation.provider_record_key,
-        )
-        if len({item.content_hash for item in versions}) > 1:
-            raise AlioOrganizationContentError(
-                "ALIO item-4 immutable observation version requires explicit replacement"
-            )
     contexts = repository.feeder_observation_contexts(item.id for item in observations)
     if len(contexts) != len(observations):
         raise AlioOrganizationContentError("ALIO item-4 observation provenance is incomplete")

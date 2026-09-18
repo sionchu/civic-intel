@@ -110,6 +110,29 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         assert "contact" not in json.dumps(detail.json(), ensure_ascii=False).casefold()
 
 
+def test_alio_import_preflight_uses_one_scope_observation_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository, _ = enumerated_repository(tmp_path / "bounded-read.db")
+    calls: list[str | None] = []
+    original = repository.feeder_observations
+
+    def tracked(
+        feeder: str,
+        scope_key: str,
+        provider_record_key: str | None = None,
+    ):
+        calls.append(provider_record_key)
+        return original(feeder, scope_key, provider_record_key)
+
+    monkeypatch.setattr(repository, "feeder_observations", tracked)
+
+    prepared = prepare_import(repository)
+
+    assert len(prepared.observations) == 3
+    assert calls == [None]
+
+
 def test_alio_organization_import_is_idempotent(tmp_path: Path) -> None:
     repository, _ = enumerated_repository(tmp_path / "idempotent.db")
 
