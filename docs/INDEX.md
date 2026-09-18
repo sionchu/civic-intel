@@ -65,6 +65,7 @@ implementation work.
 - [ALIO Organization & Executive Content Activation v1](exec-plans/active/alio-organization-executive-content-activation-v1.md)
 - [ALIO Organization Content Staging Activation v1](exec-plans/active/alio-organization-content-staging-activation-v1.md)
 - [ALIO Organization Claim Batch-Write v1](exec-plans/active/alio-organization-claim-batch-write-v1.md)
+- [First live staging ALIO Organization publication v1](exec-plans/active/alio-organization-live-staging-publication-v1.md)
 - [ALIO Local Acquisition Recovery v1](exec-plans/active/alio-local-acquisition-recovery-v1.md)
 - [ALIO Railway Sandbox Recovery v1](exec-plans/active/alio-railway-sandbox-recovery-v1.md)
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/active/cleaneye-local-public-institution-executives-l3.md)

@@ -1826,3 +1826,33 @@ commit, public/API verification and cleanup.
 ## Next concrete action
 
 Perform the separately approved first live staging ALIO Organization publication sequence.
+
+## Current checkpoint — First Live Staging ALIO Organization Publication v1 (2026-09-18)
+
+- The one approved live ALIO item-4 Organization publication commit completed from pinned
+  revision `908bf74d3485dac5765f0f67d64e90971c12a7e7`. Live staging is now schema `0006` with
+  People `299`, Organizations `347`, Claims/ClaimEvidence `5466/5466`, and item-4
+  Claims/ClaimEvidence `3970/3970`. No Person was created from ALIO names; canonical import-key
+  duplicates and subject-XOR violations are both `0`.
+- Fresh custom logical backup/PG18 restore passed: `1,290,509` bytes,
+  SHA-256 `8050a2d9ece0a3ee2efd0dcc6cef1bd4c840b0f62b766bec69f1b897481dd84f`, restore `675ms`.
+  The live dry-run, single commit and post-commit no-write projection all returned the expected
+  safe counts. The existing private API returned `/ready=200`, `/people=299`,
+  `/organizations=347`; representative Organization Claims exposed Evidence/source references
+  without normalized/raw/contact fields.
+- Closure is blocked after commit: the required helper-derived C0908 ID
+  `3059f7f9-94d5-5e32-83e2-4b7aa37fee9a` has no live row and its API routes returned `404`.
+  The existing reviewed C0908 binding `b6c4df5d-2d9b-4c26-aedb-2c5a0f079b11` returned detail,
+  claims and MONEY `200` with two Claims. No rollback, second commit, compensating write or
+  deployment was run.
+- The only private Sandbox used was `6347251a-b116-4d60-b832-d818f497fbcc` in `us-west2`; it
+  was destroyed and the final sandbox list was empty. PostgreSQL/API/Web deployment IDs and
+  Railway service/resource/domain/plan state remained unchanged.
+
+The full blocked evidence and reopen condition are in
+`docs/exec-plans/active/alio-organization-live-staging-publication-v1.md`.
+
+## Next concrete action
+
+Review and correct the C0908 Organization identity acceptance contract against the existing
+explicit reviewed binding before any further staging execution.
