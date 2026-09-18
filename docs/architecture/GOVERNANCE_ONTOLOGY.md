@@ -52,9 +52,11 @@ QUESTIONED
 AUDITED_BY
 ```
 
-The first executable slice projects only relation predicates already supported by canonical
-Person Claims. Later source slices may add more of the vocabulary only after their Claim/Evidence
-contracts exist.
+The first executable slice maps only the canonical `HELD_ROLE` predicate to a Claim-scoped
+`OFFICE` target. The wider vocabulary is reserved for later source slices and becomes executable
+only after each exact predicate and target-identity contract exists.
+
+Appointment, election, nomination and designation events are not rewritten as `HELD_ROLE`.
 
 A nomination or designation event is not rewritten as `HELD_ROLE`. The v0 mapping omits
 `NOMINATED_AS` and `DESIGNATED_AS` until an exact event relation is modeled.
