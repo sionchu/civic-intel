@@ -15,6 +15,7 @@ from packages.rendering.alio_organization_content import (
     ALIO_CLASSIFICATION_PREDICATE,
     ALIO_EXECUTIVE_PREDICATE,
 )
+from packages.rendering.governance_ontology import build_person_governance_ontology
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -273,6 +274,37 @@ def create_app(
             "relationship_ids": [relationship["id"] for relationship in relationships],
             "asset_disclosure_ids": [],
         }
+
+    @app.get("/ontology/people/{person_id}")
+    def person_ontology(person_id: UUID) -> dict:
+        item = person_or_404(person_id, public=True)
+        contexts = target.published_person_claim_contexts([person_id])
+        claims, evidence_by_claim = contexts.get(person_id, ((), {}))
+        all_evidence = [
+            evidence
+            for evidence_items in evidence_by_claim.values()
+            for evidence in evidence_items
+        ]
+        source_map = target.sources(evidence.source_id for evidence in all_evidence)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
+        eligible_claims = []
+        eligible_evidence = {}
+        for claim in claims:
+            evidence = list(evidence_by_claim.get(claim.id, ()))
+            if validate_claim_publication(
+                claim,
+                item,
+                evidence,
+                source_map,
+                policy_map,
+            ).publishable:
+                eligible_claims.append(claim)
+                eligible_evidence[claim.id] = tuple(evidence)
+        return build_person_governance_ontology(
+            item,
+            eligible_claims,
+            eligible_evidence,
+        ).to_dict()
 
     @app.get("/organizations")
     def organizations() -> list[dict]:
