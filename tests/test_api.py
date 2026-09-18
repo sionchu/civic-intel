@@ -140,6 +140,21 @@ def test_health_and_real_roster(client: TestClient) -> None:
     assert {item["canonical_name"] for item in people} >= {"이형일", "홍지선", "이해민"}
 
 
+def test_person_ontology_route_is_claim_evidence_projection(client: TestClient) -> None:
+    response = client.get(f"/ontology/people/{PERSON_ID}")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["center_node_id"] == f"person:{PERSON_ID}"
+    assert payload["semantics"] == "READ_ONLY_PROJECTION_FROM_CANONICAL_CLAIM_EVIDENCE"
+    assert payload["nodes"][0]["canonical_id"] == PERSON_ID
+    assert payload["nodes"][0]["kind"] == "PERSON"
+    assert all(edge["claim_id"] for edge in payload["edges"])
+    assert all(edge["evidence_ids"] for edge in payload["edges"])
+    assert all(edge["source_ids"] for edge in payload["edges"])
+    assert "excerpt" not in str(payload)
+
+
 def test_readiness_masks_database_failure(
     seeded_repository: SqlAlchemyRepository,
     monkeypatch: pytest.MonkeyPatch,
