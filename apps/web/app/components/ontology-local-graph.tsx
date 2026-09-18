@@ -60,7 +60,7 @@ export default function OntologyLocalGraph({
       </div>
 
       <div className="ontology-relations" aria-label="공식 기록상 연결 목록">
-        {visibleEdges.map((edge) => {
+        {graph.edges.map((edge) => {
           const target = nodeById.get(edge.target);
           const firstSource = edge.source_ids[0];
           return (
@@ -88,7 +88,7 @@ export default function OntologyLocalGraph({
       </div>
 
       {graph.edges.length > visibleEdges.length && (
-        <p className="ontology-limit-note">현재 화면은 읽기 쉬운 local graph를 위해 처음 {visibleEdges.length}개 연결만 시각화합니다. 전체 공개 관계는 후속 탐색 화면에서 확장합니다.</p>
+        <p className="ontology-limit-note">시각화는 읽기 쉬운 local graph를 위해 처음 {visibleEdges.length}개 연결만 그립니다. 아래 텍스트 목록에는 현재 공개 edge 전체를 유지합니다.</p>
       )}
       <p className="ontology-limit-note">표시된 연결은 공개 기록의 Claim/Evidence 관계이며 친분, 영향력 또는 동기를 의미하지 않습니다.</p>
     </div>
