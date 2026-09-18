@@ -82,8 +82,9 @@ def test_person_role_projects_to_evidence_backed_ontology_edge() -> None:
     assert "projection must never copy this excerpt" not in str(payload)
 
 
-def test_unmapped_claim_is_not_invented_as_relation() -> None:
-    claim = role_claim(predicate="ASSEMBLY_PARTY")
+@pytest.mark.parametrize("predicate", ["ASSEMBLY_PARTY", "ASSEMBLY_COMMITTEES"])
+def test_unmapped_or_aggregate_claim_is_not_invented_as_relation(predicate: str) -> None:
+    claim = role_claim(predicate=predicate)
 
     graph = build_person_governance_ontology(
         person(),
