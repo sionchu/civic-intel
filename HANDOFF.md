@@ -1711,3 +1711,18 @@ non-name identity evidence; keep name-only linking prohibited and do not begin a
 ## Next concrete action
 
 Restore private reachability from the approved acquisition boundary to the official ALIO item-4 endpoint, then take a fresh backup and run one new normal bounded enumeration before any importer action.
+
+## Current checkpoint — ALIO Local Acquisition Recovery v1 (2026-09-18)
+
+- Aside and local HTTP both reached the official ALIO item-4 page: browser snapshot showed
+  `임원현황`, unfiltered `Total 355`, and the local `httpx` request returned `200`.
+- Recovery stopped before the fresh backup gate. The existing local staging key was rejected by
+  Railway, and the supported `railway connect postgres --tunnel-only` probe exited without a
+  listener or connection detail. Railway retains only the pre-existing `dev.new` key; no new
+  key was generated or registered.
+- No staging write, reset, reload, schema change, Railway change or importer action occurred.
+  Task-owned tunnel probe logs were removed and the worktree remains isolated.
+
+## Next concrete action
+
+Make the private key corresponding to the already-registered `dev.new` Railway key available to the approved local runner, then repeat fresh backup/restore before any tunnel acquisition or ALIO write.
