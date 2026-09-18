@@ -1,7 +1,7 @@
 # Civic Intel — ALIO Organization Claim Batch-Write v1
 
-Status: ACTIVE — repository batch-write refactor and local verification PASS; disposable proof
-pending. Live staging `--commit` is explicitly prohibited in this plan.
+Status: COMPLETE — `ALIO_ORGANIZATION_BATCH_WRITE_PROOF — PASS` (2026-09-18). Live staging
+`--commit` was not executed.
 
 ## Objective and boundary
 
@@ -49,9 +49,9 @@ for the old one- or two-Claim reviewed paths but is not bounded for the real ALI
    sets. Group immutable-version reads by `(feeder, scope_key)` and bounded provider-key chunks;
    any referenced key with multiple content hashes fails closed.
 5. Stage all approved new Organization, Claim and ClaimEvidence rows in one transaction. Permit
-   at most one Organization-stage flush and one final flush/commit; never flush per Claim or
-   re-read a newly staged Claim. Integrity/operational failures roll back the complete batch and
-   retain the current redacted error category.
+   at most one Organization-stage flush and one final bounded Claim/Evidence insert plus commit;
+   never flush per Claim or re-read a newly staged Claim. Integrity/operational failures roll
+   back the complete batch and retain the current redacted error category.
 6. Keep deterministic IDs, exact semantic idempotency, all collision errors, the publication
    gate, Person isolation and the existing single/pair import behavior.
 
@@ -101,11 +101,41 @@ never compensate with a live staging commit.
   standalone production build; Markdown check (`80` files, `95` relative links, `0` broken); and
   `git diff --check`. No schema, dependency, acquisition, API/Web or Railway change was made.
 
-The code/fixture proof is not the real-scale acceptance. The remaining gate is a fresh private
-disposable restore with the real ALIO observations, first commit, exact idempotent rerun,
-disposable API reads and cleanup. No staging write is allowed before that gate passes.
+## Disposable operational proof
+
+- The first disposable PostgreSQL 16 restore failed closed because the target did not support the
+  dump's `transaction_timeout` setting. No staging data was changed. A fresh PostgreSQL 17.11
+  target then restored the private custom-format/no-owner dump in `0.649s`; dump size was
+  `1,290,509` bytes and SHA-256 was
+  `847e1c9b7dcab7518c13926c73a23462398a79f98ff7172a2c8bae6443c392ef`.
+- Fresh restore baseline: schema `0006`, People `299`, Organizations `1`, Claims `1496`,
+  ClaimEvidence `1496`, ALIO item-4 observations `3799`, item-4 checkpoint rows `1`, and C0908
+  Item-12 observations/Claims `15/2`; subject-XOR violations were `0`.
+- First exact `--commit` receipt: `COMMITTED`, source
+  `alio_public_institution_executives`, scope `item_4_current_all_institutions`, run
+  `e57f88d4-953b-4de5-bf1c-13fa4b3e43db`, `observed_count=3798`, `organizations=346`,
+  `claims=3970`, `organizations_created=346`, `claims_created=3970`,
+  `named_rows=3624`, `masked_or_vacant_rows=174`.
+- Second exact `--commit` receipt: `COMMITTED`, same source/scope/run, `organizations_created=0`,
+  `organizations_reused=346`, `claims_created=0`, `claims_reused=3970`.
+- Post-rerun counts stayed at schema `0006`, People `299`, Organizations `347`, Claims and
+  ClaimEvidence `5466/5466`. All `3970` item-4 Claims had Evidence and snapshot/observation
+  provenance; full canonical import-key duplicates were `0`; subject-XOR violations were `0`;
+  C0908 Item-12 remained `15` observations and `2` Claims.
+- Disposable local API read smoke passed: `/ready=200`, `/people=299`, `/organizations=347`,
+  representative Organization detail/claims returned `200` with ClaimEvidence/source references,
+  C0908 MONEY returned `200`, and normalized/raw observation/contact/fulltext fields were absent
+  from the public payload. The exact Sandbox was destroyed and `railway sandbox list` returned
+  `[]`.
+- Railway staging remained unchanged from preflight: service set, deployment IDs, PostgreSQL
+  volume, Web domain and plan/resource state were unchanged. No staging `--commit`, reload,
+  migration, acquisition credential or new Railway resource was used.
+- Repository commit `6ff6e4e9b8a251ad3531f46774166b902d340882` is on `origin/master`; GitHub Verify
+  run `35314747499` passed. Final local verification passed: full Python suite exit `0`, Ruff,
+  mypy (`63` source files), Golden quality, Web lint/typecheck/UI (`11 passed`), standalone build,
+  Markdown links (`80/95/0`) and `git diff --check`.
 
 ## Next concrete action
 
-Implement the shared semantic-validation seam and bounded repository preload helpers, then add
-the query-shape and collision regressions before running the full verification matrix.
+Perform the separately approved first live staging ALIO Organization publication sequence: fresh
+backup/restore, dry-run receipt, explicit `--commit`, public/API verification and cleanup.

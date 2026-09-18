@@ -1795,3 +1795,34 @@ until the separate batch-write path has its own bounded regression and operation
 
 Profile and remove the known per-Organization/per-Claim database round trips in
 `SqlAlchemyRepository.import_organization_claim_batch()` before any staging `--commit`.
+
+## Current checkpoint — ALIO Organization Claim Batch-Write v1 (2026-09-18)
+
+- `SqlAlchemyRepository.import_organization_claim_batch()` now preloads bounded Organization,
+  Claim, Evidence, Source, SourcePolicy, Snapshot and Observation state, validates through the
+  shared publication seam, flushes Organization parents once, then inserts Claim/Evidence rows in
+  parent-before-child order within one transaction. The PostgreSQL FK ordering failure found in
+  the first disposable attempt is fixed; single/pair import behavior and fail-closed rollback
+  semantics remain covered.
+- Fresh private restore proof passed on PostgreSQL `17.11`: dump `1,290,509` bytes,
+  SHA-256 `847e1c9b7dcab7518c13926c73a23462398a79f98ff7172a2c8bae6443c392ef`, restore `0.649s`,
+  schema `0006`, People `299`, Organizations `1`, Claims/ClaimEvidence `1496/1496`, item-4
+  observations `3799`, and C0908 Item-12 `15/2`.
+- The real `3970`-Claim disposable commit passed with `346` Organizations created; the exact
+  rerun passed with `346` Organizations and `3970` Claims reused. Post-rerun counts were
+  Organizations `347`, Claims/ClaimEvidence `5466/5466`, item-4 evidence coverage `3970/3970`,
+  canonical import-key duplicates `0`, and subject-XOR violations `0`.
+- Disposable API reads passed: `/ready=200`, `/people=299`, `/organizations=347`, representative
+  ClaimEvidence/source references and C0908 MONEY `200`; normalized/raw observation/contact fields
+  were absent. The exact Sandbox was destroyed and final `railway sandbox list` was `[]`.
+- No live staging `--commit`, reload, migration, acquisition credential, service/resource/domain/
+  plan change or new Railway resource occurred. Commit `6ff6e4e9b8a251ad3531f46774166b902d340882`
+  is on `origin/master`; Verify `35314747499` passed and the isolated worktree is clean.
+
+`ALIO_ORGANIZATION_BATCH_WRITE_PROOF — PASS` is closed. The next action is separately approved
+first live staging ALIO Organization publication only: fresh backup/restore, dry-run, explicit
+commit, public/API verification and cleanup.
+
+## Next concrete action
+
+Perform the separately approved first live staging ALIO Organization publication sequence.
