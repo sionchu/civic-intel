@@ -93,7 +93,7 @@ class ReviewedGukgamSource:
                 "reviewed Gukgam source published_date is invalid"
             ) from None
         try:
-            file_sn = int(raw.get("file_sn"))
+            file_sn = int(_required_text(raw.get("file_sn"), "source.file_sn"))
         except (TypeError, ValueError):
             raise GukgamReviewedPacketError(
                 "reviewed Gukgam source file_sn is invalid"
@@ -169,8 +169,10 @@ class ReviewedGukgamScheduleRow:
             "reviewed Gukgam schedule row",
         )
         try:
-            ordinal = int(raw.get("ordinal"))
-            page_number = int(raw.get("page_number"))
+            ordinal = int(_required_text(raw.get("ordinal"), "schedule.ordinal"))
+            page_number = int(
+                _required_text(raw.get("page_number"), "schedule.page_number")
+            )
         except (TypeError, ValueError):
             raise GukgamReviewedPacketError(
                 "reviewed Gukgam schedule ordinal/page_number is invalid"
