@@ -27,13 +27,21 @@ Target beta date: 2026-09-29.
 - No precise-residence or private-family relation.
 - Every public ontology edge must retain Claim/Evidence provenance.
 - Missing committee plans are `NOT_YET_PUBLISHED`, not evidence of no audit.
+- Public reuse rights never imply automated-access permission.
 
 ## Slice 0 — source reconnaissance + ontology contract + graph skeleton
 
 ### Official Gukgam source reconnaissance
 
-The National Assembly's official committee pages are the source family for committee plans,
-audited organizations and witness/reference-person attachments.
+The National Assembly committee pages are authoritative origin references for committee plans and
+related attachments. The first current 2026 Science Committee plan was pinned:
+
+```text
+nttId: 3078699
+title: 2026년도 국정감사계획서
+published: 2026-09-15
+attachment: atchFileId 7938f3a874d5441892124093d19da1df
+```
 
 The source contract is recorded in
 `docs/architecture/GUKGAM_2026_SOURCE_CONTRACT.md`.
@@ -41,27 +49,30 @@ The source contract is recorded in
 Current gate:
 
 ```text
-RECONNAISSANCE / DISCOVERY_ONLY
+ONE CURRENT POST RIGHTS-REVIEWED
++
+AUTOMATED COMMITTEE HTML COLLECTION BLOCKED
 ```
 
-The exact current 2026 post/attachment rights, stable attachment ID and correction semantics still
-need one end-to-end source review before live acquisition is authorized.
+The exact host's robots contract is `User-agent: * / Disallow: / / Allow: /$`.
+Therefore the committee page remains a provenance/origin source but is not a repeated automated
+collection route.
 
 ### Ontology projection
 
-Branch `work/gukgam-ontology-slice0` contains:
+PR #63 contains:
 
 - `packages/rendering/governance_ontology.py`;
 - public `GET /ontology/people/{person_id}`;
 - regression coverage for evidence-backed projection and fail-closed missing Evidence;
 - `docs/architecture/GOVERNANCE_ONTOLOGY.md`.
 
-The first projection creates only Claim-scoped target nodes for already-supported Person relation
-predicates. It does not invent canonical Organization/School/Company identities from text.
+The executable v0 is intentionally narrower than the future vocabulary. It maps only the
+canonical `HELD_ROLE` predicate to a Claim-scoped `OFFICE` node.
 
 Independent review tightened the semantics:
 
-- `NOMINATED_AS` / `DESIGNATED_AS` are not rewritten as `HELD_ROLE`;
+- appointment/election/nomination/designation events are not rewritten as `HELD_ROLE`;
 - `UNKNOWN`, `ENTITY_UNRESOLVED`, `INFERENCE`, `HYPOTHESIS` do not become connection edges;
 - SUPPORT+REFUTE ClaimEvidence is preserved as `source_conflict=true`;
 - cross-Person path search is deferred until shared institution/event identity can be bound without
@@ -79,7 +90,7 @@ PR #63 is the independent CI boundary for Slice 0.
 
 Required closure:
 
-- full Verify succeeds after independent-review fixes;
+- full Verify succeeds on the final head;
 - final diff has no publication-gate bypass;
 - no raw evidence excerpt appears in ontology output;
 - no identity merge is introduced;
@@ -87,5 +98,10 @@ Required closure:
 
 ## Next concrete action
 
-Close Slice 0 with Verify, then review one exact current 2026 committee audit-plan/witness
-post+attachment end to end and activate only that source-specific collection path.
+After Slice 0 merges, start Slice 1 by finding an **automation-permitted official** route for 2026
+Gukgam metadata. Prioritize 열린국회정보 / National Assembly Open API and central official audit
+schedule metadata.
+
+Do not implement a committee-site scraper while the reviewed robots contract blocks those paths.
+If no suitable official automated route exists, use the existing rights-reviewed human-assisted
+packet gate for one committee rather than weakening source policy.
