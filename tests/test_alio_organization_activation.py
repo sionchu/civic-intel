@@ -8,6 +8,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
+from sqlalchemy import event
 from test_batch_alio_executives import (
     FakeAlioProvider,
     executive_table,
@@ -60,6 +61,56 @@ def commit_prepared(repository: SqlAlchemyRepository):
         ],
     )
     return prepared, result
+
+
+def scaled_batch(prepared, organization_count: int):
+    templates = [
+        (claim, evidence)
+        for item in prepared.items
+        for claim, evidence in item.claims
+    ]
+    organizations: list[Organization] = []
+    items = []
+    for index in range(organization_count):
+        organization = Organization(name=f"확장 테스트 기관 {index:03d}")
+        organizations.append(organization)
+        for template_index, (template_claim, template_evidence) in enumerate(templates):
+            qualifiers = dict(template_claim.qualifiers)
+            qualifiers["provider_record_key"] = (
+                f"{template_claim.qualifiers['provider_record_key']}"
+                f":scaled:{index:03d}:{template_index:02d}"
+            )
+            claim = template_claim.model_copy(
+                update={
+                    "id": uuid4(),
+                    "organization_id": organization.id,
+                    "proposition": template_claim.proposition.replace(
+                        template_claim.subject, organization.name
+                    ),
+                    "subject": organization.name,
+                    "qualifiers": qualifiers,
+                }
+            )
+            evidence = template_evidence.model_copy(
+                update={"id": uuid4(), "claim_id": claim.id}
+            )
+            items.append((organization, claim, [evidence]))
+    return organizations, items
+
+
+def count_batch_selects(repository: SqlAlchemyRepository, organizations, items) -> int:
+    statements: list[str] = []
+
+    def before_cursor_execute(_connection, _cursor, statement, *_args):
+        if statement.lstrip().upper().startswith("SELECT"):
+            statements.append(statement)
+
+    event.listen(repository.engine, "before_cursor_execute", before_cursor_execute)
+    try:
+        repository.import_organization_claim_batch(organizations, items)
+    finally:
+        event.remove(repository.engine, "before_cursor_execute", before_cursor_execute)
+    return len(statements)
 
 
 def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
@@ -149,6 +200,165 @@ def test_alio_organization_import_is_idempotent(tmp_path: Path) -> None:
     assert second.claims_reused == 5
     assert len(repository.organizations()) == 2
     assert len(repository.claims(organization_id=repository.organizations()[0].id)) == 2
+
+
+def test_alio_organization_batch_query_shape_is_bounded(tmp_path: Path) -> None:
+    small_repository, _ = enumerated_repository(tmp_path / "query-small.db")
+    small_prepared = prepare_import(small_repository)
+    small_count = count_batch_selects(
+        small_repository,
+        [item.organization for item in small_prepared.items],
+        [
+            (item.organization, claim, [evidence])
+            for item in small_prepared.items
+            for claim, evidence in item.claims
+        ],
+    )
+
+    scaled_repository, _ = enumerated_repository(tmp_path / "query-scaled.db")
+    scaled_prepared = prepare_import(scaled_repository)
+    organizations, items = scaled_batch(scaled_prepared, 120)
+    scaled_count = count_batch_selects(scaled_repository, organizations, items)
+
+    assert len(items) == 600
+    assert scaled_count <= small_count + 20
+    assert scaled_count <= 40
+
+
+def test_alio_organization_batch_rejects_duplicate_input_ids_and_names(
+    tmp_path: Path,
+) -> None:
+    repository, _ = enumerated_repository(tmp_path / "duplicate-input.db")
+    prepared = prepare_import(repository)
+    organization = prepared.items[0].organization
+    claim, evidence = prepared.items[0].claims[0]
+    duplicate = Organization(name=organization.name)
+    duplicate_claim = claim.model_copy(
+        update={
+            "id": uuid4(),
+            "organization_id": duplicate.id,
+            "subject": duplicate.name,
+            "proposition": claim.proposition.replace(claim.subject, duplicate.name),
+            "qualifiers": {
+                **claim.qualifiers,
+                "provider_record_key": f"{claim.qualifiers['provider_record_key']}:duplicate",
+            },
+        }
+    )
+    duplicate_evidence = evidence.model_copy(update={"id": uuid4(), "claim_id": duplicate_claim.id})
+
+    with pytest.raises(ValueError, match="duplicate incoming Organization names"):
+        repository.import_organization_claim_batch(
+            [organization, duplicate],
+            [(organization, claim, [evidence]), (duplicate, duplicate_claim, [duplicate_evidence])],
+        )
+    assert repository.organizations() == []
+
+    with pytest.raises(ValueError, match="duplicate Claim IDs"):
+        repository.import_organization_claim_batch(
+            [organization],
+            [
+                (organization, claim, [evidence]),
+                (
+                    organization,
+                    claim.model_copy(
+                        update={
+                            "qualifiers": {
+                                **claim.qualifiers,
+                                "provider_record_key": f"{claim.qualifiers['provider_record_key']}:id",
+                            }
+                        }
+                    ),
+                    [evidence.model_copy(update={"id": uuid4()})],
+                ),
+            ],
+        )
+
+    with pytest.raises(ValueError, match="duplicate Evidence IDs"):
+        repository.import_organization_claim_batch(
+            [organization],
+            [
+                (organization, claim, [evidence]),
+                (
+                    organization,
+                    claim.model_copy(
+                        update={
+                            "id": uuid4(),
+                            "qualifiers": {
+                                **claim.qualifiers,
+                                "provider_record_key": f"{claim.qualifiers['provider_record_key']}:evidence",
+                            },
+                        }
+                    ),
+                    [evidence],
+                ),
+            ],
+        )
+
+
+def test_alio_organization_batch_rejects_existing_id_and_source_owner_collisions(
+    tmp_path: Path,
+) -> None:
+    repository, _ = enumerated_repository(tmp_path / "collision-claim.db")
+    prepared, _ = commit_prepared(repository)
+    organization = prepared.items[0].organization
+    claim, evidence = prepared.items[0].claims[0]
+
+    with pytest.raises(ValueError, match="ID already exists"):
+        repository.import_organization_claim_batch(
+            [organization],
+            [
+                (
+                    organization,
+                    claim.model_copy(
+                        update={
+                            "qualifiers": {
+                                **claim.qualifiers,
+                                "provider_record_key": f"{claim.qualifiers['provider_record_key']}:collision",
+                            }
+                        }
+                    ),
+                    [evidence.model_copy(update={"id": uuid4(), "claim_id": claim.id})],
+                )
+            ],
+        )
+
+    with pytest.raises(ValueError, match="evidence ID already exists"):
+        new_claim = claim.model_copy(
+            update={
+                "id": uuid4(),
+                "qualifiers": {
+                    **claim.qualifiers,
+                    "provider_record_key": f"{claim.qualifiers['provider_record_key']}:evidence-collision",
+                },
+            }
+        )
+        repository.import_organization_claim_batch(
+            [organization],
+            [
+                (
+                    organization,
+                    new_claim,
+                    [evidence.model_copy(update={"claim_id": new_claim.id})],
+                )
+            ],
+        )
+
+    new_organization = Organization(name="소유권 충돌 기관")
+    owner_claim = claim.model_copy(
+        update={
+            "id": uuid4(),
+            "organization_id": new_organization.id,
+            "subject": new_organization.name,
+            "proposition": claim.proposition.replace(claim.subject, new_organization.name),
+        }
+    )
+    owner_evidence = evidence.model_copy(update={"id": uuid4(), "claim_id": owner_claim.id})
+    with pytest.raises(ValueError, match="bound to another Organization"):
+        repository.import_organization_claim_batch(
+            [new_organization], [(new_organization, owner_claim, [owner_evidence])]
+        )
+    assert repository.organization(new_organization.id) is None
 
 
 def test_alio_same_name_requires_exact_binding_and_exact_binding_is_reused(

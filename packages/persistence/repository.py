@@ -4,6 +4,7 @@ import os
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date
+from typing import Any
 from uuid import UUID, uuid5
 
 from sqlalchemy import create_engine, inspect, select, text
@@ -189,6 +190,15 @@ class OrganizationClaimBatchResult:
     organizations_reused: int
     claims_created: int
     claims_reused: int
+
+
+@dataclass(frozen=True)
+class _OrganizationClaimValidationContext:
+    sources: dict[UUID, Source]
+    policies: dict[UUID, SourcePolicy]
+    snapshots: dict[UUID, SourceSnapshot]
+    observations: dict[UUID, FeederObservation]
+    version_hashes_by_observation_key: dict[tuple[str, str, str], set[str]]
 
 
 def _expected_schema_revision() -> str:
@@ -2481,12 +2491,132 @@ class SqlAlchemyRepository:
             key=lambda item: tuple("" if value is None else str(value) for value in item),
         )
 
-    def _validate_organization_claim(
+    @staticmethod
+    def _organization_claim_id_chunks(
+        ids: Iterable[UUID | str],
+        *,
+        chunk_size: int = 500,
+    ) -> Iterable[tuple[str, ...]]:
+        values = tuple(sorted({str(item) for item in ids}))
+        for start in range(0, len(values), chunk_size):
+            yield values[start : start + chunk_size]
+
+    @staticmethod
+    def _load_organization_claim_rows_by_ids(
+        session: Session,
+        row_type: Any,
+        ids: Iterable[UUID | str],
+    ) -> dict[str, Any]:
+        rows: dict[str, Any] = {}
+        for chunk in SqlAlchemyRepository._organization_claim_id_chunks(ids):
+            if not chunk:
+                continue
+            for row in session.scalars(select(row_type).where(row_type.id.in_(chunk))):
+                rows[str(row.id)] = row
+        return rows
+
+    @staticmethod
+    def _load_organization_claim_evidence_by_claim(
+        session: Session,
+        claim_ids: Iterable[UUID | str],
+    ) -> dict[str, list[ClaimEvidenceRow]]:
+        evidence_by_claim: dict[str, list[ClaimEvidenceRow]] = {}
+        for chunk in SqlAlchemyRepository._organization_claim_id_chunks(claim_ids):
+            if not chunk:
+                continue
+            rows = session.scalars(
+                select(ClaimEvidenceRow).where(ClaimEvidenceRow.claim_id.in_(chunk))
+            )
+            for row in rows:
+                evidence_by_claim.setdefault(row.claim_id, []).append(row)
+        return evidence_by_claim
+
+    @staticmethod
+    def _load_organization_claim_observation_versions(
+        session: Session,
+        observation_rows: Iterable[FeederObservationRow],
+    ) -> dict[tuple[str, str, str], set[str]]:
+        keys_by_group: dict[tuple[str, str], set[str]] = {}
+        for row in observation_rows:
+            keys_by_group.setdefault((row.feeder, row.scope_key), set()).add(
+                row.provider_record_key
+            )
+
+        versions_by_key: dict[tuple[str, str, str], set[str]] = {}
+        for (feeder, scope_key), provider_keys in sorted(keys_by_group.items()):
+            for chunk in SqlAlchemyRepository._organization_claim_id_chunks(provider_keys):
+                if not chunk:
+                    continue
+                rows = session.scalars(
+                    select(FeederObservationRow).where(
+                        FeederObservationRow.feeder == feeder,
+                        FeederObservationRow.scope_key == scope_key,
+                        FeederObservationRow.provider_record_key.in_(chunk),
+                    )
+                )
+                for row in rows:
+                    key = (row.feeder, row.scope_key, row.provider_record_key)
+                    versions_by_key.setdefault(key, set()).add(row.content_hash)
+        return versions_by_key
+
+    def _load_organization_claim_validation_context(
         self,
         session: Session,
+        evidence: Sequence[ClaimEvidence],
+    ) -> _OrganizationClaimValidationContext:
+        source_rows = self._load_organization_claim_rows_by_ids(
+            session, SourceRow, (item.source_id for item in evidence)
+        )
+        sources = {
+            UUID(row_id): self._source(row)  # type: ignore[arg-type]
+            for row_id, row in source_rows.items()
+        }
+        policy_rows = self._load_organization_claim_rows_by_ids(
+            session,
+            SourcePolicyRow,
+            (row.policy_id for row in source_rows.values()),  # type: ignore[attr-defined]
+        )
+        policies = {
+            UUID(row_id): self._policy(row)  # type: ignore[arg-type]
+            for row_id, row in policy_rows.items()
+        }
+        snapshot_rows = self._load_organization_claim_rows_by_ids(
+            session,
+            SourceSnapshotRow,
+            (item.snapshot_id for item in evidence if item.snapshot_id is not None),
+        )
+        snapshots = {
+            UUID(row_id): self._snapshot(row)  # type: ignore[arg-type]
+            for row_id, row in snapshot_rows.items()
+        }
+        observation_rows = self._load_organization_claim_rows_by_ids(
+            session,
+            FeederObservationRow,
+            (item.feeder_observation_id for item in evidence if item.feeder_observation_id),
+        )
+        observations = {
+            UUID(row_id): self._observation(row)  # type: ignore[arg-type]
+            for row_id, row in observation_rows.items()
+        }
+        return _OrganizationClaimValidationContext(
+            sources=sources,
+            policies=policies,
+            snapshots=snapshots,
+            observations=observations,
+            version_hashes_by_observation_key=self._load_organization_claim_observation_versions(
+                session,
+                observation_rows.values(),
+            ),
+        )
+
+    def _validate_organization_claim_semantics(
+        self,
         organization: Organization,
         claim: Claim,
         evidence: Sequence[ClaimEvidence],
+        *,
+        stored_organization: Organization,
+        context: _OrganizationClaimValidationContext,
     ) -> Organization:
         if claim.person_id is not None or claim.organization_id != organization.id:
             raise OrganizationClaimImportError(
@@ -2503,12 +2633,6 @@ class SqlAlchemyRepository:
         if len({item.id for item in evidence}) != len(evidence):
             raise OrganizationClaimImportError("organization claim contains duplicate evidence IDs")
 
-        organization_row = session.get(OrganizationRow, str(organization.id))
-        if organization_row is None:
-            raise OrganizationClaimImportError(
-                "organization claim requires an existing canonical Organization"
-            )
-        stored_organization = self._organization(organization_row)
         if (
             stored_organization.name != organization.name
             or stored_organization.superseded_at is not None
@@ -2517,23 +2641,17 @@ class SqlAlchemyRepository:
                 "organization claim Organization is not the current canonical row"
             )
 
-        sources: dict[UUID, Source] = {}
-        policies: dict[UUID, SourcePolicy] = {}
         for item in evidence:
-            source_row = session.get(SourceRow, str(item.source_id))
-            if source_row is None:
+            source = context.sources.get(item.source_id)
+            if source is None:
                 raise OrganizationClaimImportError(
                     f"organization claim references missing source: {item.source_id}"
                 )
-            source = self._source(source_row)
-            sources[source.id] = source
-            policy_row = session.get(SourcePolicyRow, str(source.policy_id))
-            if policy_row is None:
+            policy = context.policies.get(source.policy_id)
+            if policy is None:
                 raise OrganizationClaimImportError(
                     f"organization claim references missing SourcePolicy: {source.policy_id}"
                 )
-            policy = self._policy(policy_row)
-            policies[policy.id] = policy
             try:
                 require_policy(policy, PolicyAction.STORE_METADATA)
                 if item.excerpt:
@@ -2544,8 +2662,8 @@ class SqlAlchemyRepository:
                 ) from exc
 
             if item.snapshot_id is not None:
-                snapshot_row = session.get(SourceSnapshotRow, str(item.snapshot_id))
-                if snapshot_row is None or snapshot_row.source_id != str(source.id):
+                snapshot = context.snapshots.get(item.snapshot_id)
+                if snapshot is None or snapshot.source_id != source.id:
                     raise OrganizationClaimImportError(
                         f"organization evidence snapshot does not match source: {item.id}"
                     )
@@ -2555,27 +2673,22 @@ class SqlAlchemyRepository:
                 raise OrganizationClaimImportError(
                     f"organization evidence with observation requires snapshot: {item.id}"
                 )
-            observation_row = session.get(
-                FeederObservationRow, str(item.feeder_observation_id)
-            )
-            if observation_row is None:
+            observation = context.observations.get(item.feeder_observation_id)
+            if observation is None:
                 raise OrganizationClaimImportError(
                     "organization claim references missing feeder observation: "
                     f"{item.feeder_observation_id}"
                 )
-            if observation_row.snapshot_id != str(item.snapshot_id):
+            if observation.snapshot_id != item.snapshot_id:
                 raise OrganizationClaimImportError(
                     f"organization evidence snapshot does not match observation: {item.id}"
                 )
-            versions = session.scalars(
-                select(FeederObservationRow).where(
-                    FeederObservationRow.feeder == observation_row.feeder,
-                    FeederObservationRow.scope_key == observation_row.scope_key,
-                    FeederObservationRow.provider_record_key
-                    == observation_row.provider_record_key,
-                )
+            version_key = (
+                observation.feeder,
+                observation.scope_key,
+                observation.provider_record_key,
             )
-            if len({row.content_hash for row in versions}) > 1:
+            if len(context.version_hashes_by_observation_key.get(version_key, set())) > 1:
                 raise OrganizationClaimImportError(
                     "organization claim cannot publish across multiple immutable observation versions"
                 )
@@ -2584,8 +2697,8 @@ class SqlAlchemyRepository:
             claim,
             stored_organization,
             list(evidence),
-            sources,
-            policies,
+            context.sources,
+            context.policies,
         )
         if not gate.publishable:
             raise OrganizationClaimImportError(
@@ -2593,11 +2706,34 @@ class SqlAlchemyRepository:
             )
         return stored_organization
 
+    def _validate_organization_claim(
+        self,
+        session: Session,
+        organization: Organization,
+        claim: Claim,
+        evidence: Sequence[ClaimEvidence],
+    ) -> Organization:
+        organization_row = session.get(OrganizationRow, str(organization.id))
+        if organization_row is None:
+            raise OrganizationClaimImportError(
+                "organization claim requires an existing canonical Organization"
+            )
+        context = self._load_organization_claim_validation_context(session, evidence)
+        return self._validate_organization_claim_semantics(
+            organization,
+            claim,
+            evidence,
+            stored_organization=self._organization(organization_row),
+            context=context,
+        )
+
     @staticmethod
     def _add_organization_claim_rows(
         session: Session,
         claim: Claim,
         evidence: Sequence[ClaimEvidence],
+        *,
+        flush: bool = True,
     ) -> None:
         session.add(
             ClaimRow(
@@ -2616,7 +2752,8 @@ class SqlAlchemyRepository:
                 **SqlAlchemyRepository._temporal(claim),
             )
         )
-        session.flush()
+        if flush:
+            session.flush()
         for item in evidence:
             session.add(
                 ClaimEvidenceRow(
@@ -2784,30 +2921,67 @@ class SqlAlchemyRepository:
         requested_keys = [self._claim_import_key(claim) for _, claim, _ in items]
         if len(set(requested_keys)) != len(requested_keys):
             raise OrganizationClaimImportError("organization claim batch contains duplicate source keys")
+        requested_claim_ids = [claim.id for _, claim, _ in items]
+        if len(set(requested_claim_ids)) != len(requested_claim_ids):
+            raise OrganizationClaimImportError(
+                "organization claim batch contains duplicate Claim IDs"
+            )
+        requested_evidence_ids = [
+            evidence_item.id
+            for _, _, evidence_items in items
+            for evidence_item in evidence_items
+        ]
+        if len(set(requested_evidence_ids)) != len(requested_evidence_ids):
+            raise OrganizationClaimImportError(
+                "organization claim batch contains duplicate Evidence IDs"
+            )
 
         with self.sessions() as session:
             try:
                 created_organizations = 0
                 reused_organizations = 0
-                for organization in organizations:
-                    organization_row = session.get(OrganizationRow, str(organization.id))
-                    if organization_row is None:
-                        same_name = list(
-                            session.scalars(
-                                select(OrganizationRow).where(
-                                    OrganizationRow.name == organization.name,
-                                    OrganizationRow.superseded_at.is_(None),
-                                )
+                requested_organization_rows = self._load_organization_claim_rows_by_ids(
+                    session, OrganizationRow, organization_by_id
+                )
+                missing_organization_names = {
+                    organization.name
+                    for organization in organizations
+                    if str(organization.id) not in requested_organization_rows
+                }
+                if len(missing_organization_names) != sum(
+                    1
+                    for organization in organizations
+                    if str(organization.id) not in requested_organization_rows
+                ):
+                    raise OrganizationClaimImportError(
+                        "organization batch refuses duplicate incoming Organization names"
+                    )
+                same_name_rows = (
+                    list(
+                        session.scalars(
+                            select(OrganizationRow).where(
+                                OrganizationRow.name.in_(missing_organization_names),
+                                OrganizationRow.superseded_at.is_(None),
                             )
                         )
-                        if same_name:
+                    )
+                    if missing_organization_names
+                    else []
+                )
+                current_names = {row.name for row in same_name_rows}
+                stored_organizations: dict[UUID, Organization] = {}
+                for organization in organizations:
+                    organization_row = requested_organization_rows.get(str(organization.id))
+                    if organization_row is None:
+                        if organization.name in current_names:
                             raise OrganizationClaimImportError(
                                 "organization batch refuses a same-name canonical row without an exact binding"
                             )
                         self._add_organization_row(session, organization)
+                        stored_organizations[organization.id] = organization
                         created_organizations += 1
                     else:
-                        stored_organization = self._organization(organization_row)
+                        stored_organization = self._organization(organization_row)  # type: ignore[arg-type]
                         if (
                             stored_organization.name != organization.name
                             or stored_organization.superseded_at is not None
@@ -2815,8 +2989,10 @@ class SqlAlchemyRepository:
                             raise OrganizationClaimImportError(
                                 "organization batch Organization is not the current canonical row"
                             )
+                        stored_organizations[organization.id] = stored_organization
                         reused_organizations += 1
-                session.flush()
+                if created_organizations:
+                    session.flush()
 
                 existing_rows = list(
                     session.scalars(
@@ -2837,6 +3013,29 @@ class SqlAlchemyRepository:
                     existing_by_key.setdefault(key, []).append(claim_row)
                     source_key_owners.setdefault(key[1:], set()).add(key[0])
 
+                matching_claim_ids = [
+                    row.id
+                    for key in requested_keys
+                    for row in existing_by_key.get(key, [])
+                ]
+                evidence_rows_by_claim = self._load_organization_claim_evidence_by_claim(
+                    session, matching_claim_ids
+                )
+                requested_claim_rows = self._load_organization_claim_rows_by_ids(
+                    session, ClaimRow, requested_claim_ids
+                )
+                requested_evidence_rows = self._load_organization_claim_rows_by_ids(
+                    session, ClaimEvidenceRow, requested_evidence_ids
+                )
+                all_evidence = tuple(
+                    evidence_item
+                    for _, _, evidence_items in items
+                    for evidence_item in evidence_items
+                )
+                validation_context = self._load_organization_claim_validation_context(
+                    session, all_evidence
+                )
+
                 results: list[Claim] = []
                 created_claims = 0
                 reused_claims = 0
@@ -2847,7 +3046,13 @@ class SqlAlchemyRepository:
                         raise OrganizationClaimImportError(
                             "organization claim source record key is bound to another Organization"
                         )
-                    self._validate_organization_claim(session, organization, claim, evidence)
+                    self._validate_organization_claim_semantics(
+                        organization,
+                        claim,
+                        evidence,
+                        stored_organization=stored_organizations[organization.id],
+                        context=validation_context,
+                    )
                     matching = existing_by_key.get(key, [])
                     if len(matching) > 1:
                         raise OrganizationClaimImportError(
@@ -2855,13 +3060,27 @@ class SqlAlchemyRepository:
                         )
                     if matching:
                         stored = self._claim(matching[0])
+                        requested_claim_row = requested_claim_rows.get(str(claim.id))
+                        if (
+                            requested_claim_row is not None
+                            and requested_claim_row.id != str(stored.id)
+                        ):
+                            raise OrganizationClaimImportError(
+                                "organization claim ID already exists with different semantics"
+                            )
+                        stored_evidence_rows = evidence_rows_by_claim.get(str(stored.id), [])
+                        for item in evidence:
+                            requested_evidence_row = requested_evidence_rows.get(str(item.id))
+                            if (
+                                requested_evidence_row is not None
+                                and requested_evidence_row.claim_id != str(stored.id)
+                            ):
+                                raise OrganizationClaimImportError(
+                                    f"organization evidence ID already exists: {item.id}"
+                                )
                         stored_evidence = [
                             self._evidence(row)
-                            for row in session.scalars(
-                                select(ClaimEvidenceRow).where(
-                                    ClaimEvidenceRow.claim_id == str(stored.id)
-                                )
-                            )
+                            for row in stored_evidence_rows
                         ]
                         if (
                             self._claim_import_semantics(stored)
@@ -2876,24 +3095,21 @@ class SqlAlchemyRepository:
                         reused_claims += 1
                         continue
 
-                    if session.get(ClaimRow, str(claim.id)) is not None:
+                    if str(claim.id) in requested_claim_rows:
                         raise OrganizationClaimImportError(
                             "organization claim ID already exists with different semantics"
                         )
                     for item in evidence:
-                        if session.get(ClaimEvidenceRow, str(item.id)) is not None:
+                        if str(item.id) in requested_evidence_rows:
                             raise OrganizationClaimImportError(
                                 f"organization evidence ID already exists: {item.id}"
                             )
-                    self._add_organization_claim_rows(session, claim, evidence)
-                    created_claim_row = session.get(ClaimRow, str(claim.id))
-                    if created_claim_row is None:
-                        raise OrganizationClaimImportError("organization claim row was not persisted")
-                    existing_by_key.setdefault(key, []).append(created_claim_row)
+                    self._add_organization_claim_rows(session, claim, evidence, flush=False)
                     source_key_owners.setdefault(key[1:], set()).add(organization.id)
                     results.append(claim)
                     created_claims += 1
 
+                session.flush()
                 session.commit()
                 return OrganizationClaimBatchResult(
                     claims=tuple(results),
