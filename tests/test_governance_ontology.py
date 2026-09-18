@@ -106,6 +106,8 @@ def test_person_role_projects_to_evidence_backed_ontology_edge() -> None:
         "ASSEMBLY_COMMITTEES",
         "NOMINATED_AS",
         "DESIGNATED_AS",
+        "APPOINTED_AS",
+        "ELECTED_AS",
     ],
 )
 def test_unmapped_or_non_role_claim_is_not_invented_as_relation(predicate: str) -> None:
