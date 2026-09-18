@@ -5,8 +5,8 @@ import pytest
 
 from packages.connectors.gukgam_reviewed_packet import (
     AUTOMATION_GATE,
-    GukgamReviewedPacketError,
     PACKET_SCHEMA,
+    GukgamReviewedPacketError,
     parse_reviewed_gukgam_plan_packet,
 )
 
