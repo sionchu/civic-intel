@@ -281,14 +281,14 @@ def parse_reviewed_gukgam_plan_packet(
             "plan packet must not embed witness/reference-person rows"
         )
 
-    schedule = tuple(
-        ReviewedGukgamScheduleRow.from_mapping(row)
-        if isinstance(row, Mapping)
-        else (_ for _ in ()).throw(
-            GukgamReviewedPacketError("reviewed Gukgam schedule row is malformed")
-        )
-        for row in schedule_raw
-    )
+    schedule_rows: list[ReviewedGukgamScheduleRow] = []
+    for row in schedule_raw:
+        if not isinstance(row, Mapping):
+            raise GukgamReviewedPacketError(
+                "reviewed Gukgam schedule row is malformed"
+            )
+        schedule_rows.append(ReviewedGukgamScheduleRow.from_mapping(row))
+    schedule = tuple(schedule_rows)
     ordinals = [row.ordinal for row in schedule]
     if len(set(ordinals)) != len(ordinals):
         raise GukgamReviewedPacketError(
