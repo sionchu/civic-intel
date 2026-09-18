@@ -55,7 +55,7 @@ export default async function Gukgam2026Page() {
         </div>
         <div>
           <span className="micro-label">Evidence path</span>
-          <strong>Claim → Source</strong>
+          <strong>Claim → Evidence → Source</strong>
           <small>공개 연결은 Evidence trace를 유지</small>
         </div>
       </section>
