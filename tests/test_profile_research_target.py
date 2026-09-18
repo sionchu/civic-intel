@@ -1,9 +1,15 @@
 import json
 from datetime import date
+from pathlib import Path
+from typing import Any
 
 import pytest
+from alembic import command
+from alembic.config import Config
 
+from packages.domain.db import PersonObservationLinkRow
 from packages.domain.enums import CrossLaneIdentityEvidenceType
+from packages.persistence import SqlAlchemyRepository
 from packages.verification.cross_lane_identity import CrossLaneIdentityEvidence
 from packages.verification.identity import IdentityCandidate
 from packages.verification.profile_target import (
@@ -12,6 +18,61 @@ from packages.verification.profile_target import (
     ProfileTargetObservation,
     build_profile_research_target,
 )
+
+KIM_DONGCHEOL_CASE = (
+    Path(__file__).parent / "fixtures" / "reviewed_cross_lane_kim_dongcheol_001.json"
+)
+
+
+def migrated_repository(database: Path) -> SqlAlchemyRepository:
+    database_url = f"sqlite:///{database.as_posix()}"
+    config = Config("alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url)
+    command.upgrade(config, "head")
+    return SqlAlchemyRepository(database_url)
+
+
+def kim_dongcheol_target_inputs() -> tuple[
+    ProfileTargetObservation,
+    ProfileTargetObservation,
+    tuple[CrossLaneIdentityEvidence, ...],
+    dict[str, Any],
+]:
+    payload = json.loads(KIM_DONGCHEOL_CASE.read_text(encoding="utf-8"))
+    left = payload["left"]["candidate"]
+    right = payload["right"]["candidate"]
+    bridge = payload["bridge_evidence"]
+    primary = ProfileTargetObservation(
+        lane=str(payload["left"]["lane"]),
+        candidate=IdentityCandidate(
+            canonical_name=str(left["canonical_name"]),
+            office=str(left["office"]),
+            organization=str(left["organization"]),
+        ),
+        source_refs=tuple(str(item) for item in payload["left"]["source_refs"]),
+    )
+    linked = ProfileTargetObservation(
+        lane=str(payload["right"]["lane"]),
+        candidate=IdentityCandidate(
+            canonical_name=str(right["canonical_name"]),
+            aliases=tuple(str(item) for item in right["aliases"]),
+            birth_date=date.fromisoformat(str(right["birth_date"])),
+            office=str(right["office"]),
+            organization=str(right["organization"]),
+            career_anchors=tuple(str(item) for item in right["career_anchors"]),
+        ),
+        source_refs=tuple(str(item) for item in payload["right"]["source_refs"]),
+    )
+    evidence = tuple(
+        CrossLaneIdentityEvidence(
+            evidence_type=CrossLaneIdentityEvidenceType(str(item["evidence_type"])),
+            source_ref=str(item["source_ref"]),
+            from_role=str(item["from_role"]),
+            to_role=str(item["to_role"]),
+        )
+        for item in bridge
+    )
+    return primary, linked, evidence, payload
 
 
 def corporate_observation(*, birth_date: date | None = None) -> ProfileTargetObservation:
@@ -152,3 +213,45 @@ def test_observation_requires_source_provenance() -> None:
             candidate=IdentityCandidate(canonical_name="김AI"),
             source_refs=(),
         )
+
+
+def test_kim_dongcheol_packet_builds_research_target_without_persistence(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "kim-dongcheol-research-target.db")
+    primary, linked, evidence, payload = kim_dongcheol_target_inputs()
+
+    target = build_profile_research_target(
+        primary,
+        (ProfileTargetLink(linked, evidence),),
+    )
+
+    assert target.canonical_name == "김동철"
+    assert target.source_lanes == (
+        "ALIO_ITEM4_EXECUTIVE",
+        "NATIONAL_ASSEMBLY_HISTORICAL_REVIEW",
+    )
+    assert target.source_refs == (
+        payload["left"]["source_refs"][0],
+        payload["right"]["source_refs"][0],
+        payload["bridge_evidence"][0]["source_ref"],
+    )
+    assert target.primary.candidate.office == "사장"
+    assert target.primary.candidate.organization == "한국전력공사"
+    assert target.linked[0].observation.candidate.office == "제20대 국회의원"
+    assert target.linked[0].observation.candidate.organization == "대한민국 국회"
+    assert target.linked[0].decision.status.value == "RESOLVED"
+    assert target.linked[0].decision.decision_class.value == (
+        "OFFICIAL_CAREER_CONTINUITY"
+    )
+    assert target.linked[0].decision.evidence_types == (
+        CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
+    )
+    assert target.to_dict()["linked_observations"][0]["identity"]["decision_scope"] == (
+        "RESEARCH_IDENTITY_ONLY"
+    )
+
+    assert repository.people() == []
+    assert repository.claims() == []
+    with repository.sessions() as session:
+        assert session.query(PersonObservationLinkRow).count() == 0

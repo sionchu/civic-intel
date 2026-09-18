@@ -1,4 +1,8 @@
+import json
+from dataclasses import replace
 from datetime import date
+from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -12,6 +16,10 @@ from packages.verification.cross_lane_identity import (
     resolve_cross_lane_identity,
 )
 from packages.verification.identity import IdentityCandidate
+
+KIM_DONGCHEOL_CASE = (
+    Path(__file__).parent / "fixtures" / "reviewed_cross_lane_kim_dongcheol_001.json"
+)
 
 
 def candidate(
@@ -35,6 +43,44 @@ def continuity_evidence() -> CrossLaneIdentityEvidence:
         source_ref="official-personnel-briefing-001",
         from_role="테스트기업 CTO",
         to_role="대통령비서실 수석비서관",
+    )
+
+
+def kim_dongcheol_packet() -> tuple[
+    IdentityCandidate,
+    IdentityCandidate,
+    tuple[CrossLaneIdentityEvidence, ...],
+    dict[str, Any],
+]:
+    payload = json.loads(KIM_DONGCHEOL_CASE.read_text(encoding="utf-8"))
+    left = payload["left"]["candidate"]
+    right = payload["right"]["candidate"]
+    bridge = payload["bridge_evidence"]
+    return (
+        IdentityCandidate(
+            canonical_name=str(left["canonical_name"]),
+            aliases=tuple(str(item) for item in left["aliases"]),
+            office=str(left["office"]),
+            organization=str(left["organization"]),
+        ),
+        IdentityCandidate(
+            canonical_name=str(right["canonical_name"]),
+            aliases=tuple(str(item) for item in right["aliases"]),
+            birth_date=date.fromisoformat(str(right["birth_date"])),
+            office=str(right["office"]),
+            organization=str(right["organization"]),
+            career_anchors=tuple(str(item) for item in right["career_anchors"]),
+        ),
+        tuple(
+            CrossLaneIdentityEvidence(
+                evidence_type=CrossLaneIdentityEvidenceType(str(item["evidence_type"])),
+                source_ref=str(item["source_ref"]),
+                from_role=str(item["from_role"]),
+                to_role=str(item["to_role"]),
+            )
+            for item in bridge
+        ),
+        payload,
     )
 
 
@@ -63,6 +109,45 @@ def test_official_career_continuity_can_resolve_compatible_transition() -> None:
     assert decision.evidence_types == (
         CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
     )
+
+
+def test_kim_dongcheol_name_only_packet_stays_review() -> None:
+    left, right, _, payload = kim_dongcheol_packet()
+
+    assert left.birth_date is None
+    assert right.birth_date == date(1955, 6, 30)
+    assert payload["corroboration"]["decision_driver"] is False
+
+    decision = resolve_cross_lane_identity(left, right)
+
+    assert decision.status == IdentityStatus.REVIEW
+    assert decision.decision_class == IdentityDecisionClass.CONTEXT_REVIEW
+
+
+def test_kim_dongcheol_official_kepco_continuity_resolves_research_identity() -> None:
+    left, right, evidence, payload = kim_dongcheol_packet()
+
+    decision = resolve_cross_lane_identity(left, right, evidence)
+
+    assert decision.status == IdentityStatus.RESOLVED
+    assert decision.decision_class == IdentityDecisionClass.OFFICIAL_CAREER_CONTINUITY
+    assert decision.evidence_types == (
+        CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
+    )
+    assert decision.reasons == ("name_match", "official_career_continuity")
+    assert evidence[0].source_ref == payload["bridge_evidence"][0]["source_ref"]
+    assert evidence[0].from_role == "국회 제17·18·19·20대 국회의원"
+    assert evidence[0].to_role == "한국전력공사 사장"
+
+
+def test_kim_dongcheol_name_change_fails_closed_as_name_conflict() -> None:
+    left, right, evidence, _ = kim_dongcheol_packet()
+    changed = replace(right, canonical_name="이동철")
+
+    decision = resolve_cross_lane_identity(left, changed, evidence)
+
+    assert decision.status == IdentityStatus.UNRESOLVED
+    assert decision.decision_class == IdentityDecisionClass.NAME_CONFLICT
 
 
 def test_name_only_never_resolves_even_when_role_text_matches() -> None:

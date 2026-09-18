@@ -1,0 +1,63 @@
+{
+  "id": "REVIEWED_CROSS_LANE_KIM_DONGCHEOL_001",
+  "as_of": "2026-09-18",
+  "subject": "김동철",
+  "left": {
+    "lane": "ALIO_ITEM4_EXECUTIVE",
+    "candidate": {
+      "canonical_name": "김동철",
+      "aliases": [],
+      "birth_date": null,
+      "office": "사장",
+      "organization": "한국전력공사",
+      "role_semantics": "상임기관장",
+      "term": "2023-09-19 — 2026-09-18"
+    },
+    "canonical_trace": {
+      "organization_id": "3ef4de75-fa3f-5815-81f4-8bc5efdc33f1",
+      "claim_id": "ce471401-3d17-552d-b7c4-627ffaa97dd2",
+      "evidence_id": "931d8c05-2e3d-5cf2-bac2-1e2af884bb51",
+      "feeder_observation_id": "b7df9687-f7aa-4a9b-80fc-acc3f1655ed3",
+      "snapshot_id": "1883de13-d245-4aec-95f6-8153fccc442f",
+      "source_id": "4e3ca86f-52c9-4316-ac1a-0f09449e5b5c",
+      "claim_predicate": "ALIO_CURRENT_EXECUTIVE_DISCLOSURE"
+    },
+    "source_refs": [
+      "https://alio.go.kr/item/itemReport.do?seq=2026071503215404&disclosureNo=2026071503215404"
+    ]
+  },
+  "right": {
+    "lane": "NATIONAL_ASSEMBLY_HISTORICAL_REVIEW",
+    "candidate": {
+      "canonical_name": "김동철",
+      "aliases": ["金東喆", "KIM DONGCHEOL"],
+      "birth_date": "1955-06-30",
+      "office": "제20대 국회의원",
+      "organization": "대한민국 국회",
+      "career_anchors": [
+        "monaCd:DCR84445",
+        "assembly_terms:17,18,19,20"
+      ]
+    },
+    "source_refs": [
+      "https://www.assembly.go.kr/members/20th/KIMDONGCHEOL"
+    ]
+  },
+  "bridge_evidence": [
+    {
+      "evidence_type": "OFFICIAL_CAREER_CONTINUITY",
+      "source_ref": "https://www.kepco.co.kr/home/esg/governance/directors/composition/conts.do",
+      "from_role": "국회 제17·18·19·20대 국회의원",
+      "to_role": "한국전력공사 사장"
+    }
+  ],
+  "corroboration": {
+    "official_birth_date": "1955-06-30",
+    "decision_driver": false
+  },
+  "expected_decision": {
+    "status": "RESOLVED",
+    "decision_class": "OFFICIAL_CAREER_CONTINUITY"
+  },
+  "persistence_effect": "NONE"
+}

@@ -1882,3 +1882,37 @@ explicit reviewed binding before any further staging execution.
 Select one reviewed cross-lane Person-linking packet from the already published ALIO executive
 corpus using exact non-name identity evidence; keep name-only linking prohibited and do not begin
 another feeder.
+
+## Current checkpoint — Reviewed Cross-Lane Person Packet: Kim Dong-cheol v1 (2026-09-19)
+
+- Read-only source confirmation completed for the published ALIO Item-4 executive evidence,
+  official KEPCO career biography and official National Assembly historical member profile. The
+  ALIO trace is Organization `3ef4de75-fa3f-5815-81f4-8bc5efdc33f1`, Claim
+  `ce471401-3d17-552d-b7c4-627ffaa97dd2`, Evidence `931d8c05-2e3d-5cf2-bac2-1e2af884bb51`,
+  Snapshot `1883de13-d245-4aec-95f6-8153fccc442f`, Observation
+  `b7df9687-f7aa-4a9b-80fc-acc3f1655ed3` and Source
+  `4e3ca86f-52c9-4316-ac1a-0f09449e5b5c`; the published executive remains Organization evidence
+  with zero Person links.
+- The KEPCO page directly bridges `국회 제17·18·19·20대 국회의원` to `한국전력공사 사장`.
+  The Assembly page independently supports 김동철, `金東喆`, `KIM DONGCHEOL`, birth date
+  `1955-06-30`, terms 17–20 and provider code `DCR84445`. No page fulltext or contact data was
+  retained.
+- Added exactly one bounded fixture and existing-contract regressions. Without the bridge the
+  packet stays `REVIEW/CONTEXT_REVIEW`; with the official bridge it resolves as
+  `RESOLVED/OFFICIAL_CAREER_CONTINUITY`; a changed name remains
+  `UNRESOLVED/NAME_CONFLICT`.
+- The existing `ProfileResearchTarget` builder retains both source lanes and all source-reference
+  families. A disposable migrated repository remained empty: no Person, PersonObservationLink or
+  Claim was written. No importer, staging write, feeder or production-code/schema change occurred.
+- Local verification passed: pytest `376 passed, 1 skipped`; Ruff; mypy; Golden quality; Web lint,
+  typecheck, UI tests `11/11`, production build and standalone contract check. Markdown relative
+  links checked `69`; `git diff --check` passed. Commit/push and GitHub Verify are the remaining
+  closure gates.
+
+The active plan is `docs/exec-plans/active/alio-assembly-cross-lane-kim-dongcheol-v1.md`.
+
+## Next concrete action
+
+Commit and push the bounded fixture/test/documentation change, then require GitHub Verify success
+and final `HEAD == origin/master` with a clean isolated worktree. After PASS, perform only the
+read-only canonical Person collision/materialization preflight for 김동철; do not write.
