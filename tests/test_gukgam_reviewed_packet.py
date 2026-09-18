@@ -1,0 +1,134 @@
+import json
+from pathlib import Path
+
+import pytest
+
+from packages.connectors.gukgam_reviewed_packet import (
+    AUTOMATION_GATE,
+    GukgamReviewedPacketError,
+    PACKET_SCHEMA,
+    parse_reviewed_gukgam_plan_packet,
+)
+
+FIXTURE = Path("tests/fixtures/gukgam_2026_science_plan_metadata_packet.json")
+
+
+def _packet() -> dict:
+    return {
+        "schema": PACKET_SCHEMA,
+        "review_status": "HUMAN_REVIEWED",
+        "source": {
+            "committee_name": "테스트위원회",
+            "ntt_id": "123",
+            "detail_url": (
+                "https://test.na.go.kr/cmmit/bbs/BCMT2002/view.do"
+                "?nttId=123&menuNo=2000030"
+            ),
+            "title": "2026년도 국정감사계획서",
+            "published_date": "2026-09-15",
+            "atch_file_id": "attachment-1",
+            "file_sn": 2,
+            "attachment_filename": "2026년도 국정감사계획서.pdf",
+            "rights_mark": "KOGL_TYPE_1",
+            "automation_gate": AUTOMATION_GATE,
+        },
+        "schedule": [
+            {
+                "ordinal": 1,
+                "audit_date": "2026-10-06",
+                "time_text": "10:00",
+                "venue": "국회",
+                "section": "감사일정",
+                "audited_targets": ["테스트기관 A", "테스트기관 B"],
+                "page_number": 3,
+            },
+            {
+                "ordinal": 2,
+                "audit_date": "2026-10-07",
+                "time_text": None,
+                "venue": None,
+                "section": "감사일정",
+                "audited_targets": ["테스트기관 C"],
+                "page_number": 4,
+            },
+        ],
+        "witness_rows_included": False,
+    }
+
+
+def test_pinned_science_plan_metadata_packet_is_parseable() -> None:
+    packet = parse_reviewed_gukgam_plan_packet(
+        json.loads(FIXTURE.read_text(encoding="utf-8"))
+    )
+
+    assert packet.source.committee_name == "과학기술정보방송통신위원회"
+    assert packet.source.ntt_id == "3078699"
+    assert packet.source.atch_file_id == "7938f3a874d5441892124093d19da1df"
+    assert packet.source.file_sn == 2
+    assert packet.schedule == ()
+    assert packet.witness_rows_included is False
+
+
+def test_schedule_packet_has_deterministic_record_keys_and_hash() -> None:
+    packet = parse_reviewed_gukgam_plan_packet(_packet())
+    packet_again = parse_reviewed_gukgam_plan_packet(_packet())
+
+    assert packet.content_hash == packet_again.content_hash
+    assert [
+        packet.schedule_record_key(row) for row in packet.schedule
+    ] == [
+        "123:attachment-1:2:schedule:1",
+        "123:attachment-1:2:schedule:2",
+    ]
+    assert packet.normalized()["schedule"][0]["audited_targets"] == [
+        "테스트기관 A",
+        "테스트기관 B",
+    ]
+
+
+def test_source_ntt_id_must_match_detail_url() -> None:
+    raw = _packet()
+    raw["source"]["ntt_id"] = "999"
+
+    with pytest.raises(GukgamReviewedPacketError, match="ntt_id does not match"):
+        parse_reviewed_gukgam_plan_packet(raw)
+
+
+def test_plan_packet_rejects_embedded_witness_rows() -> None:
+    raw = _packet()
+    raw["witness_rows_included"] = True
+
+    with pytest.raises(GukgamReviewedPacketError, match="must not embed witness"):
+        parse_reviewed_gukgam_plan_packet(raw)
+
+
+def test_packet_rejects_unknown_or_private_side_channel_fields() -> None:
+    raw = _packet()
+    raw["contacts"] = [{"phone": "010-0000-0000"}]
+
+    with pytest.raises(GukgamReviewedPacketError, match="unsupported fields: contacts"):
+        parse_reviewed_gukgam_plan_packet(raw)
+
+
+def test_schedule_requires_unique_ordered_ordinals() -> None:
+    raw = _packet()
+    raw["schedule"][1]["ordinal"] = 1
+
+    with pytest.raises(GukgamReviewedPacketError, match="ordinals must be unique"):
+        parse_reviewed_gukgam_plan_packet(raw)
+
+
+def test_schedule_rejects_duplicate_target_names_within_row() -> None:
+    raw = _packet()
+    raw["schedule"][0]["audited_targets"] = ["테스트기관 A", "테스트기관 A"]
+
+    with pytest.raises(GukgamReviewedPacketError, match="audited_targets must be unique"):
+        parse_reviewed_gukgam_plan_packet(raw)
+
+
+def test_automation_gate_cannot_be_weakened_in_packet() -> None:
+    raw = _packet()
+    raw["source"]["automation_gate"] = "FETCH_ALLOWED"
+
+    with pytest.raises(GukgamReviewedPacketError, match="reviewed blocked state"):
+        parse_reviewed_gukgam_plan_packet(raw)
