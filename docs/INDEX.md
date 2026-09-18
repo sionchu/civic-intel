@@ -9,6 +9,7 @@ implementation work.
 - [Architecture](../ARCHITECTURE.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
 - [Governance ontology projection](architecture/GOVERNANCE_ONTOLOGY.md)
+- [Gukgam 2026 source contract](architecture/GUKGAM_2026_SOURCE_CONTRACT.md)
 - [Career facets](architecture/CAREER_FACETS.md)
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
