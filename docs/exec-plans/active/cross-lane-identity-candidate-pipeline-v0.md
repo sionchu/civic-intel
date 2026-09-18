@@ -1,7 +1,6 @@
 # Cross-Lane Identity Candidate Pipeline v0
 
-Status: IN_PROGRESS — implementation and focused regressions pass; full verification, CI and
-staging read-only proof pending (2026-09-19).
+Status: COMPLETE — `CROSS_LANE_IDENTITY_CANDIDATE_PIPELINE_V0 — PASS` (2026-09-19).
 
 ## Objective and boundary
 
@@ -75,14 +74,61 @@ not part of v0
 Candidate generation is not identity resolution. Research-level `RESOLVED` is not permission to
 merge or materialize a canonical Person.
 
-## Verification and staging gate
+## Verification and staging receipt
 
-Focused candidate, resolver and profile regressions pass locally. Remaining gates are full
-repository verification, GitHub Verify, then one approved staging read-only command. The staging
-receipt will record only safe counts: ALIO executive Claims considered, public People considered,
-candidate pairs, unique executive names among candidates and unique Person IDs among candidates.
-Before/after canonical People, Organizations, Claims, ClaimEvidence and PersonObservationLinks
-must remain unchanged. A zero candidate count is a valid result.
+Focused candidate, resolver and profile regressions pass locally. Full repository verification
+also passed: pytest `386 passed, 1 skipped`, Ruff, mypy, Golden quality, Web lint/typecheck/UI
+`11/11`, production build, standalone contract check and Markdown link validation. GitHub Verify
+`35368004198` passed for commit `e188cafc736351b507873d1b9ba9bddc9b31955b`.
+
+The single staging proof ran in private ephemeral Sandbox `a6e61745-b303-412b-85cf-4f16b7b9fd94`
+in `us-west2`, using the exact commit above and the read-only command:
+
+```text
+python -m workers.alio_cross_lane_identity_candidates --database-url "$DATABASE_URL"
+```
+
+Safe receipt:
+
+```text
+status=REVIEW_ONLY
+alio_executive_claims_considered=3624
+public_people_considered=299
+candidate_pairs=56
+resolved_pairs=0
+review_pairs=56
+unresolved_pairs=0
+unique_executive_names=40
+unique_person_ids=41
+```
+
+All 56 candidates had
+`EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY`; all remained
+`REVIEW / CONTEXT_REVIEW` with `name_match` and
+`cross_lane_bridge_evidence_missing`. No bridge research or enrichment was performed.
+
+Before and after read-only counts were identical:
+
+```text
+schema=0006
+people=299
+organizations=347
+claims=5466
+claim_evidence=5466
+subject_xor=0
+alio_item4_claims=3970
+alio_item4_evidence=3970
+alio_executive_claims=3624
+alio_executive_evidence=3624
+person_observation_links=299
+identity_review_items=1
+```
+
+The 3970 ALIO item-4 total includes 3624 executive disclosure Claims and 346 institution
+classification Claims; only the executive disclosure contract is a candidate input. The Sandbox
+was destroyed successfully and a follow-up list showed no remaining entry or running Sandbox for
+the task. No staging write, importer, acquisition, migration, deployment or Railway resource
+change occurred.
 
 ## Closure
 
@@ -93,6 +139,6 @@ all pass.
 
 ## Next concrete action
 
-After PASS, take only the small staging candidate set through reviewed official-source bridge
-research and classify each as `HAS_NON_NAME_BRIDGE`, `NO_BRIDGE_FOUND` or `HARD_CONFLICT`; do not
-materialize a Person.
+Proceed to `Civic Intel Governance Ontology + Gukgam 2026 Scale Collection & Visual Explorer v0`
+with agent-based implementation and independent verification. Do not begin person-by-person
+materialization from this candidate set.

@@ -1925,29 +1925,30 @@ existing People, inspect same-name and birth-date conflicts, and choose among `L
 
 ## Current checkpoint — Cross-Lane Identity Candidate Pipeline v0 (2026-09-19)
 
-- The Kim Dong-cheol-specific materialization preflight was not started. The new bounded
-  source-specific pipeline reduces published ALIO item-4 executive Claims against current public
-  People using one Organization read, one bounded Organization Claim/Evidence context read and
-  one public People read. It does not load raw normalized observations or persist candidates.
-- `packages/verification/alio_person_candidates.py` defines immutable non-persistent candidate and
-  report contracts. Exact Unicode-preserving canonical-name overlap is discovery-only. Every pair
-  calls `resolve_cross_lane_identity()` with empty bridge evidence and remains
-  `REVIEW/CONTEXT_REVIEW`; unexpected resolution fails closed.
-- `workers/alio_cross_lane_identity_candidates.py` is read-only and has no `--commit` option. The
-  JSON receipt contains safe counts and candidate provenance IDs only; no credentials, raw payload,
-  contact data or source fulltext is emitted.
-- Focused candidate/resolver/profile tests pass, including distinct Claim-key de-duplication,
-  masked/vacant exclusion, non-ALIO exclusion, no-write command behavior, deterministic JSON and
-  fail-closed unexpected resolution. Full local verification passed: pytest `386 passed, 1 skipped`,
-  Ruff, mypy, Golden quality, Web lint/typecheck/UI `11/11`, production build and standalone
-  contract check. Markdown relative links checked `70`.
-- A disposable migrated SQLite CLI smoke returned `REVIEW_ONLY` with zero Claims, People and
-  candidate pairs. No staging read or write has occurred yet; CI and the approved staging
-  read-only proof remain pending.
+- `CROSS_LANE_IDENTITY_CANDIDATE_PIPELINE_V0 — PASS` is closed. The Kim Dong-cheol-specific
+  materialization preflight was not started.
+- The single staging proof used private Sandbox
+  `a6e61745-b303-412b-85cf-4f16b7b9fd94` in `us-west2`, exact commit
+  `e188cafc736351b507873d1b9ba9bddc9b31955b`, and the read-only candidate command exactly once.
+- Receipt: `REVIEW_ONLY`; ALIO executive Claims `3624`; public People `299`; candidate pairs `56`;
+  resolved `0`; review `56`; unresolved `0`; unique executive names `40`; unique Person IDs `41`.
+  Every candidate retained `EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY` and
+  `REVIEW/CONTEXT_REVIEW` with the missing-bridge reason. No bridge research or enrichment ran.
+- Before/after counts were unchanged: schema `0006`, People `299`, Organizations `347`, Claims
+  `5466`, ClaimEvidence `5466`, subject-XOR `0`, ALIO item-4 Claims/Evidence `3970/3970`, ALIO
+  executive Claims/Evidence `3624/3624`, PersonObservationLinks `299`, IdentityReviewItems `1`.
+- The Sandbox was destroyed; a follow-up list showed no remaining entry or running Sandbox for the
+  task. No staging write, importer, acquisition, migration, deployment or Railway resource change
+  occurred. The active plan records the full receipt and distinction between the 3970 total and
+  the 3624 executive candidate input.
+- Commit `e188cafc736351b507873d1b9ba9bddc9b31955b` is already pushed. GitHub Verify
+  `35368004198` passed; local full verification passed and the isolated worktree was clean before
+  this closure update.
 
 The active plan is `docs/exec-plans/active/cross-lane-identity-candidate-pipeline-v0.md`.
 
 ## Next concrete action
 
-Commit and push this bounded implementation, require GitHub Verify success, then run the candidate
-command once through the approved staging read-only boundary and record safe before/after counts.
+Proceed to `Civic Intel Governance Ontology + Gukgam 2026 Scale Collection & Visual Explorer v0`
+with agent-based implementation and independent verification. Do not begin person-by-person
+materialization from this candidate set.
