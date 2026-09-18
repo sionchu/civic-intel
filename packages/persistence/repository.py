@@ -2728,6 +2728,38 @@ class SqlAlchemyRepository:
         )
 
     @staticmethod
+    def _organization_claim_row(claim: Claim) -> ClaimRow:
+        return ClaimRow(
+            id=str(claim.id),
+            person_id=None,
+            organization_id=str(claim.organization_id),
+            proposition=claim.proposition,
+            subject=claim.subject,
+            predicate=claim.predicate,
+            object_text=claim.object_text,
+            qualifiers=claim.qualifiers,
+            epistemic_status=claim.epistemic_status.value,
+            publication_status=claim.publication_status.value,
+            asserted_as_true=claim.asserted_as_true,
+            resolution_note=claim.resolution_note,
+            **SqlAlchemyRepository._temporal(claim),
+        )
+
+    @staticmethod
+    def _organization_claim_evidence_row(item: ClaimEvidence) -> ClaimEvidenceRow:
+        return ClaimEvidenceRow(
+            id=str(item.id),
+            claim_id=str(item.claim_id),
+            source_id=str(item.source_id),
+            snapshot_id=(str(item.snapshot_id) if item.snapshot_id else None),
+            feeder_observation_id=(
+                str(item.feeder_observation_id) if item.feeder_observation_id else None
+            ),
+            stance=item.stance.value,
+            excerpt=item.excerpt,
+        )
+
+    @staticmethod
     def _add_organization_claim_rows(
         session: Session,
         claim: Claim,
@@ -2735,41 +2767,11 @@ class SqlAlchemyRepository:
         *,
         flush: bool = True,
     ) -> None:
-        session.add(
-            ClaimRow(
-                id=str(claim.id),
-                person_id=None,
-                organization_id=str(claim.organization_id),
-                proposition=claim.proposition,
-                subject=claim.subject,
-                predicate=claim.predicate,
-                object_text=claim.object_text,
-                qualifiers=claim.qualifiers,
-                epistemic_status=claim.epistemic_status.value,
-                publication_status=claim.publication_status.value,
-                asserted_as_true=claim.asserted_as_true,
-                resolution_note=claim.resolution_note,
-                **SqlAlchemyRepository._temporal(claim),
-            )
-        )
+        session.add(SqlAlchemyRepository._organization_claim_row(claim))
         if flush:
             session.flush()
         for item in evidence:
-            session.add(
-                ClaimEvidenceRow(
-                    id=str(item.id),
-                    claim_id=str(item.claim_id),
-                    source_id=str(item.source_id),
-                    snapshot_id=(str(item.snapshot_id) if item.snapshot_id else None),
-                    feeder_observation_id=(
-                        str(item.feeder_observation_id)
-                        if item.feeder_observation_id
-                        else None
-                    ),
-                    stance=item.stance.value,
-                    excerpt=item.excerpt,
-                )
-            )
+            session.add(SqlAlchemyRepository._organization_claim_evidence_row(item))
 
     def import_organization_claim(
         self,
@@ -2970,6 +2972,7 @@ class SqlAlchemyRepository:
                 )
                 current_names = {row.name for row in same_name_rows}
                 stored_organizations: dict[UUID, Organization] = {}
+                pending_organization_rows: list[OrganizationRow] = []
                 for organization in organizations:
                     organization_row = requested_organization_rows.get(str(organization.id))
                     if organization_row is None:
@@ -2977,7 +2980,13 @@ class SqlAlchemyRepository:
                             raise OrganizationClaimImportError(
                                 "organization batch refuses a same-name canonical row without an exact binding"
                             )
-                        self._add_organization_row(session, organization)
+                        pending_organization_rows.append(
+                            OrganizationRow(
+                                id=str(organization.id),
+                                name=organization.name,
+                                **SqlAlchemyRepository._temporal(organization),
+                            )
+                        )
                         stored_organizations[organization.id] = organization
                         created_organizations += 1
                     else:
@@ -2991,8 +3000,6 @@ class SqlAlchemyRepository:
                             )
                         stored_organizations[organization.id] = stored_organization
                         reused_organizations += 1
-                if created_organizations:
-                    session.flush()
 
                 existing_rows = list(
                     session.scalars(
@@ -3039,6 +3046,8 @@ class SqlAlchemyRepository:
                 results: list[Claim] = []
                 created_claims = 0
                 reused_claims = 0
+                pending_claim_rows: list[ClaimRow] = []
+                pending_evidence_rows: list[ClaimEvidenceRow] = []
                 for organization, claim, evidence in items:
                     key = self._claim_import_key(claim)
                     owners = source_key_owners.get(key[1:], set())
@@ -3104,12 +3113,24 @@ class SqlAlchemyRepository:
                             raise OrganizationClaimImportError(
                                 f"organization evidence ID already exists: {item.id}"
                             )
-                    self._add_organization_claim_rows(session, claim, evidence, flush=False)
+                    pending_claim_rows.append(self._organization_claim_row(claim))
+                    pending_evidence_rows.extend(
+                        self._organization_claim_evidence_row(item) for item in evidence
+                    )
                     source_key_owners.setdefault(key[1:], set()).add(organization.id)
                     results.append(claim)
                     created_claims += 1
 
-                session.flush()
+                if pending_organization_rows:
+                    session.add_all(pending_organization_rows)
+                if pending_claim_rows:
+                    session.add_all(pending_claim_rows)
+                if pending_organization_rows or pending_claim_rows:
+                    # Flush Organization and Claim parents together before the final Evidence
+                    # flush; do not flush or read back individual Claims.
+                    session.flush()
+                if pending_evidence_rows:
+                    session.add_all(pending_evidence_rows)
                 session.commit()
                 return OrganizationClaimBatchResult(
                     claims=tuple(results),
