@@ -1952,3 +1952,41 @@ The active plan is `docs/exec-plans/active/cross-lane-identity-candidate-pipelin
 Proceed to `Civic Intel Governance Ontology + Gukgam 2026 Scale Collection & Visual Explorer v0`
 with agent-based implementation and independent verification. Do not begin person-by-person
 materialization from this candidate set.
+
+
+## Current checkpoint — Gukgam 2026 Ontology/Web staging v0 (2026-09-19)
+
+- Slice 0 Governance Ontology merged as `f5189b61febbd5729c79b3ac349ace57fb6f8ac7`.
+  It exposes the read-only Person ontology route without weakening identity/publication gates.
+- The Web/Product surface merged as `e6d58c733093abe1a236ab09e6226aac5782ef0a`:
+  `국감 2026` navigation, `/gukgam/2026`, Home launch treatment, and the accessible Person
+  local ontology graph/text relation view. No Cytoscape dependency, schema or new backend route
+  was added.
+- The reviewed-plan packet contract merged as
+  `d0b7c0efd2091cb418e585b5ade9fe5eb19253fc`. Its first Science Committee fixture pins
+  `nttId=3078699`, `atchFileId=7938f3a874d5441892124093d19da1df`, `fileSn=2`, and
+  publication date `2026-09-15`; schedule rows remain intentionally empty pending exact source
+  review.
+- Final master Verify `35380740361` passed.
+- Staging exact-commit deployment passed at
+  `d0b7c0efd2091cb418e585b5ade9fe5eb19253fc`: API
+  `0b8317d1-a6ee-44bd-89b2-8e5bf821b0f7`, Web
+  `ba1acc7d-5b88-454a-8e62-5923918de41b`. Postgres remained
+  `172ec443-e3cc-44bb-a5c1-195f54f86824`.
+- API runtime logs show `/ready=200` and `/people=200`; Web root healthcheck passed. The Web
+  production build contains `/gukgam/2026` and `/people/[id]`. Rendered-content QA on the
+  public Railway domain remains pending because the current execution boundary cannot resolve/
+  fetch that temporary domain; do not infer screenshot acceptance from build success.
+- No staging data write, importer, migration, Postgres deployment, Railway config/domain/variable/
+  volume/replica change occurred.
+- Repeated automation against the committee website remains blocked by its reviewed robots rule.
+  Before scaling manual packets, inspect the official National Assembly Secretariat OpenAPI guide
+  and service catalog for a Gukgam-specific automation-permitted operation.
+
+## Next concrete action
+
+Codex should search the official National Assembly Secretariat OpenAPI guide/service catalog for
+2026 Gukgam plan/schedule, audited-organization, witness and reference-person operations. If an
+exact operation exists, implement only that source-specific API contract/fixture/connector. If it
+does not, record the negative result and complete the first Science Committee reviewed schedule
+packet under the existing packet gate. Do not modify `apps/web` in that slice.

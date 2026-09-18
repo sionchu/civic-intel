@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getPerson, getPersonOntology, getSource } from "../../data";
-import OntologyLocalGraph from "../../components/ontology-local-graph";
+import { getPerson, getSource } from "../../data";
 import ReadState from "../../components/read-state";
 import { getReviewedPortrait } from "../../portrait";
 
@@ -21,24 +20,18 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
   }
   const person = personResult.data;
-  const [portrait, ontologyResult] = await Promise.all([
-    getReviewedPortrait(person),
-    getPersonOntology(id),
-  ]);
-  const ontology = ontologyResult.state === "success" ? ontologyResult.data : null;
+  const portrait = await getReviewedPortrait(person);
 
   const sectionSourceIds =
     person.profile?.sections.flatMap((section) =>
       section.entries.flatMap((entry) => entry.source_ids),
     ) ?? [];
   const claimSourceIds = (person.claims ?? []).flatMap((claim) => claim.source_ids);
-  const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
-  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds])];
+  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds])];
   const sourceResults = await Promise.all(sourceIds.map(getSource));
   const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
   const sourceError = sourceResults.find((item) => item.state === "error");
   const sourceById = new Map(sources.map((source) => [source.id, source]));
-  const sourceTitleById = Object.fromEntries(sources.map((source) => [source.id, source.title]));
   const profile = person.profile;
 
   return (
@@ -101,7 +94,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 ))}
               </ol>
             </nav>
-            <a className="profile-source-index-link" href="#official-connections">공식 연결</a>
             <a className="profile-source-index-link" href="#sources-title">Evidence &amp; Sources</a>
           </aside>
 
@@ -257,27 +249,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       ) : (
         <p className="empty-state"><span className="empty-state-mark" aria-hidden="true">∅</span><span><strong>Profile projection unavailable.</strong><small><span className="status UNKNOWN">UNKNOWN</span> 공개 profile을 구성할 근거가 없습니다.</small></span></p>
       )}
-
-
-      <section className="ontology-section" id="official-connections" aria-labelledby="ontology-title">
-        <div className="section-intro">
-          <div>
-            <span className="eyebrow">Governance ontology / local view</span>
-            <h2 id="ontology-title">공식 기록상 연결</h2>
-          </div>
-          <p>현재 공개 Claim/Evidence에서 직접 지원되는 관계만 local graph와 동일한 텍스트 목록으로 보여줍니다.</p>
-        </div>
-        {ontologyResult.state === "error" ? (
-          <ReadState error={ontologyResult.error} />
-        ) : ontology && ontology.edges.length > 0 ? (
-          <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} />
-        ) : (
-          <p className="empty-state" role="status">
-            <span className="empty-state-mark" aria-hidden="true">∅</span>
-            <span><strong>현재 공개 가능한 연결이 없습니다.</strong><small>관계가 없다는 뜻이 아니라, 현재 ontology projection에 표시할 published Claim/Evidence가 없다는 뜻입니다.</small></span>
-          </p>
-        )}
-      </section>
 
       <section className="source-library" aria-labelledby="sources-title">
         <div className="section-intro">

@@ -189,38 +189,6 @@ export type Person = {
   profile?: ProfileProjection;
 };
 
-export type OntologyNode = {
-  id: string;
-  kind: "PERSON" | "ORGANIZATION" | "EDUCATIONAL_INSTITUTION" | "COMPANY" | "COMMITTEE" | "OFFICE" | "HEARING" | "ISSUE";
-  label: string;
-  canonical_id: string | null;
-  claim_ids: string[];
-};
-
-export type OntologyEdge = {
-  id: string;
-  source: string;
-  target: string;
-  relation_type: "HELD_ROLE" | "WORKED_AT" | "STUDIED_AT" | "SERVED_ON" | "DIRECTOR_OF" | "APPOINTED_TO" | "APPEARED_AT" | "QUESTIONED" | "AUDITED_BY";
-  label: string;
-  claim_id: string;
-  evidence_ids: string[];
-  source_ids: string[];
-  epistemic_status: Status;
-  publication_status: "PUBLISHED";
-  source_conflict: boolean;
-  valid_from: string | null;
-  valid_to: string | null;
-};
-
-export type OntologyGraph = {
-  center_node_id: string;
-  nodes: OntologyNode[];
-  edges: OntologyEdge[];
-  semantics: "READ_ONLY_PROJECTION_FROM_CANONICAL_CLAIM_EVIDENCE";
-  limitations: string[];
-};
-
 export type Source = {
   id: string;
   url: string;

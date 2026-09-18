@@ -176,33 +176,3 @@ test("production build prepares a self-contained standalone asset contract", asy
   assert.match(prepare, /cpSync/);
   assert.match(check, /Standalone runtime contract verified/);
 });
-
-
-test("Gukgam 2026 is an event surface inside Civic Intel, not a parallel product", async () => {
-  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
-  const home = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
-  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
-  assert.match(layout, /href="\/gukgam\/2026"/);
-  assert.match(home, /국감 2026/);
-  assert.match(page, /Civic Intel \/ Event surface/);
-  assert.match(page, /getPeople/);
-  assert.match(page, /getOrganizations/);
-  assert.match(page, /검증된 만큼만/);
-  assert.doesNotMatch(page, /오늘의 국감|공격 의원|옹호 의원|인맥|친분|배후/);
-});
-
-test("Person detail renders a read-only accessible ontology local view", async () => {
-  const page = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
-  const graph = await readFile(new URL("../app/components/ontology-local-graph.tsx", import.meta.url), "utf8");
-  const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
-  const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
-  assert.match(page, /getPersonOntology/);
-  assert.match(page, /OntologyLocalGraph/);
-  assert.match(page, /공식 기록상 연결/);
-  assert.match(data, /\/ontology\/people\/\$\{id\}/);
-  assert.match(types, /READ_ONLY_PROJECTION_FROM_CANONICAL_CLAIM_EVIDENCE/);
-  assert.match(graph, /aria-label="공식 기록상 연결 목록"/);
-  assert.match(graph, /source_conflict/);
-  assert.match(graph, /Claim\/Evidence/);
-  assert.doesNotMatch(graph, /"use client"|onClick|confidence|score|probability/);
-});

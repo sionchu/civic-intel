@@ -96,12 +96,50 @@ Required closure:
 - no identity merge is introduced;
 - no schema, migration, dependency or deployment change.
 
+## Current checkpoint — Web surface + reviewed packet staging (2026-09-19)
+
+- Governance Ontology Slice 0 merged as `f5189b61febbd5729c79b3ac349ace57fb6f8ac7`.
+  The public Person ontology route remains a read-only Claim/Evidence projection; nomination,
+  UNKNOWN/inference relations and label-based cross-Person path merging remain excluded.
+- The first Web/Product surface merged as
+  `e6d58c733093abe1a236ab09e6226aac5782ef0a`: top-level `국감 2026`, the editorial
+  `/gukgam/2026` landing, Home launch treatment, and an accessible Person local ontology graph
+  with a complete textual relation list. No frontend graph dependency or new backend/schema was
+  added.
+- The reviewed Gukgam plan-packet L1 parser merged as
+  `d0b7c0efd2091cb418e585b5ade9fe5eb19253fc`. The pinned Science Committee fixture contains
+  reviewed source metadata only; its schedule remains empty until exact official PDF rows are
+  reviewed. The parser performs no fetch, persistence, identity materialization or publication.
+- Final master Verify `35380740361` passed on
+  `d0b7c0efd2091cb418e585b5ade9fe5eb19253fc`.
+- Exact-commit staging deployments passed:
+  API `0b8317d1-a6ee-44bd-89b2-8e5bf821b0f7` and Web
+  `ba1acc7d-5b88-454a-8e62-5923918de41b`, both at the same master commit. PostgreSQL remained
+  on `172ec443-e3cc-44bb-a5c1-195f54f86824`; no data import, schema write, resource, domain,
+  variable, volume or replica change was made.
+- Runtime evidence: API deploy logs show `GET /ready 200` and `GET /people 200`. The Web
+  deployment healthcheck at `/` passed, and its production build explicitly contains
+  `/gukgam/2026` and `/people/[id]`. The current tool execution boundary could not fetch the
+  Railway public domain for rendered-content QA, so screenshot/content-level staging QA remains
+  a separate browser check rather than an inferred PASS.
+- Committee-site repeated automation remains blocked by the reviewed robots contract. Official
+  data.go.kr metadata confirms the National Assembly Secretariat publishes an Open API catalog
+  with unrestricted reuse, but the catalog landing metadata does not itself identify a
+  Gukgam-specific operation. The official OpenAPI guide/service list must be searched before
+  scaling reviewed packets.
+
 ## Next concrete action
 
-After Slice 0 merges, start Slice 1 by finding an **automation-permitted official** route for 2026
-Gukgam metadata. Prioritize 열린국회정보 / National Assembly Open API and central official audit
-schedule metadata.
+Have Codex inspect the official National Assembly Secretariat OpenAPI guide and service catalog
+end-to-end for an automation-permitted operation exposing 2026 Gukgam plan/schedule, audited
+organizations, institutional/general witnesses or reference persons.
 
-Do not implement a committee-site scraper while the reviewed robots contract blocks those paths.
-If no suitable official automated route exists, use the existing rights-reviewed human-assisted
-packet gate for one committee rather than weakening source policy.
+- If an exact official API operation exists, pin its service code, keys, pagination/coverage,
+  correction semantics and rights, then implement the smallest source-specific connector and
+  deterministic fixture.
+- If no such operation exists, record the negative evidence and immediately complete the first
+  Science Committee reviewed schedule packet from the exact official document under
+  `GUKGAM_REVIEWED_PACKET.md`; do not build a committee-site scraper.
+
+Keep `apps/web` untouched in this Codex slice. Web integration resumes after the first real
+Gukgam read contract exists.
