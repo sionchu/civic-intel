@@ -7,7 +7,7 @@ from datetime import date
 from typing import Any
 from uuid import UUID, uuid5
 
-from sqlalchemy import create_engine, inspect, select, text
+from sqlalchemy import create_engine, insert, inspect, select, text
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -3123,14 +3123,31 @@ class SqlAlchemyRepository:
 
                 if pending_organization_rows:
                     session.add_all(pending_organization_rows)
-                if pending_claim_rows:
-                    session.add_all(pending_claim_rows)
-                if pending_organization_rows or pending_claim_rows:
-                    # Flush Organization and Claim parents together before the final Evidence
-                    # flush; do not flush or read back individual Claims.
+                    # Flush the Organization parents before the bounded Claim insert. The
+                    # Claim/Evidence inserts below stay in this same transaction.
                     session.flush()
+                if pending_claim_rows:
+                    session.execute(
+                        insert(ClaimRow),
+                        [
+                            {
+                                column.name: getattr(row, column.name)
+                                for column in ClaimRow.__table__.columns
+                            }
+                            for row in pending_claim_rows
+                        ],
+                    )
                 if pending_evidence_rows:
-                    session.add_all(pending_evidence_rows)
+                    session.execute(
+                        insert(ClaimEvidenceRow),
+                        [
+                            {
+                                column.name: getattr(row, column.name)
+                                for column in ClaimEvidenceRow.__table__.columns
+                            }
+                            for row in pending_evidence_rows
+                        ],
+                    )
                 session.commit()
                 return OrganizationClaimBatchResult(
                     claims=tuple(results),
