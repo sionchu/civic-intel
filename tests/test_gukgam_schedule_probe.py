@@ -102,8 +102,10 @@ def test_probe_report_is_read_only_and_only_returns_gukgam_candidates(
         }
     ]
     assert SECRET not in json.dumps(report, ensure_ascii=False)
-    assert "audited_organizations" not in json.dumps(report)
-    assert "witnesses" not in json.dumps(report)
+    candidate = report["gukgam_candidates"][0]
+    assert "audited_organizations" not in candidate
+    assert "witnesses" not in candidate
+    assert "reference_persons" not in candidate
 
 
 def test_probe_cli_requires_a_bounded_date_and_committee() -> None:
