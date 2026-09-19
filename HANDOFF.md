@@ -2064,3 +2064,36 @@ Obtain the exact pinned Science Committee 2026 plan PDF through an approved manu
 artifact boundary, complete one reviewed packet, run the dry-run L2 import and independent receipt,
 then perform exactly one staging observation-only commit plus unchanged rerun if the gate passes.
 Do not bind target names to canonical Organizations in that slice.
+
+## Current checkpoint — Public Beta latest search UX staging acceptance v0 (2026-09-19)
+
+- The shareable Gukgam search sequence is now on `master`: query deep links
+  `a284502d2396c4d5e89be19e841b61d55d2ecf32`, accessible clipboard copy
+  `d4ae1541233102816f35d0ccc27d50f3357ac211`, and deterministic broad-result expansion
+  `d89113ee34189253409e1134fe80805c2894c2d7`.
+- Final master Verify `35432140878` passed on `d89113ee34189253409e1134fe80805c2894c2d7`.
+  Exact staging Web deployment `c0f573c0-5900-4c58-b64e-9c8d0db8dc4f` also reached
+  `SUCCESS`; API and PostgreSQL deployments were unchanged.
+- Independent read-only staging acceptance run `35432835240` passed against
+  `https://web-staging-efe2.up.railway.app`. It proved `?q=` hydration for
+  `한국전력공사`, a successful clipboard-copy state, `국민의힘` People expansion from
+  6 to 18 visible results, distinct `박지원` same-name records, mobile deep-link/share
+  rendering, and the existing noindex/privacy HTTP preflight.
+- The acceptance run mutated no application data, Railway configuration, production resource,
+  public domain or indexing setting. Its evidence artifact
+  `public-beta-latest-acceptance` is attached to run `35432835240`.
+- Railway `production` environment `7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15` remains empty:
+  zero services and zero buckets. The repository IaC still declares only private PostgreSQL,
+  private FastAPI and Next Web and deliberately declares no public domain,
+  `CIVIC_PUBLIC_BASE_URL` or `CIVIC_INDEXING_ENABLED`.
+
+`PUBLIC_BETA_LATEST_STAGING_ACCEPTANCE — PASS` is closed for candidate
+`d89113ee34189253409e1134fe80805c2894c2d7`.
+
+## Next concrete action
+
+Run an actual read-only `railway config plan --json` against the empty `production`
+environment and require the expected three creates, zero changes, zero destroys and no
+IaC-declared public API/database domain. Do not apply the plan, create a domain, load production
+data or enable indexing. If the owner-authenticated CLI execution boundary is unavailable, record
+that as `PRODUCTION_IAC_PLAN_COMMAND_PENDING` rather than inferring a plan PASS.

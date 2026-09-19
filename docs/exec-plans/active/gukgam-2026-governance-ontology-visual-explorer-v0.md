@@ -249,3 +249,27 @@ Complete exactly one reviewed Science Committee 2026 plan packet from the pinned
 
 Do not bind audited-target names to canonical Organizations in the same slice. Do not weaken the
 committee-site robots boundary while the official API credential remains unavailable.
+
+## Current checkpoint — shareable search acceptance + production drill handoff (2026-09-19)
+
+- Search deep links (`a284502d...`), accessible share-link copy (`d4ae1541...`) and
+  incremental broad-result expansion (`d89113ee...`) are merged without backend ranking,
+  scoring, schema changes or identity changes.
+- Master Verify `35432140878` passed and staging Web deployment
+  `c0f573c0-5900-4c58-b64e-9c8d0db8dc4f` reached `SUCCESS`.
+- Read-only staging acceptance `35432835240` passed the full latest search UX gate:
+  `한국전력공사` `?q=` hydration, real clipboard-copy success, `국민의힘`
+  6→18 deterministic expansion, `박지원` same-name separation, mobile behavior,
+  noindex and selected privacy-leak checks.
+- No application data or Railway configuration changed during acceptance. Production remains an
+  empty environment with zero services/buckets; no production domain or indexing activation exists.
+
+### Production launch drill — next gate
+
+The production IaC contract is prepared but not applied. The next allowed action is read-only only:
+run `railway config plan --json` in the owner-authenticated CLI context against
+`production` and verify exactly the intended private PostgreSQL + private API + Web topology,
+with zero changes, zero destroys and no IaC-declared public API/database domain. A missing
+owner-authenticated CLI boundary is a blocker receipt, not permission to infer plan success.
+Applying resources, generating a Web domain, loading data and enabling indexing remain separate
+explicit approval/cost gates.
