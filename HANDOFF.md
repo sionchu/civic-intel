@@ -2097,3 +2097,29 @@ environment and require the expected three creates, zero changes, zero destroys 
 IaC-declared public API/database domain. Do not apply the plan, create a domain, load production
 data or enable indexing. If the owner-authenticated CLI execution boundary is unavailable, record
 that as `PRODUCTION_IAC_PLAN_COMMAND_PENDING` rather than inferring a plan PASS.
+
+## Current checkpoint — Production IaC read-only plan execution gate (2026-09-19)
+
+- The production environment is still read-only confirmed empty through Railway MCP: environment
+  `7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15` has zero services and zero buckets.
+- Temporary GitHub Actions run `35433026488` installed Railway CLI `5.57.11` and the repository
+  IaC SDK, but found neither `RAILWAY_API_TOKEN` nor `RAILWAY_TOKEN` in repository Actions
+  secrets. It therefore did **not** run `railway link` or `railway config plan`, mutated no
+  Railway state and emitted `PLAN_COMMAND_PENDING / NO_RAILWAY_GITHUB_ACTIONS_SECRET`.
+  Receipt artifact: `production-iac-plan-receipt` (`10581990407`).
+- The connected Remote Desktop Commander device is offline, so the previously owner-authenticated
+  local Railway CLI is not available from this execution boundary. The remote Railway MCP exposes
+  platform state reads but not `config plan`; two read-only Railway Agent attempts timed out and
+  made no requested changes.
+- Therefore the repository contract still predicts the intended private PostgreSQL + private API +
+  Web topology, but the actual production provider plan has **not** been executed. Do not promote
+  the expected three creates to a PASS by inference.
+
+`PRODUCTION_IAC_PLAN_COMMAND_PENDING — BLOCKED_ON_OWNER_AUTHENTICATED_CLI`.
+
+## Next concrete action
+
+When an owner-authenticated Railway CLI boundary is available, run exactly the read-only production
+plan and require three creates, zero changes, zero destroys, no public API/database domain and no
+indexing variables. Do not apply, create a Web domain, load production data or enable indexing
+without a separate explicit approval.

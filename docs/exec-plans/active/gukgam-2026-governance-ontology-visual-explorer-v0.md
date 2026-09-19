@@ -273,3 +273,22 @@ with zero changes, zero destroys and no IaC-declared public API/database domain.
 owner-authenticated CLI boundary is a blocker receipt, not permission to infer plan success.
 Applying resources, generating a Web domain, loading data and enabling indexing remain separate
 explicit approval/cost gates.
+
+## Current checkpoint — production IaC plan execution boundary (2026-09-19)
+
+- Railway MCP still reports production environment
+  `7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15` with zero services and zero buckets.
+- Temporary GitHub Actions plan probe `35433026488` installed Railway CLI `5.57.11`, but the
+  repository has neither `RAILWAY_API_TOKEN` nor `RAILWAY_TOKEN` available to Actions.
+  The workflow fail-closed before `railway link` or `railway config plan`, wrote only a
+  `PLAN_COMMAND_PENDING` receipt and changed no Railway state.
+- The owner Desktop Commander host is offline and Remote Railway MCP does not expose the
+  repository-backed `config plan` operation. A remote Railway Agent attempt also timed out.
+- The actual production plan is therefore still unexecuted. Expected three-create topology is a
+  repository contract expectation only, not provider-plan evidence.
+
+Status: `PRODUCTION_IAC_PLAN_COMMAND_PENDING — BLOCKED_ON_OWNER_AUTHENTICATED_CLI`.
+
+The next permitted action remains a read-only owner-authenticated
+`railway config plan --json` against production. Apply/domain/data/indexing remain separate
+approval gates.

@@ -209,3 +209,19 @@ backup/restore rehearsal passed. Persistent provider backup configuration and un
 loading remain outside this checkpoint. The current deployment classification is
 `DEPLOYED_PREVIEW`: staging contains bounded ALIO observations plus the explicitly reviewed
 Organization Claim/MONEY smoke; no ALIO L3 promotion or production/public coverage claim was made.
+
+## Production IaC plan execution receipt — 2026-09-19
+
+The production plan contract remains `PREPARED_NOT_APPLIED`, and the production environment
+remains empty (zero services, zero buckets). A temporary read-only GitHub Actions probe
+(`35433026488`) installed Railway CLI `5.57.11` but found no
+`RAILWAY_API_TOKEN` or `RAILWAY_TOKEN` repository secret. It therefore did not link the
+project or execute `railway config plan`; no Railway state changed. Artifact
+`production-iac-plan-receipt` (`10581990407`) records
+`PLAN_COMMAND_PENDING / NO_RAILWAY_GITHUB_ACTIONS_SECRET`.
+
+The Remote Desktop Commander host that previously carried the owner-authenticated CLI is currently
+offline. Remote Railway MCP can confirm platform state but does not expose repository-backed
+`config plan`. Therefore the expected three creates remain an IaC contract expectation and are
+not an executed production plan result. The gate is
+`PRODUCTION_IAC_PLAN_COMMAND_PENDING — BLOCKED_ON_OWNER_AUTHENTICATED_CLI`.
