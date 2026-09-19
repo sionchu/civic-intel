@@ -199,6 +199,40 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         assert "contact" not in json.dumps(ontology_payload, ensure_ascii=False).casefold()
 
 
+def test_public_organization_list_batches_source_and_policy_reads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository, _ = enumerated_repository(tmp_path / "public-list-batch.db")
+    commit_prepared(repository)
+
+    source_reads = 0
+    policy_reads = 0
+    original_sources = repository.sources
+    original_policies = repository.policies
+
+    def tracked_sources(source_ids=None):
+        nonlocal source_reads
+        source_reads += 1
+        return original_sources(source_ids)
+
+    def tracked_policies(policy_ids=None):
+        nonlocal policy_reads
+        policy_reads += 1
+        return original_policies(policy_ids)
+
+    monkeypatch.setattr(repository, "sources", tracked_sources)
+    monkeypatch.setattr(repository, "policies", tracked_policies)
+
+    with TestClient(create_app(repository)) as client:
+        response = client.get("/organizations")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    assert source_reads == 1
+    assert policy_reads == 1
+
+
 def test_alio_import_preflight_uses_one_scope_observation_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
