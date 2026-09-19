@@ -11,6 +11,7 @@ from packages.connectors.gukgam_reviewed_packet import (
 )
 
 FIXTURE = Path("tests/fixtures/gukgam_2026_science_plan_metadata_packet.json")
+REVIEWED_FIXTURE = Path("tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json")
 
 
 def _packet() -> dict:
@@ -66,6 +67,24 @@ def test_pinned_science_plan_metadata_packet_is_parseable() -> None:
     assert packet.source.atch_file_id == "7938f3a874d5441892124093d19da1df"
     assert packet.source.file_sn == 2
     assert packet.schedule == ()
+    assert packet.witness_rows_included is False
+
+
+def test_pinned_science_plan_reviewed_packet_matches_reviewed_schedule() -> None:
+    packet = parse_reviewed_gukgam_plan_packet(
+        json.loads(REVIEWED_FIXTURE.read_text(encoding="utf-8"))
+    )
+
+    assert packet.source.committee_name == "과학기술정보방송통신위원회"
+    assert packet.source.ntt_id == "3078699"
+    assert len(packet.schedule) == 9
+    assert sum(len(row.audited_targets) for row in packet.schedule) == 97
+    assert packet.schedule[0].audit_date.isoformat() == "2026-10-06"
+    assert packet.schedule[-1].audit_date.isoformat() == "2026-10-23"
+    assert packet.schedule[6].venue == "대전"
+    assert len(packet.schedule[6].audited_targets) == 54
+    assert "㈜문화방송" in packet.schedule[4].audited_targets
+    assert packet.content_hash == "70f09d78858814f6fda59352bc117e9127aa1f90a3480e81b53fd7380daf50d8"
     assert packet.witness_rows_included is False
 
 
