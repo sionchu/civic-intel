@@ -346,16 +346,18 @@ def create_app(
         contexts = target.published_organization_claim_contexts(
             item.id for item in current_organizations
         )
+        all_evidence = [
+            evidence
+            for _, evidence_by_claim in contexts.values()
+            for evidence_items in evidence_by_claim.values()
+            for evidence in evidence_items
+        ]
+        source_map = target.sources(evidence.source_id for evidence in all_evidence)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
+
         payload: list[dict] = []
         for item in current_organizations:
             claims, evidence_by_claim = contexts.get(item.id, ((), {}))
-            all_evidence = [
-                evidence
-                for evidence_items in evidence_by_claim.values()
-                for evidence in evidence_items
-            ]
-            source_map = target.sources(evidence.source_id for evidence in all_evidence)
-            policy_map = target.policies(source.policy_id for source in source_map.values())
             eligible_claims = [
                 claim
                 for claim in claims
