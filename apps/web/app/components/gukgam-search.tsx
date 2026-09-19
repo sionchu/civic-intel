@@ -48,9 +48,11 @@ export default function GukgamSearch({
   organizations: OrganizationSummary[];
 }) {
   const [query, setQuery] = useState(initialQuery);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   function updateQuery(nextQuery: string): void {
     setQuery(nextQuery);
+    setCopyStatus("idle");
     const url = new URL(window.location.href);
     const trimmed = nextQuery.trim();
     if (trimmed) {
@@ -64,6 +66,15 @@ export default function GukgamSearch({
       url.pathname + url.search + url.hash,
     );
   }
+  async function copyShareUrl(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("failed");
+    }
+  }
+
   const normalizedQuery = normalizeSearchValue(query.trim());
 
   const sameNameCounts = useMemo(() => {
@@ -124,9 +135,25 @@ export default function GukgamSearch({
         />
       </label>
       {normalizedQuery && (
-        <p className="gukgam-search-share-note">
-          현재 검색어가 주소에 반영됩니다. 이 URL을 그대로 공유할 수 있습니다.
-        </p>
+        <div className="gukgam-search-share-row">
+          <p className="gukgam-search-share-note">
+            현재 검색어가 주소에 반영됩니다. 이 URL을 그대로 공유할 수 있습니다.
+          </p>
+          <button
+            className="gukgam-search-copy"
+            type="button"
+            onClick={copyShareUrl}
+          >
+            {copyStatus === "copied" ? "복사됨" : "공유 링크 복사"}
+          </button>
+          <span className="sr-only" role="status" aria-live="polite">
+            {copyStatus === "copied"
+              ? "공유 링크를 클립보드에 복사했습니다."
+              : copyStatus === "failed"
+                ? "링크를 복사하지 못했습니다. 주소창의 URL을 직접 복사해주세요."
+                : ""}
+          </span>
+        </div>
       )}
 
       {!normalizedQuery ? (
