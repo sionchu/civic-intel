@@ -5,8 +5,8 @@ import html
 import json
 import re
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 from urllib.parse import urlparse
 
 import httpx
