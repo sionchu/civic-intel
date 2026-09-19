@@ -3,13 +3,15 @@ import Link from "next/link";
 
 import ReadState from "../components/read-state";
 import { getOrganizations } from "../data";
+import { buildPageMetadata } from "../site-metadata";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "Organizations",
-  description: "현재 공개된 기관 기록과 근거를 탐색합니다.",
-};
+  description: "현재 공개된 기관 기록, 임원 공시와 Evidence를 탐색합니다.",
+  path: "/organizations",
+});
 
 export default async function OrganizationsPage() {
   const organizationsResult = await getOrganizations();

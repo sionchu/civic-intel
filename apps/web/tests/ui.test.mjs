@@ -249,3 +249,35 @@ test("Ontology local graph collapses repeated relation labels for cleaner dense 
   assert.match(graph, /!singleRelationType/);
   assert.match(graph, /RELATION_LABELS\[singleRelationType\]/);
 });
+
+
+test("SEO gate defaults staging to noindex and requires explicit public base activation", async () => {
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  const site = await readFile(new URL("../app/site-metadata.ts", import.meta.url), "utf8");
+  const robots = await readFile(new URL("../app/robots.ts", import.meta.url), "utf8");
+  const sitemap = await readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8");
+  assert.match(layout, /buildRootMetadata/);
+  assert.match(site, /CIVIC_PUBLIC_BASE_URL/);
+  assert.match(site, /CIVIC_INDEXING_ENABLED/);
+  assert.match(site, /indexingEnabled/);
+  assert.match(robots, /disallow: "\/"/);
+  assert.match(robots, /disallow: \["\/admin\/"\]/);
+  assert.match(robots, /sitemap\.xml/);
+  assert.match(sitemap, /getPeople/);
+  assert.match(sitemap, /getOrganizations/);
+  assert.match(sitemap, /\/gukgam\/2026/);
+  assert.doesNotMatch(site + robots + sitemap, /web-staging-efe2|up\.railway\.app/);
+});
+
+test("public entity pages expose dynamic neutral metadata without generated likenesses", async () => {
+  const person = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const organization = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  const gukgam = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  assert.match(person, /generateMetadata/);
+  assert.match(person, /buildPageMetadata/);
+  assert.match(person, /Claim, Evidence와 출처/);
+  assert.match(organization, /generateMetadata/);
+  assert.match(organization, /임원 공시, Claim과 Evidence/);
+  assert.match(gukgam, /path: "\/gukgam\/2026"/);
+  assert.doesNotMatch(person + organization + gukgam, /og:image|generated portrait|AI portrait/i);
+});

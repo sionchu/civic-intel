@@ -4,13 +4,15 @@ import Link from "next/link";
 import GukgamSearch from "../../components/gukgam-search";
 import ReadState from "../../components/read-state";
 import { getOrganizations, getPeople } from "../../data";
+import { buildPageMetadata } from "../../site-metadata";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "국감 2026",
   description: "2026 국정감사를 인물·기관·공식 기록과 Evidence를 통해 탐색하는 Civic Intel 이벤트 화면",
-};
+  path: "/gukgam/2026",
+});
 
 export default async function Gukgam2026Page() {
   const [peopleResult, organizationsResult] = await Promise.all([

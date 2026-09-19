@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -5,8 +6,30 @@ import { getPerson, getPersonOntology, getSource } from "../../data";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import ReadState from "../../components/read-state";
 import { getReviewedPortrait } from "../../portrait";
+import { buildPageMetadata } from "../../site-metadata";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getPerson(id);
+  if (result.state === "error") {
+    return buildPageMetadata({
+      title: "Person record",
+      description: "Civic Intel 공개 Person 기록",
+      path: `/people/${id}`,
+    });
+  }
+  return buildPageMetadata({
+    title: result.data.canonical_name,
+    description: `${result.data.canonical_name}의 공개 기록, Claim, Evidence와 출처를 확인합니다.`,
+    path: `/people/${id}`,
+  });
+}
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

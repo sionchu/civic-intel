@@ -3,13 +3,15 @@ import type { Metadata } from "next";
 import RosterGrid from "../components/roster-grid";
 import ReadState from "../components/read-state";
 import { getPeople } from "../data";
+import { buildPageMetadata } from "../site-metadata";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "People",
-  description: "현재 공개된 resolved Person을 근거와 함께 탐색합니다.",
-};
+  description: "현재 공개된 resolved Person을 Claim, Evidence와 함께 탐색합니다.",
+  path: "/people",
+});
 
 export default async function PeoplePage() {
   const peopleResult = await getPeople();

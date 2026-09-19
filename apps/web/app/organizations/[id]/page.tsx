@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,12 +10,34 @@ import {
 } from "../../data";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import ReadState from "../../components/read-state";
+import { buildPageMetadata } from "../../site-metadata";
 import type { Claim, Evidence, MoneyProjection, Source } from "../../types";
 
 const ALIO_EXECUTIVE_PREDICATE = "ALIO_CURRENT_EXECUTIVE_DISCLOSURE";
 const ALIO_CLASSIFICATION_PREDICATE = "ALIO_INSTITUTION_CLASSIFICATION";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getOrganization(id);
+  if (result.state === "error") {
+    return buildPageMetadata({
+      title: "Organization record",
+      description: "Civic Intel 공개 기관 기록",
+      path: `/organizations/${id}`,
+    });
+  }
+  return buildPageMetadata({
+    title: result.data.name,
+    description: `${result.data.name}의 공개 기관 기록, 임원 공시, Claim과 Evidence를 확인합니다.`,
+    path: `/organizations/${id}`,
+  });
+}
 
 function formatKrw(value: number): string {
   return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
