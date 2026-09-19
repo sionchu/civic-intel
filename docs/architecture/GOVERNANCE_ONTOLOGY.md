@@ -67,9 +67,13 @@ QUESTIONED
 AUDITED_BY
 ```
 
-The first executable slice maps only the canonical `HELD_ROLE` predicate to a Claim-scoped
-`OFFICE` target. The wider vocabulary is reserved for later source slices and becomes executable
-only after each exact predicate and target-identity contract exists.
+The executable Person projection maps canonical `HELD_ROLE` to a Claim-scoped `OFFICE`
+target and the exact current-roster `ASSEMBLY_COMMITTEES` Claim to a Claim-scoped
+`COMMITTEE` target. Committee display text is preserved exactly as the provider-supported Claim;
+it is not split, normalized into a shared committee identity, or used for cross-Person paths.
+
+The wider vocabulary is reserved for later source slices and becomes executable only after each
+exact predicate and target-identity contract exists.
 
 Appointment, election, nomination and designation events are not rewritten as `HELD_ROLE`.
 

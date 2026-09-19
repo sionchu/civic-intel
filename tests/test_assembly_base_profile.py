@@ -140,6 +140,24 @@ def test_base_profile_publishes_atomic_claims_and_projects_evidence(
         assert discovery["evidence_ids"]
         assert "normalized" not in str(list_payload)
 
+        ontology = client.get(f"/ontology/people/{person_id}")
+        assert ontology.status_code == 200
+        ontology_payload = ontology.json()
+        committee_edges = [
+            edge
+            for edge in ontology_payload["edges"]
+            if edge["relation_type"] == "SERVED_ON"
+        ]
+        assert len(committee_edges) == 1
+        committee_node = next(
+            node
+            for node in ontology_payload["nodes"]
+            if node["id"] == committee_edges[0]["target"]
+        )
+        assert committee_node["kind"] == "COMMITTEE"
+        assert committee_node["label"] == "테스트위원회"
+        assert committee_node["canonical_id"] is None
+
 
 def test_base_profile_rerun_is_idempotent(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "base-profile-rerun.db")
