@@ -184,11 +184,61 @@ Required closure:
   Committee-site repeated automation remains blocked by the reviewed robots contract. Temporary
   GitHub QA/probe workflow files were removed after use.
 
+## Current checkpoint — public-beta HTTP acceptance + directory latency (2026-09-19)
+
+- Read-only Public Beta preflight merged as
+  `d4d3529f8e63dea1f7394d41fcde99997b97769e`; final master Verify
+  `35422460313` passed. It checks Home, `/gukgam/2026`, robots/sitemap, optional Person and
+  Organization detail routes, staging/public indexing semantics and selected raw/contact leak
+  tokens without mutating application data or Railway configuration.
+- Real staging preflight run `35426383959` passed against
+  `https://web-staging-efe2.up.railway.app`: Home, Gukgam, robots, sitemap,
+  Person `44745d09-398c-46ce-bc38-81f0f606c1d7` and Organization
+  `3ef4de75-fa3f-5815-81f4-8bc5efdc33f1` all returned HTTP 200. Staging correctly remained
+  noindex/disallow-all.
+- The first timing run showed a real list-path bottleneck: `/people` ~1.0–1.17 s,
+  `/organizations` ~2.5–2.97 s and `/gukgam/2026` ~3.10–3.81 s.
+- API publication-context batching merged as
+  `8c50218cdd8a8de31c0c1ec97192c044da7643e8`; final Verify `35422992753` passed and staging
+  API deployment `57efc9cd-4f7b-49b5-b1e7-188e8f723f5f` succeeded.
+- Web directory-list revalidation merged as
+  `a58050b778b1f29bb7167b8c534acbb6ab9013d1`; final Verify `35426886029` passed and staging
+  Web deployment `328a8649-8fba-4021-9ab5-258e8360abff` succeeded. Only public People and
+  Organization list fetches use a 60-second revalidation window; detail, ontology, Evidence,
+  source, money and review reads remain request-time.
+- Post-change timing run `35427116217` showed `/gukgam/2026` at ~0.55–0.57 s after the
+  directory cache is populated. `/organizations` had one cold ~2.86 s request then ~0.56–0.78 s;
+  `/people` settled around ~0.59–0.61 s. Publication validation remains in the canonical API.
+- Railway already has a `production` environment
+  `7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15`, but it currently contains zero services. No
+  production service, database, public/custom domain or indexing activation was created.
+  Production creation/domain/indexing remain explicit public-access/cost gates.
+- The official Science Committee PDF preview remains inaccessible through the current approved web
+  execution paths, and repeated committee-site automation remains blocked by the reviewed robots
+  contract. The exact reviewed packet therefore still requires an approved manual/Codex-local
+  artifact boundary; no PDF content was guessed from news or search snippets.
+
+## Public-beta release gate
+
+Before public indexing is enabled:
+
+1. obtain explicit approval for the production/public-access boundary and any resulting Railway
+   resource cost;
+2. create or select the final public Web/API/Postgres topology and final domain;
+3. set `CIVIC_PUBLIC_BASE_URL` to that final origin and `CIVIC_INDEXING_ENABLED=true` only on
+   the approved public Web service;
+4. deploy one exact verified master commit;
+5. run `workers.public_beta_preflight --expect-indexing enabled`;
+6. run independent rendered desktop/mobile QA and verify canonical/OG/robots/sitemap behavior.
+
+Staging must stay noindex.
+
 ## Next concrete action
 
 Complete exactly one reviewed Science Committee 2026 plan packet from the pinned official PDF:
 
-1. obtain one exact local copy of the pinned attachment and exact official attachment URL;
+1. obtain one exact local copy of the pinned attachment through the approved manual/Codex-local
+   boundary and record the exact official locator;
 2. record the raw PDF SHA-256 and confirm the exact attachment metadata rights review;
 3. fill the schedule rows and audited-target strings field-by-field from that attachment;
 4. run `workers.gukgam_reviewed_plan_import` in dry-run mode;
