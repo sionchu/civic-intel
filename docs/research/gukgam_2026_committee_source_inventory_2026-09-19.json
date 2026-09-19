@@ -16,12 +16,49 @@
   "committees": [
     {
       "committee_name": "국회운영위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-16",
-        "type": "PRESS_DISCOVERY_ONLY",
-        "url": "https://v.daum.net/v/20260916151754855",
-        "supports": "2026년도 국정감사계획서 채택 의결"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://steering.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078706&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078706",
+      "atch_file_id": "ed4a7bee86704ed38e9043b3d10f7a9c",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 국정감사계획서.pdf",
+      "attachment_sha256": "713e0e6ce01a00e93659ecff6d82d2d72d0fae48db628de3fc4d7178b6f58cdb",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_steering_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "a70b01b4a9d7e6866ae6be5971c24ff999c88acc6d4d48db26c97a5e28e894a2",
+      "schedule_rows": 3,
+      "audited_target_mentions": 10,
+      "notes": "10.29의 감사장소는 원문 표의 병합 셀을 따라 10:00·14:00 두 row에 동일하게 적용.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 270915,
+        "raw_pdf_page_count": 9,
+        "raw_pdf_sha256": "713e0e6ce01a00e93659ecff6d82d2d72d0fae48db628de3fc4d7178b6f58cdb",
+        "reviewed_packet_rows": 3,
+        "reviewed_packet_target_mentions": 10,
+        "reviewed_packet_hash": "a70b01b4a9d7e6866ae6be5971c24ff999c88acc6d4d48db26c97a5e28e894a2",
+        "schedule_printed_pages": [
+          4
+        ],
+        "result": "MATCH",
+        "excluded_non_audit_rows": []
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-20",
+        "attachment_sha256": "713e0e6ce01a00e93659ecff6d82d2d72d0fae48db628de3fc4d7178b6f58cdb",
+        "reviewed_packet_hash": "a70b01b4a9d7e6866ae6be5971c24ff999c88acc6d4d48db26c97a5e28e894a2",
+        "schedule_rows": 3,
+        "audited_target_mentions": 10,
+        "source_host": "steering.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {
@@ -34,12 +71,59 @@
     },
     {
       "committee_name": "재정경제기획위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-17",
-        "type": "PRESS_DISCOVERY_ONLY",
-        "url": "https://mobile.newsis.com/view/NISX20260917_0003793351",
-        "supports": "2026년도 국정감사계획서 채택 및 46개 기관 대상 계획 보도"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://finance.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078708&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078708",
+      "atch_file_id": "5ed9af3fc7eb418f9e3aa5830d7307ac",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 재정경제기획위원회 국정감사계획서(최종)_0917.pdf",
+      "attachment_sha256": "56c5edbc9a700ff6973abcd7df60676165449456c6cda83465fa5d82152b978f",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_finance_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "5b73bd4fe6be4e52c5fa01417fcc476a89f425eb743e47d8a4b18c55703175f1",
+      "schedule_rows": 10,
+      "audited_target_mentions": 48,
+      "notes": "자료정리·공휴일 row는 제외. 10.16의 제1반/제2반은 동일 날짜의 별도 row로 보존하고 현장시찰 표식 자체는 target에서 제외.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 198246,
+        "raw_pdf_page_count": 10,
+        "raw_pdf_sha256": "56c5edbc9a700ff6973abcd7df60676165449456c6cda83465fa5d82152b978f",
+        "reviewed_packet_rows": 10,
+        "reviewed_packet_target_mentions": 48,
+        "reviewed_packet_hash": "5b73bd4fe6be4e52c5fa01417fcc476a89f425eb743e47d8a4b18c55703175f1",
+        "schedule_printed_pages": [
+          4
+        ],
+        "result": "MATCH",
+        "excluded_non_audit_rows": [
+          "10.7 자료정리",
+          "10.9 자료정리",
+          "10.10 공휴일",
+          "10.11 공휴일",
+          "10.14 자료정리",
+          "10.17 공휴일",
+          "10.18 공휴일",
+          "10.19 자료정리",
+          "10.21 자료정리"
+        ]
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-20",
+        "attachment_sha256": "56c5edbc9a700ff6973abcd7df60676165449456c6cda83465fa5d82152b978f",
+        "reviewed_packet_hash": "5b73bd4fe6be4e52c5fa01417fcc476a89f425eb743e47d8a4b18c55703175f1",
+        "schedule_rows": 10,
+        "audited_target_mentions": 48,
+        "source_host": "finance.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {
@@ -110,52 +194,254 @@
     },
     {
       "committee_name": "외교통일위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-17",
-        "type": "PRESS_DISCOVERY_ONLY",
-        "url": "https://www.yna.co.kr/amp/view/AKR20260917106400001",
-        "supports": "2026년도 국정감사계획서 채택 의결"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://uft.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078713&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사계획서 및 기관증인 명단 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078713",
+      "atch_file_id": "4bb3f008d44e43b5968f2dee6b627f14",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 국정감사계획서_외교통일위원회.pdf",
+      "attachment_sha256": "fde2aa6309f28b87d398fd1a3dbda264e26f769cfc7a50918f32fd2a0241243d",
+      "notes": "Exact PDF는 확보·해시 검증했으나 재외공관 감사가 10.11~10.22, 10.11~10.20, 10.11~10.21의 기간 범위로 인쇄되어 단일 audit_date만 허용하는 packet v1로 손실 없이 표현할 수 없음. 시작일 하나로 축약하지 않고 packet 생성/dry-run을 보류.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 216658,
+        "raw_pdf_page_count": 15,
+        "raw_pdf_sha256": "fde2aa6309f28b87d398fd1a3dbda264e26f769cfc7a50918f32fd2a0241243d",
+        "schedule_printed_pages": [
+          8,
+          9,
+          10
+        ],
+        "result": "EXACT_ATTACHMENT_CAPTURED_PACKET_V1_DATE_RANGE_BLOCKED"
       }
     },
     {
       "committee_name": "국방위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-10",
-        "type": "BROADCAST_DISCOVERY_ONLY",
-        "url": "https://talktics.co.kr/videos/6vLFTDQKoZk",
-        "supports": "2026년도 국정감사계획서 채택 안건 처리"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://defense.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078693&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078693",
+      "atch_file_id": "27e3a715445a4620b51cf3d6d9423e74",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 국방위원회 국정감사계획서.pdf",
+      "attachment_sha256": "0e9a1c2ca5fcfd3849d62aae82e343d37ad56fefcd08b05fd476f90badfb0176",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_defense_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "2b53b491a4d453ed6f3490ada15297077587deb7cad929f66a92d7e0e04c3a53",
+      "schedule_rows": 9,
+      "audited_target_mentions": 73,
+      "notes": "휴일·자료정리·현장점검 row는 제외. 동시수감기관은 audited target으로 보존. 10.20 장소는 원문 병합 셀의 계룡대(계룡)를 적용. 10.22의 일반 표제 '사관학교' 대신 명시된 육·해·공군사관학교 3개를 보존.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 332546,
+        "raw_pdf_page_count": 11,
+        "raw_pdf_sha256": "0e9a1c2ca5fcfd3849d62aae82e343d37ad56fefcd08b05fd476f90badfb0176",
+        "reviewed_packet_rows": 9,
+        "reviewed_packet_target_mentions": 73,
+        "reviewed_packet_hash": "2b53b491a4d453ed6f3490ada15297077587deb7cad929f66a92d7e0e04c3a53",
+        "schedule_printed_pages": [
+          5
+        ],
+        "result": "MATCH",
+        "excluded_non_audit_rows": [
+          "10.9~10.11 휴일",
+          "10.12 15:00 국방과학연구소 현장점검",
+          "10.14 자료정리",
+          "10.15 현장점검",
+          "10.16 현장점검",
+          "10.17~10.18 휴일",
+          "10.21 자료정리",
+          "10.22 오후 육군 제5보병사단 현장점검",
+          "10.23 자료정리",
+          "10.24~10.25 휴일"
+        ]
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-20",
+        "attachment_sha256": "0e9a1c2ca5fcfd3849d62aae82e343d37ad56fefcd08b05fd476f90badfb0176",
+        "reviewed_packet_hash": "2b53b491a4d453ed6f3490ada15297077587deb7cad929f66a92d7e0e04c3a53",
+        "schedule_rows": 9,
+        "audited_target_mentions": 73,
+        "source_host": "defense.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {
       "committee_name": "행정안전위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-16",
-        "type": "OFFICIAL_LIST_SECONDARY_CONFIRMATION",
-        "url": "https://glowwiki.com/%EB%AC%B8%EC%84%9C/%EA%B5%AD%EC%A0%95%EA%B0%90%EC%82%AC-2026/",
-        "supports": "대한민국 국회 국정감사계획서 목록에 2026-09-16 행정안전위원회 계획서가 게재됐다는 확인"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://adminhom.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078707&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사 계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078707",
+      "atch_file_id": "bf03a64c5e7a432e8c0475efcf15e545",
+      "file_sn": 1,
+      "attachment_filename": "2026년도 행정안전위원회 국정감사계획서(최종)_20260915.pdf",
+      "attachment_sha256": "97e5a9fb095dfda53a298847926e3815dcb73ec04753ed73d2775e6d54d9342b",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_adminhom_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "b04504c596b81316d507fcf19a41c96958244f8e3e5bf7f51f6b097f5ce064ee",
+      "schedule_rows": 12,
+      "audited_target_mentions": 45,
+      "notes": "자료수집·휴일 row는 제외. 10.20·10.21·10.22의 지방1반/지방2반 병렬 감사를 동일 날짜의 별도 schedule row로 보존.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 191158,
+        "raw_pdf_page_count": 11,
+        "raw_pdf_sha256": "97e5a9fb095dfda53a298847926e3815dcb73ec04753ed73d2775e6d54d9342b",
+        "reviewed_packet_rows": 12,
+        "reviewed_packet_target_mentions": 45,
+        "reviewed_packet_hash": "b04504c596b81316d507fcf19a41c96958244f8e3e5bf7f51f6b097f5ce064ee",
+        "schedule_printed_pages": [
+          5,
+          6,
+          7
+        ],
+        "result": "MATCH",
+        "excluded_non_audit_rows": [
+          "10.8 자료수집",
+          "10.9~10.11 휴일",
+          "10.14 자료수집",
+          "10.16 자료수집",
+          "10.17~10.18 휴일",
+          "10.23 자료수집",
+          "10.24~10.25 휴일"
+        ]
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-20",
+        "attachment_sha256": "97e5a9fb095dfda53a298847926e3815dcb73ec04753ed73d2775e6d54d9342b",
+        "reviewed_packet_hash": "b04504c596b81316d507fcf19a41c96958244f8e3e5bf7f51f6b097f5ce064ee",
+        "schedule_rows": 12,
+        "audited_target_mentions": 45,
+        "source_host": "adminhom.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {
       "committee_name": "문화체육관광위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-16",
-        "type": "OFFICIAL_BROADCAST_DISCOVERY_ONLY",
-        "url": "https://www.youtube.com/watch?v=R42uphEDM3c",
-        "supports": "2026년도 국정감사계획서 채택 안건"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://cst.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078704&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사 계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078704",
+      "atch_file_id": "114e8e5e4cf843db89f0abb4479c79f1",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 국정감사계획서(260916 의결).pdf",
+      "attachment_sha256": "2cdfecb4d8ebe4c7a5ce472cb8425b223545391062b0a79c1e96b0ae1812c2f8",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_culture_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "13ea6574f5ebfc277ff698f247651c4195ad0a63e1dd88caae29cd14967f2eaa",
+      "schedule_rows": 7,
+      "audited_target_mentions": 69,
+      "notes": "감사준비·현장시찰 row와 10.19 17:00 연합뉴스 업무보고(비공개)는 감사대상 row가 아니므로 제외.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 206628,
+        "raw_pdf_page_count": 10,
+        "raw_pdf_sha256": "2cdfecb4d8ebe4c7a5ce472cb8425b223545391062b0a79c1e96b0ae1812c2f8",
+        "reviewed_packet_rows": 7,
+        "reviewed_packet_target_mentions": 69,
+        "reviewed_packet_hash": "13ea6574f5ebfc277ff698f247651c4195ad0a63e1dd88caae29cd14967f2eaa",
+        "schedule_printed_pages": [
+          4,
+          5
+        ],
+        "result": "MATCH",
+        "excluded_non_audit_rows": [
+          "10.13 감사준비",
+          "10.15 현장시찰",
+          "10.16 현장시찰",
+          "10.19 17:00 연합뉴스 업무보고(비공개)",
+          "10.20 감사준비",
+          "10.22 감사준비"
+        ]
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-20",
+        "attachment_sha256": "2cdfecb4d8ebe4c7a5ce472cb8425b223545391062b0a79c1e96b0ae1812c2f8",
+        "reviewed_packet_hash": "13ea6574f5ebfc277ff698f247651c4195ad0a63e1dd88caae29cd14967f2eaa",
+        "schedule_rows": 7,
+        "audited_target_mentions": 69,
+        "source_host": "cst.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {
       "committee_name": "농림축산식품해양수산위원회",
-      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
       "discovery_evidence": {
         "date": "2026-09-17",
-        "type": "OFFICIAL_LIST_SECONDARY_CONFIRMATION",
-        "url": "https://glowwiki.com/%EB%AC%B8%EC%84%9C/%EA%B5%AD%EC%A0%95%EA%B0%90%EC%82%AC-2026/",
-        "supports": "대한민국 국회 국정감사계획서 목록에 2026-09-17 농림축산식품해양수산위원회 계획서가 게재됐다는 확인"
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://agri.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078709&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사 계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078709",
+      "atch_file_id": "462de504d58f47e7a888f3ca286309ba",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 국정감사계획서.pdf",
+      "attachment_sha256": "3431beedc750d6b415599e2c1f9a0568be83e52b52128669bf5124b155c170ee",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_agri_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "e8e3d884098cdf060e6ac30f966f74b7bf25012f2a45909621691ab94fc35b07",
+      "schedule_rows": 8,
+      "audited_target_mentions": 49,
+      "notes": "자료정리·현장시찰 row는 제외. 일정표 비고의 【소속기관】 목록은 본문 감사실시 대상기관의 독립 기관 수에 포함되지 않아 별도 audited target으로 승격하지 않음.",
+      "artifact_verification": {
+        "verified_at": "2026-09-20",
+        "raw_pdf_size_bytes": 149353,
+        "raw_pdf_page_count": 13,
+        "raw_pdf_sha256": "3431beedc750d6b415599e2c1f9a0568be83e52b52128669bf5124b155c170ee",
+        "reviewed_packet_rows": 8,
+        "reviewed_packet_target_mentions": 49,
+        "reviewed_packet_hash": "e8e3d884098cdf060e6ac30f966f74b7bf25012f2a45909621691ab94fc35b07",
+        "schedule_printed_pages": [
+          4,
+          5,
+          6
+        ],
+        "result": "MATCH",
+        "excluded_non_audit_rows": [
+          "10.8 국정감사 자료정리",
+          "10.13 현장시찰",
+          "10.15 국정감사 자료정리",
+          "10.21 국정감사 자료정리"
+        ]
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-20",
+        "attachment_sha256": "3431beedc750d6b415599e2c1f9a0568be83e52b52128669bf5124b155c170ee",
+        "reviewed_packet_hash": "e8e3d884098cdf060e6ac30f966f74b7bf25012f2a45909621691ab94fc35b07",
+        "schedule_rows": 8,
+        "audited_target_mentions": 49,
+        "source_host": "agri.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {

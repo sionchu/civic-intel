@@ -157,9 +157,26 @@ filename: 2026년도 국정감사계획서.pdf
 That fixture still contains zero schedule rows, so it is **not import-eligible**. This prevents
 unreviewed PDF content or news summaries from silently becoming canonical observations.
 
+## Current reviewed packet set
+
+The Science Committee packet plus six additional 2026 standing-committee plan packets have exact
+official PDF hashes, field-reviewed schedule rows and successful importer dry-run receipts:
+
+- 과학기술정보방송통신위원회;
+- 국회운영위원회;
+- 국방위원회;
+- 행정안전위원회;
+- 문화체육관광위원회;
+- 농림축산식품해양수산위원회;
+- 재정경제기획위원회.
+
+The Foreign Affairs and Unification exact plan PDF is also captured, but its overseas audit rows
+use multi-day ranges such as `10.11~10.22`. Packet v1 exposes only one `audit_date`, so that
+committee remains fail-closed rather than collapsing a range to its start date.
+
 ## Next source step
 
-Obtain one exact reviewed local copy of the pinned Science Committee PDF, record its official
-attachment URL and raw SHA-256, complete the schedule rows field-by-field, then run the importer in
-dry-run mode. Only after the dry-run receipt is independently checked should the single reviewed
-packet be committed.
+Continue exact-attachment acquisition for the remaining standing committees and use v1 only where
+the source schedule is losslessly representable. Do not introduce a parallel packet schema merely
+for one blocked source; if date ranges recur across official plans, extend the canonical contract in
+place with deterministic regression coverage before importing them.

@@ -2,7 +2,7 @@
 
 ## Status
 
-`RECONNAISSANCE / ONE CURRENT POST RIGHTS-REVIEWED / AUTOMATED_COMMITTEE_HTML_BLOCKED`
+`RECONNAISSANCE / MULTI-COMMITTEE PLAN ATTACHMENTS RIGHTS-REVIEWED / AUTOMATED_COMMITTEE_HTML_BLOCKED`
 
 This document records the official-source shape observed during the first Gukgam 2026 release
 slice. It does **not** authorize a live committee-site feeder, attachment full-text storage,
@@ -182,8 +182,14 @@ central pages for operator/discovery navigation only; do not build a repeated au
 against them.
 
 The exact Science Committee PDF was subsequently supplied through the approved human-assisted
-artifact boundary and verified against the reviewed packet. This does not change the automation
-decision for committee or central-portal HTML.
+artifact boundary and verified against the reviewed packet. On 2026-09-20 the same bounded,
+interactive-browser acquisition path captured exact plan PDFs for National Defense, Steering,
+Public Administration and Security, Culture/Sports/Tourism, Agriculture/Food/Rural Affairs/Oceans,
+Strategy and Finance, and Foreign Affairs and Unification. The first six of those additional plans
+fit the existing reviewed-packet v1 schedule model and passed exact-artifact dry-run validation.
+The Foreign Affairs and Unification plan is retained as an exact captured artifact only because its
+overseas audit rows use multi-day date ranges that v1 cannot represent without information loss.
+This does not change the automation decision for committee or central-portal HTML.
 
 ## Candidate stable locators
 
@@ -242,10 +248,12 @@ A witness row remains source-scoped until the existing identity gate resolves it
 
 Do **not** build a committee HTML scraper.
 
-Run one bounded live sample against the staged `ALLSCHEDULE` contract and compare any 2026
-`국정감사` schedule candidate with the exact committee plan origin. If the API fields and filters
-match the staged contract, promote only schedule discovery to L2 and persist no audited-organization
-or witness facts from free-text schedule content.
+Continue the 17-standing-committee inventory through the same bounded interactive-browser acquisition
+path. Exact official plan bytes are now captured for eight committees. Six newly reviewed packets
+plus the existing Science packet pass v1 dry-run; Foreign Affairs and Unification remains
+fail-closed at the packet boundary because of multi-day audit ranges.
 
-In parallel, continue the reviewed-packet path for the exact committee plan because the Open API
-catalog does not provide the pre-audit target/witness rows required by the product.
+For every remaining committee, use the central National Assembly inspection page only for
+operator/discovery navigation, capture the exact official attachment before asserting schedule or
+audited-target rows, and leave absence unresolved unless the official source affirmatively supports
+another status. Search, press and broadcast records remain discovery-only.

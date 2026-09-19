@@ -1,0 +1,184 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "HUMAN_REVIEWED",
+  "source": {
+    "committee_name": "행정안전위원회",
+    "ntt_id": "3078707",
+    "detail_url": "https://adminhom.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078707&menuNo=2000030&pageIndex=1",
+    "title": "2026년도 국정감사 계획서",
+    "published_date": "2026-09-16",
+    "atch_file_id": "bf03a64c5e7a432e8c0475efcf15e545",
+    "file_sn": 1,
+    "attachment_filename": "2026년도 행정안전위원회 국정감사계획서(최종)_20260915.pdf",
+    "rights_mark": "KOGL_TYPE_1",
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-06",
+      "time_text": "10:00",
+      "venue": "국회 (행안위 전체회의장)",
+      "section": "감사 일정",
+      "audited_targets": [
+        "행정안전부",
+        "진실·화해를위한과거사정리위원회",
+        "10·29이태원특별조사위원회",
+        "한국지능정보사회진흥원",
+        "한국승강기안전공단",
+        "민주화운동기념사업회",
+        "일제강제동원피해자지원재단",
+        "전국재해구호협회",
+        "바르게살기운동중앙협의회",
+        "새마을운동중앙회",
+        "한국자유총연맹"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-07",
+      "time_text": "10:00",
+      "venue": "국회 (행안위 전체회의장)",
+      "section": "감사 일정",
+      "audited_targets": [
+        "중앙선거관리위원회",
+        "인사혁신처",
+        "소방청",
+        "서울특별시선거관리위원회",
+        "송파구선거관리위원회",
+        "공무원연금공단",
+        "한국소방산업기술원"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": "10:00",
+      "venue": "경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "경찰청",
+        "한국도로교통공단"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": "10:00\n도청감사 종료후",
+      "venue": "경기도청 / 경기남부경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "경기도청",
+        "경기남부경찰청",
+        "경기북부경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-15",
+      "time_text": "10:00\n시청감사 종료후",
+      "venue": "서울시청 / 서울경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "서울특별시",
+        "서울경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00\n도청감사 종료후",
+      "venue": "충북도청 / 충북경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "충청북도",
+        "충북경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00\n도청감사 종료후",
+      "venue": "경북도청 / 경북경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "경상북도",
+        "경북경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-21",
+      "time_text": "10:00\n시청감사 종료후",
+      "venue": "울산시청 / 울산경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "울산광역시",
+        "울산경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 9,
+      "audit_date": "2026-10-21",
+      "time_text": "10:00\n시청감사 종료후",
+      "venue": "부산시청 / 부산경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "부산광역시",
+        "부산경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 10,
+      "audit_date": "2026-10-22",
+      "time_text": "10:00\n시청감사 종료후",
+      "venue": "전남광주통합특별시청 (광주청사)",
+      "section": "감사 일정",
+      "audited_targets": [
+        "전남광주통합특별시",
+        "광주경찰청",
+        "전남경찰청"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 11,
+      "audit_date": "2026-10-22",
+      "time_text": "10:00\n도청감사 종료후",
+      "venue": "제주도청 / 제주경찰청",
+      "section": "감사 일정",
+      "audited_targets": [
+        "제주특별자치도",
+        "제주경찰청"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 12,
+      "audit_date": "2026-10-26",
+      "time_text": "10:00",
+      "venue": "국회 (행안위 전체회의장)",
+      "section": "감사 일정",
+      "audited_targets": [
+        "행정안전부",
+        "중앙선거관리위원회",
+        "진실·화해를위한과거사정리위원회",
+        "10·29이태원특별조사위원회",
+        "인사혁신처",
+        "경찰청",
+        "소방청"
+      ],
+      "page_number": 7
+    }
+  ],
+  "witness_rows_included": false
+}

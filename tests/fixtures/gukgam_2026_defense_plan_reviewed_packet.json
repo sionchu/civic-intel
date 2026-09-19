@@ -1,0 +1,182 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "HUMAN_REVIEWED",
+  "source": {
+    "committee_name": "국방위원회",
+    "ntt_id": "3078693",
+    "detail_url": "https://defense.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078693&menuNo=2000030&pageIndex=1",
+    "title": "2026년도 국정감사계획서",
+    "published_date": "2026-09-10",
+    "atch_file_id": "27e3a715445a4620b51cf3d6d9423e74",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국방위원회 국정감사계획서.pdf",
+    "rights_mark": "KOGL_TYPE_1",
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-07",
+      "time_text": "10:00",
+      "venue": "국방부 (용산)",
+      "section": "감사일정",
+      "audited_targets": [
+        "국방부",
+        "국방정보본부",
+        "국방부군사편찬연구소",
+        "정보사령부",
+        "국방대학교",
+        "국방방첩본부",
+        "국방부유해발굴감식단",
+        "국방보안지원단",
+        "국방통합데이터센터",
+        "국군의무사령부",
+        "국방정신전력원",
+        "국방시설본부",
+        "국방전산정보원",
+        "국방부근무지원단",
+        "국방홍보원",
+        "계룡대근무지원단",
+        "주한미군기지이전사업단",
+        "국군체육부대",
+        "특수임무수행자보상지원단",
+        "국군복지단",
+        "6·25 비정규군보상지원단",
+        "국군간호사관학교",
+        "한국국방연구원",
+        "국방출판지원단",
+        "국방전직교육원",
+        "국군재정관리단",
+        "전쟁기념사업회",
+        "국방부조사본부",
+        "군인공제회",
+        "국방부군비통제검증단"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-08",
+      "time_text": "10:00",
+      "venue": "국방부 (용산)",
+      "section": "감사일정",
+      "audited_targets": [
+        "합동참모본부",
+        "국군수송사령부",
+        "합동군사대학교",
+        "국군화생방방호사령부",
+        "드론작전사령부",
+        "국군심리전단",
+        "전략사령부",
+        "사이버작전사령부",
+        "육군지상작전사령부",
+        "국군지휘통신사령부",
+        "육군제2작전사령부"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": "10:00",
+      "venue": "대전",
+      "section": "감사일정",
+      "audited_targets": [
+        "병무청",
+        "대체역 심사위원회"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "방위사업청",
+        "국방과학연구소",
+        "국방기술품질원(국방기술진흥연구소 포함)"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-19",
+      "time_text": "10:00",
+      "venue": "계룡대 (계룡)",
+      "section": "감사일정",
+      "audited_targets": [
+        "육군본부",
+        "육군지상작전사령부",
+        "육군특수전사령부",
+        "육군제2작전사령부",
+        "육군인사사령부",
+        "육군교육사령부",
+        "육군수도방위사령부",
+        "육군3사관학교",
+        "육군동원전력사령부",
+        "육군군수사령부",
+        "육군미사일전략사령부",
+        "육군항공사령부",
+        "육군학생군사학교"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00",
+      "venue": "계룡대 (계룡)",
+      "section": "감사일정",
+      "audited_targets": [
+        "해군본부",
+        "해군작전사령부",
+        "해병대사령부",
+        "해군군수사령부",
+        "서북도서방위사령부",
+        "해군교육사령부"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-20",
+      "time_text": "15:00",
+      "venue": "계룡대 (계룡)",
+      "section": "감사일정",
+      "audited_targets": [
+        "공군본부",
+        "공군작전사령부",
+        "공군교육사령부",
+        "공군군수사령부"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-22",
+      "time_text": "오전",
+      "venue": "육군사관학교(서울)",
+      "section": "감사일정",
+      "audited_targets": [
+        "육군사관학교",
+        "해군사관학교",
+        "공군사관학교"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 9,
+      "audit_date": "2026-10-26",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "전체 수감기관"
+      ],
+      "page_number": 5
+    }
+  ],
+  "witness_rows_included": false
+}

@@ -1,0 +1,167 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "HUMAN_REVIEWED",
+  "source": {
+    "committee_name": "재정경제기획위원회",
+    "ntt_id": "3078708",
+    "detail_url": "https://finance.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078708&menuNo=2000030&pageIndex=1",
+    "title": "2026년도 국정감사계획서",
+    "published_date": "2026-09-17",
+    "atch_file_id": "5ed9af3fc7eb418f9e3aa5830d7307ac",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 재정경제기획위원회 국정감사계획서(최종)_0917.pdf",
+    "rights_mark": "KOGL_TYPE_1",
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-06",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "재정경제부"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-08",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "기획예산처"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": null,
+      "venue": "한국은행 본점",
+      "section": "감사일정",
+      "audited_targets": [
+        "한국은행"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": null,
+      "venue": "정부세종2청사",
+      "section": "감사일정",
+      "audited_targets": [
+        "국세청",
+        "서울지방국세청",
+        "중부지방국세청",
+        "인천지방국세청"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-15",
+      "time_text": null,
+      "venue": "정부대전청사",
+      "section": "감사일정",
+      "audited_targets": [
+        "국가데이터처",
+        "관세청",
+        "조달청"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-16",
+      "time_text": null,
+      "venue": "한국은행 전북본부 / 조달비축기지(군산)",
+      "section": "감사일정",
+      "audited_targets": [
+        "대전지방국세청",
+        "광주지방국세청",
+        "광주본부세관",
+        "호남지방데이터청",
+        "충청지방데이터청",
+        "한국은행(대전세종충남․충북․광주전남․전북․목포본부)"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-16",
+      "time_text": null,
+      "venue": "한국은행 대구경북본부 / 화폐본부(경산)",
+      "section": "감사일정",
+      "audited_targets": [
+        "부산지방국세청",
+        "대구지방국세청",
+        "부산본부세관",
+        "대구본부세관",
+        "동북지방데이터청",
+        "동남지방데이터청",
+        "한국은행(부산․경남․울산․대구경북․포항본부)"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-20",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "한국수출입은행",
+        "한국조폐공사",
+        "한국투자공사",
+        "한국재정정보원",
+        "한국원산지정보원",
+        "한국통계정보원",
+        "한국통계진흥원",
+        "한국관세정보원",
+        "한미전략투자공사"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 9,
+      "audit_date": "2026-10-22",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "재정경제부",
+        "국가데이터처",
+        "국세청",
+        "관세청",
+        "조달청"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 10,
+      "audit_date": "2026-10-23",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "기획예산처",
+        "한국은행",
+        "한국수출입은행",
+        "한국조폐공사",
+        "한국투자공사",
+        "한국재정정보원",
+        "한국원산지정보원",
+        "한국통계정보원",
+        "한국통계진흥원",
+        "한국관세정보원",
+        "한미전략투자공사"
+      ],
+      "page_number": 4
+    }
+  ],
+  "witness_rows_included": false
+}

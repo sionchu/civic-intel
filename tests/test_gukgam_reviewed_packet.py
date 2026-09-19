@@ -12,6 +12,29 @@ from packages.connectors.gukgam_reviewed_packet import (
 
 FIXTURE = Path("tests/fixtures/gukgam_2026_science_plan_metadata_packet.json")
 REVIEWED_FIXTURE = Path("tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json")
+REVIEWED_PACKET_EXPECTATIONS = {
+    Path("tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json"): (
+        "과학기술정보방송통신위원회", 8, 96, "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d"
+    ),
+    Path("tests/fixtures/gukgam_2026_steering_plan_reviewed_packet.json"): (
+        "국회운영위원회", 3, 10, "a70b01b4a9d7e6866ae6be5971c24ff999c88acc6d4d48db26c97a5e28e894a2"
+    ),
+    Path("tests/fixtures/gukgam_2026_adminhom_plan_reviewed_packet.json"): (
+        "행정안전위원회", 12, 45, "b04504c596b81316d507fcf19a41c96958244f8e3e5bf7f51f6b097f5ce064ee"
+    ),
+    Path("tests/fixtures/gukgam_2026_culture_plan_reviewed_packet.json"): (
+        "문화체육관광위원회", 7, 69, "13ea6574f5ebfc277ff698f247651c4195ad0a63e1dd88caae29cd14967f2eaa"
+    ),
+    Path("tests/fixtures/gukgam_2026_agri_plan_reviewed_packet.json"): (
+        "농림축산식품해양수산위원회", 8, 49, "e8e3d884098cdf060e6ac30f966f74b7bf25012f2a45909621691ab94fc35b07"
+    ),
+    Path("tests/fixtures/gukgam_2026_finance_plan_reviewed_packet.json"): (
+        "재정경제기획위원회", 10, 48, "5b73bd4fe6be4e52c5fa01417fcc476a89f425eb743e47d8a4b18c55703175f1"
+    ),
+    Path("tests/fixtures/gukgam_2026_defense_plan_reviewed_packet.json"): (
+        "국방위원회", 9, 73, "2b53b491a4d453ed6f3490ada15297077587deb7cad929f66a92d7e0e04c3a53"
+    ),
+}
 
 
 def _packet() -> dict:
@@ -85,6 +108,26 @@ def test_pinned_science_plan_reviewed_packet_matches_reviewed_schedule() -> None
     assert len(packet.schedule[5].audited_targets) == 54
     assert "한국방송공사" in packet.schedule[4].audited_targets
     assert packet.content_hash == "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d"
+    assert packet.witness_rows_included is False
+
+
+@pytest.mark.parametrize(
+    ("fixture", "expected"),
+    REVIEWED_PACKET_EXPECTATIONS.items(),
+)
+def test_real_reviewed_packets_match_pinned_counts_and_hashes(
+    fixture: Path,
+    expected: tuple[str, int, int, str],
+) -> None:
+    committee_name, row_count, target_count, expected_hash = expected
+    packet = parse_reviewed_gukgam_plan_packet(
+        json.loads(fixture.read_text(encoding="utf-8"))
+    )
+
+    assert packet.source.committee_name == committee_name
+    assert len(packet.schedule) == row_count
+    assert sum(len(row.audited_targets) for row in packet.schedule) == target_count
+    assert packet.content_hash == expected_hash
     assert packet.witness_rows_included is False
 
 

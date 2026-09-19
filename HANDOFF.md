@@ -2027,12 +2027,36 @@ packet under the existing packet gate. Do not modify `apps/web` in that slice.
   Exact-artifact dry-run passed and reported zero Person/Organization/Claim materialization.
   No staging observation has been written yet.
 
+## Current checkpoint — Gukgam standing-committee exact attachment batch 1 (2026-09-20)
+
+- Aside Browser was restored in the owner Windows session and used only as a bounded interactive
+  acquisition path through the official National Assembly central inspection list and exact
+  committee detail pages. No scraper or automated committee collector was added.
+- The inventory now has eight `EXACT_ATTACHMENT_CAPTURED` committees: Science, Steering,
+  National Defense, Public Administration and Security, Culture/Sports/Tourism,
+  Agriculture/Food/Rural Affairs/Oceans, Strategy and Finance, and Foreign Affairs and
+  Unification.
+- Six additional reviewed packets pass the real exact-PDF dry-run boundary:
+  Steering `3 rows / 10 mentions`, Public Administration and Security `12/45`,
+  Culture/Sports/Tourism `7/69`, Agriculture/Food/Rural Affairs/Oceans `8/49`,
+  Strategy and Finance `10/48`, and National Defense `9/73`.
+  All retain zero Person/Organization/Claim materialization and no fulltext.
+- Foreign Affairs and Unification exact PDF
+  `fde2aa6309f28b87d398fd1a3dbda264e26f769cfc7a50918f32fd2a0241243d`
+  is intentionally not packetized because official overseas audit rows use multi-day ranges that
+  packet v1 cannot represent losslessly.
+- Raw PDFs and extraction scratch files remain outside git. No application data, staging database,
+  Railway resource, schema, API or Web behavior changed in this acquisition slice.
+- Targeted parser/importer verification passed `24 tests`. Local full verification then passed:
+  Ruff, mypy, `444 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, 22 Web tests,
+  production build, and `git diff --check`. GitHub CI remains a separate gate.
+
 ## Next concrete action
 
-Expand the 17-standing-committee source inventory from discovery evidence to exact official
-attachment locators one committee at a time. Science Committee is already ready for the first
-staging observation-only commit + unchanged rerun once an approved staging execution boundary is
-available. Keep target strings source-scoped; do not bind them to canonical Organizations here.
+Check the official central plan list for the remaining eight `DISCOVERY_PENDING` committees plus
+the Health and Welfare Committee. Acquire any newly listed exact 2026 plan attachments through the
+same bounded browser path, then apply the existing reviewed-packet gate without inferring absence
+or binding target strings to canonical Organizations.
 
 
 ## Current checkpoint — Public Beta staging acceptance + latency v0 (2026-09-19)
