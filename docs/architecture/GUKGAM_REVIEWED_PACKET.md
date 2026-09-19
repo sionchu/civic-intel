@@ -190,6 +190,14 @@ Organization binding and Claim/Evidence publication. The projection:
 The default public API does not expose this route, and `/gukgam/2026` remains unchanged until the
 ordinary Claim/Evidence publication path can support the rendered facts.
 
+A second internal-only projection may compare each source-scoped audited-target string with current
+canonical Organization names using exact string equality only. An exact overlap is labeled
+`EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY`; it is a review candidate, not a binding decision.
+No-match and multiple-exact-match outcomes remain unresolved. This projection may expose candidate
+Organization IDs/names to the operator, but it must not use aliases, fuzzy similarity, numeric
+scores, rankings, embeddings or organizational proximity and must not create or update any
+Organization, Claim, ClaimEvidence or identity link.
+
 ## Next source step
 
 Continue exact-attachment acquisition for the remaining standing committees and use v1 only where

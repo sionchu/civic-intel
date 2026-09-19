@@ -20,7 +20,13 @@ from packages.rendering.governance_ontology import (
     build_organization_governance_ontology,
     build_person_governance_ontology,
 )
-from packages.rendering.gukgam_schedule_review import build_gukgam_schedule_review
+from packages.rendering.gukgam_organization_binding_review import (
+    build_gukgam_organization_binding_review,
+)
+from packages.rendering.gukgam_schedule_review import (
+    GukgamScheduleReviewReport,
+    build_gukgam_schedule_review,
+)
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -634,8 +640,7 @@ def create_app(
 
     if enable_review_surface:
 
-        @app.get("/admin/gukgam/2026/schedule")
-        def gukgam_2026_schedule_review() -> dict:
+        def current_gukgam_schedule_review() -> GukgamScheduleReviewReport:
             contexts = []
             for checkpoint in target.source_checkpoints(GUKGAM_REVIEWED_PLAN_FEEDER):
                 if not checkpoint.scope_key.startswith("2026:"):
@@ -680,7 +685,18 @@ def create_app(
                     raise RuntimeError("Gukgam checkpoint row count does not match current observations")
                 contexts.extend(current)
 
-            return build_gukgam_schedule_review(contexts).to_dict()
+            return build_gukgam_schedule_review(contexts)
+
+        @app.get("/admin/gukgam/2026/schedule")
+        def gukgam_2026_schedule_review() -> dict:
+            return current_gukgam_schedule_review().to_dict()
+
+        @app.get("/admin/gukgam/2026/organization-binding-candidates")
+        def gukgam_2026_organization_binding_candidates() -> dict:
+            return build_gukgam_organization_binding_review(
+                current_gukgam_schedule_review(),
+                target.organizations(current_only=True),
+            ).to_dict()
 
         @app.get("/admin/review")
         def review_report() -> dict:

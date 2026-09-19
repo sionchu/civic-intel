@@ -12,6 +12,7 @@ from apps.api.main import create_app
 from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_plan_packet
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
+from packages.rendering.gukgam_organization_binding_review import NO_EXACT
 from packages.rendering.gukgam_schedule_review import (
     GUKGAM_SCHEDULE_REVIEW_SEMANTICS,
     GukgamScheduleReviewError,
@@ -132,7 +133,17 @@ def test_review_api_is_gated_and_uses_current_observation_versions(
 
     with TestClient(create_app(repository, enable_review_surface=True)) as client:
         response = client.get("/admin/gukgam/2026/schedule")
+        binding_response = client.get(
+            "/admin/gukgam/2026/organization-binding-candidates"
+        )
     assert response.status_code == 200
+    assert binding_response.status_code == 200
+    binding = binding_response.json()
+    assert binding["organization_universe_count"] == 0
+    assert binding["mention_count"] == 96
+    assert all(item["match_class"] == NO_EXACT for item in binding["items"])
+    assert all(item["candidates"] == [] for item in binding["items"])
+
     payload = response.json()
     assert payload["schedule_row_count"] == 8
     rows = payload["committees"][0]["schedule_rows"]
@@ -142,8 +153,13 @@ def test_review_api_is_gated_and_uses_current_observation_versions(
 
     with TestClient(create_app(repository)) as public_client:
         public_response = public_client.get("/admin/gukgam/2026/schedule")
+        public_binding = public_client.get(
+            "/admin/gukgam/2026/organization-binding-candidates"
+        )
     assert public_response.status_code == 404
+    assert public_binding.status_code == 404
     assert public_response.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
+    assert public_binding.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
 
 
 def test_review_projection_fails_closed_if_fulltext_or_policy_gate_changes(
