@@ -160,6 +160,31 @@ The collection implementation must use an automation-permitted official route, s
 National Assembly/open-data API or another officially documented interface. Search engines may
 help discover official records but search-result text is not canonical evidence.
 
+## Central official inspection portal discovery
+
+The National Assembly Library's official local-parliament information page points users to the
+current National Assembly inspection-data portal:
+
+```text
+https://www.assembly.go.kr/portal/cnts/cntsCont/dataA.do?cntsDivCd=INSPECT&menuNo=600236
+```
+
+and separately to the inspection information system:
+
+```text
+https://likms.assembly.go.kr/inspections/main.do
+```
+
+A bounded 2026-09-19 probe of `/robots.txt` on both `www.assembly.go.kr` and
+`assembly.go.kr` returned `Bad Request` rather than a usable robots policy. That is **not**
+interpreted as automation permission. Until a positive access contract is reviewed, use these
+central pages for operator/discovery navigation only; do not build a repeated automated collector
+against them.
+
+The exact Science Committee PDF was subsequently supplied through the approved human-assisted
+artifact boundary and verified against the reviewed packet. This does not change the automation
+decision for committee or central-portal HTML.
+
 ## Candidate stable locators
 
 Source-level candidate:

@@ -179,10 +179,14 @@ Required closure:
   (`FeederObservation.content_hash`). Dry-run is default. A commit can persist only
   SourcePolicy/Source/SourceSnapshot/Run/Checkpoint/Observation and explicitly creates zero
   Person, Organization, Claim, ClaimEvidence or identity link.
-- The pinned Science Committee real fixture still has zero reviewed schedule rows and no exact
-  local artifact proof, so no real Gukgam schedule/target observation has been written to staging.
-  Committee-site repeated automation remains blocked by the reviewed robots contract. Temporary
-  GitHub QA/probe workflow files were removed after use.
+- The pinned Science Committee exact PDF has now been captured through the approved
+  human-assisted artifact boundary and independently matched to the existing reviewed packet.
+  Raw attachment SHA-256 is
+  `82d37b337790e5869e74af3420b7dab74c86a7fb14b44a54932f8dbd2f31e533`; the reviewed packet
+  contains 8 audit rows / 96 audited-target strings and retains packet hash
+  `4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d`.
+  The real artifact dry-run passed with zero Person/Organization/Claim materialization.
+  No staging observation has been written yet. Committee-site repeated automation remains blocked.
 
 ## Current checkpoint — public-beta HTTP acceptance + directory latency (2026-09-19)
 
@@ -213,10 +217,11 @@ Required closure:
   `7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15`, but it currently contains zero services. No
   production service, database, public/custom domain or indexing activation was created.
   Production creation/domain/indexing remain explicit public-access/cost gates.
-- The official Science Committee PDF preview remains inaccessible through the current approved web
-  execution paths, and repeated committee-site automation remains blocked by the reviewed robots
-  contract. The exact reviewed packet therefore still requires an approved manual/Codex-local
-  artifact boundary; no PDF content was guessed from news or search snippets.
+- The exact Science Committee PDF is now available through the approved human-assisted local
+  artifact boundary and has been verified against the canonical reviewed packet. The attachment
+  itself is not committed or retained in the repository. Repeated committee-site automation
+  remains blocked, and no other committee may gain canonical schedule/target rows from press or
+  search snippets alone.
 
 ## Public-beta release gate
 
@@ -235,17 +240,13 @@ Staging must stay noindex.
 
 ## Next concrete action
 
-Complete exactly one reviewed Science Committee 2026 plan packet from the pinned official PDF:
+Use the 17-committee source inventory as the collection queue. For every committee other than the
+already verified Science Committee, replace discovery-only status with an exact official
+plan-attachment locator and reviewed artifact before creating schedule observations. The central
+National Assembly inspection portal may be used for operator/discovery navigation, but its
+`robots.txt` currently returns `Bad Request`; do not treat that as automation permission.
 
-1. obtain one exact local copy of the pinned attachment through the approved manual/Codex-local
-   boundary and record the exact official locator;
-2. record the raw PDF SHA-256 and confirm the exact attachment metadata rights review;
-3. fill the schedule rows and audited-target strings field-by-field from that attachment;
-4. run `workers.gukgam_reviewed_plan_import` in dry-run mode;
-5. independently verify the source locator, raw hash, packet hash, row count, target count and
-   zero Person/Organization/Claim publication;
-6. only if the dry-run receipt passes, perform one staging `--commit` single-pull and prove the
-   unchanged rerun.
-
-Do not bind audited-target names to canonical Organizations in the same slice. Do not weaken the
-committee-site robots boundary while the official API credential remains unavailable.
+For the Science Committee, the exact artifact dry-run is already PASS. The next write-capable step
+is one staging observation-only `--commit` followed by an unchanged rerun, but only through an
+approved staging execution boundary. Keep audited-target strings source-scoped and do not bind them
+to canonical Organizations in this slice.

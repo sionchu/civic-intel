@@ -2019,16 +2019,20 @@ packet under the existing packet gate. Do not modify `apps/web` in that slice.
   Raw attachment SHA, reviewed packet digest and normalized row hashes are distinct provenance
   layers. Dry-run is default; a commit persists only source/snapshot/run/checkpoint/observation
   records and creates no Person, Organization, Claim, ClaimEvidence or identity link.
-- No real Gukgam schedule/target observation has been written yet. The pinned Science Committee
-  packet still has zero schedule rows. No schema/migration/Postgres deployment or application-data
-  write occurred during the Web/ontology/import-boundary slices.
+- The exact Science Committee PDF is now captured through the approved human-assisted boundary.
+  Raw SHA-256 is
+  `82d37b337790e5869e74af3420b7dab74c86a7fb14b44a54932f8dbd2f31e533`; the canonical reviewed
+  packet is 8 schedule rows / 96 audited-target strings with hash
+  `4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d`.
+  Exact-artifact dry-run passed and reported zero Person/Organization/Claim materialization.
+  No staging observation has been written yet.
 
 ## Next concrete action
 
-Complete the pinned 2026 Science Committee plan from the exact official PDF, run the reviewed-plan
-L2 importer in dry-run mode, independently verify the receipt, then perform exactly one staging
-single-pull `--commit` plus unchanged rerun if the dry-run passes. Keep audited-target names as
-source strings; do not bind them to canonical Organizations in this slice.
+Expand the 17-standing-committee source inventory from discovery evidence to exact official
+attachment locators one committee at a time. Science Committee is already ready for the first
+staging observation-only commit + unchanged rerun once an approved staging execution boundary is
+available. Keep target strings source-scoped; do not bind them to canonical Organizations here.
 
 
 ## Current checkpoint — Public Beta staging acceptance + latency v0 (2026-09-19)
@@ -2054,13 +2058,14 @@ source strings; do not bind them to canonical Organizations in this slice.
 - Railway environment `production` (`7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15`) exists but has
   zero services. No production DB/service/domain/indexing change was made; that remains an explicit
   public-access/cost approval boundary.
-- The Science Committee exact PDF still cannot be fetched through the current approved execution
-  boundary. Committee-site repeated automation remains blocked by robots. No schedule/target row
-  was inferred from news/search snippets.
+- The Science Committee exact PDF is now available through the approved human-assisted artifact
+  boundary and matched to the existing reviewed packet. The PDF is not stored in the repository.
+  Committee-site repeated automation remains blocked, and no other committee schedule/target row is
+  inferred from news/search snippets.
 
 ## Next concrete action
 
-Obtain the exact pinned Science Committee 2026 plan PDF through an approved manual/Codex-local
-artifact boundary, complete one reviewed packet, run the dry-run L2 import and independent receipt,
-then perform exactly one staging observation-only commit plus unchanged rerun if the gate passes.
-Do not bind target names to canonical Organizations in that slice.
+Use the committee source inventory to acquire exact official attachments for the remaining
+committees. Science Committee dry-run is PASS; its next write-capable step is a single staging
+observation-only commit plus unchanged rerun through an approved staging execution boundary.
+Do not bind target names to canonical Organizations in this slice.

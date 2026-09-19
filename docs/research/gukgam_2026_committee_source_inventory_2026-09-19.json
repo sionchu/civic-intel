@@ -93,6 +93,19 @@
           "10.19 자료 준비",
           "10.21 자료 준비"
         ]
+      },
+      "dry_run_receipt": {
+        "status": "DRY_RUN",
+        "verified_at": "2026-09-19",
+        "attachment_sha256": "82d37b337790e5869e74af3420b7dab74c86a7fb14b44a54932f8dbd2f31e533",
+        "reviewed_packet_hash": "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d",
+        "schedule_rows": 8,
+        "audited_target_mentions": 96,
+        "source_host": "science.na.go.kr",
+        "fulltext_retained": false,
+        "person_materialization": false,
+        "organization_materialization": false,
+        "claim_publication": false
       }
     },
     {
@@ -192,5 +205,16 @@
     "Search-engine discovery and press/broadcast evidence may upgrade DISCOVERY status only; it is not canonical evidence for schedule rows or audited targets.",
     "Exact committee attachment bytes remain required before reviewed-packet import.",
     "Committee-site repeated automated HTML/attachment fetch remains blocked where the reviewed robots contract disallows it."
-  ]
+  ],
+  "central_official_portal": {
+    "discovered_at": "2026-09-19",
+    "source": "National Assembly Library local-parliament portal",
+    "official_plan_portal_url": "https://www.assembly.go.kr/portal/cnts/cntsCont/dataA.do?cntsDivCd=INSPECT&menuNo=600236",
+    "official_inspection_system_url": "https://likms.assembly.go.kr/inspections/main.do",
+    "robots_probe": {
+      "www_assembly_go_kr": "Bad Request",
+      "assembly_go_kr": "Bad Request"
+    },
+    "automation_decision": "DISCOVERY_OPERATOR_ONLY_NOT_AUTOMATION_AUTHORIZED"
+  }
 }
