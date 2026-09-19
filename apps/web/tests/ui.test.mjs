@@ -240,3 +240,12 @@ test("Organization detail renders source-listed executive ontology without Perso
   assert.match(graph, /canonical Person이 아닙니다/);
   assert.doesNotMatch(graph, /href=.*people.*target|confidence|probability|score/i);
 });
+
+
+test("Ontology local graph collapses repeated relation labels for cleaner dense views", async () => {
+  const graph = await readFile(new URL("../app/components/ontology-local-graph.tsx", import.meta.url), "utf8");
+  assert.match(graph, /const relationKinds = new Set/);
+  assert.match(graph, /const singleRelationType =/);
+  assert.match(graph, /!singleRelationType/);
+  assert.match(graph, /RELATION_LABELS\[singleRelationType\]/);
+});

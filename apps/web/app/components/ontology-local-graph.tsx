@@ -29,6 +29,8 @@ export default function OntologyLocalGraph({
   const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
   const center = nodeById.get(graph.center_node_id);
   const visibleEdges = graph.edges.slice(0, 6);
+  const relationKinds = new Set(visibleEdges.map((edge) => edge.relation_type));
+  const singleRelationType = relationKinds.size === 1 ? visibleEdges[0]?.relation_type : null;
   const height = Math.max(180, visibleEdges.length * 76 + 44);
   const centerY = height / 2;
 
@@ -43,9 +45,11 @@ export default function OntologyLocalGraph({
             return (
               <g key={edge.id}>
                 <line className="ontology-line" x1="250" y1={centerY} x2="470" y2={targetY} />
-                <text className="ontology-edge-label" x="360" y={(centerY + targetY) / 2 - 7} textAnchor="middle">
-                  {relation}
-                </text>
+                {!singleRelationType && (
+                  <text className="ontology-edge-label" x="360" y={(centerY + targetY) / 2 - 7} textAnchor="middle">
+                    {relation}
+                  </text>
+                )}
                 <rect className="ontology-node ontology-node-target" x="470" y={targetY - 23} width="210" height="46" rx="10" />
                 <text className="ontology-node-label" x="575" y={targetY + 5} textAnchor="middle">
                   {shortLabel(target?.label ?? "공개 기록")}
@@ -53,6 +57,11 @@ export default function OntologyLocalGraph({
               </g>
             );
           })}
+          {singleRelationType && (
+            <text className="ontology-edge-label" x="360" y={centerY - 12} textAnchor="middle">
+              {RELATION_LABELS[singleRelationType] ?? singleRelationType}
+            </text>
+          )}
           <rect className="ontology-node ontology-node-center" x="40" y={centerY - 28} width="210" height="56" rx="12" />
           <text className="ontology-node-label ontology-node-label-center" x="145" y={centerY + 6} textAnchor="middle">
             {shortLabel(center?.label ?? "Person", 14)}
