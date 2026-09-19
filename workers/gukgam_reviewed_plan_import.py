@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from packages.connectors.gukgam_reviewed_packet import (
     GukgamReviewedPacketError,
     parse_reviewed_gukgam_plan_packet,
@@ -123,16 +125,13 @@ def main(argv: list[str] | None = None) -> int:
             checkpoint_metadata=capture.checkpoint_metadata,
         )
         finished = repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
-    except Exception as exc:
-        try:
-            repository.finish_source_run(
-                run.id,
-                SourceRunStatus.FAILED,
-                error_code="GUKGAM_REVIEWED_PACKET_IMPORT_FAILED",
-                error_summary=type(exc).__name__,
-            )
-        except Exception:
-            pass
+    except (OSError, RuntimeError, SQLAlchemyError, ValueError) as exc:
+        repository.finish_source_run(
+            run.id,
+            SourceRunStatus.FAILED,
+            error_code="GUKGAM_REVIEWED_PACKET_IMPORT_FAILED",
+            error_summary=type(exc).__name__,
+        )
         raise
 
     print(
