@@ -47,15 +47,18 @@ jobs:
           wait = WebDriverWait(driver, 20)
 
           try:
-              driver.execute_cdp_cmd(
-                  "Browser.setPermission",
-                  {
-                      "permission": {"name": "clipboardReadWrite"},
-                      "setting": "granted",
-                      "origin": BASE,
-                  },
-              )
               driver.get(expected)
+              driver.execute_script("""
+                  window.__copiedShareUrl = null;
+                  Object.defineProperty(navigator, "clipboard", {
+                    configurable: true,
+                    value: {
+                      writeText: async (value) => {
+                        window.__copiedShareUrl = value;
+                      },
+                    },
+                  });
+              """)
 
               field = wait.until(
                   EC.presence_of_element_located((By.CSS_SELECTOR, ".gukgam-search-field input"))
@@ -69,10 +72,7 @@ jobs:
               button.click()
               wait.until(lambda d: d.find_element(By.CSS_SELECTOR, ".gukgam-search-copy").text == "복사됨")
 
-              copied = driver.execute_async_script("""
-                  const done = arguments[arguments.length - 1];
-                  navigator.clipboard.readText().then(done).catch(err => done("ERROR:" + err));
-              """)
+              copied = driver.execute_script("return window.__copiedShareUrl")
               assert copied == expected, (copied, expected)
 
               status = driver.find_element(By.CSS_SELECTOR, '[role="status"][aria-live="polite"]')
