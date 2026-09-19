@@ -2029,3 +2029,38 @@ Complete the pinned 2026 Science Committee plan from the exact official PDF, run
 L2 importer in dry-run mode, independently verify the receipt, then perform exactly one staging
 single-pull `--commit` plus unchanged rerun if the dry-run passes. Keep audited-target names as
 source strings; do not bind them to canonical Organizations in this slice.
+
+
+## Current checkpoint — Public Beta staging acceptance + latency v0 (2026-09-19)
+
+- Public Beta HTTP preflight merged as
+  `d4d3529f8e63dea1f7394d41fcde99997b97769e`; Verify `35422460313` passed.
+- Real staging preflight `35426383959` passed against
+  `https://web-staging-efe2.up.railway.app`: Home, `/gukgam/2026`, robots, sitemap,
+  representative Person and 한국전력공사 Organization routes all returned HTTP 200. The staging
+  SEO gate correctly remained noindex/disallow-all, and selected raw/contact leak checks passed.
+- Organization public-list publication context was batched in
+  `8c50218cdd8a8de31c0c1ec97192c044da7643e8`; Verify `35422992753` passed and staging API
+  deployment `57efc9cd-4f7b-49b5-b1e7-188e8f723f5f` succeeded.
+- Public People/Organization list reads now use a bounded 60-second Web revalidation cache in
+  `a58050b778b1f29bb7167b8c534acbb6ab9013d1`; Verify `35426886029` passed and staging Web
+  deployment `328a8649-8fba-4021-9ab5-258e8360abff` succeeded. Detail/Evidence/ontology/source
+  reads remain request-time.
+- Before the Web cache, repeated staging timings were ~1.0–1.17 s for `/people`,
+  ~2.5–2.97 s for `/organizations`, and ~3.10–3.81 s for `/gukgam/2026`. After deployment,
+  timing run `35427116217` measured `/gukgam/2026` at ~0.55–0.57 s after cache population,
+  `/organizations` at ~0.56–0.78 s after one ~2.86 s cold request, and `/people` around
+  ~0.59–0.61 s.
+- Railway environment `production` (`7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15`) exists but has
+  zero services. No production DB/service/domain/indexing change was made; that remains an explicit
+  public-access/cost approval boundary.
+- The Science Committee exact PDF still cannot be fetched through the current approved execution
+  boundary. Committee-site repeated automation remains blocked by robots. No schedule/target row
+  was inferred from news/search snippets.
+
+## Next concrete action
+
+Obtain the exact pinned Science Committee 2026 plan PDF through an approved manual/Codex-local
+artifact boundary, complete one reviewed packet, run the dry-run L2 import and independent receipt,
+then perform exactly one staging observation-only commit plus unchanged rerun if the gate passes.
+Do not bind target names to canonical Organizations in that slice.
