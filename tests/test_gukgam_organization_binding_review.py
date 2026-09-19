@@ -3,12 +3,17 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+
 from packages.domain.contracts import Organization
 from packages.rendering.gukgam_organization_binding_review import (
     EXACT_MULTIPLE,
     EXACT_ONE,
+    GUKGAM_ORGANIZATION_BINDING_PREFLIGHT_SEMANTICS,
     GUKGAM_ORGANIZATION_BINDING_REVIEW_SEMANTICS,
     NO_EXACT,
+    GukgamOrganizationBindingPreflightError,
+    build_gukgam_organization_binding_preflight,
     build_gukgam_organization_binding_review,
 )
 from packages.rendering.gukgam_schedule_review import (
@@ -113,3 +118,83 @@ def test_superseded_organization_is_not_a_binding_candidate() -> None:
     assert item["candidates"] == [
         {"organization_id": str(current.id), "name": current.name}
     ]
+
+
+def test_operator_supplied_exact_candidate_preflight_is_no_write_receipt() -> None:
+    organization = Organization(name="기관 A")
+    report = schedule_report()
+
+    receipt = build_gukgam_organization_binding_preflight(
+        report,
+        [organization],
+        review_key="test:schedule:1:audited-target:1",
+        organization_id=organization.id,
+    ).to_dict()
+
+    assert receipt["status"] == "DRY_RUN"
+    assert receipt["semantics"] == GUKGAM_ORGANIZATION_BINDING_PREFLIGHT_SEMANTICS
+    assert receipt["candidate_relationship"] == "EXACT_CANONICAL_NAME_OVERLAP_REVERIFIED"
+    assert receipt["binding_committed"] is False
+    assert receipt["claim_publication"] is False
+    assert receipt["organization"] == {
+        "organization_id": str(organization.id),
+        "name": "기관 A",
+    }
+    assert receipt["occurrence"] == {
+        "committee_name": "테스트위원회",
+        "audit_date": "2026-10-06",
+        "provider_record_key": "test:schedule:1",
+        "observation_id": str(report.committees[0].rows[0].observation_id),
+        "audited_target": "기관 A",
+    }
+    assert receipt["provenance"]["url"] == "https://test.na.go.kr/plan.pdf"
+    serialized = str(receipt).casefold()
+    assert "score" not in serialized
+    assert "rank" not in serialized
+    assert "confidence" not in serialized
+
+
+def test_binding_preflight_rejects_wrong_operator_supplied_organization() -> None:
+    exact = Organization(name="기관 A")
+    wrong = Organization(name="다른 기관")
+
+    with pytest.raises(
+        GukgamOrganizationBindingPreflightError,
+        match="not the current exact-name candidate",
+    ):
+        build_gukgam_organization_binding_preflight(
+            schedule_report(),
+            [exact, wrong],
+            review_key="test:schedule:1:audited-target:1",
+            organization_id=wrong.id,
+        )
+
+
+def test_binding_preflight_rejects_occurrence_without_exact_candidate() -> None:
+    organization = Organization(name="기관 A")
+
+    with pytest.raises(
+        GukgamOrganizationBindingPreflightError,
+        match="does not have exactly one current exact-name candidate",
+    ):
+        build_gukgam_organization_binding_preflight(
+            schedule_report(),
+            [organization],
+            review_key="test:schedule:1:audited-target:3",
+            organization_id=organization.id,
+        )
+
+
+def test_binding_preflight_rejects_unknown_review_key() -> None:
+    organization = Organization(name="기관 A")
+
+    with pytest.raises(
+        GukgamOrganizationBindingPreflightError,
+        match="does not identify exactly one current audited-target occurrence",
+    ):
+        build_gukgam_organization_binding_preflight(
+            schedule_report(),
+            [organization],
+            review_key="missing-review-key",
+            organization_id=organization.id,
+        )
