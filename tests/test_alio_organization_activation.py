@@ -155,7 +155,18 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         organizations = client.get("/organizations")
         assert organizations.status_code == 200
         assert len(organizations.json()) == 2
-        organization = repository.organizations()[0]
+        organization = next(
+            organization
+            for organization in repository.organizations()
+            if any(
+                claim.predicate == ALIO_EXECUTIVE_PREDICATE
+                for claim in repository.claims(
+                    organization_id=organization.id,
+                    published_only=True,
+                    current_only=True,
+                )
+            )
+        )
         detail = client.get(f"/organizations/{organization.id}")
         assert detail.status_code == 200
         assert "normalized" not in json.dumps(detail.json(), ensure_ascii=False)
