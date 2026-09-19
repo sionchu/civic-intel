@@ -730,3 +730,23 @@ main { flex: 1; }
 @media (max-width: 600px) {
   .gukgam-search-share-row { align-items: flex-start; flex-direction: column; gap: 7px; }
 }
+
+
+.gukgam-search-more {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 7px 0 3px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+}
+.gukgam-search-more:hover { color: var(--color-ink); }
+.gukgam-search-more:focus-visible {
+  outline: 3px solid var(--color-accent-soft);
+  outline-offset: 4px;
+}
