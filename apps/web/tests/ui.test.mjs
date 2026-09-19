@@ -319,3 +319,17 @@ test("Gukgam deep-link search exposes an accessible copy action", async () => {
   assert.match(styles, /\.gukgam-search-copy/);
   assert.match(styles, /\.gukgam-search-share-row/);
 });
+
+
+test("Gukgam broad search expands deterministically without ranking", async () => {
+  const search = await readFile(new URL("../app/components/gukgam-search.tsx", import.meta.url), "utf8");
+  assert.match(search, /INITIAL_RESULT_LIMIT = 6/);
+  assert.match(search, /RESULT_PAGE_SIZE = 12/);
+  assert.match(search, /peopleMatches\.slice\(0, peopleLimit\)/);
+  assert.match(search, /organizationMatches\.slice\(0, organizationLimit\)/);
+  assert.match(search, /setPeopleLimit\(INITIAL_RESULT_LIMIT\)/);
+  assert.match(search, /setOrganizationLimit\(INITIAL_RESULT_LIMIT\)/);
+  assert.match(search, /People \{Math\.min\(RESULT_PAGE_SIZE/);
+  assert.match(search, /Organizations \{Math\.min/);
+  assert.doesNotMatch(search, /\.sort\(|score|rank|probability|confidence/i);
+});
