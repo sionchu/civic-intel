@@ -2114,9 +2114,30 @@ start/end date semantics.
   Committee-site repeated automation remains blocked, and no other committee schedule/target row is
   inferred from news/search snippets.
 
+## Current checkpoint — Gukgam review-only schedule projection v0 (2026-09-20)
+
+- The current 57 staging `gukgam_reviewed_plan` observations now have a pure internal review
+  projection and gated `GET /admin/gukgam/2026/schedule` route. The route is registered only when
+  `enable_review_surface=True`; the default public API and public Gukgam page are unchanged.
+- Current rows are selected from the checkpoint's current attachment SHA with the newest immutable
+  observation version per provider record key. Count drift fails closed rather than inferring which
+  source version should win.
+- The review DTO exposes committee/date/time/venue/source-scoped target/page fields plus exact source
+  provenance only. It excludes canonical Organization IDs, Claim IDs, run IDs, raw normalized
+  payloads and fulltext.
+- Targeted verification passed: Ruff, mypy, and 27 Gukgam review/packet/import tests. Local full
+  verification also passed: Ruff, mypy, `447 passed / 1 skipped` pytest, Golden quality, Web
+  lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Owner-local execution of the new review route against the real staging database passed:
+  7 committees, 57 schedule rows and 390 audited-target mentions; forbidden identity/publication
+  fields were absent. This was read-only and did not deploy or publish the admin route.
+- Temporary Railway SSH access used for that validation was closed and its registered public key
+  removed.
+
 ## Next concrete action
 
-Use the committee source inventory to acquire exact official attachments for the remaining
-committees. Science Committee dry-run is PASS; its next write-capable step is a single staging
-observation-only commit plus unchanged rerun through an approved staging execution boundary.
-Do not bind target names to canonical Organizations in this slice.
+Build one review-only Organization-binding candidate report over the 390 source-scoped target
+mentions and the existing canonical Organization universe. Exact name overlap may surface a
+candidate for review, but it must not auto-bind an Organization, create a Claim/Evidence row, or
+make the schedule public. Keep Foreign Affairs and Unification fail-closed and packet v1 unchanged
+until another exact audited-target date-range case establishes a reusable need.

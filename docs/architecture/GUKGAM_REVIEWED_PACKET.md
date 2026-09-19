@@ -174,6 +174,22 @@ The Foreign Affairs and Unification exact plan PDF is also captured, but its ove
 use multi-day ranges such as `10.11~10.22`. Packet v1 exposes only one `audit_date`, so that
 committee remains fail-closed rather than collapsing a range to its start date.
 
+## Review-only schedule projection
+
+Imported plan observations may be rendered only on the internal review surface before
+Organization binding and Claim/Evidence publication. The projection:
+
+- is available only when the API review surface is explicitly enabled;
+- selects rows from the checkpoint's current attachment SHA and chooses the latest immutable
+  observation version for each provider record key;
+- fails closed when the checkpoint row count and current observation set disagree;
+- exposes reviewed schedule metadata and exact source provenance only;
+- never emits a canonical Organization ID, Claim ID, run metadata, raw `normalized` payload or
+  attachment fulltext.
+
+The default public API does not expose this route, and `/gukgam/2026` remains unchanged until the
+ordinary Claim/Evidence publication path can support the rendered facts.
+
 ## Next source step
 
 Continue exact-attachment acquisition for the remaining standing committees and use v1 only where
