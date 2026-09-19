@@ -38,7 +38,7 @@ class AssemblyScheduleRecord:
             for value in (self.schedule_kind, self.content)
             if value is not None
         )
-        return "국정감사" in text.replace(" ", "")
+        return "국정감사" in "".join(text.split())
 
 
 POLICY_ID = ASSEMBLY_SOURCE_POLICY_ID
