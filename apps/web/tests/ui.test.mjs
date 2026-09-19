@@ -281,3 +281,14 @@ test("public entity pages expose dynamic neutral metadata without generated like
   assert.match(gukgam, /path: "\/gukgam\/2026"/);
   assert.doesNotMatch(person + organization + gukgam, /og:image|generated portrait|AI portrait/i);
 });
+
+
+test("directory list reads use bounded revalidation while detail reads remain request-time", async () => {
+  const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
+  assert.match(data, /DIRECTORY_REVALIDATE_SECONDS = 60/);
+  assert.match(data, /getJson\("\/people", \{ revalidateSeconds: DIRECTORY_REVALIDATE_SECONDS \}\)/);
+  assert.match(data, /getJson\("\/organizations", \{/);
+  assert.match(data, /revalidateSeconds: DIRECTORY_REVALIDATE_SECONDS/);
+  assert.match(data, /getJson\(`\/people\/\$\{id\}`\)/);
+  assert.match(data, /getJson\(`\/organizations\/\$\{id\}`\)/);
+});
