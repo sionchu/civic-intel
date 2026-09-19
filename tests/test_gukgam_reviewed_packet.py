@@ -81,8 +81,8 @@ def test_pinned_science_plan_reviewed_packet_matches_reviewed_schedule() -> None
     assert sum(len(row.audited_targets) for row in packet.schedule) == 96
     assert packet.schedule[0].audit_date.isoformat() == "2026-10-06"
     assert packet.schedule[-1].audit_date.isoformat() == "2026-10-23"
-    assert packet.schedule[6].venue == "대전"
-    assert len(packet.schedule[6].audited_targets) == 54
+    assert packet.schedule[5].venue == "대전"
+    assert len(packet.schedule[5].audited_targets) == 54
     assert "한국방송공사" in packet.schedule[4].audited_targets
     assert packet.content_hash == "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d"
     assert packet.witness_rows_included is False
