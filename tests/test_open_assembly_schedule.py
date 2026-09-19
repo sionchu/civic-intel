@@ -155,6 +155,24 @@ def test_schedule_info_200_is_not_treated_as_no_data() -> None:
         connector.fetch(connector.discover()[0])
 
 
+def test_schedule_top_level_provider_error_preserves_code() -> None:
+    payload = {
+        "RESULT": {
+            "CODE": "ERROR-290",
+            "MESSAGE": "인증키가 유효하지 않습니다.",
+        }
+    }
+    connector = OpenAssemblyScheduleConnector(
+        api_key=SECRET,
+        transport=success_transport(payload),
+    )
+
+    with pytest.raises(AssemblyApiError, match="ERROR-290") as exc_info:
+        connector.fetch(connector.discover()[0])
+
+    assert SECRET not in str(exc_info.value)
+
+
 def test_schedule_provider_error_does_not_leak_key() -> None:
     connector = OpenAssemblyScheduleConnector(
         api_key=SECRET,
