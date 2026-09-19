@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { buildRootMetadata } from "./site-metadata";
 import "./styles.css";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Civic Intel — Evidence Directory",
-    template: "%s — Civic Intel",
-  },
-  description: "공개 기록과 근거를 따라가는 Civic Intel Evidence Directory",
-  icons: {
-    icon: "/icon.svg",
-  },
-};
+export function generateMetadata(): Metadata {
+  return buildRootMetadata();
+}
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
