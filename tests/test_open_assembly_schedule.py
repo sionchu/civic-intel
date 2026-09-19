@@ -51,7 +51,7 @@ def schedule_payload(
             ]
         }
     ]
-    if result_code not in {"DATA-000", "INFO-200"}:
+    if result_code != "DATA-000":
         blocks.append({"row": schedule_rows})
     return {OpenAssemblyScheduleConnector.API_CODE: blocks}
 
@@ -128,20 +128,31 @@ def test_schedule_parser_exposes_governance_fields_and_gukgam_candidates() -> No
     assert not hasattr(records[0], "audited_organizations")
 
 
-@pytest.mark.parametrize("result_code", ["DATA-000", "INFO-200"])
-def test_schedule_no_data_codes_are_empty_results(result_code: str) -> None:
+def test_schedule_data_000_is_an_empty_result() -> None:
     connector = OpenAssemblyScheduleConnector(
         api_key=SECRET,
         transport=success_transport(
-            schedule_payload(result_code=result_code, rows=[])
+            schedule_payload(result_code="DATA-000", rows=[])
         ),
     )
 
     document = connector.fetch(connector.discover()[0])
 
-    assert document.metadata["result_code"] == result_code
+    assert document.metadata["result_code"] == "DATA-000"
     assert document.metadata["list_total_count"] == "0"
     assert connector.parse_schedules(document) == []
+
+
+def test_schedule_info_200_is_not_treated_as_no_data() -> None:
+    connector = OpenAssemblyScheduleConnector(
+        api_key=SECRET,
+        transport=success_transport(
+            schedule_payload(result_code="INFO-200", rows=[])
+        ),
+    )
+
+    with pytest.raises(AssemblyApiError, match="INFO-200"):
+        connector.fetch(connector.discover()[0])
 
 
 def test_schedule_provider_error_does_not_leak_key() -> None:
