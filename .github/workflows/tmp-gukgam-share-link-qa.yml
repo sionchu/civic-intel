@@ -69,7 +69,11 @@ jobs:
                   EC.element_to_be_clickable((By.CSS_SELECTOR, ".gukgam-search-copy"))
               )
               assert button.text == "공유 링크 복사"
-              button.click()
+              driver.execute_script(
+                  "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});",
+                  button,
+              )
+              driver.execute_script("arguments[0].click();", button)
               wait.until(lambda d: d.find_element(By.CSS_SELECTOR, ".gukgam-search-copy").text == "복사됨")
 
               copied = driver.execute_script("return window.__copiedShareUrl")
