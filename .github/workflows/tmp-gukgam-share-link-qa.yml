@@ -1,0 +1,96 @@
+name: Temporary Gukgam Share-Link QA
+
+on:
+  push:
+    branches:
+      - ops/gukgam-schedule-live-probe
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Selenium
+        run: python -m pip install selenium
+
+      - name: Run share-link browser QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from selenium import webdriver
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.support.ui import WebDriverWait
+          from selenium.webdriver.support import expected_conditions as EC
+          from urllib.parse import quote
+
+          BASE = "https://web-staging-efe2.up.railway.app"
+          query = "한국전력공사"
+          expected = f"{BASE}/gukgam/2026?q={quote(query)}"
+
+          options = Options()
+          options.add_argument("--headless=new")
+          options.add_argument("--no-sandbox")
+          options.add_argument("--disable-dev-shm-usage")
+          options.add_argument("--window-size=1440,1100")
+
+          driver = webdriver.Chrome(options=options)
+          wait = WebDriverWait(driver, 20)
+
+          try:
+              driver.execute_cdp_cmd(
+                  "Browser.setPermission",
+                  {
+                      "permission": {"name": "clipboardReadWrite"},
+                      "setting": "granted",
+                      "origin": BASE,
+                  },
+              )
+              driver.get(expected)
+
+              field = wait.until(
+                  EC.presence_of_element_located((By.CSS_SELECTOR, ".gukgam-search-field input"))
+              )
+              assert field.get_attribute("value") == query
+
+              button = wait.until(
+                  EC.element_to_be_clickable((By.CSS_SELECTOR, ".gukgam-search-copy"))
+              )
+              assert button.text == "공유 링크 복사"
+              button.click()
+              wait.until(lambda d: d.find_element(By.CSS_SELECTOR, ".gukgam-search-copy").text == "복사됨")
+
+              copied = driver.execute_async_script("""
+                  const done = arguments[arguments.length - 1];
+                  navigator.clipboard.readText().then(done).catch(err => done("ERROR:" + err));
+              """)
+              assert copied == expected, (copied, expected)
+
+              status = driver.find_element(By.CSS_SELECTOR, '[role="status"][aria-live="polite"]')
+              assert "클립보드에 복사했습니다" in status.get_attribute("textContent")
+
+              driver.set_window_size(390, 844)
+              driver.get(expected)
+              wait.until(
+                  EC.presence_of_element_located((By.CSS_SELECTOR, ".gukgam-search-copy"))
+              )
+              scroll_width = driver.execute_script("return document.documentElement.scrollWidth")
+              viewport_width = driver.execute_script("return window.innerWidth")
+              assert scroll_width <= viewport_width + 1, (scroll_width, viewport_width)
+
+              print("GUKGAM_SHARE_LINK_QA=PASS")
+              print("COPIED_URL=" + copied)
+              print(f"MOBILE_SCROLL_WIDTH={scroll_width}")
+              print(f"MOBILE_VIEWPORT_WIDTH={viewport_width}")
+          finally:
+              driver.quit()
+          PY
