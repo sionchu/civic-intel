@@ -1990,3 +1990,42 @@ Codex should search the official National Assembly Secretariat OpenAPI guide/ser
 exact operation exists, implement only that source-specific API contract/fixture/connector. If it
 does not, record the negative result and complete the first Science Committee reviewed schedule
 packet under the existing packet gate. Do not modify `apps/web` in that slice.
+
+
+## Current checkpoint — Gukgam scale collection + ontology product v0 (2026-09-19)
+
+- Open Assembly schedule discovery L1 is in master:
+  `7b69bd6b4efb3d94109631d1a6b700824fbf732f` plus read-only probe worker
+  `70c9ae3fc91bbf964c77cbf1d639c186a04234ae`; Verify `35416280261` passed. The official
+  `ALLSCHEDULE` endpoint is network-reachable (HTTP 200), but the repo has no
+  `ASSEMBLY_API_KEY` and the public `sample` key returned `ERROR-290` invalid-key. No live
+  schedule result was persisted.
+- Search-first `/gukgam/2026` merged as
+  `fe064a1335631f67694aa4e692295f7a7565b566`; Verify `35417435004` and staging Web
+  deployment `8c168adf-69a5-4cc5-8cba-6f8ca78d29ef` passed. Browser-agent QA proved
+  한국전력공사 search, distinct 박지원 same-name results, and mobile behavior.
+- Organization ontology merged as
+  `5018e31a4202572940b32e6b66c367921958aa06`; Verify `35418442406` passed. Staging API
+  `d0f1a76e-fc13-409a-89d5-1cd0890561d4` and Web
+  `a200f0e9-fc72-4586-b44e-2c116cf5ac77` succeeded; Postgres remains
+  `172ec443-e3cc-44bb-a5c1-195f54f86824`. ALIO executives render only as Claim-scoped
+  `SOURCE_LISTED_ROLE_HOLDER` nodes with `canonical_id=null`; no Person auto-link exists.
+  한국전력공사 browser QA `35418537339` passed.
+- Dense ontology label polish merged as
+  `4554602bb2a7eac8b66e51e7061dfac48e3e2195`; Verify `35418826810`, staging Web
+  `1d2df428-3e2e-46b7-9352-1e69e8773eae`, and final CJK screenshot QA `35418874131` passed.
+- Reviewed plan L2 import boundary merged as
+  `a37acfa1ea5a4320bd644db31ca6abfa3e0debd7`; final master Verify `35419420199` passed.
+  Raw attachment SHA, reviewed packet digest and normalized row hashes are distinct provenance
+  layers. Dry-run is default; a commit persists only source/snapshot/run/checkpoint/observation
+  records and creates no Person, Organization, Claim, ClaimEvidence or identity link.
+- No real Gukgam schedule/target observation has been written yet. The pinned Science Committee
+  packet still has zero schedule rows. No schema/migration/Postgres deployment or application-data
+  write occurred during the Web/ontology/import-boundary slices.
+
+## Next concrete action
+
+Complete the pinned 2026 Science Committee plan from the exact official PDF, run the reviewed-plan
+L2 importer in dry-run mode, independently verify the receipt, then perform exactly one staging
+single-pull `--commit` plus unchanged rerun if the dry-run passes. Keep audited-target names as
+source strings; do not bind them to canonical Organizations in this slice.

@@ -142,13 +142,60 @@ Required closure:
 - The exact operation/field contract still needs one live provider sample before L2 promotion;
   the current external-probe execution boundary failed before a provider response was obtained.
 
+## Current checkpoint — Scale collection + ontology product v0 (2026-09-19)
+
+- National Assembly schedule discovery L1 merged as
+  `7b69bd6b4efb3d94109631d1a6b700824fbf732f`; the read-only probe worker followed at
+  `70c9ae3fc91bbf964c77cbf1d639c186a04234ae`. Verify runs `35415849302` and
+  `35416280261` passed. The official endpoint is reachable from GitHub Actions: a bounded
+  `ALLSCHEDULE` request returned HTTP 200. The repository has no `ASSEMBLY_API_KEY` secret,
+  and the documented public `sample` key returned provider code `ERROR-290` (invalid key).
+  Schedule L2 is therefore credential-blocked, not network-blocked. No API result was persisted.
+- Search-first Gukgam discovery merged as
+  `fe064a1335631f67694aa4e692295f7a7565b566`; Verify `35417435004` passed and staging Web
+  deployment `8c168adf-69a5-4cc5-8cba-6f8ca78d29ef` succeeded. CJK desktop/mobile visual QA
+  `35417606721` passed. Interaction QA `35417739316` independently proved
+  `한국전력공사` Organization search, at least two distinct `박지원` Person results with the
+  same-name separation warning, and mobile search behavior. Search filters existing canonical
+  records only; it creates no score, rank or identity match.
+- Organization ontology v0 merged as
+  `5018e31a4202572940b32e6b66c367921958aa06`; Verify `35418442406` passed. Exact staging
+  deployments succeeded: API `d0f1a76e-fc13-409a-89d5-1cd0890561d4` and Web
+  `a200f0e9-fc72-4586-b44e-2c116cf5ac77`. PostgreSQL remained
+  `172ec443-e3cc-44bb-a5c1-195f54f86824`. The projection is
+  `canonical Organization → LISTS_EXECUTIVE → SOURCE_LISTED_ROLE_HOLDER`; the target node has
+  `canonical_id=null`, is Claim-scoped, and never auto-links to a Person. 한국전력공사 staging
+  smoke/visual QA `35418537339` passed with 김동철 and other published ALIO executive records,
+  while raw normalized/contact fields remained absent.
+- Dense same-relation graph labels were polished in
+  `4554602bb2a7eac8b66e51e7061dfac48e3e2195`; Verify `35418826810` passed and Web staging
+  deployment `1d2df428-3e2e-46b7-9352-1e69e8773eae` succeeded. Final CJK screenshot QA
+  `35418874131` passed; repeated `공식 공시상 임원` edge labels are collapsed to one visual
+  label while the complete textual Evidence list remains unchanged.
+- Reviewed Gukgam plan L2 import boundary merged as
+  `a37acfa1ea5a4320bd644db31ca6abfa3e0debd7`; final master Verify `35419420199` passed.
+  It separates provenance into raw attachment SHA-256 (`SourceSnapshot.content_hash`), reviewed
+  packet SHA-256 (`SourceRun/Checkpoint metadata`) and normalized schedule-row SHA-256
+  (`FeederObservation.content_hash`). Dry-run is default. A commit can persist only
+  SourcePolicy/Source/SourceSnapshot/Run/Checkpoint/Observation and explicitly creates zero
+  Person, Organization, Claim, ClaimEvidence or identity link.
+- The pinned Science Committee real fixture still has zero reviewed schedule rows and no exact
+  local artifact proof, so no real Gukgam schedule/target observation has been written to staging.
+  Committee-site repeated automation remains blocked by the reviewed robots contract. Temporary
+  GitHub QA/probe workflow files were removed after use.
+
 ## Next concrete action
 
-Run one live, bounded `ALLSCHEDULE` sample for the 2026 audit window and the Science Committee,
-then compare the returned candidate date/content against the exact official committee plan.
+Complete exactly one reviewed Science Committee 2026 plan packet from the pinned official PDF:
 
-- If the live response matches the staged fields/filters, add the source-specific L2 observation
-  path for schedule discovery only.
-- Regardless of that result, continue the Science Committee reviewed plan packet for audited
-  organizations because schedule text is not authority for target/witness identity.
-- Keep `apps/web` unchanged until canonical Gukgam schedule/target data exists.
+1. obtain one exact local copy of the pinned attachment and exact official attachment URL;
+2. record the raw PDF SHA-256 and confirm the exact attachment metadata rights review;
+3. fill the schedule rows and audited-target strings field-by-field from that attachment;
+4. run `workers.gukgam_reviewed_plan_import` in dry-run mode;
+5. independently verify the source locator, raw hash, packet hash, row count, target count and
+   zero Person/Organization/Claim publication;
+6. only if the dry-run receipt passes, perform one staging `--commit` single-pull and prove the
+   unchanged rerun.
+
+Do not bind audited-target names to canonical Organizations in the same slice. Do not weaken the
+committee-site robots boundary while the official API credential remains unavailable.
