@@ -198,6 +198,13 @@ Organization IDs/names to the operator, but it must not use aliases, fuzzy simil
 scores, rankings, embeddings or organizational proximity and must not create or update any
 Organization, Claim, ClaimEvidence or identity link.
 
+A third review-only preflight accepts exactly one operator-supplied `review_key` and one existing
+current canonical Organization ID. It reconstructs the current schedule/candidate report, requires
+that the occurrence still has exactly one exact-name candidate, requires that the supplied ID is
+that candidate, and re-attaches the exact reviewed source provenance. The receipt is always
+`DRY_RUN` with `binding_committed=false` and `claim_publication=false`. It persists no
+binding decision and is not a publication shortcut.
+
 ## Next source step
 
 Continue exact-attachment acquisition for the remaining standing committees and use v1 only where
