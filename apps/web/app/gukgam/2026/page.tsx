@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import GukgamSearch from "../../components/gukgam-search";
 import ReadState from "../../components/read-state";
 import { getOrganizations, getPeople } from "../../data";
 
@@ -62,6 +63,21 @@ export default async function Gukgam2026Page() {
 
       {peopleResult.state === "error" && <ReadState error={peopleResult.error} />}
       {organizationsResult.state === "error" && <ReadState error={organizationsResult.error} />}
+
+      <GukgamSearch
+        people={
+          peopleResult.state === "success"
+            ? peopleResult.data.map(({ id, canonical_name, discovery }) => ({
+                id,
+                canonical_name,
+                discovery,
+              }))
+            : []
+        }
+        organizations={
+          organizationsResult.state === "success" ? organizationsResult.data : []
+        }
+      />
 
       <section className="gukgam-entry-section" aria-labelledby="gukgam-entry-title">
         <div className="section-intro">

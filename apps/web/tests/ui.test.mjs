@@ -206,3 +206,19 @@ test("Person detail renders a read-only accessible ontology local view", async (
   assert.match(graph, /Claim\/Evidence/);
   assert.doesNotMatch(graph, /"use client"|onClick|confidence|score|probability/);
 });
+
+
+test("Gukgam search filters existing public records without creating identity matches", async () => {
+  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  const search = await readFile(new URL("../app/components/gukgam-search.tsx", import.meta.url), "utf8");
+  assert.match(page, /<GukgamSearch/);
+  assert.match(page, /canonical_name, discovery/);
+  assert.match(search, /type="search"/);
+  assert.match(search, /person\.canonical_name/);
+  assert.match(search, /facets\?\.committees\?\.value/);
+  assert.match(search, /organization\.name/);
+  assert.match(search, /href=\{"\/people\/" \+ person\.id\}/);
+  assert.match(search, /href=\{"\/organizations\/" \+ organization\.id\}/);
+  assert.match(search, /새로운 identity 연결을 만들지 않습니다/);
+  assert.doesNotMatch(search, /fetch\(|axios|confidence|probability|score|rank/i);
+});
