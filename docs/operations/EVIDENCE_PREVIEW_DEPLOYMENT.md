@@ -80,6 +80,57 @@ to compare; the non-empty pilot result remains separately evidenced by CI/fixtur
 staging database was not dropped, reset, migrated or written; only read-only inspection and
 `pg_dump` were performed.
 
+## Production public-beta plan contract
+
+Status: `PREPARED_NOT_APPLIED`.
+
+The Railway project already contains an empty environment named `production`. At the reviewed
+2026-09-19 checkpoint it has **zero services and zero buckets**. No production database, API, Web
+service, deployment or public domain exists.
+
+The IaC specification now permits exactly two environment names:
+
+```text
+staging
+production
+```
+
+All other environment names fail closed. The resource topology remains identical in both permitted
+environments:
+
+```text
+private PostgreSQL
+→ private FastAPI
+→ Next Web
+```
+
+This code change is only a **plan contract**. It is not authorization to apply the production plan.
+Applying it would create billable/external resources and therefore still requires explicit owner
+approval after a read-only plan review.
+
+The production contract deliberately does **not** declare:
+
+- a generated Railway public domain;
+- a custom domain;
+- `CIVIC_PUBLIC_BASE_URL`;
+- `CIVIC_INDEXING_ENABLED`;
+- any public API or PostgreSQL endpoint;
+- provider acquisition keys;
+- production data loading.
+
+Therefore an applied production topology remains non-indexable by default and has no IaC-declared
+public launch surface. Public Web exposure and search-engine indexing remain a separate two-step
+approval boundary:
+
+1. expose only the Web service through an approved Railway/custom domain;
+2. only after canonical-domain verification, set `CIVIC_PUBLIC_BASE_URL` and
+   `CIVIC_INDEXING_ENABLED=true`, then run the public-beta preflight with
+   `--expect-indexing enabled`.
+
+Before any production apply, require a read-only Railway plan proving the expected three creates,
+zero changes to staging, zero destroys and no public API/database domain. Database population,
+backup/restore and any staging→production data copy require their own explicit plan and approval.
+
 ## Required runtime configuration
 
 | Role | Variable | Rule |

@@ -4,8 +4,12 @@ const REGION = "asia-southeast1-eqsg3a";
 const SOURCE = "sionchu/civic-intel";
 
 export default defineRailway((ctx) => {
-  if (!ctx.isEnvironment("staging")) {
-    throw new Error("The first Civic Intel deployment is restricted to the staging environment.");
+  const permittedEnvironment =
+    ctx.isEnvironment("staging") || ctx.isEnvironment("production");
+  if (!permittedEnvironment) {
+    throw new Error(
+      "Civic Intel Railway IaC is restricted to staging or production environments.",
+    );
   }
 
   const database = postgres("postgres", { region: REGION });
@@ -36,6 +40,8 @@ export default defineRailway((ctx) => {
     },
   });
 
+  // Public domains and indexing variables are intentionally not declared here.
+  // Production remains non-public/non-indexable until a separately approved launch action.
   const web = service("web", {
     source: github(SOURCE, { branch: "master" }),
     build: {
