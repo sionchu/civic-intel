@@ -13,11 +13,8 @@ from packages.domain.contracts import SourcePolicy
 from packages.domain.enums import SourceCollectionMode
 
 from .base import Connector, ConnectorDocument
-from .open_assembly import (
-    POLICY_ID as ASSEMBLY_SOURCE_POLICY_ID,
-    AssemblyApiError,
-    MissingAssemblyApiKey,
-)
+from .open_assembly import POLICY_ID as ASSEMBLY_SOURCE_POLICY_ID
+from .open_assembly import AssemblyApiError, MissingAssemblyApiKey
 
 
 @dataclass(frozen=True)
