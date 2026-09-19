@@ -291,10 +291,30 @@ Staging must stay noindex.
   Science Committee field-inspection row. Foreign Affairs and Unification is the only current exact
   plan with multi-day ranges attached to actual audited targets.
 
+## Current checkpoint — review-only schedule projection v0 (2026-09-20)
+
+- Added a pure review projection for current `gukgam_reviewed_plan` observations and a gated
+  `GET /admin/gukgam/2026/schedule` endpoint. The route exists only when
+  `enable_review_surface=True`; the default public API and `/gukgam/2026` remain unchanged.
+- Current-row selection follows the checkpoint's attachment SHA and chooses the latest immutable
+  observation version per provider record key. A checkpoint/current-row count mismatch fails closed
+  instead of guessing correction semantics.
+- The projection allowlist includes only reviewed committee/date/time/venue/target/page metadata and
+  exact source provenance. It excludes canonical Organization IDs, Claim IDs, run IDs, raw
+  `normalized` payloads and fulltext.
+- Targeted static/contract verification passed: Ruff, mypy, and 27 Gukgam projection/packet/import
+  tests. Local full verification also passed: Ruff, mypy, `447 passed / 1 skipped` pytest, Golden
+  quality, Web lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Owner-local review-surface execution against the real staging database passed with
+  `7 committees / 57 schedule rows / 390 audited-target mentions`; the forbidden fields above
+  were absent. This was a read-only projection check, not a staging API deployment or publication.
+- The temporary Railway SSH tunnel and review-only registered public key used for that check were
+  closed/removed afterward.
+
 ## Next concrete action
 
-Do not expand packet v1 for a single exceptional source yet. Keep Foreign Affairs and Unification
-exact-source captured but unimported, and continue bounded operator checks of the official central
-inspection list. If a second exact committee plan later requires multi-day audited-target rows,
-extend the single canonical packet contract in place with explicit date-range semantics and
-regression coverage.
+Build the smallest reviewed Organization-binding candidate report from the 390 source-scoped target
+mentions and the existing canonical Organization universe. It must remain review-only: exact name
+overlap may discover a candidate but must not authorize automatic binding, Claim creation or public
+rendering. Keep Foreign Affairs and Unification fail-closed and packet v1 unchanged unless another
+exact audited-target date-range case appears.
