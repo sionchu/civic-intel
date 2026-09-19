@@ -10,6 +10,9 @@ export type GukgamSearchPerson = Pick<
   "id" | "canonical_name" | "discovery"
 >;
 
+const INITIAL_RESULT_LIMIT = 6;
+const RESULT_PAGE_SIZE = 12;
+
 function normalizeSearchValue(value: string): string {
   return value.toLocaleLowerCase("ko-KR").replace(/\s+/g, "");
 }
@@ -49,10 +52,14 @@ export default function GukgamSearch({
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const [peopleLimit, setPeopleLimit] = useState(INITIAL_RESULT_LIMIT);
+  const [organizationLimit, setOrganizationLimit] = useState(INITIAL_RESULT_LIMIT);
 
   function updateQuery(nextQuery: string): void {
     setQuery(nextQuery);
     setCopyStatus("idle");
+    setPeopleLimit(INITIAL_RESULT_LIMIT);
+    setOrganizationLimit(INITIAL_RESULT_LIMIT);
     const url = new URL(window.location.href);
     const trimmed = nextQuery.trim();
     if (trimmed) {
@@ -85,29 +92,27 @@ export default function GukgamSearch({
     return counts;
   }, [people]);
 
-  const peopleResults = useMemo(
+  const peopleMatches = useMemo(
     () =>
       normalizedQuery
-        ? people
-            .filter((person) => personSearchValue(person).includes(normalizedQuery))
-            .slice(0, 6)
+        ? people.filter((person) => personSearchValue(person).includes(normalizedQuery))
         : [],
     [normalizedQuery, people],
   );
+  const peopleResults = peopleMatches.slice(0, peopleLimit);
 
-  const organizationResults = useMemo(
+  const organizationMatches = useMemo(
     () =>
       normalizedQuery
-        ? organizations
-            .filter((organization) =>
-              organizationSearchValue(organization).includes(normalizedQuery),
-            )
-            .slice(0, 6)
+        ? organizations.filter((organization) =>
+            organizationSearchValue(organization).includes(normalizedQuery),
+          )
         : [],
     [normalizedQuery, organizations],
   );
+  const organizationResults = organizationMatches.slice(0, organizationLimit);
 
-  const resultCount = peopleResults.length + organizationResults.length;
+  const resultCount = peopleMatches.length + organizationMatches.length;
 
   return (
     <section className="gukgam-search" aria-labelledby="gukgam-search-title">
@@ -174,7 +179,7 @@ export default function GukgamSearch({
             <div className="gukgam-search-group">
               <div className="gukgam-search-group-heading">
                 <strong>People</strong>
-                <span>{peopleResults.length}건 표시</span>
+                <span>{peopleResults.length} / {peopleMatches.length}건 표시</span>
               </div>
               <div className="gukgam-search-list">
                 {peopleResults.map((person) => {
@@ -208,6 +213,19 @@ export default function GukgamSearch({
                   );
                 })}
               </div>
+              {peopleResults.length < peopleMatches.length && (
+                <button
+                  className="gukgam-search-more"
+                  type="button"
+                  onClick={() =>
+                    setPeopleLimit((current) =>
+                      Math.min(current + RESULT_PAGE_SIZE, peopleMatches.length),
+                    )
+                  }
+                >
+                  People {Math.min(RESULT_PAGE_SIZE, peopleMatches.length - peopleResults.length)}개 더 보기
+                </button>
+              )}
             </div>
           )}
 
@@ -215,7 +233,7 @@ export default function GukgamSearch({
             <div className="gukgam-search-group">
               <div className="gukgam-search-group-heading">
                 <strong>Organizations</strong>
-                <span>{organizationResults.length}건 표시</span>
+                <span>{organizationResults.length} / {organizationMatches.length}건 표시</span>
               </div>
               <div className="gukgam-search-list">
                 {organizationResults.map((organization) => (
@@ -238,6 +256,22 @@ export default function GukgamSearch({
                   </Link>
                 ))}
               </div>
+              {organizationResults.length < organizationMatches.length && (
+                <button
+                  className="gukgam-search-more"
+                  type="button"
+                  onClick={() =>
+                    setOrganizationLimit((current) =>
+                      Math.min(current + RESULT_PAGE_SIZE, organizationMatches.length),
+                    )
+                  }
+                >
+                  Organizations {Math.min(
+                    RESULT_PAGE_SIZE,
+                    organizationMatches.length - organizationResults.length,
+                  )}개 더 보기
+                </button>
+              )}
             </div>
           )}
         </div>
