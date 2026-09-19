@@ -4,7 +4,11 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
-from packages.domain.contracts import Claim, ClaimEvidence, Person
+from packages.domain.contracts import Claim, ClaimEvidence, Organization, Person
+from packages.rendering.alio_organization_content import (
+    ALIO_EXECUTIVE_PREDICATE,
+    ALIO_EXECUTIVE_SOURCE_CONTRACT,
+)
 from packages.domain.enums import (
     EpistemicStatus,
     EvidenceStance,
@@ -85,6 +89,7 @@ class OntologyGraph:
             "limitations": [
                 "Only source-backed published relations explicitly mapped by the ontology projection are shown.",
                 "A displayed relation or shared institution does not establish friendship, influence, or motive.",
+                "A source-listed record node is not a canonical Person or Organization identity.",
             ],
         }
 
@@ -168,6 +173,100 @@ def build_person_governance_ontology(
                 source=center.id,
                 target=target_id,
                 relation_type=relation_type,
+                label=claim.predicate,
+                claim_id=claim.id,
+                evidence_ids=tuple(item.id for item in evidence),
+                source_ids=_ordered_unique(tuple(item.source_id for item in evidence)),
+                epistemic_status=claim.epistemic_status.value,
+                publication_status=claim.publication_status.value,
+                source_conflict={EvidenceStance.SUPPORT, EvidenceStance.REFUTE} <= stances,
+                valid_from=_iso(claim.valid_from),
+                valid_to=_iso(claim.valid_to),
+            )
+        )
+
+    return OntologyGraph(
+        center_node_id=center.id,
+        nodes=tuple(nodes),
+        edges=tuple(edges),
+    )
+
+
+
+def build_organization_governance_ontology(
+    organization: Organization,
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> OntologyGraph:
+    """Project ALIO executive disclosures without inventing Person identities."""
+
+    if organization.superseded_at is not None:
+        raise GovernanceOntologyError(
+            "ontology projection requires a current Organization"
+        )
+
+    center = OntologyNode(
+        id=f"organization:{organization.id}",
+        kind="ORGANIZATION",
+        label=organization.name,
+        canonical_id=organization.id,
+    )
+    nodes: list[OntologyNode] = [center]
+    edges: list[OntologyEdge] = []
+
+    executive_claims = sorted(
+        (
+            claim
+            for claim in claims
+            if claim.organization_id == organization.id
+            and claim.person_id is None
+            and claim.publication_status == PublicationStatus.PUBLISHED
+            and claim.epistemic_status in {EpistemicStatus.FACT, EpistemicStatus.CLAIM}
+            and claim.superseded_at is None
+            and claim.predicate == ALIO_EXECUTIVE_PREDICATE
+            and claim.object_text.strip()
+        ),
+        key=lambda item: (item.valid_from, str(item.id)),
+    )
+
+    for claim in executive_claims:
+        if claim.qualifiers.get("source_contract") != ALIO_EXECUTIVE_SOURCE_CONTRACT:
+            raise GovernanceOntologyError(
+                f"ALIO executive Claim has invalid source contract: {claim.id}"
+            )
+        for field in ("provider_record_key", "canonical_name", "position_text"):
+            if not claim.qualifiers.get(field, "").strip():
+                raise GovernanceOntologyError(
+                    f"ALIO executive Claim lacks required qualifier {field}: {claim.id}"
+                )
+
+        evidence = tuple(evidence_by_claim.get(claim.id, ()))
+        if not evidence:
+            raise GovernanceOntologyError(
+                f"ontology relation Claim lacks ClaimEvidence: {claim.id}"
+            )
+        if any(item.claim_id != claim.id for item in evidence):
+            raise GovernanceOntologyError(
+                f"ontology relation evidence points to a different Claim: {claim.id}"
+            )
+
+        target_id = f"source-listed-role-holder:{claim.id}"
+        nodes.append(
+            OntologyNode(
+                id=target_id,
+                kind="SOURCE_LISTED_ROLE_HOLDER",
+                label=claim.object_text.strip(),
+                canonical_id=None,
+                claim_ids=(claim.id,),
+            )
+        )
+        stances = {item.stance for item in evidence}
+        edges.append(
+            OntologyEdge(
+                id=f"edge:{claim.id}",
+                source=center.id,
+                target=target_id,
+                relation_type="LISTS_EXECUTIVE",
                 label=claim.predicate,
                 claim_id=claim.id,
                 evidence_ids=tuple(item.id for item in evidence),

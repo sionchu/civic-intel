@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getOrganization, getOrganizationMoney, getSource } from "../../data";
+import {
+  getOrganization,
+  getOrganizationMoney,
+  getOrganizationOntology,
+  getSource,
+} from "../../data";
+import OntologyLocalGraph from "../../components/ontology-local-graph";
 import ReadState from "../../components/read-state";
 import type { Claim, Evidence, MoneyProjection, Source } from "../../types";
 
@@ -208,9 +214,10 @@ export default async function OrganizationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [organizationResult, moneyResult] = await Promise.all([
+  const [organizationResult, moneyResult, ontologyResult] = await Promise.all([
     getOrganization(id),
     getOrganizationMoney(id),
+    getOrganizationOntology(id),
   ]);
   if (organizationResult.state === "error") {
     if (organizationResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
@@ -223,6 +230,7 @@ export default async function OrganizationPage({
   }
   const organization = organizationResult.data;
   const money = moneyResult.state === "success" ? moneyResult.data : null;
+  const ontology = ontologyResult.state === "success" ? ontologyResult.data : null;
   const moneySummary = money
     ? "Claim-backed MONEY"
     : moneyResult.state === "error" && moneyResult.error.code === "INSUFFICIENT_ELIGIBLE_INPUTS"
@@ -238,11 +246,21 @@ export default async function OrganizationPage({
     ...claim.source_ids,
     ...claim.evidence.map((item) => item.source_id),
   ]);
-  const sourceIds = [...new Set([...claimSourceIds, ...(money?.source_ids ?? [])])];
+  const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
+  const sourceIds = [
+    ...new Set([
+      ...claimSourceIds,
+      ...ontologySourceIds,
+      ...(money?.source_ids ?? []),
+    ]),
+  ];
   const sourceResults = await Promise.all(sourceIds.map(getSource));
   const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
   const sourceError = sourceResults.find((item) => item.state === "error");
   const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const sourceTitleById = Object.fromEntries(
+    sources.map((source) => [source.id, source.title]),
+  );
 
   return (
     <div className="site-page organization-page">
@@ -290,6 +308,23 @@ export default async function OrganizationPage({
           <div><span className="micro-label">ALIO classification</span><strong>{classificationClaim?.object_text ?? "공개 정보 없음"}</strong></div>
           <div><span className="micro-label">Current executive disclosures</span><strong>{executiveClaims.length}건</strong></div>
         </div>
+      </section>
+
+      <section className="organization-section ontology-section" id="official-connections" aria-labelledby="organization-ontology-title">
+        <div className="section-intro">
+          <div><span className="eyebrow">Governance ontology / local view</span><h2 id="organization-ontology-title">공식 기록상 연결</h2></div>
+          <p>ALIO published Claim이 명시한 임원 기록만 기관 중심 local graph로 보여줍니다. 이름은 source-listed record이며 canonical Person으로 자동 연결하지 않습니다.</p>
+        </div>
+        {ontologyResult.state === "error" ? (
+          <ReadState error={ontologyResult.error} />
+        ) : ontology && ontology.edges.length > 0 ? (
+          <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} />
+        ) : (
+          <div className="empty-state" role="status">
+            <span className="empty-state-mark" aria-hidden="true">∅</span>
+            <div><strong>현재 공개 가능한 임원 연결이 없습니다.</strong><p><span className="status UNKNOWN">UNKNOWN</span> 관계가 없다는 뜻이 아니라 현재 ontology projection에 표시할 published executive Claim이 없다는 뜻입니다.</p></div>
+          </div>
+        )}
       </section>
 
       <section className="organization-section" id="executives" aria-labelledby="organization-executives-title">

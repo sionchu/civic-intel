@@ -38,6 +38,21 @@ ISSUE
 Only canonical People and Organizations reuse canonical IDs. A projection-only target such as a
 role label is scoped to the supporting Claim and is not a reusable identity record.
 
+## Source-listed role-holder nodes
+
+Organization graphs may project a published ALIO executive disclosure as
+`SOURCE_LISTED_ROLE_HOLDER`. This is a Claim-scoped record node, not a canonical Person:
+
+```text
+canonical Organization
+→ LISTS_EXECUTIVE
+→ SOURCE_LISTED_ROLE_HOLDER (Claim-scoped, canonical_id = null)
+```
+
+Two rows with the same displayed name remain distinct unless the separate identity-resolution
+pipeline establishes a reviewed bridge. The ontology projection itself never links these nodes to
+Person profiles.
+
 ## V0 relation kinds
 
 ```text

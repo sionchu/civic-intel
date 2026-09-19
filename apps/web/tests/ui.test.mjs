@@ -222,3 +222,21 @@ test("Gukgam search filters existing public records without creating identity ma
   assert.match(search, /새로운 identity 연결을 만들지 않습니다/);
   assert.doesNotMatch(search, /fetch\(|axios|confidence|probability|score|rank/i);
 });
+
+
+test("Organization detail renders source-listed executive ontology without Person promotion", async () => {
+  const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  const graph = await readFile(new URL("../app/components/ontology-local-graph.tsx", import.meta.url), "utf8");
+  const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
+  const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
+  assert.match(page, /getOrganizationOntology/);
+  assert.match(page, /OntologyLocalGraph/);
+  assert.match(page, /source-listed record/);
+  assert.match(page, /canonical Person으로 자동 연결하지 않습니다/);
+  assert.match(data, /\/ontology\/organizations\/\$\{id\}/);
+  assert.match(types, /SOURCE_LISTED_ROLE_HOLDER/);
+  assert.match(types, /LISTS_EXECUTIVE/);
+  assert.match(graph, /공식 공시상 임원/);
+  assert.match(graph, /canonical Person이 아닙니다/);
+  assert.doesNotMatch(graph, /href=.*people.*target|confidence|probability|score/i);
+});

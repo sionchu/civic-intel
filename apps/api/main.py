@@ -15,7 +15,10 @@ from packages.rendering.alio_organization_content import (
     ALIO_CLASSIFICATION_PREDICATE,
     ALIO_EXECUTIVE_PREDICATE,
 )
-from packages.rendering.governance_ontology import build_person_governance_ontology
+from packages.rendering.governance_ontology import (
+    build_organization_governance_ontology,
+    build_person_governance_ontology,
+)
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -301,6 +304,37 @@ def create_app(
                 eligible_claims.append(claim)
                 eligible_evidence[claim.id] = tuple(evidence)
         return build_person_governance_ontology(
+            item,
+            eligible_claims,
+            eligible_evidence,
+        ).to_dict()
+
+    @app.get("/ontology/organizations/{organization_id}")
+    def organization_ontology(organization_id: UUID) -> dict:
+        item = organization_or_404(organization_id, public=True)
+        contexts = target.published_organization_claim_contexts([organization_id])
+        claims, evidence_by_claim = contexts.get(organization_id, ((), {}))
+        all_evidence = [
+            evidence
+            for evidence_items in evidence_by_claim.values()
+            for evidence in evidence_items
+        ]
+        source_map = target.sources(evidence.source_id for evidence in all_evidence)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
+        eligible_claims = []
+        eligible_evidence = {}
+        for claim in claims:
+            evidence = list(evidence_by_claim.get(claim.id, ()))
+            if validate_claim_publication(
+                claim,
+                item,
+                evidence,
+                source_map,
+                policy_map,
+            ).publishable:
+                eligible_claims.append(claim)
+                eligible_evidence[claim.id] = tuple(evidence)
+        return build_organization_governance_ontology(
             item,
             eligible_claims,
             eligible_evidence,
