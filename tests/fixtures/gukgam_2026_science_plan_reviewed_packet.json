@@ -19,7 +19,7 @@
       "audit_date": "2026-10-06",
       "time_text": "10:00",
       "venue": "국회",
-      "section": "감사일정 및 장소(안)",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "과학기술정보통신부",
         "우정사업본부",
@@ -40,7 +40,7 @@
       "audit_date": "2026-10-12",
       "time_text": "10:00",
       "venue": "국회",
-      "section": "감사일정 및 장소(안)",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "방송미디어통신위원회",
         "방송미디어통신사무소",
@@ -53,7 +53,7 @@
       "audit_date": "2026-10-13",
       "time_text": "10:00",
       "venue": "국회",
-      "section": "감사일정 및 장소(안)",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "원자력안전위원회",
         "우주항공청",
@@ -71,7 +71,7 @@
       "audit_date": "2026-10-15",
       "time_text": "10:00",
       "venue": "국회",
-      "section": "감사일정 및 장소(안)",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "정보통신산업진흥원",
         "(정보통신산업진흥원)소프트웨어정책연구소",
@@ -85,20 +85,9 @@
     {
       "ordinal": 5,
       "audit_date": "2026-10-16",
-      "time_text": "10:00",
-      "venue": "상암 MBC",
-      "section": "감사일정 및 장소(안) — 업무현황보고",
-      "audited_targets": [
-        "㈜문화방송"
-      ],
-      "page_number": 7
-    },
-    {
-      "ordinal": 6,
-      "audit_date": "2026-10-16",
       "time_text": "오후",
       "venue": "국회",
-      "section": "감사일정 및 장소(안)",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "한국방송공사",
         "한국교육방송공사",
@@ -109,11 +98,11 @@
       "page_number": 7
     },
     {
-      "ordinal": 7,
+      "ordinal": 6,
       "audit_date": "2026-10-20",
       "time_text": "10:00",
       "venue": "대전",
-      "section": "감사일정 및 장소(안)",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "국가과학기술연구회",
         "한국과학기술연구원",
@@ -173,11 +162,11 @@
       "page_number": 7
     },
     {
-      "ordinal": 8,
+      "ordinal": 7,
       "audit_date": "2026-10-22",
       "time_text": "10:00",
       "venue": "국회",
-      "section": "감사일정 및 장소(안) — 종합감사",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "방송미디어통신위원회",
         "방송미디어통신위원회 소관 감사대상기관 전체",
@@ -186,11 +175,11 @@
       "page_number": 8
     },
     {
-      "ordinal": 9,
+      "ordinal": 8,
       "audit_date": "2026-10-23",
       "time_text": "10:00",
       "venue": "국회",
-      "section": "감사일정 및 장소(안) — 종합감사",
+      "section": "감사 일정 및 장소(안)",
       "audited_targets": [
         "과학기술정보통신부",
         "과학기술정보통신부 소관 감사대상기관 전체",
