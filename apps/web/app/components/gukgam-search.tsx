@@ -39,13 +39,31 @@ function organizationSearchValue(organization: OrganizationSummary): string {
 }
 
 export default function GukgamSearch({
+  initialQuery,
   people,
   organizations,
 }: {
+  initialQuery: string;
   people: GukgamSearchPerson[];
   organizations: OrganizationSummary[];
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+
+  function updateQuery(nextQuery: string): void {
+    setQuery(nextQuery);
+    const url = new URL(window.location.href);
+    const trimmed = nextQuery.trim();
+    if (trimmed) {
+      url.searchParams.set("q", trimmed.slice(0, 80));
+    } else {
+      url.searchParams.delete("q");
+    }
+    window.history.replaceState(
+      window.history.state,
+      "",
+      url.pathname + url.search + url.hash,
+    );
+  }
   const normalizedQuery = normalizeSearchValue(query.trim());
 
   const sameNameCounts = useMemo(() => {
@@ -99,11 +117,17 @@ export default function GukgamSearch({
         <input
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => updateQuery(event.target.value)}
           placeholder="예: 안철수, 한국전력공사, 법제사법위원회"
           autoComplete="off"
+          maxLength={80}
         />
       </label>
+      {normalizedQuery && (
+        <p className="gukgam-search-share-note">
+          현재 검색어가 주소에 반영됩니다. 이 URL을 그대로 공유할 수 있습니다.
+        </p>
+      )}
 
       {!normalizedQuery ? (
         <div className="gukgam-search-idle" role="status">
