@@ -11,6 +11,7 @@ import type {
 } from "./types";
 
 const API = process.env.CIVIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const DIRECTORY_REVALIDATE_SECONDS = 60;
 
 const STATUS_CODE: Record<number, ApiErrorCode> = {
   403: "ACCESS_DENIED",
@@ -19,9 +20,17 @@ const STATUS_CODE: Record<number, ApiErrorCode> = {
   422: "INVALID_INPUT",
 };
 
-async function getJson<T>(path: string): Promise<ApiResult<T>> {
+async function getJson<T>(
+  path: string,
+  options: { revalidateSeconds?: number } = {},
+): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(`${API}${path}`, { cache: "no-store" });
+    const response = await fetch(
+      `${API}${path}`,
+      options.revalidateSeconds
+        ? { next: { revalidate: options.revalidateSeconds } }
+        : { cache: "no-store" },
+    );
     if (response.ok) return { state: "success", data: (await response.json()) as T };
     const payload = await response.json().catch(() => null) as {
       error?: { code?: ApiErrorCode; message?: string; request_id?: string };
@@ -46,7 +55,9 @@ async function getJson<T>(path: string): Promise<ApiResult<T>> {
   }
 }
 
-export function getPeople(): Promise<ApiResult<Person[]>> { return getJson("/people"); }
+export function getPeople(): Promise<ApiResult<Person[]>> {
+  return getJson("/people", { revalidateSeconds: DIRECTORY_REVALIDATE_SECONDS });
+}
 export function getPerson(id: string): Promise<ApiResult<Person>> { return getJson(`/people/${id}`); }
 export function getPersonOntology(id: string): Promise<ApiResult<OntologyGraph>> {
   return getJson(`/ontology/people/${id}`);
@@ -58,7 +69,9 @@ export function getOrganizationOntology(id: string): Promise<ApiResult<OntologyG
   return getJson(`/ontology/organizations/${id}`);
 }
 export function getOrganizations(): Promise<ApiResult<OrganizationSummary[]>> {
-  return getJson("/organizations");
+  return getJson("/organizations", {
+    revalidateSeconds: DIRECTORY_REVALIDATE_SECONDS,
+  });
 }
 export function getOrganizationMoney(
   id: string,
