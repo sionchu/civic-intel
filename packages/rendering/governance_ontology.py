@@ -5,15 +5,15 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from packages.domain.contracts import Claim, ClaimEvidence, Organization, Person
-from packages.rendering.alio_organization_content import (
-    ALIO_EXECUTIVE_PREDICATE,
-    ALIO_EXECUTIVE_SOURCE_CONTRACT,
-)
 from packages.domain.enums import (
     EpistemicStatus,
     EvidenceStance,
     IdentityStatus,
     PublicationStatus,
+)
+from packages.rendering.alio_organization_content import (
+    ALIO_EXECUTIVE_PREDICATE,
+    ALIO_EXECUTIVE_SOURCE_CONTRACT,
 )
 
 
@@ -190,8 +190,6 @@ def build_person_governance_ontology(
         nodes=tuple(nodes),
         edges=tuple(edges),
     )
-
-
 
 def build_organization_governance_ontology(
     organization: Organization,
