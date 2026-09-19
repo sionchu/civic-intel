@@ -1,0 +1,148 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "HUMAN_REVIEWED",
+  "source": {
+    "committee_name": "농림축산식품해양수산위원회",
+    "ntt_id": "3078709",
+    "detail_url": "https://agri.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078709&menuNo=2000030&pageIndex=1",
+    "title": "2026년도 국정감사 계획서",
+    "published_date": "2026-09-17",
+    "atch_file_id": "462de504d58f47e7a888f3ca286309ba",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사계획서.pdf",
+    "rights_mark": "KOGL_TYPE_1",
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-07",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "농림축산식품부",
+        "축산물품질평가원",
+        "가축위생방역지원본부",
+        "농업정책보험금융원",
+        "농림식품기술기획평가원",
+        "농림수산식품교육문화정보원",
+        "축산환경관리원",
+        "국립농업박물관"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-12",
+      "time_text": "10:00",
+      "venue": "해양수산부 별관 (부산)",
+      "section": "감사일정",
+      "audited_targets": [
+        "해양수산부",
+        "한국수산자원공단",
+        "한국해양수산연수원",
+        "한국해양진흥공사",
+        "한국해양과학기술원",
+        "한국해양교통안전공단",
+        "국립해양생물자원관",
+        "국립해양박물관",
+        "국립울진해양과학관"
+      ],
+      "page_number": 4
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-14",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "농촌진흥청",
+        "한국농어촌공사",
+        "한국농수산식품유통공사",
+        "국제식물검역인증원",
+        "한식진흥원",
+        "한국식품산업클러스터진흥원",
+        "한국농업기술진흥원"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-16",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "농업협동조합중앙회",
+        "농협경제지주",
+        "농협금융지주 (농협은행, 농협생명보험, 농협손해보험 포함)",
+        "한국마사회"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-19",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "해양경찰청",
+        "해양환경공단",
+        "수산업협동조합중앙회 (수협은행 포함)",
+        "부산항만공사",
+        "인천항만공사",
+        "여수광양항만공사",
+        "울산항만공사",
+        "해양수산과학기술진흥원",
+        "한국어촌어항공단",
+        "국립인천해양박물관",
+        "한국항로표지기술원",
+        "한국해양조사협회"
+      ],
+      "page_number": 5
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "산림청",
+        "한국산림복지진흥원",
+        "한국수목원정원관리원",
+        "한국임업진흥원",
+        "한국등산트레킹지원센터",
+        "한국산림재난안전기술공단",
+        "산림조합중앙회"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-22",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "농림축산식품부 및 소관기관 종합감사"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-23",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "해양수산부 및 소관기관 종합감사"
+      ],
+      "page_number": 6
+    }
+  ],
+  "witness_rows_included": false
+}

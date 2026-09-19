@@ -238,15 +238,33 @@ Before public indexing is enabled:
 
 Staging must stay noindex.
 
+## Current checkpoint — standing-committee exact attachment batch 1 (2026-09-20)
+
+- The owner-operated Aside Browser local daemon was recovered and used as the bounded,
+  human-assisted acquisition boundary. No committee crawler or repeated HTTP collector was added.
+- Exact official plan PDFs are now captured for eight standing committees: the existing Science
+  Committee plus Steering, National Defense, Public Administration and Security,
+  Culture/Sports/Tourism, Agriculture/Food/Rural Affairs/Oceans, Strategy and Finance, and
+  Foreign Affairs and Unification.
+- Six new v1 reviewed packets passed exact-artifact dry-run:
+  Steering `3/10`, Public Administration and Security `12/45`,
+  Culture/Sports/Tourism `7/69`, Agriculture/Food/Rural Affairs/Oceans `8/49`,
+  Strategy and Finance `10/48`, and National Defense `9/73`
+  (`schedule rows / audited-target mentions`).
+- Every successful dry-run reported `fulltext_retained=false`,
+  `person_materialization=false`, `organization_materialization=false`, and
+  `claim_publication=false`. Raw PDFs remain outside the repository.
+- Foreign Affairs and Unification is exact-attachment captured but packet-blocked: the official
+  overseas schedule contains multi-day ranges (`10.11~10.22`, `10.11~10.20`,
+  `10.11~10.21`) while v1 supports only one `audit_date`. No range was collapsed or guessed.
+- Targeted reviewed-packet/importer verification passed `24 tests`. Local full verification then
+  passed: Ruff, mypy, `444 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck,
+  22 Web tests, production build, and `git diff --check`. GitHub CI remains a separate gate.
+
 ## Next concrete action
 
-Use the 17-committee source inventory as the collection queue. For every committee other than the
-already verified Science Committee, replace discovery-only status with an exact official
-plan-attachment locator and reviewed artifact before creating schedule observations. The central
-National Assembly inspection portal may be used for operator/discovery navigation, but its
-`robots.txt` currently returns `Bad Request`; do not treat that as automation permission.
-
-For the Science Committee, the exact artifact dry-run is already PASS. The next write-capable step
-is one staging observation-only `--commit` followed by an unchanged rerun, but only through an
-approved staging execution boundary. Keep audited-target strings source-scoped and do not bind them
-to canonical Organizations in this slice.
+Re-check the central official National Assembly inspection plan list for the eight committees still
+at `DISCOVERY_PENDING` plus the currently `NOT_YET_ADOPTED` Health and Welfare Committee.
+For any newly listed 2026 plan, capture the exact official attachment through the same bounded
+interactive-browser path and apply the existing packet gate. Do not weaken the Foreign Affairs date
+range blocker or bind audited-target strings to canonical Organizations.
