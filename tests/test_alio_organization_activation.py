@@ -23,6 +23,7 @@ from packages.domain.enums import EvidenceStance, SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.rendering.alio_organization_content import (
     ALIO_CLASSIFICATION_PREDICATE,
+    ALIO_EXECUTIVE_PREDICATE,
     build_alio_classification_claim,
 )
 from workers.alio_current_executive_claim_import import (
@@ -155,10 +156,47 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         organizations = client.get("/organizations")
         assert organizations.status_code == 200
         assert len(organizations.json()) == 2
-        detail = client.get(f"/organizations/{repository.organizations()[0].id}")
+        organization = next(
+            organization
+            for organization in repository.organizations()
+            if any(
+                claim.predicate == ALIO_EXECUTIVE_PREDICATE
+                for claim in repository.claims(
+                    organization_id=organization.id,
+                    published_only=True,
+                    current_only=True,
+                )
+            )
+        )
+        detail = client.get(f"/organizations/{organization.id}")
         assert detail.status_code == 200
         assert "normalized" not in json.dumps(detail.json(), ensure_ascii=False)
         assert "contact" not in json.dumps(detail.json(), ensure_ascii=False).casefold()
+
+        ontology = client.get(f"/ontology/organizations/{organization.id}")
+        assert ontology.status_code == 200
+        ontology_payload = ontology.json()
+        assert ontology_payload["center_node_id"] == f"organization:{organization.id}"
+        executive_claim_count = sum(
+            claim.predicate == ALIO_EXECUTIVE_PREDICATE
+            for claim in repository.claims(
+                organization_id=organization.id,
+                published_only=True,
+                current_only=True,
+            )
+        )
+        assert len(ontology_payload["edges"]) == executive_claim_count
+        assert all(
+            edge["relation_type"] == "LISTS_EXECUTIVE"
+            for edge in ontology_payload["edges"]
+        )
+        assert all(
+            node["canonical_id"] is None
+            for node in ontology_payload["nodes"]
+            if node["kind"] == "SOURCE_LISTED_ROLE_HOLDER"
+        )
+        assert "normalized" not in json.dumps(ontology_payload, ensure_ascii=False)
+        assert "contact" not in json.dumps(ontology_payload, ensure_ascii=False).casefold()
 
 
 def test_alio_import_preflight_uses_one_scope_observation_read(

@@ -12,6 +12,7 @@ const RELATION_LABELS: Record<string, string> = {
   APPEARED_AT: "출석",
   QUESTIONED: "질의",
   AUDITED_BY: "감사",
+  LISTS_EXECUTIVE: "공식 공시상 임원",
 };
 
 function shortLabel(value: string, length = 16): string {
@@ -89,6 +90,11 @@ export default function OntologyLocalGraph({
 
       {graph.edges.length > visibleEdges.length && (
         <p className="ontology-limit-note">시각화는 읽기 쉬운 local graph를 위해 처음 {visibleEdges.length}개 연결만 그립니다. 아래 텍스트 목록에는 현재 공개 edge 전체를 유지합니다.</p>
+      )}
+      {graph.nodes.some((node) => node.kind === "SOURCE_LISTED_ROLE_HOLDER") && (
+        <p className="ontology-limit-note">
+          임원 노드는 공식 공시에 적힌 역할 보유자 기록이며 canonical Person이 아닙니다. 같은 이름도 자동으로 합치거나 Person 상세에 연결하지 않습니다.
+        </p>
       )}
       <p className="ontology-limit-note">표시된 연결은 공개 기록의 Claim/Evidence 관계이며 친분, 영향력 또는 동기를 의미하지 않습니다.</p>
     </div>

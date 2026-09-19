@@ -54,6 +54,9 @@ export function getPersonOntology(id: string): Promise<ApiResult<OntologyGraph>>
 export function getOrganization(id: string): Promise<ApiResult<Organization>> {
   return getJson(`/organizations/${id}`);
 }
+export function getOrganizationOntology(id: string): Promise<ApiResult<OntologyGraph>> {
+  return getJson(`/ontology/organizations/${id}`);
+}
 export function getOrganizations(): Promise<ApiResult<OrganizationSummary[]>> {
   return getJson("/organizations");
 }

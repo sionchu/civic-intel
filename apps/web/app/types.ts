@@ -191,7 +191,7 @@ export type Person = {
 
 export type OntologyNode = {
   id: string;
-  kind: "PERSON" | "ORGANIZATION" | "EDUCATIONAL_INSTITUTION" | "COMPANY" | "COMMITTEE" | "OFFICE" | "HEARING" | "ISSUE";
+  kind: "PERSON" | "ORGANIZATION" | "EDUCATIONAL_INSTITUTION" | "COMPANY" | "COMMITTEE" | "OFFICE" | "HEARING" | "ISSUE" | "SOURCE_LISTED_ROLE_HOLDER";
   label: string;
   canonical_id: string | null;
   claim_ids: string[];
@@ -201,7 +201,7 @@ export type OntologyEdge = {
   id: string;
   source: string;
   target: string;
-  relation_type: "HELD_ROLE" | "WORKED_AT" | "STUDIED_AT" | "SERVED_ON" | "DIRECTOR_OF" | "APPOINTED_TO" | "APPEARED_AT" | "QUESTIONED" | "AUDITED_BY";
+  relation_type: "HELD_ROLE" | "WORKED_AT" | "STUDIED_AT" | "SERVED_ON" | "DIRECTOR_OF" | "APPOINTED_TO" | "APPEARED_AT" | "QUESTIONED" | "AUDITED_BY" | "LISTS_EXECUTIVE";
   label: string;
   claim_id: string;
   evidence_ids: string[];
