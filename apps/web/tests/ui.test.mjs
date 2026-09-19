@@ -292,3 +292,16 @@ test("directory list reads use bounded revalidation while detail reads remain re
   assert.match(data, /getJson\(`\/people\/\$\{id\}`\)/);
   assert.match(data, /getJson\(`\/organizations\/\$\{id\}`\)/);
 });
+
+
+test("Gukgam search deep-links the current query without changing the canonical page", async () => {
+  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  const search = await readFile(new URL("../app/components/gukgam-search.tsx", import.meta.url), "utf8");
+  assert.match(page, /searchParams: Promise<\{ q\?: string \| string\[\] \}>/);
+  assert.match(page, /params\.q\.slice\(0, 80\)/);
+  assert.match(page, /initialQuery=\{initialQuery\}/);
+  assert.match(search, /useState\(initialQuery\)/);
+  assert.match(search, /url\.searchParams\.set\("q", trimmed\.slice\(0, 80\)\)/);
+  assert.match(search, /window\.history\.replaceState/);
+  assert.match(search, /maxLength=\{80\}/);
+});
