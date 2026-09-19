@@ -61,9 +61,10 @@
       "attachment_filename": "2026년도 국정감사계획서.pdf",
       "attachment_sha256": "82d37b337790e5869e74af3420b7dab74c86a7fb14b44a54932f8dbd2f31e533",
       "reviewed_packet_path": "tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json",
-      "reviewed_packet_hash": "70f09d78858814f6fda59352bc117e9127aa1f90a3480e81b53fd7380daf50d8",
-      "schedule_rows": 9,
-      "audited_target_mentions": 97
+      "reviewed_packet_hash": "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d",
+      "schedule_rows": 8,
+      "audited_target_mentions": 96,
+      "notes": "10.16 오전 ㈜문화방송 업무현황보고는 감사대상기관 row가 아니므로 reviewed schedule에서 제외. 현장시찰/자료준비일도 audited target row가 없어 제외."
     },
     {
       "committee_name": "외교통일위원회",
