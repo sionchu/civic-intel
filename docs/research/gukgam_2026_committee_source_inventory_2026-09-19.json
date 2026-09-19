@@ -1,0 +1,149 @@
+{
+  "schema": "gukgam-committee-source-inventory.v1",
+  "as_of_date": "2026-09-19",
+  "legislature": "제22대 국회 후반기",
+  "scope": "standing_committees_only",
+  "committee_count": 17,
+  "special_committees_excluded": [
+    "예산결산특별위원회"
+  ],
+  "status_semantics": {
+    "EXACT_ATTACHMENT_CAPTURED": "Exact official plan attachment bytes are available and may enter the reviewed-packet gate.",
+    "ADOPTED_ATTACHMENT_PENDING": "Plan adoption is discovery-confirmed, but the exact official plan attachment has not yet been captured/reviewed.",
+    "NOT_YET_ADOPTED": "Current evidence says the 2026 plan had not yet been adopted as of the inventory date.",
+    "DISCOVERY_PENDING": "No sufficiently reliable 2026 adoption/attachment evidence has been confirmed yet."
+  },
+  "committees": [
+    {
+      "committee_name": "국회운영위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-16",
+        "type": "PRESS_DISCOVERY_ONLY",
+        "url": "https://v.daum.net/v/20260916151754855",
+        "supports": "2026년도 국정감사계획서 채택 의결"
+      }
+    },
+    {
+      "committee_name": "법제사법위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "정무위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "재정경제기획위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-17",
+        "type": "PRESS_DISCOVERY_ONLY",
+        "url": "https://mobile.newsis.com/view/NISX20260917_0003793351",
+        "supports": "2026년도 국정감사계획서 채택 및 46개 기관 대상 계획 보도"
+      }
+    },
+    {
+      "committee_name": "교육위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "과학기술정보방송통신위원회",
+      "status": "EXACT_ATTACHMENT_CAPTURED",
+      "discovery_evidence": {
+        "date": "2026-09-15",
+        "type": "OFFICIAL_ATTACHMENT",
+        "url": "https://science.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078699&menuNo=2000030&pageIndex=1",
+        "supports": "2026년도 국정감사계획서 exact official post/attachment metadata"
+      },
+      "ntt_id": "3078699",
+      "atch_file_id": "7938f3a874d5441892124093d19da1df",
+      "file_sn": 2,
+      "attachment_filename": "2026년도 국정감사계획서.pdf",
+      "attachment_sha256": "82d37b337790e5869e74af3420b7dab74c86a7fb14b44a54932f8dbd2f31e533",
+      "reviewed_packet_path": "tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json",
+      "reviewed_packet_hash": "70f09d78858814f6fda59352bc117e9127aa1f90a3480e81b53fd7380daf50d8",
+      "schedule_rows": 9,
+      "audited_target_mentions": 97
+    },
+    {
+      "committee_name": "외교통일위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-17",
+        "type": "PRESS_DISCOVERY_ONLY",
+        "url": "https://www.yna.co.kr/amp/view/AKR20260917106400001",
+        "supports": "2026년도 국정감사계획서 채택 의결"
+      }
+    },
+    {
+      "committee_name": "국방위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-10",
+        "type": "BROADCAST_DISCOVERY_ONLY",
+        "url": "https://talktics.co.kr/videos/6vLFTDQKoZk",
+        "supports": "2026년도 국정감사계획서 채택 안건 처리"
+      }
+    },
+    {
+      "committee_name": "행정안전위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-16",
+        "type": "OFFICIAL_LIST_SECONDARY_CONFIRMATION",
+        "url": "https://glowwiki.com/%EB%AC%B8%EC%84%9C/%EA%B5%AD%EC%A0%95%EA%B0%90%EC%82%AC-2026/",
+        "supports": "대한민국 국회 국정감사계획서 목록에 2026-09-16 행정안전위원회 계획서가 게재됐다는 확인"
+      }
+    },
+    {
+      "committee_name": "문화체육관광위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-16",
+        "type": "OFFICIAL_BROADCAST_DISCOVERY_ONLY",
+        "url": "https://www.youtube.com/watch?v=R42uphEDM3c",
+        "supports": "2026년도 국정감사계획서 채택 안건"
+      }
+    },
+    {
+      "committee_name": "농림축산식품해양수산위원회",
+      "status": "ADOPTED_ATTACHMENT_PENDING",
+      "discovery_evidence": {
+        "date": "2026-09-17",
+        "type": "OFFICIAL_LIST_SECONDARY_CONFIRMATION",
+        "url": "https://glowwiki.com/%EB%AC%B8%EC%84%9C/%EA%B5%AD%EC%A0%95%EA%B0%90%EC%82%AC-2026/",
+        "supports": "대한민국 국회 국정감사계획서 목록에 2026-09-17 농림축산식품해양수산위원회 계획서가 게재됐다는 확인"
+      }
+    },
+    {
+      "committee_name": "산업통상자원중소벤처기업위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "보건복지위원회",
+      "status": "NOT_YET_ADOPTED",
+      "discovery_evidence": {
+        "date": "2026-09-18",
+        "type": "PRESS_DISCOVERY_ONLY",
+        "url": "https://www.kpanews.co.kr/news/articleView.html?idxno=544202",
+        "supports": "9월 17일 채택 예정 안건이 제외되었고 9월 29일 의결 예정이라고 보도"
+      }
+    },
+    {
+      "committee_name": "기후에너지환경노동위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "국토교통위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "정보위원회",
+      "status": "DISCOVERY_PENDING"
+    },
+    {
+      "committee_name": "성평등가족위원회",
+      "status": "DISCOVERY_PENDING"
+    }
+  ]
+}
