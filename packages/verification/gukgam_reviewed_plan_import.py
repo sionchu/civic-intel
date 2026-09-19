@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from urllib.parse import parse_qs, urlparse
@@ -13,7 +13,6 @@ from packages.connectors.gukgam_reviewed_packet import (
     AUTOMATION_GATE,
     PACKET_SCHEMA,
     REVIEW_STATUS,
-    GukgamReviewedPacketError,
     ReviewedGukgamPlanPacket,
 )
 from packages.domain.contracts import (
