@@ -305,3 +305,17 @@ test("Gukgam search deep-links the current query without changing the canonical 
   assert.match(search, /window\.history\.replaceState/);
   assert.match(search, /maxLength=\{80\}/);
 });
+
+
+test("Gukgam deep-link search exposes an accessible copy action", async () => {
+  const search = await readFile(new URL("../app/components/gukgam-search.tsx", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
+  assert.match(search, /navigator\.clipboard\.writeText\(window\.location\.href\)/);
+  assert.match(search, /공유 링크 복사/);
+  assert.match(search, /복사됨/);
+  assert.match(search, /role="status"/);
+  assert.match(search, /aria-live="polite"/);
+  assert.match(search, /setCopyStatus\("idle"\)/);
+  assert.match(styles, /\.gukgam-search-copy/);
+  assert.match(styles, /\.gukgam-search-share-row/);
+});
