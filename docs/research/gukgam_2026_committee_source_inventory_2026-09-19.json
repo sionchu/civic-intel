@@ -19,9 +19,16 @@
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-16",
-        "type": "PRESS_DISCOVERY_ONLY",
-        "url": "https://v.daum.net/v/20260916151754855",
-        "supports": "2026년도 국정감사계획서 채택 의결"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://steering.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078706&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-16",
+        "detail_url": "https://steering.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078706&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078706",
+        "listed_title": "2026년도 국정감사계획서"
       }
     },
     {
@@ -37,9 +44,16 @@
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-17",
-        "type": "PRESS_DISCOVERY_ONLY",
-        "url": "https://mobile.newsis.com/view/NISX20260917_0003793351",
-        "supports": "2026년도 국정감사계획서 채택 및 46개 기관 대상 계획 보도"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://finance.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078708&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-17",
+        "detail_url": "https://finance.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078708&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078708",
+        "listed_title": "2026년도 국정감사계획서"
       }
     },
     {
@@ -64,16 +78,30 @@
       "reviewed_packet_hash": "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d",
       "schedule_rows": 8,
       "audited_target_mentions": 96,
-      "notes": "10.16 오전 ㈜문화방송 업무현황보고는 감사대상기관 row가 아니므로 reviewed schedule에서 제외. 현장시찰/자료준비일도 audited target row가 없어 제외."
+      "notes": "10.16 오전 ㈜문화방송 업무현황보고는 감사대상기관 row가 아니므로 reviewed schedule에서 제외. 현장시찰/자료준비일도 audited target row가 없어 제외.",
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-15",
+        "detail_url": "https://science.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078699&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078699",
+        "listed_title": "2026년도 국정감사계획서"
+      }
     },
     {
       "committee_name": "외교통일위원회",
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-17",
-        "type": "PRESS_DISCOVERY_ONLY",
-        "url": "https://www.yna.co.kr/amp/view/AKR20260917106400001",
-        "supports": "2026년도 국정감사계획서 채택 의결"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://uft.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078713&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-17",
+        "detail_url": "https://uft.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078713&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078713",
+        "listed_title": "2026년도 국정감사계획서 및 기관증인 명단"
       }
     },
     {
@@ -81,9 +109,16 @@
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-10",
-        "type": "BROADCAST_DISCOVERY_ONLY",
-        "url": "https://talktics.co.kr/videos/6vLFTDQKoZk",
-        "supports": "2026년도 국정감사계획서 채택 안건 처리"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://defense.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078693&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-10",
+        "detail_url": "https://defense.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078693&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078693",
+        "listed_title": "2026년도 국정감사계획서"
       }
     },
     {
@@ -91,9 +126,16 @@
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-16",
-        "type": "OFFICIAL_LIST_SECONDARY_CONFIRMATION",
-        "url": "https://glowwiki.com/%EB%AC%B8%EC%84%9C/%EA%B5%AD%EC%A0%95%EA%B0%90%EC%82%AC-2026/",
-        "supports": "대한민국 국회 국정감사계획서 목록에 2026-09-16 행정안전위원회 계획서가 게재됐다는 확인"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://adminhom.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078707&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-16",
+        "detail_url": "https://adminhom.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078707&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078707",
+        "listed_title": "2026년도 국정감사 계획서"
       }
     },
     {
@@ -101,9 +143,16 @@
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-16",
-        "type": "OFFICIAL_BROADCAST_DISCOVERY_ONLY",
-        "url": "https://www.youtube.com/watch?v=R42uphEDM3c",
-        "supports": "2026년도 국정감사계획서 채택 안건"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://cst.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078704&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-16",
+        "detail_url": "https://cst.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078704&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078704",
+        "listed_title": "2026년도 국정감사 계획서"
       }
     },
     {
@@ -111,9 +160,16 @@
       "status": "ADOPTED_ATTACHMENT_PENDING",
       "discovery_evidence": {
         "date": "2026-09-17",
-        "type": "OFFICIAL_LIST_SECONDARY_CONFIRMATION",
-        "url": "https://glowwiki.com/%EB%AC%B8%EC%84%9C/%EA%B5%AD%EC%A0%95%EA%B0%90%EC%82%AC-2026/",
-        "supports": "대한민국 국회 국정감사계획서 목록에 2026-09-17 농림축산식품해양수산위원회 계획서가 게재됐다는 확인"
+        "type": "OFFICIAL_CENTRAL_LIST_LOCATOR",
+        "url": "https://agri.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078709&menuNo=2000030&pageIndex=1",
+        "supports": "Official National Assembly central audit-plan list links this committee's 2026 plan detail record."
+      },
+      "official_plan_locator": {
+        "source": "NATIONAL_ASSEMBLY_CENTRAL_INSPECTION_LIST",
+        "listed_date": "2026-09-17",
+        "detail_url": "https://agri.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078709&menuNo=2000030&pageIndex=1",
+        "ntt_id": "3078709",
+        "listed_title": "2026년도 국정감사 계획서"
       }
     },
     {
@@ -146,5 +202,11 @@
       "committee_name": "성평등가족위원회",
       "status": "DISCOVERY_PENDING"
     }
-  ]
+  ],
+  "official_central_list": {
+    "url": "https://www.assembly.go.kr/portal/cnts/cntsCont/dataA.do?cntsDivCd=INSPECT&menuNo=600236",
+    "discovery_date": "2026-09-19",
+    "access_note": "The official National Assembly central list exposed exact committee detail locators. The host robots.txt is Disallow: /; after that robots result was observed, no further automated requests to the central list are permitted.",
+    "repeated_automation_allowed": false
+  }
 }
