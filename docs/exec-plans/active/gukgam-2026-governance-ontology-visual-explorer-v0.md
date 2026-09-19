@@ -311,10 +311,33 @@ Staging must stay noindex.
 - The temporary Railway SSH tunnel and review-only registered public key used for that check were
   closed/removed afterward.
 
+## Current checkpoint — review-only Organization binding candidates v0 (2026-09-20)
+
+- Added a pure exact-name candidate projection and gated
+  `GET /admin/gukgam/2026/organization-binding-candidates` endpoint. It reuses the current
+  review-only schedule projection and `organizations(current_only=True)`; no persistence path,
+  matcher service, alias table or public route was added.
+- Match classes are explicit and non-authoritative:
+  `EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY`,
+  `NO_EXACT_CANONICAL_NAME_OVERLAP`, and
+  `MULTIPLE_EXACT_CANONICAL_NAME_OVERLAPS_REVIEW_REQUIRED`.
+- Exact overlap never means bound. The DTO contains only source occurrence context plus candidate
+  Organization ID/name. It contains no score, rank, probability, confidence, Claim ID or write
+  action.
+- Targeted validation passed Ruff, mypy and 29 Gukgam review/packet/import tests. Local full
+  verification then passed: Ruff, mypy, `449 passed / 1 skipped` pytest, Golden quality, Web
+  lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Owner-local read-only execution against the real staging database measured 347 current canonical
+  Organizations, 390 target mentions and 359 distinct target strings. Exact overlap produced
+  110 mention candidates / 103 distinct target candidates; 280 mentions / 256 distinct targets had
+  no exact candidate; multiple exact candidates were 0.
+- The temporary Railway SSH tunnel and registered public key used for the staging measurement were
+  closed/removed afterward.
+
 ## Next concrete action
 
-Build the smallest reviewed Organization-binding candidate report from the 390 source-scoped target
-mentions and the existing canonical Organization universe. It must remain review-only: exact name
-overlap may discover a candidate but must not authorize automatic binding, Claim creation or public
-rendering. Keep Foreign Affairs and Unification fail-closed and packet v1 unchanged unless another
-exact audited-target date-range case appears.
+Define the smallest explicit reviewed-binding decision contract for one source occurrence plus one
+existing canonical Organization. It must require an operator-supplied Organization ID and exact
+source target, verify the current candidate/provenance chain, default to no-write, and still create
+no Claim/Evidence until a separate publication slice is approved. Do not bulk-approve the 103 exact
+name overlaps merely because their labels match.

@@ -2134,10 +2134,25 @@ start/end date semantics.
 - Temporary Railway SSH access used for that validation was closed and its registered public key
   removed.
 
+## Current checkpoint — Gukgam Organization binding candidates v0 (2026-09-20)
+
+- A gated review-only candidate route now compares the 390 source-scoped target mentions against
+  current canonical Organization names by exact equality only.
+- Real staging read-only results: 347 current Organizations; 390 mentions / 359 distinct target
+  strings; 110 mention overlaps / 103 distinct exact-name candidates; 280 mention no-matches /
+  256 distinct no-matches; 0 multiple-exact cases.
+- Exact overlaps are explicitly `DISCOVERY_ONLY`. No alias expansion, fuzzy matching, similarity
+  score, rank, embedding, proximity inference, Organization write, Claim/Evidence write or public
+  rendering exists in this slice.
+- Targeted verification passed Ruff, mypy and 29 Gukgam review/packet/import tests. Local full
+  verification then passed: Ruff, mypy, `449 passed / 1 skipped` pytest, Golden quality, Web
+  lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Temporary Railway SSH access used for this read-only measurement was closed and its registered
+  public key removed.
+
 ## Next concrete action
 
-Build one review-only Organization-binding candidate report over the 390 source-scoped target
-mentions and the existing canonical Organization universe. Exact name overlap may surface a
-candidate for review, but it must not auto-bind an Organization, create a Claim/Evidence row, or
-make the schedule public. Keep Foreign Affairs and Unification fail-closed and packet v1 unchanged
-until another exact audited-target date-range case establishes a reusable need.
+Add one explicit reviewed-binding decision contract that accepts an operator-supplied existing
+Organization ID and exact audited-target occurrence, re-verifies the source/provenance/candidate
+relationship, and defaults to no-write. Do not bulk-bind the 103 exact-name candidates and do not
+publish Gukgam Claims in the same slice.
