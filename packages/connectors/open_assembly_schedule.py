@@ -196,7 +196,7 @@ class OpenAssemblyScheduleConnector(Connector):
             if isinstance(candidate_rows, list):
                 rows.extend(item for item in candidate_rows if isinstance(item, dict))
 
-        if result_code in {"DATA-000", "INFO-200"}:
+        if result_code == "DATA-000":
             return [], 0 if total_count is None else total_count, result_code
         if result_code not in {None, "", "INFO-000"}:
             raise AssemblyApiError(
