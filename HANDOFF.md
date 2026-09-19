@@ -2025,7 +2025,8 @@ packet under the existing packet gate. Do not modify `apps/web` in that slice.
   packet is 8 schedule rows / 96 audited-target strings with hash
   `4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d`.
   Exact-artifact dry-run passed and reported zero Person/Organization/Claim materialization.
-  No staging observation has been written yet.
+  The later staging observation-only batch imported this packet idempotently together with six
+  additional reviewed committee packets; see the 2026-09-20 checkpoint below.
 
 ## Current checkpoint — Gukgam standing-committee exact attachment batch 1 (2026-09-20)
 
@@ -2049,14 +2050,40 @@ packet under the existing packet gate. Do not modify `apps/web` in that slice.
   Railway resource, schema, API or Web behavior changed in this acquisition slice.
 - Targeted parser/importer verification passed `24 tests`. Local full verification then passed:
   Ruff, mypy, `444 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, 22 Web tests,
-  production build, and `git diff --check`. GitHub CI remains a separate gate.
+  production build, and `git diff --check`.
+- PR #85 Verify `35454900420` passed. The packet batch merged to `master` as
+  `f808433bae6a2b838430bef96fd0c4b13ba00f9b`, and merge-head Verify `35455358644` also passed
+  every canonical, migration, PostgreSQL, backup/restore, deployment-artifact and installed-sync
+  entrypoint step.
+
+## Current checkpoint — Gukgam staging observation-only batch 1 (2026-09-20)
+
+- Railway CLI access was owner-authenticated. A temporary SSH tunnel reached private staging
+  PostgreSQL without creating a public DB domain. The temporary Railway-registered staging public
+  SSH key was removed after use and the tunnel was closed.
+- Before import: schema `0006`, People `299`, Organizations `347`, Claims `5466`, ClaimEvidence
+  `5466`, and zero `gukgam_reviewed_plan` observations.
+- Science plus six new v1 packets committed `57` total schedule observations across seven exact
+  official plan sources. Every first run completed successfully.
+- Each packet was rerun immediately and unchanged: all second runs reported `created=0` and
+  `unchanged=<row count>`. Total successful source runs for this batch: `14`.
+- After import: People `299`, Organizations `347`, Claims `5466`, ClaimEvidence `5466`, and
+  `gukgam_reviewed_plan` observations `57`. No identity, Organization binding or Claim publication
+  occurred and no raw attachment/fulltext was persisted.
+- The remaining eight `DISCOVERY_PENDING` committees plus Health and Welfare were rechecked in the
+  official central inspection list with both exact and broad 2026 title filters. No 2026 plan row
+  was visible, so their existing fail-closed statuses remain unchanged.
+
+- Cross-checking all eight exact PDFs found no second audited-target date-range case. The other
+  range-form rows are excluded non-audit rows (holidays or field inspection). Foreign Affairs and
+  Unification is therefore the only current exact plan blocked by multi-day audited-target dates.
 
 ## Next concrete action
 
-Check the official central plan list for the remaining eight `DISCOVERY_PENDING` committees plus
-the Health and Welfare Committee. Acquire any newly listed exact 2026 plan attachments through the
-same bounded browser path, then apply the existing reviewed-packet gate without inferring absence
-or binding target strings to canonical Organizations.
+Keep packet v1 unchanged for now and leave Foreign Affairs and Unification fail-closed. Continue
+bounded official-list acquisition for newly published committee plans. Only if a second exact plan
+also requires multi-day audited-target rows should the canonical packet contract gain explicit
+start/end date semantics.
 
 
 ## Current checkpoint — Public Beta staging acceptance + latency v0 (2026-09-19)

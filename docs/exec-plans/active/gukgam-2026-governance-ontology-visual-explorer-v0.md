@@ -217,11 +217,10 @@ Required closure:
   `7dd4f01b-25c6-47ce-b91e-f5e2c9b71b15`, but it currently contains zero services. No
   production service, database, public/custom domain or indexing activation was created.
   Production creation/domain/indexing remain explicit public-access/cost gates.
-- The exact Science Committee PDF is now available through the approved human-assisted local
-  artifact boundary and has been verified against the canonical reviewed packet. The attachment
-  itself is not committed or retained in the repository. Repeated committee-site automation
-  remains blocked, and no other committee may gain canonical schedule/target rows from press or
-  search snippets alone.
+- The exact Science Committee PDF is available through the approved human-assisted local artifact
+  boundary and is verified against the canonical reviewed packet. The attachment itself is not
+  committed or retained in the repository. Repeated committee-site automation remains blocked,
+  and no committee may gain canonical schedule/target rows from press or search snippets alone.
 
 ## Public-beta release gate
 
@@ -259,12 +258,43 @@ Staging must stay noindex.
   `10.11~10.21`) while v1 supports only one `audit_date`. No range was collapsed or guessed.
 - Targeted reviewed-packet/importer verification passed `24 tests`. Local full verification then
   passed: Ruff, mypy, `444 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck,
-  22 Web tests, production build, and `git diff --check`. GitHub CI remains a separate gate.
+  22 Web tests, production build, and `git diff --check`.
+- PR #85 Verify `35454900420` passed, and squash merge `f808433bae6a2b838430bef96fd0c4b13ba00f9b`
+  reached `master`. Merge-head Verify `35455358644` also passed every canonical, migration,
+  PostgreSQL, backup/restore, deployment-artifact and installed-entrypoint step.
+
+## Current checkpoint — staging observation-only import batch 1 (2026-09-20)
+
+- An owner-authenticated Railway CLI session opened a temporary SSH tunnel to the private staging
+  PostgreSQL service. No public database domain was created. A staging-specific public SSH key was
+  registered only for the tunnel, then removed after the import; the tunnel was terminated.
+- Baseline staging remained schema `0006`: People `299`, Organizations `347`, Claims `5466`,
+  ClaimEvidence `5466`, and `gukgam_reviewed_plan` observations `0`.
+- Seven packet-ready committees were committed exactly once: Science `8`, Steering `3`, Public
+  Administration and Security `12`, Culture/Sports/Tourism `7`, Agriculture/Food/Rural
+  Affairs/Oceans `8`, Strategy and Finance `10`, and National Defense `9` schedule observations.
+  Total new `gukgam_reviewed_plan` observations: `57`.
+- Each packet was immediately rerun unchanged. All seven reruns reported
+  `observations_created=0` and `observations_unchanged=<schedule_rows>`, proving idempotent reuse of
+  the same observation versions. The 14 successful source runs are seven first commits plus seven
+  unchanged reruns.
+- Canonical entity counts were asserted before and after and remained exactly People `299`,
+  Organizations `347`, Claims `5466`, ClaimEvidence `5466`. The import still materialized no Person,
+  Organization, Claim or ClaimEvidence and retained no attachment fulltext.
+- The central official inspection list was then rechecked committee-by-committee using both
+  `2026년도 국정감사` and broader `2026` title filters. No 2026 plan row was visible for the
+  eight `DISCOVERY_PENDING` committees or Health and Welfare, so their inventory states were not
+  promoted or downgraded by inference.
+
+- A table-level scan across all eight exact plan PDFs found date ranges elsewhere only on excluded
+  non-audit rows: Public Administration and Security holidays, National Defense holidays, and the
+  Science Committee field-inspection row. Foreign Affairs and Unification is the only current exact
+  plan with multi-day ranges attached to actual audited targets.
 
 ## Next concrete action
 
-Re-check the central official National Assembly inspection plan list for the eight committees still
-at `DISCOVERY_PENDING` plus the currently `NOT_YET_ADOPTED` Health and Welfare Committee.
-For any newly listed 2026 plan, capture the exact official attachment through the same bounded
-interactive-browser path and apply the existing packet gate. Do not weaken the Foreign Affairs date
-range blocker or bind audited-target strings to canonical Organizations.
+Do not expand packet v1 for a single exceptional source yet. Keep Foreign Affairs and Unification
+exact-source captured but unimported, and continue bounded operator checks of the official central
+inspection list. If a second exact committee plan later requires multi-day audited-target rows,
+extend the single canonical packet contract in place with explicit date-range semantics and
+regression coverage.
