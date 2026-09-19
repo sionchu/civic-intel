@@ -334,10 +334,26 @@ Staging must stay noindex.
 - The temporary Railway SSH tunnel and registered public key used for the staging measurement were
   closed/removed afterward.
 
+## Current checkpoint — reviewed Organization binding preflight v0 (2026-09-20)
+
+- Added a pure no-write preflight contract plus gated
+  `GET /admin/gukgam/2026/organization-binding-preflight`.
+- The operator must provide one exact `review_key` and one existing Organization UUID. The
+  preflight rebuilds the current schedule/candidate projection, requires one current exact-name
+  candidate, verifies the supplied UUID is that candidate, and recovers the exact source
+  provenance for the occurrence.
+- Success returns `DRY_RUN`,
+  `candidate_relationship=EXACT_CANONICAL_NAME_OVERLAP_REVERIFIED`,
+  `binding_committed=false`, and `claim_publication=false`.
+- Unknown review keys, no/multiple candidates and a wrong Organization UUID fail closed. The default
+  public API still has no route.
+- The exact implementation passed the local targeted gate before the owner PC disconnected:
+  Ruff, mypy, 34 Gukgam review/packet/import tests and `git diff --check`. Independent GitHub CI
+  remains the merge gate. No staging DB write occurred in this slice.
+
 ## Next concrete action
 
-Define the smallest explicit reviewed-binding decision contract for one source occurrence plus one
-existing canonical Organization. It must require an operator-supplied Organization ID and exact
-source target, verify the current candidate/provenance chain, default to no-write, and still create
-no Claim/Evidence until a separate publication slice is approved. Do not bulk-approve the 103 exact
-name overlaps merely because their labels match.
+After CI, keep the preflight no-write. Do not create a crosswalk table or bulk-approve the 103
+exact-name candidates. Use one explicitly operator-reviewed occurrence as the next bounded design
+input for a separate Claim/Evidence preview, preserving the ordinary publication gate before any
+public Gukgam rendering.
