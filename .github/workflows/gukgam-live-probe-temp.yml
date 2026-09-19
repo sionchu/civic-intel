@@ -19,12 +19,44 @@ jobs:
           python-version: "3.12"
       - name: Install project
         run: python -m pip install -e .
-      - name: Probe official National Assembly schedule API
-        env:
-          ASSEMBLY_API_KEY: sample
+      - name: Diagnose official schedule API response shape
         run: |
-          set -euo pipefail
-          python -m workers.gukgam_schedule_probe \
-            --date 2026-10-06 \
-            --committee "과학기술정보방송통신위원회" \
-            --page-size 10
+          python - <<'PY'
+          import json
+          import httpx
+
+          response = httpx.get(
+              "https://open.assembly.go.kr/portal/openapi/ALLSCHEDULE",
+              params={
+                  "KEY": "sample",
+                  "Type": "json",
+                  "pIndex": "1",
+                  "pSize": "10",
+                  "SCH_DT": "20261006",
+                  "CMIT_NM": "과학기술정보방송통신위원회",
+              },
+              timeout=20,
+          )
+          print("http_status=", response.status_code)
+          print("content_type=", response.headers.get("content-type"))
+          try:
+              payload = response.json()
+          except ValueError:
+              print("body_prefix=", response.text[:1200])
+              raise SystemExit(0)
+
+          def safe(value):
+              if isinstance(value, dict):
+                  return {
+                      key: safe(item)
+                      for key, item in value.items()
+                      if key.casefold() not in {"key", "authkey"}
+                  }
+              if isinstance(value, list):
+                  return [safe(item) for item in value]
+              return value
+
+          payload = safe(payload)
+          print("top_level_keys=", sorted(payload) if isinstance(payload, dict) else type(payload).__name__)
+          print("payload_prefix=", json.dumps(payload, ensure_ascii=False, sort_keys=True)[:3000])
+          PY
