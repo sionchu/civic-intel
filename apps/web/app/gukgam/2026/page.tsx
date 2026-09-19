@@ -14,7 +14,14 @@ export const metadata = buildPageMetadata({
   path: "/gukgam/2026",
 });
 
-export default async function Gukgam2026Page() {
+export default async function Gukgam2026Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const initialQuery = typeof params.q === "string" ? params.q.slice(0, 80) : "";
+
   const [peopleResult, organizationsResult] = await Promise.all([
     getPeople(),
     getOrganizations(),
@@ -67,6 +74,7 @@ export default async function Gukgam2026Page() {
       {organizationsResult.state === "error" && <ReadState error={organizationsResult.error} />}
 
       <GukgamSearch
+        initialQuery={initialQuery}
         people={
           peopleResult.state === "success"
             ? peopleResult.data.map(({ id, canonical_name, discovery }) => ({

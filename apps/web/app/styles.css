@@ -691,3 +691,10 @@ main { flex: 1; }
   .gukgam-search { padding-top: 48px; }
   .gukgam-search-field input { min-height: 52px; font-size: 15px; }
 }
+
+.gukgam-search-share-note {
+  margin: 9px 0 0;
+  color: var(--color-ink-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
