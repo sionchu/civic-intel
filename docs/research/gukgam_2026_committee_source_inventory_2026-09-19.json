@@ -490,7 +490,9 @@
   "research_notes": [
     "Search-engine discovery and press/broadcast evidence may upgrade DISCOVERY status only; it is not canonical evidence for schedule rows or audited targets.",
     "Exact committee attachment bytes remain required before reviewed-packet import.",
-    "Committee-site repeated automated HTML/attachment fetch remains blocked where the reviewed robots contract disallows it."
+    "Committee-site repeated automated HTML/attachment fetch remains blocked where the reviewed robots contract disallows it.",
+    "2026-09-20 bounded interactive recheck of the official central inspection list found no visible 2026 plan row for the eight DISCOVERY_PENDING committees or Health and Welfare using both exact and broad 2026 title filters; absence did not change their statuses.",
+    "2026-09-20 table-level scan across all eight exact plan PDFs found multi-day ranges on actual audited-target rows only in Foreign Affairs and Unification; range rows in Public Administration and Security/National Defense were holidays and the Science range was field inspection. Packet v1 remains unchanged until a second exact audited-target range case appears."
   ],
   "central_official_portal": {
     "discovered_at": "2026-09-19",
@@ -501,6 +503,26 @@
       "www_assembly_go_kr": "Bad Request",
       "assembly_go_kr": "Bad Request"
     },
-    "automation_decision": "DISCOVERY_OPERATOR_ONLY_NOT_AUTOMATION_AUTHORIZED"
+    "automation_decision": "DISCOVERY_OPERATOR_ONLY_NOT_AUTOMATION_AUTHORIZED",
+    "last_rechecked_at": "2026-09-20",
+    "title_filter_recheck": {
+      "method": "bounded interactive operator search on the official central inspection plan list",
+      "filters": [
+        "2026년도 국정감사",
+        "2026"
+      ],
+      "committees_without_visible_2026_plan_row": [
+        "법제사법위원회",
+        "정무위원회",
+        "교육위원회",
+        "산업통상자원중소벤처기업위원회",
+        "보건복지위원회",
+        "기후에너지환경노동위원회",
+        "국토교통위원회",
+        "정보위원회",
+        "성평등가족위원회"
+      ],
+      "interpretation": "No state promotion or downgrade by absence; existing fail-closed inventory statuses remain unchanged."
+    }
   }
 }
