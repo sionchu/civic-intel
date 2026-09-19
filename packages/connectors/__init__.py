@@ -22,11 +22,6 @@ from .open_assembly_bills import (
     OpenAssemblyBillConnector,
     national_assembly_bill_policy,
 )
-from .open_assembly_schedule import (
-    AssemblyScheduleRecord,
-    OpenAssemblyScheduleConnector,
-    national_assembly_schedule_policy,
-)
 from .open_assembly_historical import (
     HISTORICAL_API_CODE,
     HISTORICAL_FEEDER,
@@ -36,6 +31,11 @@ from .open_assembly_historical import (
     AssemblyHistoricalCareerRecord,
     parse_historical_career_records,
     validate_reviewed_packet,
+)
+from .open_assembly_schedule import (
+    AssemblyScheduleRecord,
+    OpenAssemblyScheduleConnector,
+    national_assembly_schedule_policy,
 )
 
 __all__ = [
