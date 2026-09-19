@@ -23,6 +23,7 @@ from packages.domain.enums import EvidenceStance, SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.rendering.alio_organization_content import (
     ALIO_CLASSIFICATION_PREDICATE,
+    ALIO_EXECUTIVE_PREDICATE,
     build_alio_classification_claim,
 )
 from workers.alio_current_executive_claim_import import (
