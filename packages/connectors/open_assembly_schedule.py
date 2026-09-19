@@ -164,6 +164,16 @@ class OpenAssemblyScheduleConnector(Connector):
         cls,
         payload: dict,
     ) -> tuple[list[dict], int | None, str | None]:
+        top_level_result = payload.get("RESULT")
+        if isinstance(top_level_result, dict):
+            top_level_code = str(top_level_result.get("CODE") or "")
+            if top_level_code == "DATA-000":
+                return [], 0, top_level_code
+            if top_level_code not in {"", "INFO-000"}:
+                raise AssemblyApiError(
+                    f"National Assembly schedule API returned {top_level_code}"
+                )
+
         blocks = payload.get(cls.API_CODE)
         if not isinstance(blocks, list) or not blocks:
             raise AssemblyApiError(

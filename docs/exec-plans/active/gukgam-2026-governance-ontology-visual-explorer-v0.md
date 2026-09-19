@@ -139,13 +139,20 @@ Required closure:
   `ALLSCHEDULE`: date, kind, time, committee, schedule content, place, session and degree.
 - `국정감사` text matching produces a discovery candidate only. It does not materialize a Hearing,
   Organization, Person, witness or Claim.
-- The exact operation/field contract still needs one live provider sample before L2 promotion;
-  the current external-probe execution boundary failed before a provider response was obtained.
+- A temporary read-only GitHub Actions probe reached the live provider on 2026-09-19:
+  HTTP `200`, content type `text/html;charset=UTF-8`, top-level `RESULT.CODE=ERROR-290`
+  (`인증키가 유효하지 않습니다`) for `KEY=sample`. This proves route reachability and the
+  provider's top-level error envelope, but not the row contract. The temporary workflow was
+  removed immediately after inspection.
+- The source-specific no-persistence CLI
+  `python -m workers.gukgam_schedule_probe` is merged and ready for one exact live proof with a
+  valid `ASSEMBLY_API_KEY`. L2 remains blocked until that credentialed sample returns rows.
 
 ## Next concrete action
 
-Run one live, bounded `ALLSCHEDULE` sample for the 2026 audit window and the Science Committee,
-then compare the returned candidate date/content against the exact official committee plan.
+Run the bounded `ALLSCHEDULE` probe with a valid `ASSEMBLY_API_KEY` for 2026-10-06 and
+`과학기술정보방송통신위원회`, then compare the returned candidate date/content against the exact
+official committee plan.
 
 - If the live response matches the staged fields/filters, add the source-specific L2 observation
   path for schedule discovery only.
