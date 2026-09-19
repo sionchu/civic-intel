@@ -87,6 +87,52 @@ The committee page may remain an origin URL used for manual/operator verificatio
 A separately reviewed human-assisted packet path may be considered only under the existing source
 acquisition playbook; it is not an automated feeder and does not bypass identity/publication gates.
 
+## Automation-permitted schedule lane
+
+The official public-data catalog now provides a bounded automation-permitted route for schedule
+discovery:
+
+```text
+data.go.kr dataset: 15126132
+name: 국회 국회사무처_국회일정 통합 API
+provider: 국회 국회사무처
+cost: free
+reuse: 이용허락범위 제한 없음
+approval: development auto-approval / operation review
+```
+
+The staged source-specific connector uses the Open Assembly operation code `ALLSCHEDULE` and
+only the schedule fields required for discovery:
+
+```text
+SCH_KIND
+SCH_DT
+SCH_TM
+CMIT_NM
+SCH_CN
+EV_PLC
+CONF_SESS
+CONF_DGR
+```
+
+The code/field contract is staged at L1 from the official dataset plus an independently maintained
+Open Assembly client/catalog. A live provider sample is still required before L2 promotion because
+the current execution boundary could not complete the external API probe.
+
+This lane may classify a row as a **Gukgam schedule candidate** only when the provider's schedule
+kind/content explicitly contains `국정감사`. That classification is discovery metadata, not a
+published governance fact and not evidence for:
+
+- audited-organization identity;
+- institution/general witness identity;
+- reference-person identity;
+- a Person merge;
+- committee-plan completeness.
+
+The official Open API catalog exposes Gukgam meeting minutes and result/report families, but no
+dedicated pre-audit plan, audited-organization, witness or reference-person operation was found in
+the reviewed catalog. Those fields therefore remain under the committee-plan/reviewed-packet gate.
+
 ## Target bounded universe
 
 The desired product universe remains:
@@ -147,7 +193,7 @@ Current v0 decision:
 official committee page as provenance/origin = permitted
 manual/operator viewing for verification = permitted
 repeated automated committee-site fetch = blocked
-normalized metadata from an automation-permitted alternate official route = not yet activated
+normalized schedule metadata via data.go.kr 15126132 = L1 contract staged; live sample pending
 raw/full attachment storage = disabled
 AI processing of raw attachment = disabled
 public excerpt display = disabled
@@ -171,14 +217,10 @@ A witness row remains source-scoped until the existing identity gate resolves it
 
 Do **not** build a committee HTML scraper.
 
-Find and review an automation-permitted official National Assembly route for the same 2026
-Gukgam metadata, prioritizing:
+Run one bounded live sample against the staged `ALLSCHEDULE` contract and compare any 2026
+`국정감사` schedule candidate with the exact committee plan origin. If the API fields and filters
+match the staged contract, promote only schedule discovery to L2 and persist no audited-organization
+or witness facts from free-text schedule content.
 
-1. 열린국회정보 / official National Assembly Open API;
-2. central Assembly audit schedule/handbook metadata when published;
-3. an explicitly documented download/API interface whose automated-access and reuse terms permit
-   the bounded collection.
-
-If no automation-permitted official route exposes the needed fields, define a small reviewed
-human-assisted packet for the first committee under the existing packet gate rather than weakening
-robots, SourcePolicy or provenance rules.
+In parallel, continue the reviewed-packet path for the exact committee plan because the Open API
+catalog does not provide the pre-audit target/witness rows required by the product.

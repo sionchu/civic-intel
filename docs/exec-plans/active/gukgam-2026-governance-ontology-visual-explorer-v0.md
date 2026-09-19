@@ -128,18 +128,27 @@ Required closure:
   Gukgam-specific operation. The official OpenAPI guide/service list must be searched before
   scaling reviewed packets.
 
+## Current checkpoint — Open Assembly schedule discovery L1 (2026-09-19)
+
+- Official data.go.kr dataset `15126132` confirms the National Assembly Secretariat
+  `국회일정 통합 API` is free and has `이용허락범위 제한 없음`.
+- The reviewed Open API catalog does not expose a dedicated pre-audit plan / audited-organization /
+  institution-witness / general-witness / reference-person operation. Gukgam-specific API families
+  cover meeting minutes and post-audit/result reports instead.
+- `packages/connectors/open_assembly_schedule.py` stages the smallest read contract for
+  `ALLSCHEDULE`: date, kind, time, committee, schedule content, place, session and degree.
+- `국정감사` text matching produces a discovery candidate only. It does not materialize a Hearing,
+  Organization, Person, witness or Claim.
+- The exact operation/field contract still needs one live provider sample before L2 promotion;
+  the current external-probe execution boundary failed before a provider response was obtained.
+
 ## Next concrete action
 
-Have Codex inspect the official National Assembly Secretariat OpenAPI guide and service catalog
-end-to-end for an automation-permitted operation exposing 2026 Gukgam plan/schedule, audited
-organizations, institutional/general witnesses or reference persons.
+Run one live, bounded `ALLSCHEDULE` sample for the 2026 audit window and the Science Committee,
+then compare the returned candidate date/content against the exact official committee plan.
 
-- If an exact official API operation exists, pin its service code, keys, pagination/coverage,
-  correction semantics and rights, then implement the smallest source-specific connector and
-  deterministic fixture.
-- If no such operation exists, record the negative evidence and immediately complete the first
-  Science Committee reviewed schedule packet from the exact official document under
-  `GUKGAM_REVIEWED_PACKET.md`; do not build a committee-site scraper.
-
-Keep `apps/web` untouched in this Codex slice. Web integration resumes after the first real
-Gukgam read contract exists.
+- If the live response matches the staged fields/filters, add the source-specific L2 observation
+  path for schedule discovery only.
+- Regardless of that result, continue the Science Committee reviewed plan packet for audited
+  organizations because schedule text is not authority for target/witness identity.
+- Keep `apps/web` unchanged until canonical Gukgam schedule/target data exists.

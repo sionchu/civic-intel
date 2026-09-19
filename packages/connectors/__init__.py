@@ -32,6 +32,11 @@ from .open_assembly_historical import (
     parse_historical_career_records,
     validate_reviewed_packet,
 )
+from .open_assembly_schedule import (
+    AssemblyScheduleRecord,
+    OpenAssemblyScheduleConnector,
+    national_assembly_schedule_policy,
+)
 
 __all__ = [
     "HISTORICAL_API_CODE",
@@ -44,6 +49,7 @@ __all__ = [
     "AssemblyHistoricalCareerError",
     "AssemblyHistoricalCareerRecord",
     "AssemblyMemberRecord",
+    "AssemblyScheduleRecord",
     "Connector",
     "ConnectorDocument",
     "MissingAssemblyApiKey",
@@ -56,8 +62,10 @@ __all__ = [
     "OfficialRosterFixtureConnector",
     "OpenAssemblyBillConnector",
     "OpenAssemblyMemberConnector",
+    "OpenAssemblyScheduleConnector",
     "national_assembly_bill_policy",
     "national_assembly_member_policy",
+    "national_assembly_schedule_policy",
     "nec_local_election_policy",
     "parse_historical_career_records",
     "validate_reviewed_packet",
