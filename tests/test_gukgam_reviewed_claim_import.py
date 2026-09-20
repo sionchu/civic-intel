@@ -10,7 +10,7 @@ from alembic import command
 from alembic.config import Config
 
 from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_plan_packet
-from packages.domain.db import OrganizationRow
+from packages.domain.db import FeederObservationRow, OrganizationRow
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.rendering.gukgam_organization_binding_review import gukgam_review_key
@@ -229,6 +229,36 @@ def test_reviewed_gukgam_claim_rejects_multiple_observation_versions(
     commit_packet(repository, changed)
 
     with pytest.raises(ValueError, match="multiple immutable observation versions"):
+        prepare_reviewed_gukgam_claim_import(
+            repository,
+            organization_id=organization_id,
+            review_key=review_key,
+        )
+
+
+
+def test_reviewed_gukgam_claim_rejects_incomplete_checkpoint_universe(
+    tmp_path: Path,
+) -> None:
+    repository, _ = migrated_repository(tmp_path / "incomplete-checkpoint.db")
+    raw = packet_payload()
+    review_key = commit_packet(repository, raw)
+    organization_id = insert_organization(
+        repository,
+        raw["schedule"][0]["audited_targets"][0],
+    )
+    observations = repository.feeder_observations(
+        GUKGAM_REVIEWED_PLAN_FEEDER,
+        "2026:과학기술정보방송통신위원회",
+    )
+    assert len(observations) > 1
+    with repository.sessions() as session:
+        row = session.get(FeederObservationRow, str(observations[-1].id))
+        assert row is not None
+        session.delete(row)
+        session.commit()
+
+    with pytest.raises(RuntimeError, match="checkpoint row count"):
         prepare_reviewed_gukgam_claim_import(
             repository,
             organization_id=organization_id,
