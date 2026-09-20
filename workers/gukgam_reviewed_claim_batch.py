@@ -7,7 +7,7 @@ from hashlib import sha256
 from pathlib import Path
 from uuid import UUID
 
-from packages.persistence import OrganizationClaimImportError, SqlAlchemyRepository
+from packages.persistence import SqlAlchemyRepository
 from workers.gukgam_reviewed_claim_import import (
     ReviewedGukgamClaimImport,
     prepare_reviewed_gukgam_claim_import,
@@ -236,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         manifest = load_gukgam_reviewed_claim_batch_manifest(args.manifest)
         prepared = prepare_gukgam_reviewed_claim_batch(repository, manifest)
-    except (GukgamReviewedClaimBatchError, OrganizationClaimImportError, TypeError, ValueError) as exc:
+    except (TypeError, ValueError) as exc:
         parser.error(str(exc))
 
     print(
