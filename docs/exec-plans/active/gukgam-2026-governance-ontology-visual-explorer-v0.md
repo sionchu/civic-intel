@@ -531,10 +531,42 @@ Staging must stay noindex.
   `465 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, `23 / 23` Web tests,
   production standalone build and `git diff --check`.
 
+## Current checkpoint — staging reviewed Gukgam batch manifest dry-run (2026-09-20)
+
+- PR #99 merged as `a165d3e5de3c6d6341ca9425700eaa8506d01e5e` after GitHub Verify
+  `35489803777` passed canonical verification, Alembic, PostgreSQL migration/load/API,
+  backup/restore, deployment artifacts and installed entrypoint checks.
+- A clean owner-local tree was reset to exact merged `master` and uploaded to the existing staging
+  API service. Deployment `f178e1b0-b752-4e0e-bf29-2e581d1d8c71` reached `SUCCESS`.
+- The explicit staging manifest contained exactly two still-unpublished reviewed occurrences:
+  한국원자력안전재단
+  (`3078699:7938f3a874d5441892124093d19da1df:2:schedule:3:audited-target:5`,
+  Organization `7b9fc4f2-bda7-5fab-a455-fc7a08199938`) and 한국수력원자력(주)
+  (`...:audited-target:6`, Organization `135a5433-8fbd-55ae-b5e4-e6a615e92d08`).
+- Input order was target:6 then target:5. The installed
+  `civic-preflight-gukgam-reviewed-claim-batch` command canonicalized the receipt to target:5 then
+  target:6 and returned manifest SHA-256
+  `a88c85ad097c8c249cf315cf927580f006982e6939d1733954c2e4ef57758342`.
+- Both items returned `DRY_RUN`, `claim_persisted=false`, `binding_committed=false`,
+  `organization_created=false` and `network_fetch=false`. The top-level receipt reported
+  `write_performed=false`, `batch_commit_available=false` and
+  `automatic_candidate_enumeration=false`.
+- An unchanged second execution produced the same manifest hash, item order, deterministic Claim
+  IDs (`90144deb-cb1f-59c9-ba56-9020ed91bd8e`,
+  `1ef7bdad-a01b-5388-954d-da24ea562689`) and Evidence IDs
+  (`691fa768-230e-59a6-ab83-43cabe24ad3a`,
+  `efbc2609-9839-53aa-94af-e664368116ad`).
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5468`,
+  ClaimEvidence `5468`, Gukgam observations `57`, Gukgam source runs `14` and public targets
+  `2`. No write occurred.
+- The temporary remote manifest was deleted. The temporary Railway SSH key was removed and both
+  local key files were deleted; the unrelated pre-existing `dev.new` key was untouched.
+
 ## Next concrete action
 
-After CI passes and this contract merges, deploy the API service at the exact merged master revision
-and run one staging **two-item explicit manifest dry-run** using two still-unpublished reviewed
-occurrences. Require deterministic `DRY_RUN`, unchanged Claims/ClaimEvidence/public-target counts
-and no source-run or Organization writes. Do not add a batch `--commit` path or automatically
-enumerate candidate Organizations in that staging slice.
+Add a **Gukgam-specific batch persistence adapter contract without exposing a CLI commit path**.
+The adapter may consume already-prepared reviewed manifest items and reuse the canonical
+`import_organization_claim_batch()` seam. Regression coverage must prove: existing Organizations
+are reused rather than created, two new Gukgam Claims commit atomically, an exact retry reuses both
+Claims, and a late invalid Gukgam Evidence item rolls back the entire batch. Do not run a staging
+batch write or add `--commit` until that adapter contract passes full verification.
