@@ -91,7 +91,7 @@ def parse_reviewed_gukgam_claim_batch_manifest(
     raw: object,
 ) -> ReviewedGukgamClaimBatchManifest:
     if not isinstance(raw, dict):
-        raise ValueError("Gukgam batch manifest must be a JSON object")
+        raise TypeError("Gukgam batch manifest must be a JSON object")
     if set(raw) != {"schema", "items"}:
         raise ValueError("Gukgam batch manifest fields changed unexpectedly")
     if raw.get("schema") != GUKGAM_REVIEWED_CLAIM_BATCH_MANIFEST_SCHEMA:
@@ -105,7 +105,7 @@ def parse_reviewed_gukgam_claim_batch_manifest(
     seen_review_keys: set[str] = set()
     for index, raw_item in enumerate(raw_items, start=1):
         if not isinstance(raw_item, dict):
-            raise ValueError(f"Gukgam batch manifest item {index} must be an object")
+            raise TypeError(f"Gukgam batch manifest item {index} must be an object")
         if set(raw_item) != {"review_key", "organization_id"}:
             raise ValueError(
                 f"Gukgam batch manifest item {index} fields changed unexpectedly"
