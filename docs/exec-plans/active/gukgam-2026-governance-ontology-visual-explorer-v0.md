@@ -797,11 +797,45 @@ Staging must stay noindex.
 - The remote temporary manifest was deleted by the execution command. This slice's temporary
   Railway SSH key and local key files were deleted; independently existing keys were left untouched.
 
+## Current checkpoint — fourth reviewed Gukgam batch commit (2026-09-21)
+
+- The commit slice reused exactly the prior two-item reviewed manifest and required SHA-256
+  `4b962fc72e48d1238047b185c7a20cd7287b62642ff7feff2fe9bdfe4f97185c`.
+  No candidate was added, substituted or auto-selected.
+- Commit-time baseline was Organizations `347`, Claims `5474`, ClaimEvidence `5474`,
+  Gukgam observations `57`, Gukgam source runs `14` and public targets `8`; neither
+  한국데이터산업진흥원 nor 시청자미디어재단 was yet public.
+- A fresh commit-time no-write preflight again returned the exact manifest hash, canonical order,
+  deterministic Claim/Evidence IDs and `write_performed=false`.
+- One explicit batch `--commit` returned `COMMITTED`, `claims_created=2`,
+  `claims_reused=0`, `organizations_created=0`, `organizations_reused=2` and
+  `write_performed=true`.
+- 한국데이터산업진흥원 created Claim
+  `ccfbd72d-7511-5669-b0da-64523ae48375` with ClaimEvidence
+  `433c4f49-aec1-50da-9aaa-ce66fb5fd713`. 시청자미디어재단 created Claim
+  `da33bb39-84c2-5f58-8645-404f989cbdf8` with ClaimEvidence
+  `8ec9aa4e-ce66-5635-8935-ae1eff796c69`.
+- The unchanged immediate retry through the same batch-commit module returned `REUSED`,
+  `claims_created=0`, `claims_reused=2` and `write_performed=false` with the same
+  deterministic IDs.
+- Post-commit staging verification passed: Organizations remained `347`; Claims and
+  ClaimEvidence became `5476`; Gukgam observations remained `57`; Gukgam source runs remained
+  `14`; public Claim-backed targets became exactly `10`, still under one committee.
+- Public target API cross-check exposed both new Organizations with the exact Claim/Evidence IDs.
+  한국데이터산업진흥원 retained FeederObservation
+  `9b207a42-ab78-45e4-9e74-d0f2baeb677a`; 시청자미디어재단 retained
+  `731be71a-8413-4df6-bee4-7bb422cc56c4`. Both retained Source
+  `429d851c-3a6c-4756-8b3a-3ace5266d064` and SourceSnapshot
+  `78ceba04-d4ff-4b78-a41c-527de8a9b728`.
+- Live staging Web smoke returned `200`, rendered both new Organizations and their Claim/Evidence
+  IDs, retained the bounded-coverage message and exposed neither `review_key` nor `match_class`.
+- The remote temporary manifest and this slice's temporary Railway SSH key/local key files were
+  deleted. Independently existing keys were left untouched.
+
 ## Next concrete action
 
-In a separate execution slice only, re-run this exact two-item manifest against current staging,
-require manifest SHA-256
-`4b962fc72e48d1238047b185c7a20cd7287b62642ff7feff2fe9bdfe4f97185c`, and proceed to
-`--commit` only if both items remain fully unpublished and every current preflight still passes.
-Then require an unchanged `REUSED` retry and verify counts plus Claim-backed API/Web views. Do not
-add, substitute or auto-select any other candidate in that commit slice.
+Prepare the next reviewed Gukgam manifest as a **no-write dry-run only**. Start from the current
+unpublished exact-one reviewed occurrences in canonical schedule order, explicitly supply each
+`(review_key, organization_id)` pair, require deterministic manifest hashing and unchanged
+staging/public-target counts, and stop after the dry-run receipt. Do not run another batch
+`--commit` in the same slice and do not introduce automatic candidate selection.
