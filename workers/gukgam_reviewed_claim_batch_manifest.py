@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import UUID
 
 from packages.persistence import OrganizationClaimImportError, SqlAlchemyRepository
+from packages.persistence.repository import OrganizationClaimBatchResult
 from packages.rendering.gukgam_organization_binding_review import (
     GukgamOrganizationBindingPreflightError,
 )
@@ -188,6 +189,36 @@ def prepare_reviewed_gukgam_claim_batch_manifest(
         prepared_items=tuple(prepared_items),
     )
 
+
+
+def persist_prepared_reviewed_gukgam_claim_batch(
+    repository: SqlAlchemyRepository,
+    dry_run: ReviewedGukgamClaimBatchDryRun,
+) -> OrganizationClaimBatchResult:
+    expected = tuple(
+        (item.review_key, item.organization_id)
+        for item in dry_run.manifest.items
+    )
+    actual = tuple(
+        (item.preflight.review_key, item.organization.id)
+        for item in dry_run.prepared_items
+    )
+    if actual != expected:
+        raise ValueError(
+            "Gukgam prepared batch items do not match the canonical manifest"
+        )
+    if any(item.existing_claim is not None for item in dry_run.prepared_items):
+        raise ValueError(
+            "Gukgam prepared batch persistence refuses pre-existing Claims"
+        )
+
+    return repository.import_organization_claim_batch(
+        [item.organization for item in dry_run.prepared_items],
+        [
+            (item.organization, item.claim, [item.evidence])
+            for item in dry_run.prepared_items
+        ],
+    )
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
