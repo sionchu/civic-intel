@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
+from packages.domain.contracts import ClaimEvidence
 from packages.domain.enums import IdentityStatus
 from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
 from packages.rendering.alio_organization_content import (
@@ -23,6 +24,10 @@ from packages.rendering.gukgam_organization_binding_review import (
     GukgamOrganizationBindingPreflightError,
     build_gukgam_organization_binding_preflight,
     build_gukgam_organization_binding_review,
+)
+from packages.rendering.gukgam_organization_claim import (
+    GUKGAM_AUDIT_TARGET_PREDICATE,
+    build_gukgam_audit_target_projection,
 )
 from packages.rendering.gukgam_schedule_review import (
     GukgamScheduleReviewReport,
@@ -417,6 +422,50 @@ def create_app(
                 }
             )
         return sorted(payload, key=lambda item: (item["name"], item["id"]))
+
+    @app.get("/gukgam/2026/targets")
+    def gukgam_2026_targets() -> dict:
+        current_organizations = target.public_organizations()
+        contexts = target.published_organization_claim_contexts(
+            item.id for item in current_organizations
+        )
+        gukgam_contexts = {}
+        all_evidence: list[ClaimEvidence] = []
+        for organization_id, (claims, evidence_by_claim) in contexts.items():
+            candidate_claims = tuple(
+                claim
+                for claim in claims
+                if claim.predicate == GUKGAM_AUDIT_TARGET_PREDICATE
+            )
+            if not candidate_claims:
+                continue
+            candidate_evidence = {
+                claim.id: evidence_by_claim.get(claim.id, ())
+                for claim in candidate_claims
+            }
+            gukgam_contexts[organization_id] = (
+                candidate_claims,
+                candidate_evidence,
+            )
+            all_evidence.extend(
+                evidence
+                for items in candidate_evidence.values()
+                for evidence in items
+            )
+
+        source_map = target.sources(
+            evidence.source_id for evidence in all_evidence
+        )
+        policy_map = target.policies(
+            source.policy_id for source in source_map.values()
+        )
+        return build_gukgam_audit_target_projection(
+            current_organizations,
+            gukgam_contexts,
+            sources=source_map,
+            policies=policy_map,
+            year=2026,
+        ).to_dict()
 
     @app.get("/people/{person_id}/claims")
     def claims(person_id: UUID) -> list[dict]:
