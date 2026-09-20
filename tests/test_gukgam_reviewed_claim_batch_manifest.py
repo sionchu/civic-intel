@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -24,6 +25,7 @@ from workers.gukgam_reviewed_claim_batch_manifest import (
     GUKGAM_REVIEWED_CLAIM_BATCH_MANIFEST_SEMANTICS,
     main,
     parse_reviewed_gukgam_claim_batch_manifest,
+    persist_prepared_reviewed_gukgam_claim_batch,
     prepare_reviewed_gukgam_claim_batch_manifest,
 )
 from workers.gukgam_reviewed_claim_import import main as single_claim_main
@@ -266,3 +268,95 @@ def test_batch_manifest_rejects_already_published_item(
         prepare_reviewed_gukgam_claim_batch_manifest(repository, manifest)
 
     assert len(repository.claims(organization_id=organization_id)) == before_claims
+
+
+def prepared_two_item_batch(
+    repository: SqlAlchemyRepository,
+) -> tuple[list[UUID], object]:
+    raw = packet_payload()
+    provider_record_key = commit_packet(repository, raw)
+    targets = raw["schedule"][0]["audited_targets"][:2]
+    organization_ids = [
+        insert_organization(repository, target)
+        for target in targets
+    ]
+    review_keys = [
+        gukgam_review_key(provider_record_key, index)
+        for index in (1, 2)
+    ]
+    manifest = parse_reviewed_gukgam_claim_batch_manifest(
+        manifest_payload(list(zip(review_keys, organization_ids, strict=True)))
+    )
+    return (
+        organization_ids,
+        prepare_reviewed_gukgam_claim_batch_manifest(repository, manifest),
+    )
+
+
+def test_prepared_batch_adapter_reuses_existing_organizations_and_exact_retry(
+    tmp_path: Path,
+) -> None:
+    repository, _ = migrated_repository(tmp_path / "batch-adapter.db")
+    organization_ids, dry_run = prepared_two_item_batch(repository)
+
+    first = persist_prepared_reviewed_gukgam_claim_batch(repository, dry_run)
+    assert first.organizations_created == 0
+    assert first.organizations_reused == 2
+    assert first.claims_created == 2
+    assert first.claims_reused == 0
+    assert len(first.claims) == 2
+    assert len(repository.organizations(current_only=True)) == 2
+    assert sum(
+        len(repository.claims(organization_id=organization_id))
+        for organization_id in organization_ids
+    ) == 2
+
+    second = persist_prepared_reviewed_gukgam_claim_batch(repository, dry_run)
+    assert second.organizations_created == 0
+    assert second.organizations_reused == 2
+    assert second.claims_created == 0
+    assert second.claims_reused == 2
+    assert [claim.id for claim in second.claims] == [claim.id for claim in first.claims]
+    assert sum(
+        len(repository.claims(organization_id=organization_id))
+        for organization_id in organization_ids
+    ) == 2
+
+
+def test_prepared_batch_adapter_rolls_back_on_late_invalid_evidence(
+    tmp_path: Path,
+) -> None:
+    repository, _ = migrated_repository(tmp_path / "batch-adapter-rollback.db")
+    organization_ids, dry_run = prepared_two_item_batch(repository)
+    last = dry_run.prepared_items[-1]
+    broken_evidence = last.evidence.model_copy(update={"source_id": uuid4()})
+    broken_last = replace(last, evidence=broken_evidence)
+    broken_dry_run = replace(
+        dry_run,
+        prepared_items=(*dry_run.prepared_items[:-1], broken_last),
+    )
+
+    with pytest.raises(ValueError, match="missing source"):
+        persist_prepared_reviewed_gukgam_claim_batch(repository, broken_dry_run)
+
+    assert len(repository.organizations(current_only=True)) == 2
+    assert all(
+        repository.claims(organization_id=organization_id) == []
+        for organization_id in organization_ids
+    )
+
+
+def test_prepared_batch_adapter_rejects_manifest_item_mismatch(
+    tmp_path: Path,
+) -> None:
+    repository, _ = migrated_repository(tmp_path / "batch-adapter-mismatch.db")
+    _organization_ids, dry_run = prepared_two_item_batch(repository)
+    reversed_dry_run = replace(
+        dry_run,
+        prepared_items=tuple(reversed(dry_run.prepared_items)),
+    )
+
+    with pytest.raises(ValueError, match="do not match the canonical manifest"):
+        persist_prepared_reviewed_gukgam_claim_batch(repository, reversed_dry_run)
+
+    assert repository.claims() == []
