@@ -19,14 +19,13 @@ from packages.rendering.gukgam_organization_binding_review import (
     GukgamOrganizationBindingPreflight,
     GukgamOrganizationBindingPreflightError,
     build_gukgam_organization_binding_preflight,
-    parse_gukgam_review_key,
 )
 from packages.rendering.gukgam_organization_claim import (
     GUKGAM_AUDIT_TARGET_PREDICATE,
     GukgamOrganizationClaimError,
     build_gukgam_audit_target_claim,
 )
-from packages.rendering.gukgam_schedule_review import build_gukgam_schedule_review
+from packages.rendering.gukgam_schedule_review import load_current_gukgam_schedule_review
 from packages.verification.gukgam_reviewed_plan_import import (
     GUKGAM_REVIEWED_PLAN_FEEDER,
 )
@@ -47,52 +46,39 @@ class ReviewedGukgamClaimImport:
     existing_claim: Claim | None = None
 
 
-def _current_context_for_review_key(
+def _current_context_for_preflight(
     repository: SqlAlchemyRepository,
-    review_key: str,
+    preflight: GukgamOrganizationBindingPreflight,
 ) -> Context:
-    try:
-        provider_record_key, _ = parse_gukgam_review_key(review_key)
-    except ValueError as exc:
-        raise ValueError("Gukgam reviewed Claim import review_key is invalid") from exc
-
-    matches: list[Context] = []
-    for checkpoint in repository.source_checkpoints(GUKGAM_REVIEWED_PLAN_FEEDER):
-        if not checkpoint.scope_key.startswith("2026:"):
-            continue
-        attachment_hash = checkpoint.metadata.get("attachment_sha256")
-        expected_rows = checkpoint.metadata.get("schedule_row_count")
-        if not isinstance(attachment_hash, str) or not isinstance(expected_rows, int):
-            raise TypeError("Gukgam reviewed Claim checkpoint metadata is incomplete")
-
-        observations = repository.feeder_observations(
-            GUKGAM_REVIEWED_PLAN_FEEDER,
-            checkpoint.scope_key,
-            provider_record_key,
-        )
-        if not observations:
-            continue
-        if len({item.content_hash for item in observations}) > 1:
-            raise ValueError(
-                "Gukgam reviewed Claim import refuses multiple immutable observation versions"
-            )
-        contexts = repository.feeder_observation_contexts(item.id for item in observations)
-        current = [
-            contexts[item.id]
-            for item in observations
-            if item.id in contexts and contexts[item.id][1].content_hash == attachment_hash
-        ]
-        if len(current) != 1:
-            raise ValueError(
-                "Gukgam reviewed Claim import requires one current observation version"
-            )
-        matches.extend(current)
-
-    if len(matches) != 1:
+    contexts = repository.feeder_observation_contexts([preflight.observation_id])
+    if set(contexts) != {preflight.observation_id}:
         raise ValueError(
-            "Gukgam reviewed Claim import review_key does not resolve to one current observation"
+            "Gukgam reviewed Claim import requires exact current observation provenance"
         )
-    return matches[0]
+    context = contexts[preflight.observation_id]
+    observation = context[0]
+    if (
+        observation.feeder != GUKGAM_REVIEWED_PLAN_FEEDER
+        or observation.provider_record_key != preflight.provider_record_key
+    ):
+        raise ValueError(
+            "Gukgam reviewed Claim import preflight observation identity changed"
+        )
+
+    versions = repository.feeder_observations(
+        GUKGAM_REVIEWED_PLAN_FEEDER,
+        observation.scope_key,
+        observation.provider_record_key,
+    )
+    if len({item.content_hash for item in versions}) > 1:
+        raise ValueError(
+            "Gukgam reviewed Claim import refuses multiple immutable observation versions"
+        )
+    if len(versions) != 1 or versions[0].id != observation.id:
+        raise ValueError(
+            "Gukgam reviewed Claim import requires one exact current observation version"
+        )
+    return context
 
 
 def _claim_semantics(claim: Claim) -> dict[str, object]:
@@ -174,15 +160,15 @@ def prepare_reviewed_gukgam_claim_import(
             "Gukgam reviewed Claim import requires an existing current Organization"
         )
 
-    context = _current_context_for_review_key(repository, review_key)
-    observation, snapshot, source, policy = context
-    schedule = build_gukgam_schedule_review([context])
+    schedule = load_current_gukgam_schedule_review(repository)
     preflight = build_gukgam_organization_binding_preflight(
         schedule,
         repository.organizations(current_only=True),
         review_key=review_key,
         organization_id=organization_id,
     )
+    context = _current_context_for_preflight(repository, preflight)
+    observation, snapshot, source, policy = context
     claim, evidence = build_gukgam_audit_target_claim(
         preflight,
         organization,
@@ -288,6 +274,7 @@ def main(argv: list[str] | None = None) -> int:
         GukgamOrganizationBindingPreflightError,
         GukgamOrganizationClaimError,
         OrganizationClaimImportError,
+        RuntimeError,
         TypeError,
         ValueError,
     ) as exc:
