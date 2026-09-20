@@ -2400,10 +2400,51 @@ start/end date semantics.
   skipped` pytest, Golden quality, Web lint/typecheck, `23 / 23` Web tests, production standalone
   build and `git diff --check`.
 
+## Current checkpoint — staging reviewed Gukgam batch commit (2026-09-20)
+
+- PR #102 merged as `ec78ff69d4b9b8891961587fd40e0f292b29afe9`; head Verify
+  `35500819201` passed. Local full verification had already passed Ruff, mypy across 78 source
+  files, `472 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck,
+  `23 / 23` Web tests, production standalone build and `git diff --check`.
+- A clean owner-local tree was reset to exact merged `master` `ec78ff6...`. The already-reviewed
+  two-item manifest from the prior staging dry-run was reused unchanged, with required SHA-256
+  `a88c85ad097c8c249cf315cf927580f006982e6939d1733954c2e4ef57758342`.
+- The manifest contained only 한국원자력안전재단
+  (`...:schedule:3:audited-target:5`, Organization
+  `7b9fc4f2-bda7-5fab-a455-fc7a08199938`) and 한국수력원자력(주)
+  (`...:schedule:3:audited-target:6`, Organization
+  `135a5433-8fbd-55ae-b5e4-e6a615e92d08`). No other candidate was added or auto-selected.
+- The first explicit batch `--commit` receipt validated `COMMITTED`, `claims_created=2`,
+  `claims_reused=0`, `organizations_created=0`, `organizations_reused=2` and
+  `write_performed=true`. It created Claims
+  `90144deb-cb1f-59c9-ba56-9020ed91bd8e` and
+  `1ef7bdad-a01b-5388-954d-da24ea562689` with ClaimEvidence
+  `691fa768-230e-59a6-ab83-43cabe24ad3a` and
+  `efbc2609-9839-53aa-94af-e664368116ad`.
+- The unchanged immediate retry validated `REUSED`, `claims_created=0`, `claims_reused=2`
+  and `write_performed=false`. A later exact-manifest retry through the deployed staging commit
+  gate returned the same `REUSED` result and deterministic Claim/Evidence IDs.
+- Staging changed only as intended: Organizations remained `347`; Claims and ClaimEvidence moved
+  from `5468` to `5470`; Gukgam observations remained `57`; Gukgam source runs remained
+  `14`; public Claim-backed targets moved from `2` to `4`.
+- The initial owner-local harness completed commit, retry and count assertions, then exited on an
+  outdated projection response-key lookup in its final name check. A separate read-only verifier
+  subsequently passed the corrected current API contract with the exact counts above, target count
+  `4`, committee count `1`, expected Claim/Evidence IDs,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- Exact merged `master` was uploaded to the existing staging API service; deployment
+  `252eaca6-e11f-4717-a5ec-01295548d422` reached `SUCCESS` and `/ready` returned `200`.
+- Live staging Web smoke returned `200` and rendered 한국원자력안전재단 and
+  한국수력원자력(주), both new Claim/Evidence IDs and the bounded-coverage message. Public HTML
+  still exposed neither `review_key` nor `match_class`.
+- The remote temporary manifest was deleted. Temporary Railway SSH keys and all local key,
+  manifest, execution-script and verification-log artifacts for this slice were deleted; only the
+  unrelated pre-existing `dev.new` key remains.
+
 ## Next concrete action
 
-After this commit gate passes full verification and merge CI, execute only the already-reviewed
-two-item staging manifest from the prior dry-run, requiring manifest SHA-256
-`a88c85ad097c8c249cf315cf927580f006982e6939d1733954c2e4ef57758342`. Commit once, rerun
-unchanged and require `REUSED`, then verify Organization/Claim/Evidence counts plus the existing
-Claim-backed target API/Web views. Do not add or auto-select any other exact-name candidate.
+Prepare the **next reviewed Gukgam manifest as a no-write dry-run only**, starting from the next
+unpublished exact-one occurrences in the reviewed schedule and manually confirming each
+`(review_key, organization_id)` pair. Require deterministic manifest hashing, unchanged staging
+counts and no public-target change. Do not run another batch `--commit` in that same slice and do
+not introduce automatic candidate selection.
