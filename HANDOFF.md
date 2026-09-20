@@ -2167,9 +2167,29 @@ start/end date semantics.
   ClaimEvidence `5466`, Gukgam observations `57`, and Gukgam source runs `14`.
   No Organization, Claim/Evidence or source-run write occurred. The temporary tunnel was closed.
 
+## Current checkpoint — reviewed Gukgam Claim importer v0 (2026-09-20)
+
+- Added the source-specific predicate `LISTED_AS_GUKGAM_AUDIT_TARGET`. It means only that the
+  exact official audit plan lists the Organization as a target on the scheduled row; it does not
+  assert completed audit activity, wrongdoing, responsibility, performance or outcome.
+- Added `civic-import-gukgam-reviewed-claim`, requiring one existing current Organization ID plus
+  one reviewed target-level `review_key`. The command re-runs binding/source provenance checks and
+  builds deterministic Claim/Evidence through the existing Organization Claim importer.
+- The target-level `review_key` is the Claim source key; schedule-row provider identity is retained
+  separately. Dry-run is default, network fetch is absent, `--commit` is explicit, and an exact
+  stored retry returns `REUSED` only when Claim/Evidence semantics match.
+- Wrong binding, conflicting stored semantics or multiple immutable observation versions fail
+  closed. Targeted Ruff/mypy and 38 Gukgam tests passed. Local full verification then passed:
+  Ruff, mypy, `458 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, 22 Web tests,
+  production build, and `git diff --check`.
+- Real staging DRY_RUN passed on one exact-name candidate without `--commit`. Before/after
+  remained People `299`, Organizations `347`, Claims `5466`, ClaimEvidence `5466`,
+  Gukgam observations `57`, and Gukgam runs `14`; no Claim, Evidence or source write occurred.
+  The temporary private-DB tunnel was closed.
+
 ## Next concrete action
 
-Follow the already-proven ALIO reviewed-binding pattern for the next slice: one explicit operator
-command over an existing Organization ID + reviewed Gukgam occurrence, dry-run by default, with any
-Claim/Evidence commit behind a separate explicit flag and source-specific preflight. Do not add a
-generic crosswalk, automatic name binding or bulk approval path.
+After full repo/CI verification, perform exactly one staging `--commit` for a reviewed occurrence,
+rerun it unchanged and require `REUSED`, then smoke the existing Organization Claim/Evidence
+read path. Keep the public Gukgam page unchanged and do not bulk-publish the other exact-name
+candidates.

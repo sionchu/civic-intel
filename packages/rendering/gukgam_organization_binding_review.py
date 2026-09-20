@@ -17,6 +17,27 @@ GUKGAM_ORGANIZATION_BINDING_REVIEW_SEMANTICS = (
 EXACT_ONE = "EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY"
 NO_EXACT = "NO_EXACT_CANONICAL_NAME_OVERLAP"
 EXACT_MULTIPLE = "MULTIPLE_EXACT_CANONICAL_NAME_OVERLAPS_REVIEW_REQUIRED"
+_REVIEW_KEY_MARKER = ":audited-target:"
+
+
+def gukgam_review_key(provider_record_key: str, target_index: int) -> str:
+    if not provider_record_key.strip():
+        raise ValueError("provider_record_key must be non-empty")
+    if target_index < 1:
+        raise ValueError("target_index must be positive")
+    return f"{provider_record_key}{_REVIEW_KEY_MARKER}{target_index}"
+
+
+def parse_gukgam_review_key(review_key: str) -> tuple[str, int]:
+    provider_record_key, marker, target_index_text = review_key.rpartition(_REVIEW_KEY_MARKER)
+    if (
+        not marker
+        or not provider_record_key.strip()
+        or not target_index_text.isdigit()
+        or int(target_index_text) < 1
+    ):
+        raise ValueError("review_key is invalid")
+    return provider_record_key, int(target_index_text)
 
 
 @dataclass(frozen=True)
@@ -126,8 +147,9 @@ def build_gukgam_organization_binding_review(
                 )
                 items.append(
                     GukgamOrganizationBindingReviewItem(
-                        review_key=(
-                            f"{row.provider_record_key}:audited-target:{target_index}"
+                        review_key=gukgam_review_key(
+                            row.provider_record_key,
+                            target_index,
                         ),
                         committee_name=committee.committee_name,
                         audit_date=row.audit_date,

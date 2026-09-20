@@ -355,10 +355,36 @@ Staging must stay noindex.
 - The SSH tunnel used for this read-only proof was closed afterward. No public DB domain was
   created.
 
+## Current checkpoint — reviewed Gukgam Organization Claim importer v0 (2026-09-20)
+
+- Added source-specific predicate `LISTED_AS_GUKGAM_AUDIT_TARGET`. Its FACT semantics are
+  limited to the exact official plan listing: the Organization is printed as an audited target for
+  that schedule occurrence. It does not state that the audit happened/completed or imply
+  wrongdoing, responsibility, performance or outcome.
+- Added `civic-import-gukgam-reviewed-claim`. The command requires one existing current
+  Organization UUID and one target-level reviewed `review_key`, re-runs the current binding
+  preflight and exact schedule/source-policy validation, and builds deterministic Claim/Evidence
+  with exact observation/snapshot/source provenance.
+- `review_key` is the Claim source key so distinct target organizations in one schedule row do not
+  collide. The row-level provider key is retained separately in qualifiers.
+- The command is dry-run by default and performs no network fetch. `--commit` is the only Claim
+  write path. Exact stored semantics return `REUSED`; conflicting stored semantics, wrong
+  Organization bindings and multiple immutable observation versions fail closed.
+- Targeted verification passed Ruff, mypy and 38 Gukgam review/Claim/import tests. Local full
+  verification then passed: Ruff, mypy, `458 passed / 1 skipped` pytest, Golden quality, Web
+  lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Owner-local execution against real staging selected one exact-name candidate and ran the new
+  worker **without** `--commit`. Result: `DRY_RUN`, predicate
+  `LISTED_AS_GUKGAM_AUDIT_TARGET`, `claim_persisted=false`,
+  `claim_created=false`, `binding_committed=false`, and no network fetch.
+- Staging before/after remained People `299`, Organizations `347`, Claims `5466`,
+  ClaimEvidence `5466`, Gukgam observations `57`, Gukgam source runs `14`. No write occurred.
+  The temporary private-DB tunnel was closed afterward.
+
 ## Next concrete action
 
-Reuse the existing ALIO reviewed-binding workflow pattern instead of adding a crosswalk model:
-design one source-specific Gukgam operator command that accepts an existing Organization ID plus one
-reviewed `review_key`, runs this preflight by default, and requires a separate explicit commit flag
-before creating any Organization-scoped Claim/Evidence. Do not bulk-commit the 103 exact-name
-candidates and do not change public Gukgam rendering in that same slice.
+After this implementation passes the full repository and GitHub gates, run one explicitly bounded
+staging `--commit` for a reviewed exact-name occurrence, immediately rerun the same command and
+require `REUSED`, then verify the Organization Claim/Evidence provenance through existing
+read-only routes. Do not bulk-publish the remaining exact-name candidates and do not change the
+public Gukgam page in that execution slice.
