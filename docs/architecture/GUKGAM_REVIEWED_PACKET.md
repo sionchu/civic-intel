@@ -241,6 +241,26 @@ The command:
 
 The command never creates or updates an Organization and provides no bulk-approval path.
 
+## Reviewed batch manifest dry-run lane
+
+The operator command `civic-preflight-gukgam-reviewed-claim-batch` accepts one explicit JSON
+manifest using schema `civic.gukgam.reviewed_claim_batch_manifest.v1`.
+
+Each manifest item contains exactly:
+
+- `review_key`;
+- one existing canonical `organization_id` supplied by the operator.
+
+The command canonical-sorts the explicit list, computes a deterministic manifest SHA-256 and
+re-runs the existing single-occurrence reviewed Claim preflight for every item. Duplicate
+`review_key` values, invalid/stale Organization bindings and already-published reviewed Gukgam
+Claims fail closed. One failing item invalidates the entire dry-run receipt.
+
+This lane does **not** enumerate candidates, infer Organization bindings, perform network fetches or
+persist any Claim/Evidence rows. It has no batch `--commit` option. A future commit lane, if
+approved separately, must reuse a canonical atomic persistence seam rather than weakening this
+review contract.
+
 ## Next source step
 
 Continue exact-attachment acquisition for the remaining standing committees and use v1 only where
