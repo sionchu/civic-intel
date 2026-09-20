@@ -386,10 +386,32 @@ Staging must stay noindex.
   ClaimEvidence `5466`, Gukgam observations `57`, Gukgam source runs `14`. No write occurred.
   The temporary private-DB tunnel was closed afterward.
 
+## Current checkpoint — first staging Gukgam Claim commit receipt (2026-09-20)
+
+- Execution used merged `master` `b02f306d474ec35d19f6a668140a41edb8c4818e` against the
+  existing private staging PostgreSQL boundary; no public database domain was created.
+- The reviewed occurrence was 과학기술정보방송통신위원회 / 2026-10-13 /
+  한국원자력안전기술원, Organization
+  `2b389008-a8c1-53d4-87d9-f4221aa8dfa5`, with review key
+  `3078699:7938f3a874d5441892124093d19da1df:2:schedule:3:audited-target:3`.
+- A pre-commit dry-run returned `DRY_RUN` with staging counts unchanged at People `299`,
+  Organizations `347`, Claims `5466`, ClaimEvidence `5466`, Gukgam observations `57`,
+  and Gukgam source runs `14`.
+- Exactly one `--commit` then created Claim
+  `7c4b2e8d-b9eb-5f4c-87ba-fb3c561ecb83` and ClaimEvidence
+  `e5f2a33b-59da-5e1e-90d9-384f14fff689`. Counts became Claims `5467` and
+  ClaimEvidence `5467`; People, Organizations, Gukgam observations and Gukgam source runs
+  remained unchanged.
+- Immediate unchanged rerun returned `REUSED` with counts still unchanged, proving the
+  deterministic single-occurrence retry contract. Owner-local public Claim read smoke against the
+  staging database passed through the ordinary Organization Claim/Evidence gate.
+- The temporary SSH key used for this private-DB execution was removed, and its local private/public
+  key files plus temporary execution scripts were deleted. No bulk publication was performed.
+
 ## Next concrete action
 
-After this implementation passes the full repository and GitHub gates, run one explicitly bounded
-staging `--commit` for a reviewed exact-name occurrence, immediately rerun the same command and
-require `REUSED`, then verify the Organization Claim/Evidence provenance through existing
-read-only routes. Do not bulk-publish the remaining exact-name candidates and do not change the
-public Gukgam page in that execution slice.
+Build the smallest read-only **public Claim-backed Gukgam target projection** over current published
+`LISTED_AS_GUKGAM_AUDIT_TARGET` Claims. It must retain exact Claim/Evidence/Source provenance,
+state its bounded/incomplete coverage explicitly, and return no target from review observations or
+name-overlap candidates when a published Claim is absent. Keep the Web Gukgam page unchanged in
+this slice and do not bulk-bind or bulk-publish the remaining candidates.
