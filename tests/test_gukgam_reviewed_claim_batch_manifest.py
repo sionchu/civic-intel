@@ -20,6 +20,12 @@ from packages.verification.gukgam_reviewed_plan_import import (
     ReviewedGukgamArtifactProof,
     build_reviewed_gukgam_plan_capture,
 )
+from workers.gukgam_reviewed_claim_batch_commit import (
+    GUKGAM_REVIEWED_CLAIM_BATCH_COMMIT_SEMANTICS,
+)
+from workers.gukgam_reviewed_claim_batch_commit import (
+    main as batch_commit_main,
+)
 from workers.gukgam_reviewed_claim_batch_manifest import (
     GUKGAM_REVIEWED_CLAIM_BATCH_MANIFEST_SCHEMA,
     GUKGAM_REVIEWED_CLAIM_BATCH_MANIFEST_SEMANTICS,
@@ -360,3 +366,177 @@ def test_prepared_batch_adapter_rejects_manifest_item_mismatch(
         persist_prepared_reviewed_gukgam_claim_batch(repository, reversed_dry_run)
 
     assert repository.claims() == []
+
+
+def write_commit_manifest(
+    tmp_path: Path,
+    repository: SqlAlchemyRepository,
+) -> tuple[Path, object, list[UUID], list[str]]:
+    raw = packet_payload()
+    provider_record_key = commit_packet(repository, raw)
+    targets = raw["schedule"][0]["audited_targets"][:2]
+    organization_ids = [
+        insert_organization(repository, target)
+        for target in targets
+    ]
+    review_keys = [
+        gukgam_review_key(provider_record_key, index)
+        for index in (1, 2)
+    ]
+    manifest = parse_reviewed_gukgam_claim_batch_manifest(
+        manifest_payload(list(zip(review_keys, organization_ids, strict=True)))
+    )
+    manifest_path = tmp_path / "commit-manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest.canonical_payload(), ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return manifest_path, manifest, organization_ids, review_keys
+
+
+def test_batch_commit_cli_requires_explicit_commit(
+    tmp_path: Path,
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "batch-commit-flag.db")
+    manifest_path, manifest, _organization_ids, _review_keys = write_commit_manifest(
+        tmp_path,
+        repository,
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        batch_commit_main(
+            [
+                "--database-url",
+                database_url,
+                "--manifest",
+                str(manifest_path),
+                "--expected-manifest-sha256",
+                manifest.sha256(),
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    assert repository.claims() == []
+
+
+def test_batch_commit_rejects_manifest_hash_mismatch_before_write(
+    tmp_path: Path,
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "batch-commit-hash.db")
+    manifest_path, _manifest, _organization_ids, _review_keys = write_commit_manifest(
+        tmp_path,
+        repository,
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        batch_commit_main(
+            [
+                "--database-url",
+                database_url,
+                "--manifest",
+                str(manifest_path),
+                "--expected-manifest-sha256",
+                "0" * 64,
+                "--commit",
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    assert repository.claims() == []
+
+
+def test_batch_commit_cli_commits_atomically_and_exact_retry_reuses(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "batch-commit.db")
+    manifest_path, manifest, organization_ids, review_keys = write_commit_manifest(
+        tmp_path,
+        repository,
+    )
+    args = [
+        "--database-url",
+        database_url,
+        "--manifest",
+        str(manifest_path),
+        "--expected-manifest-sha256",
+        manifest.sha256(),
+        "--commit",
+    ]
+
+    assert batch_commit_main(args) == 0
+    first = json.loads(capsys.readouterr().out)
+    assert first["status"] == "COMMITTED"
+    assert first["semantics"] == GUKGAM_REVIEWED_CLAIM_BATCH_COMMIT_SEMANTICS
+    assert first["manifest_sha256"] == manifest.sha256()
+    assert first["item_count"] == 2
+    assert first["organizations_created"] == 0
+    assert first["organizations_reused"] == 2
+    assert first["claims_created"] == 2
+    assert first["claims_reused"] == 0
+    assert first["write_performed"] is True
+    assert first["automatic_candidate_enumeration"] is False
+    assert first["network_fetch"] is False
+    assert [item["review_key"] for item in first["items"]] == sorted(review_keys)
+    assert all(item["claim_persisted"] is True for item in first["items"])
+    assert all(item["organization_created"] is False for item in first["items"])
+    assert all("claim_created" not in item for item in first["items"])
+    first_claim_ids = [item["claim_id"] for item in first["items"]]
+
+    assert batch_commit_main(args) == 0
+    second = json.loads(capsys.readouterr().out)
+    assert second["status"] == "REUSED"
+    assert second["manifest_sha256"] == first["manifest_sha256"]
+    assert second["organizations_created"] == 0
+    assert second["organizations_reused"] == 2
+    assert second["claims_created"] == 0
+    assert second["claims_reused"] == 2
+    assert second["write_performed"] is False
+    assert [item["claim_id"] for item in second["items"]] == first_claim_ids
+
+    assert len(repository.organizations(current_only=True)) == 2
+    assert sum(
+        len(repository.claims(organization_id=organization_id))
+        for organization_id in organization_ids
+    ) == 2
+
+
+def test_batch_commit_refuses_partially_published_manifest(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "batch-commit-partial.db")
+    manifest_path, manifest, organization_ids, review_keys = write_commit_manifest(
+        tmp_path,
+        repository,
+    )
+
+    assert single_claim_main(
+        [
+            "--database-url",
+            database_url,
+            "--organization-id",
+            str(organization_ids[0]),
+            "--review-key",
+            review_keys[0],
+            "--commit",
+        ]
+    ) == 0
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as exc_info:
+        batch_commit_main(
+            [
+                "--database-url",
+                database_url,
+                "--manifest",
+                str(manifest_path),
+                "--expected-manifest-sha256",
+                manifest.sha256(),
+                "--commit",
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    assert len(repository.claims(organization_id=organization_ids[0])) == 1
+    assert repository.claims(organization_id=organization_ids[1]) == []

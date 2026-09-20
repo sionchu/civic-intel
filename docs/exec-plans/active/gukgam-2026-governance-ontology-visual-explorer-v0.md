@@ -562,11 +562,40 @@ Staging must stay noindex.
 - The temporary remote manifest was deleted. The temporary Railway SSH key was removed and both
   local key files were deleted; the unrelated pre-existing `dev.new` key was untouched.
 
+## Current checkpoint — reviewed Gukgam batch persistence adapter v0 (2026-09-20)
+
+- PR #101 merged as `1af6a994461e8982817c998d1d1d5a3253792c30`; merge-head Verify
+  `35500227982` passed canonical verification, Alembic, PostgreSQL migration/load/API,
+  backup/restore, deployment artifacts and the installed-entrypoint gate.
+- The internal adapter consumes only an already-prepared canonical reviewed manifest batch,
+  rechecks prepared `(review_key, organization_id)` order and reuses the existing atomic
+  `import_organization_claim_batch()` seam.
+- Adapter regression proves existing Organizations are reused, two Claims commit atomically, an
+  exact same prepared retry reuses both Claims, reordered prepared items fail closed and a late
+  invalid Evidence source rolls back the whole Claim batch.
+- PR #101 intentionally exposed no CLI commit path and performed no staging write.
+
+## Current checkpoint — explicit reviewed Gukgam batch commit gate v0 (2026-09-20)
+
+- Added separate operator entrypoint `civic-import-gukgam-reviewed-claim-batch`; the existing
+  `civic-preflight-gukgam-reviewed-claim-batch` remains no-write.
+- The write command requires the same explicit manifest plus both `--expected-manifest-sha256`
+  and `--commit`. The canonical manifest hash must match before any item preflight is evaluated.
+- Every item is re-preflighted against current schedule/provenance and the caller-supplied existing
+  Organization ID. No candidate enumeration, fuzzy/alias matching, ranking or Organization
+  creation path was added.
+- A fully unpublished manifest may enter the atomic adapter. A fresh exact retry with every Claim
+  already present returns `REUSED` without writing. A partially published manifest fails closed
+  before persistence.
+- Targeted verification passed Ruff, mypy across 78 source files and `11 / 11` batch
+  manifest/adapter/commit tests. Full local verification then passed Ruff, mypy, `472 passed / 1
+  skipped` pytest, Golden quality, Web lint/typecheck, `23 / 23` Web tests, production standalone
+  build and `git diff --check`.
+
 ## Next concrete action
 
-Add a **Gukgam-specific batch persistence adapter contract without exposing a CLI commit path**.
-The adapter may consume already-prepared reviewed manifest items and reuse the canonical
-`import_organization_claim_batch()` seam. Regression coverage must prove: existing Organizations
-are reused rather than created, two new Gukgam Claims commit atomically, an exact retry reuses both
-Claims, and a late invalid Gukgam Evidence item rolls back the entire batch. Do not run a staging
-batch write or add `--commit` until that adapter contract passes full verification.
+After this commit gate passes full verification and merge CI, execute only the already-reviewed
+two-item staging manifest from the prior dry-run, requiring manifest SHA-256
+`a88c85ad097c8c249cf315cf927580f006982e6939d1733954c2e4ef57758342`. Commit once, rerun
+unchanged and require `REUSED`, then verify Organization/Claim/Evidence counts plus the existing
+Claim-backed target API/Web views. Do not add or auto-select any other exact-name candidate.
