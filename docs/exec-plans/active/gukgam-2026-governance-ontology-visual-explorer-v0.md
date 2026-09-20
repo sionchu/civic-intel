@@ -867,11 +867,53 @@ Staging must stay noindex.
 - The temporary manifest, receipt files, read-only verifier and this slice's Railway SSH key/local
   keypair were deleted. Pre-existing unrelated keys were left untouched.
 
+## Current checkpoint — fifth reviewed Gukgam batch commit (2026-09-21)
+
+- Exact canonical `master` remained `e0b408a261b456b21bccd9814d43dc7e1aaab156` with a clean
+  tree and no newer concurrent Gukgam batch PR before execution.
+- The commit slice recreated only the exact prior two-item reviewed manifest and required SHA-256
+  `e154f49c3575dd1a23f95489b3c7087467fd18d33eecd8ff010c7556c3e7e899`. No candidate was
+  added, substituted, ranked, fuzzy-matched, alias-expanded or auto-selected.
+- Commit-time baseline was independently read as Organizations `347`, Claims `5476`,
+  ClaimEvidence `5476`, Gukgam observations `57`, Gukgam source runs `14`, public targets `10`
+  and public committee count `1`.
+- A fresh commit-time no-write preflight exactly matched the prior fifth dry-run: both
+  Organizations, review keys, prospective Claim/Evidence IDs, Observation/Snapshot/Source IDs,
+  manifest hash and all zero-write flags matched. It returned `DRY_RUN`,
+  `write_performed=false`, `batch_commit_available=false`,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- One explicit `civic-import-gukgam-reviewed-claim-batch` execution with the exact manifest,
+  exact expected SHA and `--commit` returned `COMMITTED`, `claims_created=2`,
+  `claims_reused=0`, `organizations_created=0`, `organizations_reused=2`,
+  `write_performed=true`, `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- 한국방송광고진흥공사 created Claim `c12aa7d9-22e2-5a3c-b496-aa05dae0afea` with
+  ClaimEvidence `0195706b-55b9-599e-964e-3c9cb9ce318a`; 한국연구재단 created Claim
+  `7c1ba70a-c59b-5e5a-9a26-e65793a47143` with ClaimEvidence
+  `a46231c2-4021-5637-a03f-9e6248675c05`.
+- Live staging Web verification after the commit rendered both new Organizations with the exact
+  Claim/Evidence IDs and exact provenance: Source `429d851c-3a6c-4756-8b3a-3ace5266d064`,
+  SourceSnapshot `78ceba04-d4ff-4b78-a41c-527de8a9b728`, FeederObservation
+  `731be71a-8413-4df6-bee4-7bb422cc56c4` for 한국방송광고진흥공사 and
+  `42fe6d0c-8da1-44ad-aaf6-826a24b7eb57` for 한국연구재단. The page reported current public
+  scope `12` and one committee, and exposed neither `review_key` nor `match_class`.
+- A direct post-commit internal aggregate re-read was attempted, but the ChatGPT/OpenAI tool safety
+  gate blocked that read-only invocation before it reached Desktop Commander. Therefore Claims
+  `5478`, ClaimEvidence `5478`, observations `57` and source runs `14` are the transaction-expected
+  post-commit values, but are not independently re-read receipts in this slice. Do not rewrite
+  them as independently verified until a later read-only check succeeds.
+- This was not a commit failure: the write command reached Railway and returned the concrete
+  `COMMITTED` receipt above. Do not replay this `e154f49c...e899` manifest.
+- This slice's temporary commit/verification Railway SSH keys, local keypairs, manifest and Web
+  verification artifact were deleted. The pre-existing `dev.new` and
+  `civic-intel-gukgam-commit-b012-20260920` keys were left untouched.
+
 ## Next concrete action
 
-Use only the exact reviewed manifest with SHA-256
-`e154f49c3575dd1a23f95489b3c7087467fd18d33eecd8ff010c7556c3e7e899` in the next separate
-slice. Run a fresh commit-time no-write preflight against current staging and, only if the exact
-manifest/IDs/counts still match, run one explicit `civic-import-gukgam-reviewed-claim-batch`
-with the exact expected manifest hash and `--commit`. Do not expand, substitute or auto-select
-candidates.
+First perform only a read-only staging aggregate verification, without changing the API/DB security
+boundary or using another remote-control route. Require Organizations `347`, Claims `5478`,
+ClaimEvidence `5478`, Gukgam observations `57`, Gukgam source runs `14`, public targets `12` and
+committee count `1`. If those values and the two new public Claim/Evidence/provenance pairs remain
+exact, treat the fifth batch as fully post-commit verified. Then, in a separate dry-run-only slice,
+read current exact-one unpublished reviewed occurrences, manually assemble only the next two in
+canonical reviewed-schedule order, run the unchanged no-write preflight contract, and do not
+commit that next manifest in the same slice.
