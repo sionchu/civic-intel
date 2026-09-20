@@ -24,7 +24,10 @@ from packages.rendering.gukgam_organization_binding_review import (
     build_gukgam_organization_binding_preflight,
     build_gukgam_organization_binding_review,
 )
-from packages.rendering.gukgam_schedule_review import load_current_gukgam_schedule_review
+from packages.rendering.gukgam_schedule_review import (
+    GukgamScheduleReviewReport,
+    load_current_gukgam_schedule_review,
+)
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -637,7 +640,7 @@ def create_app(
 
     if enable_review_surface:
 
-        def current_gukgam_schedule_review():
+        def current_gukgam_schedule_review() -> GukgamScheduleReviewReport:
             return load_current_gukgam_schedule_review(target)
 
         @app.get("/admin/gukgam/2026/schedule")
