@@ -334,10 +334,31 @@ Staging must stay noindex.
 - The temporary Railway SSH tunnel and registered public key used for the staging measurement were
   closed/removed afterward.
 
+## Current checkpoint — reviewed Organization binding preflight v0 (2026-09-20)
+
+- Added gated `GET /admin/gukgam/2026/organization-binding-preflight`. It requires an exact
+  source-occurrence `review_key` and an operator-supplied existing current Organization ID.
+- The preflight re-runs the current exact-name candidate report, requires exactly one candidate,
+  requires the supplied ID to match it, re-checks current Organization state and uniquely recovers
+  the exact committee-plan provenance. It returns only a `DRY_RUN` receipt with
+  `binding_committed=false` and `claim_publication=false`.
+- Wrong Organization IDs, missing review keys and occurrences without exactly one exact-name
+  candidate fail closed. The default public API still exposes none of these admin routes.
+- Targeted verification passed Ruff, mypy and 34 Gukgam review/packet/import tests. Full local
+  verification then passed: Ruff, mypy, `454 passed / 1 skipped` pytest, Golden quality, Web
+  lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Owner-local execution against real staging selected one live exact-name candidate occurrence and
+  passed the preflight. A random wrong Organization ID returned `422 INVALID_INPUT`.
+- Staging counts before/after were identical: People `299`, Organizations `347`, Claims
+  `5466`, ClaimEvidence `5466`, Gukgam observations `57`, Gukgam source runs `14`.
+  The check therefore performed no Organization, Claim/Evidence or source-run write.
+- The SSH tunnel used for this read-only proof was closed afterward. No public DB domain was
+  created.
+
 ## Next concrete action
 
-Define the smallest explicit reviewed-binding decision contract for one source occurrence plus one
-existing canonical Organization. It must require an operator-supplied Organization ID and exact
-source target, verify the current candidate/provenance chain, default to no-write, and still create
-no Claim/Evidence until a separate publication slice is approved. Do not bulk-approve the 103 exact
-name overlaps merely because their labels match.
+Reuse the existing ALIO reviewed-binding workflow pattern instead of adding a crosswalk model:
+design one source-specific Gukgam operator command that accepts an existing Organization ID plus one
+reviewed `review_key`, runs this preflight by default, and requires a separate explicit commit flag
+before creating any Organization-scoped Claim/Evidence. Do not bulk-commit the 103 exact-name
+candidates and do not change public Gukgam rendering in that same slice.

@@ -21,6 +21,8 @@ from packages.rendering.governance_ontology import (
     build_person_governance_ontology,
 )
 from packages.rendering.gukgam_organization_binding_review import (
+    GukgamOrganizationBindingPreflightError,
+    build_gukgam_organization_binding_preflight,
     build_gukgam_organization_binding_review,
 )
 from packages.rendering.gukgam_schedule_review import (
@@ -697,6 +699,25 @@ def create_app(
                 current_gukgam_schedule_review(),
                 target.organizations(current_only=True),
             ).to_dict()
+
+        @app.get("/admin/gukgam/2026/organization-binding-preflight")
+        def gukgam_2026_organization_binding_preflight(
+            review_key: str,
+            organization_id: UUID,
+        ) -> dict:
+            try:
+                return build_gukgam_organization_binding_preflight(
+                    current_gukgam_schedule_review(),
+                    target.organizations(current_only=True),
+                    review_key=review_key,
+                    organization_id=organization_id,
+                ).to_dict()
+            except GukgamOrganizationBindingPreflightError as exc:
+                raise PublicApiError(
+                    422,
+                    "INVALID_INPUT",
+                    "The requested Gukgam binding preflight is invalid.",
+                ) from exc
 
         @app.get("/admin/review")
         def review_report() -> dict:

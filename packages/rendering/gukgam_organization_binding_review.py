@@ -6,7 +6,10 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from packages.domain.contracts import Organization
-from packages.rendering.gukgam_schedule_review import GukgamScheduleReviewReport
+from packages.rendering.gukgam_schedule_review import (
+    GukgamScheduleReviewReport,
+    GukgamScheduleReviewSource,
+)
 
 GUKGAM_ORGANIZATION_BINDING_REVIEW_SEMANTICS = (
     "REVIEW_ONLY_EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY"
@@ -139,4 +142,114 @@ def build_gukgam_organization_binding_review(
     return GukgamOrganizationBindingReviewReport(
         organization_universe_count=len(current),
         items=tuple(items),
+    )
+
+
+GUKGAM_ORGANIZATION_BINDING_PREFLIGHT_SEMANTICS = (
+    "REVIEW_ONLY_OPERATOR_SUPPLIED_ORGANIZATION_BINDING_PREFLIGHT"
+)
+
+
+class GukgamOrganizationBindingPreflightError(ValueError):
+    pass
+
+
+@dataclass(frozen=True)
+class GukgamOrganizationBindingPreflight:
+    review_key: str
+    committee_name: str
+    audit_date: str
+    provider_record_key: str
+    observation_id: UUID
+    audited_target: str
+    organization: OrganizationBindingCandidate
+    source: GukgamScheduleReviewSource
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "status": "DRY_RUN",
+            "semantics": GUKGAM_ORGANIZATION_BINDING_PREFLIGHT_SEMANTICS,
+            "candidate_relationship": "EXACT_CANONICAL_NAME_OVERLAP_REVERIFIED",
+            "binding_committed": False,
+            "claim_publication": False,
+            "review_key": self.review_key,
+            "occurrence": {
+                "committee_name": self.committee_name,
+                "audit_date": self.audit_date,
+                "provider_record_key": self.provider_record_key,
+                "observation_id": str(self.observation_id),
+                "audited_target": self.audited_target,
+            },
+            "organization": self.organization.to_dict(),
+            "provenance": self.source.to_dict(),
+            "limitations": [
+                "This receipt validates one current review candidate and performs no binding write.",
+                "Exact canonical-name equality is necessary for this preflight but is not a public fact.",
+                "Claim and ClaimEvidence publication require a separate explicitly approved slice.",
+            ],
+        }
+
+
+def build_gukgam_organization_binding_preflight(
+    schedule: GukgamScheduleReviewReport,
+    organizations: Sequence[Organization],
+    *,
+    review_key: str,
+    organization_id: UUID,
+) -> GukgamOrganizationBindingPreflight:
+    if not review_key.strip():
+        raise GukgamOrganizationBindingPreflightError("review_key must be non-empty")
+
+    report = build_gukgam_organization_binding_review(schedule, organizations)
+    matches = [item for item in report.items if item.review_key == review_key]
+    if len(matches) != 1:
+        raise GukgamOrganizationBindingPreflightError(
+            "review_key does not identify exactly one current audited-target occurrence"
+        )
+    item = matches[0]
+    if item.match_class != EXACT_ONE or len(item.candidates) != 1:
+        raise GukgamOrganizationBindingPreflightError(
+            "review occurrence does not have exactly one current exact-name candidate"
+        )
+    candidate = item.candidates[0]
+    if candidate.organization_id != organization_id:
+        raise GukgamOrganizationBindingPreflightError(
+            "operator-supplied Organization is not the current exact-name candidate"
+        )
+
+    current_organizations = {
+        organization.id: organization
+        for organization in organizations
+        if organization.superseded_at is None
+    }
+    organization = current_organizations.get(organization_id)
+    if organization is None or organization.name != candidate.name:
+        raise GukgamOrganizationBindingPreflightError(
+            "operator-supplied Organization is not current"
+        )
+
+    sources = []
+    for committee in schedule.committees:
+        if committee.committee_name != item.committee_name:
+            continue
+        for row in committee.rows:
+            if (
+                row.observation_id == item.observation_id
+                and row.provider_record_key == item.provider_record_key
+            ):
+                sources.append(committee.source)
+    if len(sources) != 1:
+        raise GukgamOrganizationBindingPreflightError(
+            "review occurrence provenance is not uniquely recoverable"
+        )
+
+    return GukgamOrganizationBindingPreflight(
+        review_key=item.review_key,
+        committee_name=item.committee_name,
+        audit_date=item.audit_date,
+        provider_record_key=item.provider_record_key,
+        observation_id=item.observation_id,
+        audited_target=item.audited_target,
+        organization=candidate,
+        source=sources[0],
     )
