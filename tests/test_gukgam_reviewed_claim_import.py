@@ -15,7 +15,10 @@ from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_pla
 from packages.domain.db import FeederObservationRow, OrganizationRow
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
-from packages.rendering.gukgam_organization_binding_review import gukgam_review_key
+from packages.rendering.gukgam_organization_binding_review import (
+    gukgam_review_key,
+    parse_gukgam_review_key,
+)
 from packages.rendering.gukgam_organization_claim import (
     GUKGAM_AUDIT_TARGET_PREDICATE,
     GUKGAM_PUBLIC_TARGET_COVERAGE,
@@ -29,6 +32,14 @@ from packages.verification.gukgam_reviewed_plan_import import (
 from workers.gukgam_reviewed_claim_import import (
     main,
     prepare_reviewed_gukgam_claim_import,
+)
+from workers.gukgam_reviewed_claim_batch import (
+    GUKGAM_REVIEWED_CLAIM_BATCH_SCHEMA,
+    GukgamReviewedClaimBatchError,
+    batch_receipt,
+    main as batch_main,
+    parse_gukgam_reviewed_claim_batch_manifest,
+    prepare_gukgam_reviewed_claim_batch,
 )
 
 FIXTURE = Path("tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json")
@@ -399,3 +410,161 @@ def test_public_gukgam_target_and_organization_detail_share_claim_evidence_contr
         for evidence in organization_claim["evidence"]
         if evidence["feeder_observation_id"] is not None
     }
+
+
+def reviewed_batch_manifest(
+    review_key: str,
+    first_organization_id: UUID,
+    second_organization_id: UUID,
+) -> dict:
+    provider_record_key, _ = parse_gukgam_review_key(review_key)
+    return {
+        "schema": GUKGAM_REVIEWED_CLAIM_BATCH_SCHEMA,
+        "items": [
+            {
+                "review_key": gukgam_review_key(provider_record_key, 2),
+                "organization_id": str(second_organization_id),
+            },
+            {
+                "review_key": review_key,
+                "organization_id": str(first_organization_id),
+            },
+        ],
+    }
+
+
+def test_reviewed_gukgam_batch_manifest_dry_run_is_deterministic_and_writes_nothing(
+    tmp_path: Path,
+) -> None:
+    repository, _ = migrated_repository(tmp_path / "batch-dry-run.db")
+    raw = packet_payload()
+    review_key = commit_packet(repository, raw)
+    first_organization_id = insert_organization(
+        repository,
+        raw["schedule"][0]["audited_targets"][0],
+    )
+    second_organization_id = insert_organization(
+        repository,
+        raw["schedule"][0]["audited_targets"][1],
+    )
+    before_claims = len(repository.claims())
+
+    raw_manifest = reviewed_batch_manifest(
+        review_key,
+        first_organization_id,
+        second_organization_id,
+    )
+    manifest = parse_gukgam_reviewed_claim_batch_manifest(raw_manifest)
+    prepared = prepare_gukgam_reviewed_claim_batch(repository, manifest)
+    receipt = batch_receipt(prepared)
+
+    reversed_manifest = {
+        "schema": GUKGAM_REVIEWED_CLAIM_BATCH_SCHEMA,
+        "items": list(reversed(raw_manifest["items"])),
+    }
+    reparsed = parse_gukgam_reviewed_claim_batch_manifest(reversed_manifest)
+    reprepare = prepare_gukgam_reviewed_claim_batch(repository, reparsed)
+    rereceipt = batch_receipt(reprepare)
+
+    assert manifest.digest == reparsed.digest
+    assert receipt == rereceipt
+    assert receipt["status"] == "DRY_RUN"
+    assert receipt["item_count"] == 2
+    assert receipt["binding_committed"] is False
+    assert receipt["claim_publication"] is False
+    assert receipt["network_fetch"] is False
+    assert [item["review_key"] for item in receipt["items"]] == sorted(
+        item["review_key"] for item in receipt["items"]
+    )
+    assert all(item["claim_persisted"] is False for item in receipt["items"])
+    assert len(repository.claims()) == before_claims
+
+
+def test_reviewed_gukgam_batch_manifest_rejects_duplicate_review_key(
+    tmp_path: Path,
+) -> None:
+    repository, _ = migrated_repository(tmp_path / "batch-duplicate.db")
+    raw = packet_payload()
+    review_key = commit_packet(repository, raw)
+    organization_id = insert_organization(
+        repository,
+        raw["schedule"][0]["audited_targets"][0],
+    )
+    duplicate = {
+        "schema": GUKGAM_REVIEWED_CLAIM_BATCH_SCHEMA,
+        "items": [
+            {
+                "review_key": review_key,
+                "organization_id": str(organization_id),
+            },
+            {
+                "review_key": review_key,
+                "organization_id": str(organization_id),
+            },
+        ],
+    }
+
+    with pytest.raises(GukgamReviewedClaimBatchError, match="duplicate review_key"):
+        parse_gukgam_reviewed_claim_batch_manifest(duplicate)
+
+
+def test_reviewed_gukgam_batch_preflight_rejects_already_published_occurrence(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "batch-published.db")
+    raw = packet_payload()
+    review_key = commit_packet(repository, raw)
+    first_organization_id = insert_organization(
+        repository,
+        raw["schedule"][0]["audited_targets"][0],
+    )
+    second_organization_id = insert_organization(
+        repository,
+        raw["schedule"][0]["audited_targets"][1],
+    )
+    assert main(
+        [
+            "--database-url",
+            database_url,
+            "--organization-id",
+            str(first_organization_id),
+            "--review-key",
+            review_key,
+            "--commit",
+        ]
+    ) == 0
+    capsys.readouterr()
+
+    manifest = parse_gukgam_reviewed_claim_batch_manifest(
+        reviewed_batch_manifest(
+            review_key,
+            first_organization_id,
+            second_organization_id,
+        )
+    )
+    with pytest.raises(GukgamReviewedClaimBatchError, match="already published"):
+        prepare_gukgam_reviewed_claim_batch(repository, manifest)
+
+
+def test_reviewed_gukgam_batch_cli_has_no_commit_path(
+    tmp_path: Path,
+) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": GUKGAM_REVIEWED_CLAIM_BATCH_SCHEMA,
+                "items": [
+                    {
+                        "review_key": "placeholder",
+                        "organization_id": str(uuid4()),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit):
+        batch_main(["--manifest", str(manifest_path), "--commit"])
