@@ -118,19 +118,24 @@ Context = tuple[FeederObservation, SourceSnapshot, Source, SourcePolicy]
 
 
 class GukgamScheduleReviewRepository(Protocol):
-    def source_checkpoints(self, feeder: str | None = None) -> list[SourceCheckpoint]: ...
+    def source_checkpoints(
+        self, feeder: str | None = None
+    ) -> list[SourceCheckpoint]:
+        ...
 
     def feeder_observations(
         self,
         feeder: str,
         scope_key: str,
         provider_record_key: str | None = None,
-    ) -> list[FeederObservation]: ...
+    ) -> list[FeederObservation]:
+        ...
 
     def feeder_observation_contexts(
         self,
         observation_ids: Iterable[UUID],
-    ) -> dict[UUID, Context]: ...
+    ) -> dict[UUID, Context]:
+        ...
 
 
 _NORMALIZED_FIELDS = {
