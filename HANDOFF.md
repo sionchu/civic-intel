@@ -2508,10 +2508,42 @@ start/end date semantics.
 - The remote temporary manifest and this slice's temporary Railway SSH key/local key files were
   deleted. The unrelated pre-existing `dev.new` key was left untouched.
 
+## Current checkpoint — third reviewed Gukgam manifest dry-run (2026-09-20)
+
+- After the second reviewed batch commit, read-only discovery found `104` current exact-one
+  audited-target occurrences without a published Gukgam Claim.
+- The next explicit manifest contains exactly two 2026-10-15
+  과학기술정보방송통신위원회 occurrences in canonical reviewed-schedule order:
+  한국방송통신전파진흥원
+  (`3078699:7938f3a874d5441892124093d19da1df:2:schedule:4:audited-target:4`,
+  Organization `940fc166-af5e-50a2-a5de-ba32abfb67c9`) and 한국지능정보사회진흥원
+  (`...:schedule:4:audited-target:5`, Organization
+  `463e5ec7-6743-5b19-b71a-5407bc0f6572`).
+- The source manifest was supplied in reversed item order; the installed no-write preflight
+  canonicalized it to target:4 then target:5 and returned SHA-256
+  `b012c32c931dd97e5860436b6c58f245f8171abbcd5f2767a0a7ebeff12ea69e`.
+- Both items returned `DRY_RUN`, `claim_persisted=false`, `claim_created=false`,
+  `binding_committed=false`, `organization_created=false` and `network_fetch=false`.
+  Top-level `write_performed=false`, `batch_commit_available=false` and
+  `automatic_candidate_enumeration=false` remained explicit.
+- Deterministic prospective Claim IDs are
+  `a5369920-f37f-5f74-a7aa-44fec4c2ed07` and
+  `44ca07f2-8b06-589d-bdc0-591a0c7c2ff2`; prospective ClaimEvidence IDs are
+  `df01d639-b32a-5f8e-97d5-3e131ae1bdf4` and
+  `429f693a-ca6c-5f2e-a4de-38b68326d7e5`.
+- An unchanged second preflight returned the identical manifest hash, canonical order and
+  deterministic Claim/Evidence IDs.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5472`,
+  ClaimEvidence `5472`, Gukgam observations `57`, Gukgam source runs `14` and public targets
+  `6`. No write occurred.
+- The remote manifest, temporary Railway SSH key and local manifest/key files for this slice were
+  deleted; the unrelated pre-existing `dev.new` key was left untouched.
+
 ## Next concrete action
 
-Prepare the **next reviewed Gukgam manifest as a no-write dry-run only** from the current remaining
-unpublished exact-one occurrences. Manually confirm each explicit `(review_key, organization_id)`
-pair, require deterministic canonical ordering/hash and unchanged staging counts/public-target
-coverage, then delete temporary execution artifacts. Do not run another batch `--commit` in that
-same slice and do not introduce automatic candidate selection.
+In a separate execution slice only, re-run this exact two-item manifest against current staging,
+require manifest SHA-256
+`b012c32c931dd97e5860436b6c58f245f8171abbcd5f2767a0a7ebeff12ea69e`, and proceed to
+`--commit` only if both items remain fully unpublished and every current preflight still passes.
+Then require an unchanged `REUSED` retry and verify counts plus Claim-backed API/Web views. Do not
+add, substitute or auto-select any other candidate in that commit slice.
