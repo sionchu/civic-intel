@@ -28,6 +28,7 @@ civic-stage-public-institutions = "workers.public_institutions:main"
 civic-stage-alio-money = "workers.alio_business_expense:main"
 civic-import-alio-reviewed-claims = "workers.alio_reviewed_claim_import:main"
 civic-import-gukgam-reviewed-claim = "workers.gukgam_reviewed_claim_import:main"
+civic-preflight-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch:main"
 civic-sync = "workers.sync:main"
 
 [build-system]
