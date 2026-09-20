@@ -408,10 +408,29 @@ Staging must stay noindex.
 - The temporary SSH key used for this private-DB execution was removed, and its local private/public
   key files plus temporary execution scripts were deleted. No bulk publication was performed.
 
+## Current checkpoint — public Claim-backed Gukgam target projection v0 (2026-09-20)
+
+- Added read-only `GET /gukgam/2026/targets` backed exclusively by current published
+  `LISTED_AS_GUKGAM_AUDIT_TARGET` Organization Claims.
+- The projection semantics are `PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1` with coverage
+  `BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY`. Absence is explicitly not evidence of no audit.
+- Each item retains canonical Organization identity plus Claim, ClaimEvidence, Source,
+  SourceSnapshot and FeederObservation IDs. Review keys, candidate match classes, scores, ranks,
+  raw normalized payloads and review-only binding state are not exposed.
+- There is no fallback from reviewed observations or exact-name binding candidates. Regression
+  coverage proves that multiple reviewed audited-target strings with only one committed Claim
+  produce exactly one public target item.
+- Targeted verification passed Ruff, mypy across 76 Python source files and 40 Gukgam
+  review/Claim/import tests. Full local verification passed Ruff, mypy,
+  `460 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, 22 Web tests,
+  production build and `git diff --check`.
+- This slice changes the API contract only. The existing Web `/gukgam/2026` page is unchanged,
+  and no additional Organization binding or Claim publication was performed.
+
 ## Next concrete action
 
-Build the smallest read-only **public Claim-backed Gukgam target projection** over current published
-`LISTED_AS_GUKGAM_AUDIT_TARGET` Claims. It must retain exact Claim/Evidence/Source provenance,
-state its bounded/incomplete coverage explicitly, and return no target from review observations or
-name-overlap candidates when a published Claim is absent. Keep the Web Gukgam page unchanged in
-this slice and do not bulk-bind or bulk-publish the remaining candidates.
+After CI passes and the projection merges, deploy the API service to staging at that exact master
+revision and smoke `GET /gukgam/2026/targets` through the private service boundary. Require the
+response to contain only the one published 한국원자력안전기술원 target with its exact
+Claim/Evidence/Source provenance and bounded-incomplete coverage markers. Do not change the Web
+Gukgam page or publish additional target Claims in that deployment slice.
