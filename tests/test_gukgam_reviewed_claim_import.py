@@ -335,3 +335,67 @@ def test_public_gukgam_target_projection_uses_published_claims_only(
         "rank",
     ):
         assert forbidden not in serialized
+
+
+def test_public_gukgam_target_and_organization_detail_share_claim_evidence_contract(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "cross-view.db")
+    raw = packet_payload()
+    review_key = commit_packet(repository, raw)
+    target_name = raw["schedule"][0]["audited_targets"][0]
+    organization_id = insert_organization(repository, target_name)
+
+    assert main(
+        [
+            "--database-url",
+            database_url,
+            "--organization-id",
+            str(organization_id),
+            "--review-key",
+            review_key,
+            "--commit",
+        ]
+    ) == 0
+    capsys.readouterr()
+
+    with TestClient(create_app(repository)) as client:
+        targets_response = client.get("/gukgam/2026/targets")
+        organization_response = client.get(f"/organizations/{organization_id}")
+
+    assert targets_response.status_code == 200
+    assert organization_response.status_code == 200
+
+    targets_payload = targets_response.json()
+    organization_payload = organization_response.json()
+    assert targets_payload["target_count"] == 1
+    target_item = targets_payload["items"][0]
+
+    gukgam_claims = [
+        claim
+        for claim in organization_payload["claims"]
+        if claim["predicate"] == GUKGAM_AUDIT_TARGET_PREDICATE
+    ]
+    assert len(gukgam_claims) == 1
+    organization_claim = gukgam_claims[0]
+
+    assert target_item["organization"] == {
+        "id": str(organization_id),
+        "name": target_name,
+    }
+    assert target_item["claim_id"] == organization_claim["id"]
+    assert set(target_item["evidence_ids"]) == {
+        evidence["id"] for evidence in organization_claim["evidence"]
+    }
+    assert set(target_item["source_ids"]) == set(organization_claim["source_ids"])
+    assert set(target_item["snapshot_ids"]) == {
+        evidence["snapshot_id"]
+        for evidence in organization_claim["evidence"]
+        if evidence["snapshot_id"] is not None
+    }
+    assert set(target_item["observation_ids"]) == {
+        evidence["feeder_observation_id"]
+        for evidence in organization_claim["evidence"]
+        if evidence["feeder_observation_id"] is not None
+    }
