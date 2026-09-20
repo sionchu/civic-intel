@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import GukgamSearch from "../../components/gukgam-search";
 import ReadState from "../../components/read-state";
-import { getOrganizations, getPeople } from "../../data";
+import { getGukgamTargets, getOrganizations, getPeople } from "../../data";
 import { buildPageMetadata } from "../../site-metadata";
 
 export const dynamic = "force-dynamic";
@@ -22,9 +22,10 @@ export default async function Gukgam2026Page({
   const params = await searchParams;
   const initialQuery = typeof params.q === "string" ? params.q.slice(0, 80) : "";
 
-  const [peopleResult, organizationsResult] = await Promise.all([
+  const [peopleResult, organizationsResult, targetsResult] = await Promise.all([
     getPeople(),
     getOrganizations(),
+    getGukgamTargets(),
   ]);
 
   const peopleCount = peopleResult.state === "success" ? peopleResult.data.length : null;
@@ -72,6 +73,78 @@ export default async function Gukgam2026Page({
 
       {peopleResult.state === "error" && <ReadState error={peopleResult.error} />}
       {organizationsResult.state === "error" && <ReadState error={organizationsResult.error} />}
+
+      <section className="gukgam-entry-section" aria-labelledby="gukgam-published-targets-title">
+        <div className="section-intro">
+          <div>
+            <span className="eyebrow">Published / Claim-backed</span>
+            <h2 id="gukgam-published-targets-title">공개된 피감대상</h2>
+          </div>
+          <p>
+            공식 계획서의 피감대상 가운데 canonical Organization에 검토 연결되고
+            published Claim과 Evidence까지 갖춘 일정만 표시합니다.
+          </p>
+        </div>
+
+        {targetsResult.state === "error" ? (
+          <ReadState error={targetsResult.error} />
+        ) : targetsResult.data.items.length === 0 ? (
+          <div className="empty-state" role="status">
+            <span className="empty-state-mark" aria-hidden="true">∅</span>
+            <div>
+              <strong>현재 공개된 피감대상 Claim이 없습니다.</strong>
+              <p>
+                감사대상이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 아직 없다는 뜻입니다.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="organization-claim-list">
+            {targetsResult.data.items.map((item) => (
+              <article className="claim organization-claim-card" key={item.claim_id}>
+                <div className="claim-heading">
+                  <span className="claim-kind">GUKGAM AUDIT PLAN</span>
+                  <span className="status FACT">FACT</span>
+                </div>
+                <div className="organization-claim-meta">
+                  <span>{item.committee_name}</span>
+                  <span>감사일정 {item.audit_date}</span>
+                  <span>계획서 공개 {item.source_published_date}</span>
+                </div>
+                <h3 className="claim-title">{item.organization.name}</h3>
+                <p className="resolution">
+                  공식 계획서상 피감대상 · {item.section}
+                  {item.time_text ? ` · ${item.time_text}` : ""}
+                  {item.venue ? ` · ${item.venue}` : ""}
+                </p>
+                <Link
+                  className="inline-action"
+                  href={`/organizations/${item.organization.id}#claims`}
+                >
+                  기관 Claim / Evidence 보기 <span aria-hidden="true">↗</span>
+                </Link>
+                <details className="audit-details">
+                  <summary>Claim / Evidence audit trace</summary>
+                  <small>
+                    Claim {item.claim_id}<br />
+                    Evidence {item.evidence_ids.join(", ")}<br />
+                    Source {item.source_ids.join(", ")}<br />
+                    SourceSnapshot {item.snapshot_ids.join(", ")}<br />
+                    FeederObservation {item.observation_ids.join(", ")}
+                  </small>
+                </details>
+              </article>
+            ))}
+          </div>
+        )}
+
+        {targetsResult.state === "success" && (
+          <p className="gukgam-search-share-note">
+            현재 공개 범위 {targetsResult.data.target_count}건 · published Claim only ·
+            전체 감사대상 목록이 아닙니다. 미공개·미연결 대상은 추정해 채우지 않습니다.
+          </p>
+        )}
+      </section>
 
       <GukgamSearch
         initialQuery={initialQuery}

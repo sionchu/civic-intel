@@ -1,6 +1,7 @@
 import type {
   ApiErrorCode,
   ApiResult,
+  GukgamTargetProjection,
   MoneyProjection,
   OntologyGraph,
   Organization,
@@ -72,6 +73,9 @@ export function getOrganizations(): Promise<ApiResult<OrganizationSummary[]>> {
   return getJson("/organizations", {
     revalidateSeconds: DIRECTORY_REVALIDATE_SECONDS,
   });
+}
+export function getGukgamTargets(): Promise<ApiResult<GukgamTargetProjection>> {
+  return getJson("/gukgam/2026/targets");
 }
 export function getOrganizationMoney(
   id: string,

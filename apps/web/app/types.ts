@@ -74,6 +74,35 @@ export type OrganizationSummary = {
   evidence_count: number;
 };
 
+export type GukgamTargetProjectionItem = {
+  organization: {
+    id: string;
+    name: string;
+  };
+  committee_name: string;
+  audit_date: string;
+  time_text: string | null;
+  venue: string | null;
+  section: string;
+  page_number: number;
+  source_published_date: string;
+  claim_id: string;
+  evidence_ids: string[];
+  source_ids: string[];
+  snapshot_ids: string[];
+  observation_ids: string[];
+};
+
+export type GukgamTargetProjection = {
+  semantics: "PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1";
+  coverage: "BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY";
+  year: number;
+  target_count: number;
+  committee_count: number;
+  items: GukgamTargetProjectionItem[];
+  limitations: string[];
+};
+
 export type MoneyInput = {
   fiscal_year: number;
   amount_thousand_krw: number;
