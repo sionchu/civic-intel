@@ -2715,13 +2715,29 @@ start/end date semantics.
   verification artifact were deleted. The pre-existing `dev.new` and
   `civic-intel-gukgam-commit-b012-20260920` keys were left untouched.
 
+## Current checkpoint — fifth reviewed Gukgam post-commit aggregate verification (2026-09-21)
+
+- The previously blocked internal aggregate re-read was completed later without broadening the
+  staging security boundary. Desktop Commander remained the control path and Railway CLI's
+  official `connect postgres --ssh --tunnel-only` opened a private localhost tunnel; no public
+  Postgres/API domain was created.
+- The tunnel reused the existing Railway SSH configuration. A temporary local PostgreSQL driver
+  was installed only in the repo virtual environment for the read-only query and uninstalled
+  immediately after verification; no repository dependency or canonical artifact changed.
+- The PostgreSQL session was forced read-only and independently returned Organizations `347`,
+  Claims `5478`, ClaimEvidence `5478`, Gukgam observations `57` and Gukgam source runs `14`.
+- A fresh live staging Web read independently confirmed public Claim-backed Gukgam scope `12`,
+  committee count `1`, both new Claim/Evidence IDs and their exact Source/Snapshot/Observation
+  provenance. `review_key` and `match_class` remained absent from public HTML.
+- The private tunnel and all temporary verification files were closed/deleted after use. No
+  staging write occurred in this verification slice.
+- The fifth reviewed batch is now fully post-commit verified. Do not replay manifest SHA-256
+  `e154f49c3575dd1a23f95489b3c7087467fd18d33eecd8ff010c7556c3e7e899`.
+
 ## Next concrete action
 
-First perform only a read-only staging aggregate verification, without changing the API/DB security
-boundary or using another remote-control route. Require Organizations `347`, Claims `5478`,
-ClaimEvidence `5478`, Gukgam observations `57`, Gukgam source runs `14`, public targets `12` and
-committee count `1`. If those values and the two new public Claim/Evidence/provenance pairs remain
-exact, treat the fifth batch as fully post-commit verified. Then, in a separate dry-run-only slice,
-read current exact-one unpublished reviewed occurrences, manually assemble only the next two in
-canonical reviewed-schedule order, run the unchanged no-write preflight contract, and do not
-commit that next manifest in the same slice.
+Run a separate dry-run-only slice for the next reviewed manifest. Re-read current staging and
+current exact-one unpublished reviewed occurrences, manually select only the next two in canonical
+reviewed-schedule order, assemble an explicit manifest, and run the unchanged no-write preflight.
+Do not auto-enumerate into the manifest, do not substitute candidates, do not create Organizations,
+and do not execute batch `--commit` in that same slice.
