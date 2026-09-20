@@ -453,10 +453,39 @@ Staging must stay noindex.
   the smoke, and both local private/public key files were deleted. The pre-existing unrelated
   `dev.new` key was left untouched.
 
+## Current checkpoint — staging Gukgam published-target Web slice (2026-09-20)
+
+- PR #94 merged as `3f868fea873a3e4ef5d126478e9b6bf1fb27e4ba` after GitHub Verify
+  `35486918538` passed, matching local full verification: Ruff, mypy, `460 passed / 1 skipped`
+  pytest, Golden quality, Web lint/typecheck, `23 / 23` Web tests, production standalone build
+  and `git diff --check`.
+- The existing `/gukgam/2026` page now reads only `GET /gukgam/2026/targets` for its
+  "공개된 피감대상" section. It reuses existing Claim-card and audit-detail grammar; no new CSS,
+  ranking, review candidate, name-overlap fallback, client-side publication state or identity logic
+  was added.
+- Each rendered target links to its canonical Organization `#claims` section and exposes
+  Claim/Evidence/Source/SourceSnapshot/FeederObservation identifiers behind an audit-details
+  disclosure. The UI always states that the current set is not the complete audit-target list and
+  does not infer absent targets.
+- A clean owner-local working tree was reset to exact merged `master` `3f868fe...` and uploaded
+  to the existing staging Web service. Deployment
+  `28a7b423-7240-4a7e-8c2f-af7fa6d1629c` reached `SUCCESS`; the existing staging domain
+  remained `web-staging-efe2.up.railway.app`.
+- Live staging HTTP smoke against `/gukgam/2026` returned `200` and confirmed the published
+  target heading, 한국원자력안전기술원, 과학기술정보방송통신위원회, `2026-10-13`, the canonical
+  Organization `#claims` link, Claim
+  `7c4b2e8d-b9eb-5f4c-87ba-fb3c561ecb83`, and ClaimEvidence
+  `e5f2a33b-59da-5e1e-90d9-384f14fff689`. The response did not expose `review_key` or
+  `match_class`.
+- The API service remained on deployment `151f9078-0088-428f-a384-eab7fd8bde47`; no database
+  write, Claim publication, Organization binding, API domain, environment variable or schema change
+  occurred in this Web deployment slice.
+
 ## Next concrete action
 
-Add the smallest Web integration on the existing `/gukgam/2026` page that consumes only
-`GET /gukgam/2026/targets`. Show the published target as a bounded evidence-backed plan listing,
-include explicit incomplete-coverage language and an Evidence/Organization navigation path, and
-keep search results and review/name-overlap candidates separate. Do not infer missing targets,
-rank organizations, or publish additional Claims in the UI slice.
+Close the single-target proof loop before expanding coverage: add a read-only regression/smoke
+contract that the public Gukgam Web target section and the Organization detail Claim are two views
+of the same published Claim/Evidence IDs, then use that contract when reviewing the next
+Organization-binding commit. Do not bulk-publish the remaining exact-name candidates; advance
+coverage one reviewed occurrence at a time until a separate batch-review contract is explicitly
+designed and verified.
