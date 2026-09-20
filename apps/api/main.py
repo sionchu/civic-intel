@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
+from packages.domain.contracts import ClaimEvidence
 from packages.domain.enums import IdentityStatus
 from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
 from packages.rendering.alio_organization_content import (
@@ -429,7 +430,7 @@ def create_app(
             item.id for item in current_organizations
         )
         gukgam_contexts = {}
-        all_evidence = []
+        all_evidence: list[ClaimEvidence] = []
         for organization_id, (claims, evidence_by_claim) in contexts.items():
             candidate_claims = tuple(
                 claim
