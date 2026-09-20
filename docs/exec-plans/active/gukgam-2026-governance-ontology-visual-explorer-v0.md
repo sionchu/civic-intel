@@ -375,7 +375,7 @@ Staging must stay noindex.
   the checkpoint `schedule_row_count` gate. A new regression proves an incomplete current-row
   universe fails closed before Claim preparation.
 - Initial targeted/local verification passed Ruff, mypy, 38 Gukgam tests and
-  `458 passed / 1 skipped` full pytest plus Golden/Web/build/diff gates. PR #90 final Verify
+  `458 passed / 1 skipped` full pytest plus Golden/Web/build/diff gates. PR #90 strengthened-code Verify
   `35484811916` passed the strengthened head with `459 passed / 1 skipped` and all canonical,
   Alembic, PostgreSQL, backup/restore, deployment-artifact and installed-entrypoint gates.
 - Owner-local execution against real staging selected one exact-name candidate and ran the new
