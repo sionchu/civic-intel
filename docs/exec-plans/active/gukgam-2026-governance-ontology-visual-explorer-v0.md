@@ -481,11 +481,40 @@ Staging must stay noindex.
   write, Claim publication, Organization binding, API domain, environment variable or schema change
   occurred in this Web deployment slice.
 
+## Current checkpoint — second reviewed Gukgam Claim commit (2026-09-20)
+
+- With the cross-view public Claim contract merged on `master`, staging review selected exactly one
+  additional exact-name candidate: 한국원자력통제기술원, Organization
+  `f3d71e88-c6d1-5eba-9ae7-5df04ff4e0c9`, review key
+  `3078699:7938f3a874d5441892124093d19da1df:2:schedule:3:audited-target:4`.
+- Read-only discovery showed 109 current exact-one occurrences without a published Gukgam Claim;
+  no automatic selection, scoring, ranking, fuzzy match or bulk approval was introduced.
+- Dry-run returned `DRY_RUN` with `claim_persisted=false`, `claim_created=false`,
+  `binding_committed=false`, `organization_created=false` and `network_fetch=false`.
+  Public target count remained `1`.
+- Pre-commit staging counts were Organizations `347`, Claims `5467`, Gukgam observations
+  `57`, Gukgam source runs `14`, public target count `1`.
+- One explicit `--commit` created Claim
+  `52fb5057-37f0-5b30-8645-415ac8131752` and ClaimEvidence
+  `a13ebec6-ef4f-5570-b549-e9f6c3fefede`. Immediate unchanged rerun returned `REUSED`.
+- Post-commit cross-view smoke passed: Organizations remained `347`, Claims became `5468`,
+  Gukgam observations remained `57`, Gukgam runs remained `14`, and public target count became
+  exactly `2`. The target API and Organization detail exposed the same Claim/Evidence IDs plus
+  Source `429d851c-3a6c-4756-8b3a-3ace5266d064`, SourceSnapshot
+  `78ceba04-d4ff-4b78-a41c-527de8a9b728` and FeederObservation
+  `d79afce8-2e4d-4d87-b6c6-2340b1136078`.
+- Live staging Web smoke returned `200` and rendered both 한국원자력안전기술원 and
+  한국원자력통제기술원, including the second Claim/Evidence IDs and the bounded-coverage message.
+  `review_key` and `match_class` remained absent from the public HTML.
+- The temporary SSH key used for this execution was removed from Railway and both local key files
+  were deleted. No other candidate was committed.
+
 ## Next concrete action
 
-Close the single-target proof loop before expanding coverage: add a read-only regression/smoke
-contract that the public Gukgam Web target section and the Organization detail Claim are two views
-of the same published Claim/Evidence IDs, then use that contract when reviewing the next
-Organization-binding commit. Do not bulk-publish the remaining exact-name candidates; advance
-coverage one reviewed occurrence at a time until a separate batch-review contract is explicitly
-designed and verified.
+Design and implement a **reviewed Gukgam batch manifest dry-run contract** only. The manifest must
+contain an explicit operator-supplied list of `(review_key, organization_id)` pairs, re-run the
+existing single-occurrence preflight for every item, reject duplicates/stale bindings/already
+published items by default, and produce a deterministic no-write receipt. Do not add automatic
+candidate enumeration, name-based auto-approval or a batch `--commit` path in the same slice.
+After this contract is verified, a separate slice may decide whether to reuse the canonical atomic
+Organization Claim batch persistence seam.
