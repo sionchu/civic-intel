@@ -2317,12 +2317,32 @@ start/end date semantics.
 - The temporary SSH key used for this execution was removed from Railway and both local key files
   were deleted. No other candidate was committed.
 
+## Current checkpoint — reviewed Gukgam batch manifest dry-run v0 (2026-09-20)
+
+- Added `civic-preflight-gukgam-reviewed-claim-batch` as a no-write operator preflight. The
+  command accepts one explicit JSON manifest and intentionally exposes no `--commit` option.
+- Manifest schema is `civic.gukgam.reviewed_claim_batch_manifest.v1`. Each item contains only
+  `review_key` and an operator-supplied existing `organization_id`; unknown fields, empty
+  manifests, invalid UUIDs and duplicate `review_key` values fail closed.
+- Manifest items are canonical-sorted before execution and receipt hashing, so the same explicit
+  item set produces the same SHA-256 and deterministic receipt regardless of input list order.
+- Every item reuses `prepare_reviewed_gukgam_claim_import()`, preserving the existing
+  current-schedule, exact-name Organization, source-policy, immutable observation and publication
+  validation seams. No candidate enumeration or name-based approval is added.
+- If any item is stale/wrong or already has the exact published Gukgam Claim, the whole manifest
+  dry-run fails. A successful receipt always reports `write_performed=false`,
+  `batch_commit_available=false`, `automatic_candidate_enumeration=false` and
+  `network_fetch=false`.
+- Targeted verification passed Ruff, mypy and `4 / 4` manifest tests, including deterministic
+  reversed-order receipts, zero-write behavior, duplicate rejection, wrong-binding rejection and
+  already-published rejection. Full local verification passed Ruff, mypy across 77 source files,
+  `465 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, `23 / 23` Web tests,
+  production standalone build and `git diff --check`.
+
 ## Next concrete action
 
-Design and implement a **reviewed Gukgam batch manifest dry-run contract** only. The manifest must
-contain an explicit operator-supplied list of `(review_key, organization_id)` pairs, re-run the
-existing single-occurrence preflight for every item, reject duplicates/stale bindings/already
-published items by default, and produce a deterministic no-write receipt. Do not add automatic
-candidate enumeration, name-based auto-approval or a batch `--commit` path in the same slice.
-After this contract is verified, a separate slice may decide whether to reuse the canonical atomic
-Organization Claim batch persistence seam.
+After CI passes and this contract merges, deploy the API service at the exact merged master revision
+and run one staging **two-item explicit manifest dry-run** using two still-unpublished reviewed
+occurrences. Require deterministic `DRY_RUN`, unchanged Claims/ClaimEvidence/public-target counts
+and no source-run or Organization writes. Do not add a batch `--commit` path or automatically
+enumerate candidate Organizations in that staging slice.
