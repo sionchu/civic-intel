@@ -2186,7 +2186,7 @@ start/end date semantics.
   schedule loader between the admin review surface and the Claim worker. The worker now fails
   closed when checkpoint `schedule_row_count` disagrees with current observations; a dedicated
   regression covers that incomplete-universe case.
-- PR #90 final Verify `35484811916` passed the strengthened head: canonical verification
+- PR #90 strengthened-code Verify `35484811916` passed the strengthened head: canonical verification
   (`459 passed / 1 skipped` pytest plus Ruff, mypy, Golden and Web gates), Alembic round-trip,
   PostgreSQL migration/load/API, backup/restore, deployment artifacts and installed entrypoint.
 - Real staging DRY_RUN passed on one exact-name candidate without `--commit`. Before/after
