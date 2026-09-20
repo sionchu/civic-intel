@@ -8,13 +8,19 @@ from uuid import UUID, uuid4
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 
+from apps.api.main import create_app
 from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_plan_packet
 from packages.domain.db import FeederObservationRow, OrganizationRow
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.rendering.gukgam_organization_binding_review import gukgam_review_key
-from packages.rendering.gukgam_organization_claim import GUKGAM_AUDIT_TARGET_PREDICATE
+from packages.rendering.gukgam_organization_claim import (
+    GUKGAM_AUDIT_TARGET_PREDICATE,
+    GUKGAM_PUBLIC_TARGET_COVERAGE,
+    GUKGAM_PUBLIC_TARGET_PROJECTION_SEMANTICS,
+)
 from packages.verification.gukgam_reviewed_plan_import import (
     GUKGAM_REVIEWED_PLAN_FEEDER,
     ReviewedGukgamArtifactProof,
@@ -264,3 +270,68 @@ def test_reviewed_gukgam_claim_rejects_incomplete_checkpoint_universe(
             organization_id=organization_id,
             review_key=review_key,
         )
+
+
+def test_public_gukgam_target_projection_uses_published_claims_only(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "public-projection.db")
+    raw = packet_payload()
+    review_key = commit_packet(repository, raw)
+    first_target = raw["schedule"][0]["audited_targets"][0]
+    second_target = raw["schedule"][0]["audited_targets"][1]
+    first_organization_id = insert_organization(repository, first_target)
+    insert_organization(repository, second_target)
+
+    assert main(
+        [
+            "--database-url",
+            database_url,
+            "--organization-id",
+            str(first_organization_id),
+            "--review-key",
+            review_key,
+            "--commit",
+        ]
+    ) == 0
+    capsys.readouterr()
+
+    with TestClient(create_app(repository)) as client:
+        response = client.get("/gukgam/2026/targets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["semantics"] == GUKGAM_PUBLIC_TARGET_PROJECTION_SEMANTICS
+    assert payload["coverage"] == GUKGAM_PUBLIC_TARGET_COVERAGE
+    assert payload["year"] == 2026
+    assert payload["target_count"] == 1
+    assert payload["committee_count"] == 1
+    assert len(payload["items"]) == 1
+
+    item = payload["items"][0]
+    assert item["organization"] == {
+        "id": str(first_organization_id),
+        "name": first_target,
+    }
+    assert item["committee_name"] == raw["source"]["committee_name"]
+    assert item["audit_date"] == raw["schedule"][0]["audit_date"]
+    assert item["source_published_date"] == raw["source"]["published_date"]
+    assert item["claim_id"]
+    assert len(item["evidence_ids"]) == 1
+    assert len(item["source_ids"]) == 1
+    assert len(item["snapshot_ids"]) == 1
+    assert len(item["observation_ids"]) == 1
+
+    serialized = json.dumps(payload, ensure_ascii=False).casefold()
+    assert second_target.casefold() not in serialized
+    for forbidden in (
+        "review_key",
+        "match_class",
+        "candidate_relationship",
+        "normalized",
+        "confidence",
+        "score",
+        "rank",
+    ):
+        assert forbidden not in serialized
