@@ -59,6 +59,32 @@ FeederObservation chain all pass the normal publication gate. Example semantics:
 This states what the institution disclosed. It does not state who spent the money, that the
 amount was wasteful or improper, or that the institution performed well or poorly.
 
+## Gukgam reviewed-plan application
+
+The reviewed 2026 National Assembly audit-plan lane reuses this same Organization Claim/Evidence
+contract without creating a Gukgam-specific Claim table or Organization crosswalk.
+
+A reviewed operator command may publish one Claim only after the caller supplies an existing
+current canonical Organization ID and one exact audited-target occurrence `review_key`. The
+source-specific preflight must still resolve that occurrence to exactly one current exact-name
+candidate and must recover the exact reviewed plan observation/snapshot/source provenance.
+
+The predicate is:
+
+`LISTED_AS_GUKGAM_AUDIT_TARGET`
+
+The Claim asserts only that the official plan lists the Organization as a target on the printed
+audit schedule. It does **not** assert that an audit occurred or completed, nor any wrongdoing,
+responsibility, performance judgment or outcome. The plan publication date anchors valid time;
+the planned audit date/time/venue are qualifiers.
+
+The operator command is dry-run by default. `--commit` may persist one deterministic
+Claim/Evidence pair through `SqlAlchemyRepository.import_organization_claim()`; it never creates
+or updates an Organization. The target-level `review_key` is retained as
+`qualifiers.provider_record_key`, while the original schedule-row key remains separately recorded.
+Exact retries may reuse only semantically identical stored Claim/Evidence. Multiple immutable
+observation versions, a changed Organization binding or conflicting stored semantics fail closed.
+
 ## Provenance and policy gate
 
 Every organization ClaimEvidence item follows:

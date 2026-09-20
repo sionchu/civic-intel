@@ -210,6 +210,37 @@ committee-plan source provenance for that occurrence. Its receipt is always `DRY
 candidate, multiple candidates, a wrong/superseded Organization ID, or non-unique provenance fails
 closed. The route remains internal-only and performs no persistence write.
 
+## Reviewed Organization Claim lane
+
+The source-specific operator command
+`civic-import-gukgam-reviewed-claim` may build exactly one Organization-scoped Claim from one
+preflighted audited-target occurrence and one existing current canonical Organization.
+
+The Claim predicate is:
+
+`LISTED_AS_GUKGAM_AUDIT_TARGET`
+
+Its factual meaning is deliberately narrow: the exact official 2026 National Assembly audit plan
+**lists the Organization as an audited target for the printed schedule row**. It does not assert
+that the audit occurred, completed, found wrongdoing, established responsibility or evaluated the
+Organization. The source publication date is the Claim's valid-time anchor; the printed audit
+date/time/venue remain qualifiers.
+
+The command:
+
+- accepts only an explicit Organization UUID and exact target-level `review_key`;
+- re-runs the current binding preflight and the reviewed schedule/source-policy validation;
+- uses the `review_key`, rather than the row-level provider key, as the Claim source key so
+  multiple audited targets in one schedule row cannot collide;
+- creates deterministic Claim/Evidence IDs and exact
+  `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance;
+- is `DRY_RUN` by default and performs no network fetch;
+- requires `--commit` for one Claim/Evidence write;
+- returns `REUSED` only when an existing Claim/Evidence pair has exactly the same source key and
+  semantics; conflicting state or multiple immutable observation versions fails closed.
+
+The command never creates or updates an Organization and provides no bulk-approval path.
+
 ## Next source step
 
 Continue exact-attachment acquisition for the remaining standing committees and use v1 only where

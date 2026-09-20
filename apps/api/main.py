@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
-from packages.domain.contracts import FeederObservation, Source, SourcePolicy, SourceSnapshot
 from packages.domain.enums import IdentityStatus
 from packages.persistence import SqlAlchemyRepository, bootstrap_repository, repository
 from packages.rendering.alio_organization_content import (
@@ -27,7 +26,7 @@ from packages.rendering.gukgam_organization_binding_review import (
 )
 from packages.rendering.gukgam_schedule_review import (
     GukgamScheduleReviewReport,
-    build_gukgam_schedule_review,
+    load_current_gukgam_schedule_review,
 )
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
@@ -35,7 +34,6 @@ from packages.rendering.profile_projection import (
     build_profile_projection,
 )
 from packages.verification.claims import validate_claim_publication
-from packages.verification.gukgam_reviewed_plan_import import GUKGAM_REVIEWED_PLAN_FEEDER
 
 
 class PublicApiError(Exception):
@@ -643,51 +641,7 @@ def create_app(
     if enable_review_surface:
 
         def current_gukgam_schedule_review() -> GukgamScheduleReviewReport:
-            contexts = []
-            for checkpoint in target.source_checkpoints(GUKGAM_REVIEWED_PLAN_FEEDER):
-                if not checkpoint.scope_key.startswith("2026:"):
-                    continue
-                packet_hash = checkpoint.metadata.get("reviewed_packet_hash")
-                attachment_hash = checkpoint.metadata.get("attachment_sha256")
-                expected_rows = checkpoint.metadata.get("schedule_row_count")
-                if (
-                    not isinstance(packet_hash, str)
-                    or not isinstance(attachment_hash, str)
-                    or not isinstance(expected_rows, int)
-                ):
-                    raise TypeError("Gukgam checkpoint metadata is incomplete")
-
-                observations = target.feeder_observations(
-                    GUKGAM_REVIEWED_PLAN_FEEDER,
-                    checkpoint.scope_key,
-                )
-                observation_contexts = target.feeder_observation_contexts(
-                    observation.id for observation in observations
-                )
-                current_by_key: dict[
-                    str, tuple[FeederObservation, SourceSnapshot, Source, SourcePolicy]
-                ] = {}
-                for observation in observations:
-                    context = observation_contexts.get(observation.id)
-                    if context is None:
-                        raise RuntimeError("Gukgam observation provenance is incomplete")
-                    if context[1].content_hash != attachment_hash:
-                        continue
-                    existing = current_by_key.get(observation.provider_record_key)
-                    if existing is None or (
-                        observation.recorded_at,
-                        str(observation.id),
-                    ) > (
-                        existing[0].recorded_at,
-                        str(existing[0].id),
-                    ):
-                        current_by_key[observation.provider_record_key] = context
-                current = list(current_by_key.values())
-                if len(current) != expected_rows:
-                    raise RuntimeError("Gukgam checkpoint row count does not match current observations")
-                contexts.extend(current)
-
-            return build_gukgam_schedule_review(contexts)
+            return load_current_gukgam_schedule_review(target)
 
         @app.get("/admin/gukgam/2026/schedule")
         def gukgam_2026_schedule_review() -> dict:

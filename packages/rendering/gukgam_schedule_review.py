@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
+from typing import Protocol
 from uuid import UUID
 
 from packages.connectors.gukgam_reviewed_packet import PACKET_SCHEMA
-from packages.domain.contracts import FeederObservation, Source, SourcePolicy, SourceSnapshot
+from packages.domain.contracts import (
+    FeederObservation,
+    Source,
+    SourceCheckpoint,
+    SourcePolicy,
+    SourceSnapshot,
+)
 from packages.domain.enums import SourceCollectionMode
 from packages.verification.gukgam_reviewed_plan_import import (
     GUKGAM_REVIEWED_PLAN_FEEDER,
@@ -107,6 +115,29 @@ class GukgamScheduleReviewReport:
 
 
 Context = tuple[FeederObservation, SourceSnapshot, Source, SourcePolicy]
+
+
+class GukgamScheduleReviewRepository(Protocol):
+    def source_checkpoints(
+        self, feeder: str | None = None
+    ) -> list[SourceCheckpoint]:
+        ...
+
+    def feeder_observations(
+        self,
+        feeder: str,
+        scope_key: str,
+        provider_record_key: str | None = None,
+    ) -> list[FeederObservation]:
+        ...
+
+    def feeder_observation_contexts(
+        self,
+        observation_ids: Iterable[UUID],
+    ) -> dict[UUID, Context]:
+        ...
+
+
 _NORMALIZED_FIELDS = {
     "committee_name",
     "source_published_date",
@@ -252,3 +283,59 @@ def build_gukgam_schedule_review(contexts: list[Context]) -> GukgamScheduleRevie
     return GukgamScheduleReviewReport(
         committees=tuple(sorted(committees, key=lambda item: item.committee_name))
     )
+
+
+
+def load_current_gukgam_schedule_review(
+    repository: GukgamScheduleReviewRepository,
+    *,
+    year: int = 2026,
+) -> GukgamScheduleReviewReport:
+    """Load the checkpoint-selected current reviewed Gukgam schedule fail-closed."""
+
+    contexts: list[Context] = []
+    scope_prefix = f"{year}:"
+    for checkpoint in repository.source_checkpoints(GUKGAM_REVIEWED_PLAN_FEEDER):
+        if not checkpoint.scope_key.startswith(scope_prefix):
+            continue
+        packet_hash = checkpoint.metadata.get("reviewed_packet_hash")
+        attachment_hash = checkpoint.metadata.get("attachment_sha256")
+        expected_rows = checkpoint.metadata.get("schedule_row_count")
+        if (
+            not isinstance(packet_hash, str)
+            or not isinstance(attachment_hash, str)
+            or not isinstance(expected_rows, int)
+        ):
+            raise TypeError("Gukgam checkpoint metadata is incomplete")
+
+        observations = repository.feeder_observations(
+            GUKGAM_REVIEWED_PLAN_FEEDER,
+            checkpoint.scope_key,
+        )
+        observation_contexts = repository.feeder_observation_contexts(
+            observation.id for observation in observations
+        )
+        current_by_key: dict[str, Context] = {}
+        for observation in observations:
+            context = observation_contexts.get(observation.id)
+            if context is None:
+                raise RuntimeError("Gukgam observation provenance is incomplete")
+            if context[1].content_hash != attachment_hash:
+                continue
+            existing = current_by_key.get(observation.provider_record_key)
+            if existing is None or (
+                observation.recorded_at,
+                str(observation.id),
+            ) > (
+                existing[0].recorded_at,
+                str(existing[0].id),
+            ):
+                current_by_key[observation.provider_record_key] = context
+        current = list(current_by_key.values())
+        if len(current) != expected_rows:
+            raise RuntimeError(
+                "Gukgam checkpoint row count does not match current observations"
+            )
+        contexts.extend(current)
+
+    return build_gukgam_schedule_review(contexts)
