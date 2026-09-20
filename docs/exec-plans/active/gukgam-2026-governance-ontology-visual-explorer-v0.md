@@ -832,10 +832,46 @@ Staging must stay noindex.
 - The remote temporary manifest and this slice's temporary Railway SSH key/local key files were
   deleted. Independently existing keys were left untouched.
 
+## Current checkpoint — fifth reviewed Gukgam manifest dry-run (2026-09-21)
+
+- Exact canonical `master` was `4bdcc2446bc6f7b668a46a2b1453551dccb3731a`; no newer
+  `origin/master` progress existed before this slice.
+- Read-only staging discovery found `100` current unpublished exact-one reviewed occurrences.
+  The first two in canonical reviewed-schedule order were 한국방송광고진흥공사
+  (`3078699:7938f3a874d5441892124093d19da1df:2:schedule:5:audited-target:5`,
+  Organization `fa96033b-f447-5bf6-9450-aca8aabcd40c`) and 한국연구재단
+  (`3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:22`,
+  Organization `224e4e43-a737-5090-884a-0147b4652c17`).
+- The explicit two-item manifest hashed to
+  `e154f49c3575dd1a23f95489b3c7087467fd18d33eecd8ff010c7556c3e7e899`.
+  No candidate was inferred, substituted, ranked, fuzzy-matched, alias-expanded or auto-selected.
+- Two executions of the installed `civic-preflight-gukgam-reviewed-claim-batch` command with the
+  unchanged manifest produced byte-identical receipts, the same canonical item order and the same
+  manifest hash.
+- 한국방송광고진흥공사 returned prospective Claim
+  `c12aa7d9-22e2-5a3c-b496-aa05dae0afea`, ClaimEvidence
+  `0195706b-55b9-599e-964e-3c9cb9ce318a`, FeederObservation
+  `731be71a-8413-4df6-bee4-7bb422cc56c4`, SourceSnapshot
+  `78ceba04-d4ff-4b78-a41c-527de8a9b728` and Source
+  `429d851c-3a6c-4756-8b3a-3ace5266d064`.
+- 한국연구재단 returned prospective Claim
+  `7c1ba70a-c59b-5e5a-9a26-e65793a47143`, ClaimEvidence
+  `a46231c2-4021-5637-a03f-9e6248675c05`, FeederObservation
+  `42fe6d0c-8da1-44ad-aaf6-826a24b7eb57`, the same SourceSnapshot and the same Source.
+- Both receipts preserved `status=DRY_RUN`, `write_performed=false`,
+  `batch_commit_available=false`, `automatic_candidate_enumeration=false` and
+  `network_fetch=false`. No batch `--commit` command was executed.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5476`,
+  ClaimEvidence `5476`, Gukgam observations `57`, Gukgam source runs `14`, public
+  Claim-backed targets `10` and public committee count `1`.
+- The temporary manifest, receipt files, read-only verifier and this slice's Railway SSH key/local
+  keypair were deleted. Pre-existing unrelated keys were left untouched.
+
 ## Next concrete action
 
-Prepare the next reviewed Gukgam manifest as a **no-write dry-run only**. Start from the current
-unpublished exact-one reviewed occurrences in canonical schedule order, explicitly supply each
-`(review_key, organization_id)` pair, require deterministic manifest hashing and unchanged
-staging/public-target counts, and stop after the dry-run receipt. Do not run another batch
-`--commit` in the same slice and do not introduce automatic candidate selection.
+Use only the exact reviewed manifest with SHA-256
+`e154f49c3575dd1a23f95489b3c7087467fd18d33eecd8ff010c7556c3e7e899` in the next separate
+slice. Run a fresh commit-time no-write preflight against current staging and, only if the exact
+manifest/IDs/counts still match, run one explicit `civic-import-gukgam-reviewed-claim-batch`
+with the exact expected manifest hash and `--commit`. Do not expand, substitute or auto-select
+candidates.
