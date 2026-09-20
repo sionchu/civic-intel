@@ -2179,9 +2179,16 @@ start/end date semantics.
   separately. Dry-run is default, network fetch is absent, `--commit` is explicit, and an exact
   stored retry returns `REUSED` only when Claim/Evidence semantics match.
 - Wrong binding, conflicting stored semantics or multiple immutable observation versions fail
-  closed. Targeted Ruff/mypy and 38 Gukgam tests passed. Local full verification then passed:
-  Ruff, mypy, `458 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, 22 Web tests,
-  production build, and `git diff --check`.
+  closed. Initial targeted Ruff/mypy and 38 Gukgam tests passed; the initial local full verification
+  passed Ruff, mypy, `458 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck,
+  22 Web tests, production build, and `git diff --check`.
+- Follow-up review removed a verification gap by sharing the checkpoint-selected current Gukgam
+  schedule loader between the admin review surface and the Claim worker. The worker now fails
+  closed when checkpoint `schedule_row_count` disagrees with current observations; a dedicated
+  regression covers that incomplete-universe case.
+- PR #90 final Verify `35484811916` passed the strengthened head: canonical verification
+  (`459 passed / 1 skipped` pytest plus Ruff, mypy, Golden and Web gates), Alembic round-trip,
+  PostgreSQL migration/load/API, backup/restore, deployment artifacts and installed entrypoint.
 - Real staging DRY_RUN passed on one exact-name candidate without `--commit`. Before/after
   remained People `299`, Organizations `347`, Claims `5466`, ClaimEvidence `5466`,
   Gukgam observations `57`, and Gukgam runs `14`; no Claim, Evidence or source write occurred.
