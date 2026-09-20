@@ -370,9 +370,14 @@ Staging must stay noindex.
 - The command is dry-run by default and performs no network fetch. `--commit` is the only Claim
   write path. Exact stored semantics return `REUSED`; conflicting stored semantics, wrong
   Organization bindings and multiple immutable observation versions fail closed.
-- Targeted verification passed Ruff, mypy and 38 Gukgam review/Claim/import tests. Local full
-  verification then passed: Ruff, mypy, `458 passed / 1 skipped` pytest, Golden quality, Web
-  lint/typecheck, 22 Web tests, production build, and `git diff --check`.
+- Follow-up review SSOT'd current-row selection: the admin review surface and Claim worker now use
+  the same checkpoint-selected schedule loader, including packet/attachment metadata checks and
+  the checkpoint `schedule_row_count` gate. A new regression proves an incomplete current-row
+  universe fails closed before Claim preparation.
+- Initial targeted/local verification passed Ruff, mypy, 38 Gukgam tests and
+  `458 passed / 1 skipped` full pytest plus Golden/Web/build/diff gates. PR #90 final Verify
+  `35484811916` passed the strengthened head with `459 passed / 1 skipped` and all canonical,
+  Alembic, PostgreSQL, backup/restore, deployment-artifact and installed-entrypoint gates.
 - Owner-local execution against real staging selected one exact-name candidate and ran the new
   worker **without** `--commit`. Result: `DRY_RUN`, predicate
   `LISTED_AS_GUKGAM_AUDIT_TARGET`, `claim_persisted=false`,
