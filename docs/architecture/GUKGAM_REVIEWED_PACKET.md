@@ -198,6 +198,18 @@ Organization IDs/names to the operator, but it must not use aliases, fuzzy simil
 scores, rankings, embeddings or organizational proximity and must not create or update any
 Organization, Claim, ClaimEvidence or identity link.
 
+An operator may additionally run one review-only binding **preflight** by supplying:
+
+- one exact current `review_key` for an audited-target occurrence;
+- one existing current canonical Organization ID.
+
+The preflight re-runs the exact-name candidate projection, requires exactly one current candidate,
+requires that candidate ID to equal the operator-supplied Organization ID, and recovers the exact
+committee-plan source provenance for that occurrence. Its receipt is always `DRY_RUN` with
+`binding_committed=false` and `claim_publication=false`. An unknown occurrence, no exact
+candidate, multiple candidates, a wrong/superseded Organization ID, or non-unique provenance fails
+closed. The route remains internal-only and performs no persistence write.
+
 ## Next source step
 
 Continue exact-attachment acquisition for the remaining standing committees and use v1 only where

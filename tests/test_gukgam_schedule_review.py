@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
@@ -10,6 +13,7 @@ from fastapi.testclient import TestClient
 
 from apps.api.main import create_app
 from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_plan_packet
+from packages.domain.db import OrganizationRow
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.rendering.gukgam_organization_binding_review import NO_EXACT
@@ -38,6 +42,24 @@ def migrated_repository(database: Path) -> SqlAlchemyRepository:
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
     return SqlAlchemyRepository(database_url)
+
+
+def insert_organization(repository: SqlAlchemyRepository, name: str) -> UUID:
+    organization_id = uuid4()
+    timestamp = datetime.now(UTC)
+    with repository.sessions() as session:
+        session.add(
+            OrganizationRow(
+                id=str(organization_id),
+                name=name,
+                valid_from=timestamp,
+                valid_to=None,
+                recorded_at=timestamp,
+                superseded_at=None,
+            )
+        )
+        session.commit()
+    return organization_id
 
 
 def packet_payload() -> dict:
@@ -160,6 +182,82 @@ def test_review_api_is_gated_and_uses_current_observation_versions(
     assert public_binding.status_code == 404
     assert public_response.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
     assert public_binding.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
+
+
+def test_binding_preflight_api_reverifies_exact_candidate_without_writes(
+    tmp_path: Path,
+) -> None:
+    repository = migrated_repository(tmp_path / "binding-preflight-api.db")
+    raw = packet_payload()
+    commit_packet(repository, raw)
+
+    counts = Counter(
+        target
+        for row in raw["schedule"]
+        for target in row["audited_targets"]
+    )
+    exact_target = next(target for target, count in counts.items() if count == 1)
+    organization_id = insert_organization(repository, exact_target)
+
+    before = {
+        "organizations": len(repository.organizations()),
+        "claims": len(repository.claims()),
+        "runs": len(repository.source_runs(GUKGAM_REVIEWED_PLAN_FEEDER)),
+    }
+    with TestClient(create_app(repository, enable_review_surface=True)) as client:
+        candidates = client.get(
+            "/admin/gukgam/2026/organization-binding-candidates"
+        ).json()
+        candidate = next(
+            item for item in candidates["items"] if item["audited_target"] == exact_target
+        )
+        response = client.get(
+            "/admin/gukgam/2026/organization-binding-preflight",
+            params={
+                "review_key": candidate["review_key"],
+                "organization_id": str(organization_id),
+            },
+        )
+        wrong = client.get(
+            "/admin/gukgam/2026/organization-binding-preflight",
+            params={
+                "review_key": candidate["review_key"],
+                "organization_id": str(uuid4()),
+            },
+        )
+
+    assert response.status_code == 200
+    receipt = response.json()
+    assert receipt["status"] == "DRY_RUN"
+    assert receipt["binding_committed"] is False
+    assert receipt["claim_publication"] is False
+    assert receipt["review_key"] == candidate["review_key"]
+    assert receipt["occurrence"]["audited_target"] == exact_target
+    assert receipt["organization"] == {
+        "organization_id": str(organization_id),
+        "name": exact_target,
+    }
+    assert receipt["provenance"]["url"] == ATTACHMENT_URL
+    assert wrong.status_code == 422
+    assert wrong.json()["error"]["code"] == "INVALID_INPUT"
+
+    after = {
+        "organizations": len(repository.organizations()),
+        "claims": len(repository.claims()),
+        "runs": len(repository.source_runs(GUKGAM_REVIEWED_PLAN_FEEDER)),
+    }
+    assert after == before
+
+    with TestClient(create_app(repository)) as public_client:
+        public = public_client.get(
+            "/admin/gukgam/2026/organization-binding-preflight",
+            params={
+                "review_key": candidate["review_key"],
+                "organization_id": str(organization_id),
+            },
+        )
+    assert public.status_code == 404
+    assert public.json()["error"]["code"] == "PUBLIC_RECORD_NOT_FOUND"
 
 
 def test_review_projection_fails_closed_if_fulltext_or_policy_gate_changes(

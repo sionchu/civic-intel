@@ -2150,9 +2150,26 @@ start/end date semantics.
 - Temporary Railway SSH access used for this read-only measurement was closed and its registered
   public key removed.
 
+## Current checkpoint — Gukgam reviewed binding preflight v0 (2026-09-20)
+
+- Internal-only `/admin/gukgam/2026/organization-binding-preflight` now accepts one exact
+  occurrence `review_key` plus one operator-supplied current Organization ID.
+- It re-runs exact-name candidate discovery, requires exactly one candidate, re-verifies the
+  supplied Organization and exact source provenance, and emits a `DRY_RUN` receipt only.
+  `binding_committed=false` and `claim_publication=false` are invariant.
+- Wrong IDs, unknown review keys and non-exact/no-match occurrences fail closed. Targeted Ruff,
+  mypy and 34 Gukgam tests passed. Full local verification then passed: Ruff, mypy,
+  `454 passed / 1 skipped` pytest, Golden quality, Web lint/typecheck, 22 Web tests, production
+  build, and `git diff --check`.
+- A real staging read-only preflight passed for one current exact-name candidate occurrence; a
+  random wrong Organization ID returned `422 INVALID_INPUT`.
+- Before/after staging remained People `299`, Organizations `347`, Claims `5466`,
+  ClaimEvidence `5466`, Gukgam observations `57`, and Gukgam source runs `14`.
+  No Organization, Claim/Evidence or source-run write occurred. The temporary tunnel was closed.
+
 ## Next concrete action
 
-Add one explicit reviewed-binding decision contract that accepts an operator-supplied existing
-Organization ID and exact audited-target occurrence, re-verifies the source/provenance/candidate
-relationship, and defaults to no-write. Do not bulk-bind the 103 exact-name candidates and do not
-publish Gukgam Claims in the same slice.
+Follow the already-proven ALIO reviewed-binding pattern for the next slice: one explicit operator
+command over an existing Organization ID + reviewed Gukgam occurrence, dry-run by default, with any
+Claim/Evidence commit behind a separate explicit flag and source-specific preflight. Do not add a
+generic crosswalk, automatic name binding or bulk approval path.
