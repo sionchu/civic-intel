@@ -2235,10 +2235,36 @@ start/end date semantics.
 - This slice changes the API contract only. The existing Web `/gukgam/2026` page is unchanged,
   and no additional Organization binding or Claim publication was performed.
 
+## Current checkpoint — staging Claim-backed Gukgam target API (2026-09-20)
+
+- PR #92 merged as `c7038763ed8093bb8e39564e60e1b4eaa88fe892` after Verify
+  `35486439758` passed every canonical, Alembic, PostgreSQL, backup/restore, deployment-artifact
+  and installed-entrypoint gate.
+- A generic Railway `redeploy` was rejected as deployment evidence because it reused the stale
+  source snapshot for commit `8c50218...`; that deployment was superseded and removed.
+- Owner-local deployment then reset a clean working tree to exact merged `master` `c703876...`
+  and uploaded that tree to the existing staging API service with `railway up`. Deployment
+  `151f9078-0088-428f-a384-eab7fd8bde47` reached `SUCCESS`.
+- The staging API remains private-only: zero Railway service domains and zero custom domains. No
+  database, Web service, environment variable, schema or indexing setting changed.
+- Private-container smoke called `/ready` and `GET /gukgam/2026/targets` over localhost and
+  passed exact assertions. The response contained exactly one target and one committee with
+  semantics `PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1` and coverage
+  `BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY`.
+- The sole target was 한국원자력안전기술원
+  (`2b389008-a8c1-53d4-87d9-f4221aa8dfa5`) under 과학기술정보방송통신위원회 on
+  `2026-10-13`, backed by Claim
+  `7c4b2e8d-b9eb-5f4c-87ba-fb3c561ecb83` and ClaimEvidence
+  `e5f2a33b-59da-5e1e-90d9-384f14fff689`. Exact Source, SourceSnapshot and
+  FeederObservation IDs were present; no observation/name-match fallback appeared.
+- The temporary SSH key `civic-intel-gukgam-projection-20260920` was removed from Railway after
+  the smoke, and both local private/public key files were deleted. The pre-existing unrelated
+  `dev.new` key was left untouched.
+
 ## Next concrete action
 
-After CI passes and the projection merges, deploy the API service to staging at that exact master
-revision and smoke `GET /gukgam/2026/targets` through the private service boundary. Require the
-response to contain only the one published 한국원자력안전기술원 target with its exact
-Claim/Evidence/Source provenance and bounded-incomplete coverage markers. Do not change the Web
-Gukgam page or publish additional target Claims in that deployment slice.
+Add the smallest Web integration on the existing `/gukgam/2026` page that consumes only
+`GET /gukgam/2026/targets`. Show the published target as a bounded evidence-backed plan listing,
+include explicit incomplete-coverage language and an Evidence/Organization navigation path, and
+keep search results and review/name-overlap candidates separate. Do not infer missing targets,
+rank organizations, or publish additional Claims in the UI slice.
