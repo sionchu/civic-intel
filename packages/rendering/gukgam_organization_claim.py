@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from uuid import UUID, uuid5
 
@@ -202,3 +204,230 @@ def build_gukgam_audit_target_claim(
             f"Gukgam Claim failed publication gate: {gate.failures}"
         )
     return claim, evidence
+
+
+GUKGAM_PUBLIC_TARGET_PROJECTION_SEMANTICS = "PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1"
+GUKGAM_PUBLIC_TARGET_COVERAGE = "BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY"
+
+
+@dataclass(frozen=True)
+class GukgamAuditTargetProjectionItem:
+    organization_id: UUID
+    organization_name: str
+    committee_name: str
+    audit_date: str
+    time_text: str | None
+    venue: str | None
+    section: str
+    page_number: int
+    source_published_date: str
+    claim_id: UUID
+    evidence_ids: tuple[UUID, ...]
+    source_ids: tuple[UUID, ...]
+    snapshot_ids: tuple[UUID, ...]
+    observation_ids: tuple[UUID, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "organization": {
+                "id": str(self.organization_id),
+                "name": self.organization_name,
+            },
+            "committee_name": self.committee_name,
+            "audit_date": self.audit_date,
+            "time_text": self.time_text,
+            "venue": self.venue,
+            "section": self.section,
+            "page_number": self.page_number,
+            "source_published_date": self.source_published_date,
+            "claim_id": str(self.claim_id),
+            "evidence_ids": [str(item) for item in self.evidence_ids],
+            "source_ids": [str(item) for item in self.source_ids],
+            "snapshot_ids": [str(item) for item in self.snapshot_ids],
+            "observation_ids": [str(item) for item in self.observation_ids],
+        }
+
+
+@dataclass(frozen=True)
+class GukgamAuditTargetProjection:
+    year: int
+    items: tuple[GukgamAuditTargetProjectionItem, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "semantics": GUKGAM_PUBLIC_TARGET_PROJECTION_SEMANTICS,
+            "coverage": GUKGAM_PUBLIC_TARGET_COVERAGE,
+            "year": self.year,
+            "target_count": len(self.items),
+            "committee_count": len({item.committee_name for item in self.items}),
+            "items": [item.to_dict() for item in self.items],
+            "limitations": [
+                "Only current published reviewed Gukgam Claims are included.",
+                "Coverage is bounded and incomplete; absence is not evidence of no audit.",
+                "Review observations and name-overlap candidates are never used as a public fallback.",
+                "A listed target is a plan fact, not evidence that an audit occurred or established an outcome.",
+            ],
+        }
+
+
+def _required_claim_qualifier(claim: Claim, key: str) -> str:
+    value = claim.qualifiers.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise GukgamOrganizationClaimError(
+            f"Gukgam public projection Claim qualifier is invalid: {key}"
+        )
+    return value.strip()
+
+
+def build_gukgam_audit_target_projection(
+    organizations: Sequence[Organization],
+    contexts: Mapping[
+        UUID,
+        tuple[Sequence[Claim], Mapping[UUID, Sequence[ClaimEvidence]]],
+    ],
+    *,
+    sources: Mapping[UUID, Source],
+    policies: Mapping[UUID, SourcePolicy],
+    year: int = 2026,
+) -> GukgamAuditTargetProjection:
+    """Project only publishable reviewed Gukgam Organization Claims."""
+
+    organization_by_id = {
+        organization.id: organization
+        for organization in organizations
+        if organization.superseded_at is None
+    }
+    items: list[GukgamAuditTargetProjectionItem] = []
+    for organization_id, (claims, evidence_by_claim) in contexts.items():
+        organization = organization_by_id.get(organization_id)
+        if organization is None:
+            continue
+        for claim in claims:
+            if claim.predicate != GUKGAM_AUDIT_TARGET_PREDICATE:
+                continue
+            if (
+                claim.qualifiers.get("source_contract")
+                != GUKGAM_REVIEWED_PLAN_SOURCE_CONTRACT
+            ):
+                raise GukgamOrganizationClaimError(
+                    "Gukgam public projection Claim source contract is invalid"
+                )
+
+            evidence = list(evidence_by_claim.get(claim.id, ()))
+            gate = validate_claim_publication(
+                claim,
+                organization,
+                evidence,
+                dict(sources),
+                dict(policies),
+            )
+            if not gate.publishable:
+                raise GukgamOrganizationClaimError(
+                    f"Gukgam public projection Claim failed publication gate: {gate.failures}"
+                )
+            if not evidence:
+                raise GukgamOrganizationClaimError(
+                    "Gukgam public projection Claim lacks Evidence"
+                )
+
+            committee_name = _required_claim_qualifier(claim, "committee_name")
+            audit_date = _required_claim_qualifier(claim, "audit_date")
+            source_published_date = _required_claim_qualifier(
+                claim, "source_published_date"
+            )
+            audited_target = _required_claim_qualifier(claim, "audited_target")
+            section = _required_claim_qualifier(claim, "section")
+            page_number_text = _required_claim_qualifier(claim, "page_number")
+            if (
+                _required_claim_qualifier(claim, "event_semantics")
+                != "OFFICIAL_PLAN_LISTING_NOT_COMPLETED_AUDIT"
+            ):
+                raise GukgamOrganizationClaimError(
+                    "Gukgam public projection event semantics changed"
+                )
+            if audited_target != organization.name:
+                raise GukgamOrganizationClaimError(
+                    "Gukgam public projection target does not match Organization"
+                )
+            try:
+                audit_date_value = date.fromisoformat(audit_date)
+                published_date_value = date.fromisoformat(source_published_date)
+                page_number = int(page_number_text)
+            except ValueError as exc:
+                raise GukgamOrganizationClaimError(
+                    "Gukgam public projection Claim date/page qualifier is invalid"
+                ) from exc
+            if (
+                audit_date_value.year != year
+                or published_date_value.year != year
+                or page_number < 1
+                or claim.valid_from.date() != published_date_value
+            ):
+                raise GukgamOrganizationClaimError(
+                    "Gukgam public projection Claim year/valid-time semantics are invalid"
+                )
+
+            evidence_ids: list[UUID] = []
+            source_ids: list[UUID] = []
+            snapshot_ids: list[UUID] = []
+            observation_ids: list[UUID] = []
+            for evidence_item in evidence:
+                source = sources.get(evidence_item.source_id)
+                if source is None:
+                    raise GukgamOrganizationClaimError(
+                        "Gukgam public projection Evidence source is missing"
+                    )
+                policy = policies.get(source.policy_id)
+                if (
+                    policy is None
+                    or policy.source_class != "official_reviewed_committee_attachment"
+                ):
+                    raise GukgamOrganizationClaimError(
+                        "Gukgam public projection source policy is invalid"
+                    )
+                if (
+                    evidence_item.snapshot_id is None
+                    or evidence_item.feeder_observation_id is None
+                    or evidence_item.excerpt is not None
+                ):
+                    raise GukgamOrganizationClaimError(
+                        "Gukgam public projection Evidence provenance is incomplete"
+                    )
+                evidence_ids.append(evidence_item.id)
+                source_ids.append(evidence_item.source_id)
+                snapshot_ids.append(evidence_item.snapshot_id)
+                observation_ids.append(evidence_item.feeder_observation_id)
+
+            items.append(
+                GukgamAuditTargetProjectionItem(
+                    organization_id=organization.id,
+                    organization_name=organization.name,
+                    committee_name=committee_name,
+                    audit_date=audit_date,
+                    time_text=claim.qualifiers.get("time_text"),
+                    venue=claim.qualifiers.get("venue"),
+                    section=section,
+                    page_number=page_number,
+                    source_published_date=source_published_date,
+                    claim_id=claim.id,
+                    evidence_ids=tuple(sorted(set(evidence_ids), key=str)),
+                    source_ids=tuple(sorted(set(source_ids), key=str)),
+                    snapshot_ids=tuple(sorted(set(snapshot_ids), key=str)),
+                    observation_ids=tuple(sorted(set(observation_ids), key=str)),
+                )
+            )
+
+    return GukgamAuditTargetProjection(
+        year=year,
+        items=tuple(
+            sorted(
+                items,
+                key=lambda item: (
+                    item.audit_date,
+                    item.committee_name,
+                    item.organization_name,
+                    str(item.claim_id),
+                ),
+            )
+        ),
+    )
