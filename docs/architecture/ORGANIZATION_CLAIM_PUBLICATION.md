@@ -85,6 +85,19 @@ or updates an Organization. The target-level `review_key` is retained as
 Exact retries may reuse only semantically identical stored Claim/Evidence. Multiple immutable
 observation versions, a changed Organization binding or conflicting stored semantics fail closed.
 
+For an explicitly reviewed multi-item batch, the no-write manifest preflight and the write command
+remain separate operator boundaries. The commit path accepts only the same canonical manifest
+schema, requires the operator to supply the exact canonical manifest SHA-256 from the prior
+preflight, and additionally requires an explicit `--commit` flag. It does not enumerate candidate
+Organizations or discover manifest items. Every item is re-preflighted against current schedule,
+Organization and provenance state immediately before persistence.
+
+A batch with no existing Claims may reuse the canonical atomic
+`import_organization_claim_batch()` seam. A fresh exact retry in which every item is already
+published returns `REUSED` without a write. A manifest in which only some items are already
+published fails closed before persistence rather than filling a partial state. The batch path must
+reuse existing Organizations and must never treat name equality as authority to create one.
+
 ## Provenance and policy gate
 
 Every organization ClaimEvidence item follows:
