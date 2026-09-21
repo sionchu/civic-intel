@@ -3053,12 +3053,42 @@ start/end date semantics.
   targets `26` and public committee count `2`; public HTML still exposed neither `review_key` nor
   `match_class`. No batch commit was executed in this slice.
 
+## Current checkpoint — ninth reviewed Gukgam 20-item batch commit (2026-09-21)
+
+- Exact canonical `master` was `ea7b536ed988cd65db15f06ed05e0956c7d0c019`; the worktree
+  was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Commit-time baseline exactly matched the twenty-item dry-run: Organizations `347`, Claims
+  `5492`, ClaimEvidence `5492`, Gukgam observations `57`, Gukgam source runs `14`, public targets
+  `26` and public committee count `2`.
+- The exact reviewed manifest SHA-256 remained
+  `9cde9f2d0047b23c1dcdec12f4c85b41d998650c01c669d786776712bb9c0f04` with `20` items.
+- The first fresh commit-time preflight attempt ended before any write because the private SSH
+  tunnel dropped with `SSL error: unexpected eof while reading`; independent DB counts remained
+  `5492/5492` Claims/ClaimEvidence. No commit function had started.
+- A fresh private tunnel retry completed the full no-write preflight. Its exact receipt SHA-256 was
+  `b6f211014fcaa093e2af44284dc0efc1b7221f31abd3387c114614792b049ec7`, byte-identical to the
+  prior dry-run receipt and therefore exact across all twenty Organization/Claim/Evidence and
+  Observation/Snapshot/Source values plus zero-write flags.
+- A new private tunnel was opened immediately before the write. The canonical commit path
+  re-preflighted the same manifest again and then executed one atomic transaction, returning
+  `COMMITTED`, `item_count=20`, `claims_created=20`, `claims_reused=0`,
+  `organizations_created=0`, `organizations_reused=20`, `write_performed=true`,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The complete commit receipt bytes are pinned by SHA-256
+  `d36c552edee2526ca94fb0f41e7661c1587511a6c30eef667db5f1146cbbc4c1`.
+- Post-commit read-only PostgreSQL verification returned Organizations `347`, Claims `5512`,
+  ClaimEvidence `5512`, Gukgam observations `57` and Gukgam source runs `14`.
+- Live staging Web verification returned public Claim-backed targets `46` across `3` committees.
+  All `20/20` new Claim IDs and `20/20` new ClaimEvidence IDs were present in the rendered public
+  projection, while `review_key` and `match_class` remained absent.
+- All private tunnels and temporary manifest/preflight/commit/Web artifacts were closed or deleted.
+  No public API/Postgres domain, new Railway resource or Organization creation occurred.
+- The ninth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
+  `9cde9f2d0047b23c1dcdec12f4c85b41d998650c01c669d786776712bb9c0f04`.
+
 ## Next concrete action
 
-Use only the exact reviewed twenty-item manifest with SHA-256
-`9cde9f2d0047b23c1dcdec12f4c85b41d998650c01c669d786776712bb9c0f04` in the next separate
-commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly
-the twenty documented `(review_key, organization_id)` pairs, and run a fresh no-write preflight.
-Require the canonical receipt SHA-256
-`b6f211014fcaa093e2af44284dc0efc1b7221f31abd3387c114614792b049ec7` before one atomic
-commit. Do not add the 21st candidate or any later occurrence.
+Run a separate dry-run-only slice using exactly the next `20` current unpublished exact-one
+reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an
+explicit twenty-item manifest, run the unchanged no-write preflight twice, require deterministic
+receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
