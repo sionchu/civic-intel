@@ -1334,11 +1334,42 @@ Staging must stay noindex.
 - All private tunnels and temporary discovery/manifest/preflight/Web artifacts were closed or
   deleted after verification. No public API/Postgres domain or new Railway resource was created.
 
+## Current checkpoint — tenth reviewed Gukgam 20-item batch commit (2026-09-22)
+
+- Exact canonical `master` was `2630f2ac1112a4ef8e2cdd99449ad58fef20c8a2`; the worktree
+  was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Commit-time baseline exactly matched the tenth dry-run: Organizations `347`, Claims `5512`,
+  ClaimEvidence `5512`, Gukgam observations `57`, Gukgam source runs `14`, public targets `46`
+  and public committee count `3`.
+- The exact reviewed manifest SHA-256 remained
+  `71167ba4936f2212dc7b15195d1a247902d27061882d05fe96e3d98ec1319898` with `20` items.
+- The first local receipt-hash guard stopped before any write because the dry-run file hash had
+  been pinned from Windows redirected stdout (`CRLF`) while the script initially hashed normalized
+  `LF` bytes. Independent DB counts remained `5512/5512`; no commit function had started.
+- A separate read-only preflight proved the semantics were unchanged: LF SHA-256 was
+  `7fc7690e28f3441d5968d14a0af385864d65afb1a66943ac2564da1c86b6fe2e`, while CRLF SHA-256
+  exactly matched the canonical prior receipt `efc12263bd56bf66b56d23ab61ecc0bdad30f7159c772cec56e0da9debaed836`.
+- With the receipt guard corrected to the actual Windows CRLF bytes, a fresh no-write preflight
+  again matched the exact prior receipt before persistence. The canonical commit path then
+  re-preflighted the same manifest and executed one atomic transaction.
+- The commit returned `COMMITTED`, `item_count=20`, `claims_created=20`, `claims_reused=0`,
+  `organizations_created=0`, `organizations_reused=20`, `write_performed=true`,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The canonical sorted commit receipt JSON is pinned by SHA-256
+  `60bd0c4964f66350dceb67b12dd1183ec60379be1c8e53ac29422260a546b1cb`.
+- Post-commit read-only PostgreSQL verification returned Organizations `347`, Claims `5532`,
+  ClaimEvidence `5532`, Gukgam observations `57` and Gukgam source runs `14`.
+- Live staging Web verification returned public Claim-backed targets `66` across `4` committees.
+  All `20/20` new Organization names, `20/20` Claim IDs and `20/20` ClaimEvidence IDs were present
+  in the rendered public projection, while `review_key` and `match_class` remained absent.
+- All private tunnels and temporary hash-check/commit/Web artifacts were closed or deleted. No
+  public API/Postgres domain, new Railway resource or Organization creation occurred.
+- The tenth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
+  `71167ba4936f2212dc7b15195d1a247902d27061882d05fe96e3d98ec1319898`.
+
 ## Next concrete action
 
-Use only the exact reviewed twenty-item manifest with SHA-256
-`71167ba4936f2212dc7b15195d1a247902d27061882d05fe96e3d98ec1319898` in the next separate
-commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly
-the twenty documented `(review_key, organization_id)` pairs, and run a fresh no-write preflight.
-Require exact receipt SHA-256 `efc12263bd56bf66b56d23ab61ecc0bdad30f7159c772cec56e0da9debaed836`
-before one atomic commit. Do not add 영화진흥위원회 or any later occurrence.
+Run a separate dry-run-only slice using exactly the next `20` current unpublished exact-one
+reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an
+explicit twenty-item manifest, run the unchanged no-write preflight twice, require deterministic
+receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
