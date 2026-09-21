@@ -1367,9 +1367,39 @@ Staging must stay noindex.
 - The tenth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
   `71167ba4936f2212dc7b15195d1a247902d27061882d05fe96e3d98ec1319898`.
 
+## Current checkpoint — eleventh reviewed Gukgam 20-item manifest dry-run (2026-09-22)
+
+- Exact canonical `master` was `b8fc3e0841d059047a93ecf666bcacb95817da77`; the worktree was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Fresh staging baseline was Organizations `347`, Claims `5532`, ClaimEvidence `5532`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `66` and public committee count `4`.
+- Read-only discovery found `44` current exact-one audited-target occurrences without a published Gukgam Claim.
+- Exactly the first `20` occurrences in canonical reviewed-schedule order were selected explicitly; the 21st occurrence, 대한체육회 (`3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:6:audited-target:1`), was excluded from this manifest.
+- The manually written twenty-item manifest canonicalized to SHA-256 `2d4be686649de5ee76a6ba82d5658098feb1f895721d1287c2e630c10e84b884`.
+- Explicit reviewed manifest items and prospective Claim/Evidence IDs were:
+  - 영화진흥위원회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:10` — Organization `87a49064-d253-53cf-814c-4d6c03feb944` — Claim `0e0824ef-7e6e-56d3-a958-19b03f95cc6b` — Evidence `1cd3cd90-a923-5dac-af86-d9a32dc41335`
+  - 영상물등급위원회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:11` — Organization `f5438862-48b9-54bd-b41a-2323bdd79d78` — Claim `ae669080-88ef-50ec-b246-84436fb4933c` — Evidence `3db2da0f-acf0-57fd-b2f3-391cc9b156b7`
+  - 한국영상자료원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:12` — Organization `f254f8dd-ba57-5d9b-930b-ee4d6d2996f5` — Claim `2832f178-7826-5219-a206-1f5a589c1541` — Evidence `aa97a8b5-78db-5aad-8d54-69cf96c556b2`
+  - 게임물관리위원회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:13` — Organization `0dd2b2df-62a4-5de6-af79-ae55aedc9179` — Claim `dd45f36b-1a62-55b1-8317-77e5d8cf0eac` — Evidence `70c605fd-6109-5f4c-b257-f59cc4974c1a`
+  - 한국저작권위원회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:14` — Organization `f9328bac-0156-5a53-a4db-52fc08532e83` — Claim `0c0a86ce-725a-5cb7-bcbf-b286fe524f7a` — Evidence `7cd8de90-a9d5-501b-a21b-f99e27dbbd5e`
+  - 한국저작권보호원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:15` — Organization `9d66dc23-dfa3-5d1c-a723-f0e02f7ef8c5` — Claim `40fd67cb-c2d6-54ff-8f93-8a5334d39437` — Evidence `85575a34-253f-54d0-9369-e03d46da74a9`
+  - 한국도박문제예방치유원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:10` — Organization `e8512a7f-86a2-56d2-a90d-ff70b53311a6` — Claim `7647f2f3-e4b2-58eb-83ed-4cb31f57fb4f` — Evidence `c602436f-d4cd-534a-8f6b-5e6378b7c47e`
+  - 한국문화관광연구원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:4` — Organization `fd795466-dca7-5941-8c6d-813a864b3bc4` — Claim `0c8e9cf6-1340-5efb-a3f4-36eb1f068d3f` — Evidence `55665034-ee11-58b6-9999-948ebdbc7e55`
+  - 한국출판문화산업진흥원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:5` — Organization `6198c75e-f0ba-5201-9574-6f226d9caf50` — Claim `996171a7-0143-5729-8133-f03a1c153a8d` — Evidence `ee974f70-60cb-5c64-9802-3dc8300d7271`
+  - 한국언론진흥재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:6` — Organization `e823814d-bca6-59fc-bee9-f3690a1bb830` — Claim `5de483a4-8c6d-5f76-b03f-08beeca2fbce` — Evidence `59b1c743-4a0c-50db-a4cc-d04e4de40944`
+  - 국제방송교류재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:7` — Organization `9f3e6183-5e6f-5d70-a7a2-4064ed23376f` — Claim `94103cd7-2df4-53d9-a8e6-3cc33e8b6c02` — Evidence `6657c678-0aa7-57d6-85cc-2a6b819fbdcb`
+  - 한국관광공사 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:8` — Organization `f7e354cb-37f0-5c9e-b9ab-826bceb44676` — Claim `fe8c569a-294d-5ed0-b272-b59c05f3a0d1` — Evidence `65b0265a-ce99-5490-a8d4-f610da0e5faa`
+  - 한국문화예술교육진흥원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:10` — Organization `a8b57a18-c0b9-5f8d-be65-528574d901a3` — Claim `ee2711e5-0f4a-5a09-91f7-8315e783ad98` — Evidence `6487a216-5a1c-5320-ab2b-65a53f5141ef`
+  - 한국문화예술위원회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:11` — Organization `b132ce29-0176-594d-8c51-bad73f59d5a0` — Claim `05b89923-101b-5756-93b6-129bb37f4b54` — Evidence `71519c74-c913-5e96-82a1-439ea674b837`
+  - (재)예술경영지원센터 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:12` — Organization `ca1eca0d-8db2-504e-b4f3-21276a3631fa` — Claim `2f5c10bd-a65d-5fa1-9d9d-c6ba6fa27cfa` — Evidence `61cc4423-39eb-541c-8b09-ab4f9f0ee457`
+  - 한국문학번역원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:13` — Organization `a539bf48-c4a2-5764-a152-13a1d5563048` — Claim `23a8a629-b7d7-5c40-9b45-e6428df06b6c` — Evidence `99cb9b6e-1c3f-57c6-a042-f68d88e49710`
+  - 예술의전당 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:14` — Organization `8862a259-6e54-51ae-8f54-9ae2d9896352` — Claim `01f10c34-bbdf-55ad-b339-1b1bb1a33376` — Evidence `92199a81-d396-5bb9-835e-b4f18db112cb`
+  - 국악방송 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:15` — Organization `cafa5948-6bfd-5e97-b253-f45bf8da9b24` — Claim `66200fb1-15fb-5752-ae92-3e1e004fd950` — Evidence `231154cf-08a2-5b3b-87b8-3fbcb38a51b3`
+  - 한국예술인복지재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:16` — Organization `52065c3e-1aaf-54df-94f9-462fb3f7552a` — Claim `c62f8828-674c-53ec-80ab-71ef3e72cd42` — Evidence `f3377a1f-6af6-54df-893a-0b67e23deb66`
+  - 국립박물관문화재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:17` — Organization `b8b5b0d9-e9ed-5df3-a411-a04187700ae2` — Claim `76051b2c-3adf-50c0-92b6-ce46000fc3b3` — Evidence `f2c4ecb4-fd63-5a76-aa81-ed63b11cc221`
+- Two unchanged staging no-write preflights produced byte-identical receipts. Receipt SHA-256 was `130482d27c9a53c408fd1e05986c57411341a0b007ed9edc3ec5fa322dcb43c0`.
+- Both receipts returned `DRY_RUN`, `item_count=20`, `all_preflights_passed=true`, `write_performed=false`, `batch_commit_available=false`, `automatic_candidate_enumeration=false` and `network_fetch=false`; every item preserved `claim_persisted=false` and `organization_created=false`.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5532`, ClaimEvidence `5532`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `66` and public committee count `4`; public HTML exposed neither `review_key` nor `match_class`.
+- No batch commit was executed in this slice.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice using exactly the next `20` current unpublished exact-one
-reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an
-explicit twenty-item manifest, run the unchanged no-write preflight twice, require deterministic
-receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
+Use only the exact reviewed twenty-item manifest with SHA-256 `2d4be686649de5ee76a6ba82d5658098feb1f895721d1287c2e630c10e84b884` in the next separate commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly these twenty `(review_key, organization_id)` pairs, and require a fresh no-write preflight receipt byte-identical to SHA-256 `130482d27c9a53c408fd1e05986c57411341a0b007ed9edc3ec5fa322dcb43c0` before one atomic commit. Do not add 대한체육회 or any later occurrence.
