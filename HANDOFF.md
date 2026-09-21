@@ -2959,11 +2959,38 @@ start/end date semantics.
   deleted after use. The project PostgreSQL driver remains installed because it is a canonical
   `pyproject.toml` dependency.
 
+## Current checkpoint — eighth reviewed Gukgam 10-item batch commit (2026-09-21)
+
+- Exact canonical `master` was `16b2f330ee0a839935bffc2987f726b70597b753`; the worktree
+  was clean and draft PR `#75` remained the only concurrent PR, deferred and out of scope.
+- Commit-time baseline exactly matched the eighth dry-run: Organizations `347`, Claims `5482`,
+  ClaimEvidence `5482`, Gukgam observations `57`, Gukgam source runs `14`, public targets `16`
+  and public committee count `1`.
+- The exact ten-item reviewed manifest from the prior dry-run was recreated without additions or
+  substitutions and canonicalized to SHA-256
+  `d9102c2bd71002725228322458dd45d40187bb5ef00131969ba1ee1e2c7fdbf0`.
+- A fresh no-write preflight revalidated all ten Organizations, review keys, prospective
+  Claim/Evidence IDs, Observation/Snapshot/Source provenance and zero-write flags against current
+  staging before persistence. Every value matched the prior dry-run receipt exactly.
+- The canonical batch commit path then executed one atomic transaction and returned `COMMITTED`,
+  `item_count=10`, `claims_created=10`, `claims_reused=0`, `organizations_created=0`,
+  `organizations_reused=10`, `write_performed=true`,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The ten persisted Claim/Evidence IDs exactly matched the prior dry-run receipt; no reviewed
+  item, Organization binding or provenance reference changed between dry-run and commit.
+- Post-commit read-only PostgreSQL verification returned Organizations `347`, Claims `5492`,
+  ClaimEvidence `5492`, Gukgam observations `57` and Gukgam source runs `14`.
+- Live staging Web verification returned public Claim-backed targets `26` across `2` committees.
+  All `10/10` new Claim IDs and `10/10` new ClaimEvidence IDs were present in the rendered public
+  projection, while `review_key` and `match_class` remained absent.
+- The private Railway PostgreSQL tunnel and temporary commit/verification artifacts were closed or
+  deleted after verification. No public API/Postgres domain or new resource was created.
+- The eighth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
+  `d9102c2bd71002725228322458dd45d40187bb5ef00131969ba1ee1e2c7fdbf0`.
+
 ## Next concrete action
 
-Use only the exact reviewed ten-item manifest with SHA-256
-`d9102c2bd71002725228322458dd45d40187bb5ef00131969ba1ee1e2c7fdbf0` in the next separate
-commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly
-these ten `(review_key, organization_id)` pairs, and run a fresh no-write preflight. Require exact
-manifest/hash/Organization/Claim/Evidence/provenance/zero-write equality with this receipt before
-one canonical atomic commit. Do not add the eleventh candidate or any later occurrence.
+Run a separate dry-run-only slice using exactly the next `10` current unpublished exact-one
+reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an
+explicit ten-item manifest, run the unchanged no-write preflight twice, require deterministic
+receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
