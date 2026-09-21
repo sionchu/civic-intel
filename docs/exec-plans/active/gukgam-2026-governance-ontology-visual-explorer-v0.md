@@ -997,10 +997,47 @@ Staging must stay noindex.
 - The sixth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
   `6ba9411125127d2fcb58bb16fe271ffc745a79bc8fc7114716d060c053a655db`.
 
+## Current checkpoint — seventh reviewed Gukgam manifest dry-run (2026-09-21)
+
+- Exact canonical `master` was `cc4e51ebb5276ac3162f7714587265c8e98aacb6`; the worktree
+  was clean and no newer concurrent Gukgam batch PR existed before this slice.
+- A private Railway PostgreSQL SSH tunnel was used only for read-only staging discovery and
+  verification. No public API/Postgres domain was created and no repository dependency changed.
+- Read-only discovery found `96` current exact-one audited-target occurrences without a published
+  Gukgam Claim. The first two in canonical reviewed-schedule order were 연구개발특구진흥재단
+  (`3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:35`, Organization
+  `e67f5343-ab30-51fd-bf96-4610f25cc318`) and 한국과학기술기획평가원
+  (`3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:36`, Organization
+  `121bf96a-30c3-5ad9-822f-c759c1b57a2e`).
+- The next observed exact-one occurrence was target:38; it was not added to the manifest.
+- The explicit two-item manifest was written manually and canonicalized to SHA-256
+  `0644ba99b1bdae7079160db125dc214550cf5fab07aed14b3497d0c97191a8a8`.
+- Two unchanged executions of the canonical no-write batch preflight against current staging
+  produced byte-identical receipts with the same manifest hash and canonical item order.
+- 연구개발특구진흥재단 returned prospective Claim `d23dd77c-94be-5160-8245-bfc59880a9de`,
+  ClaimEvidence `6fcf671d-b05a-5269-9386-c47663868eb4`, FeederObservation
+  `42fe6d0c-8da1-44ad-aaf6-826a24b7eb57`, SourceSnapshot
+  `78ceba04-d4ff-4b78-a41c-527de8a9b728` and Source
+  `429d851c-3a6c-4756-8b3a-3ace5266d064`.
+- 한국과학기술기획평가원 returned prospective Claim `3da83dd6-7251-5798-ad9c-a26368fa9c6a`,
+  ClaimEvidence `fcdd17d7-d192-5f0c-aea4-1ec01917d12e`, the same FeederObservation,
+  SourceSnapshot and Source.
+- Both receipts preserved `status=DRY_RUN`, `write_performed=false`,
+  `batch_commit_available=false`, `automatic_candidate_enumeration=false` and
+  `network_fetch=false`. No batch `--commit` command was executed.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5480`,
+  ClaimEvidence `5480`, Gukgam observations `57`, Gukgam source runs `14`, public
+  Claim-backed targets `14` and public committee count `1`.
+- The private tunnel, temporary discovery/preflight scripts, manifest, receipts and Web
+  verification files were deleted after use. The temporary local PostgreSQL driver was also
+  uninstalled; pre-existing Railway SSH keys were left untouched.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice for the next reviewed manifest. Re-read current staging and
-current exact-one unpublished reviewed occurrences, manually select only the next two in canonical
-reviewed-schedule order, assemble an explicit manifest, and run the unchanged no-write preflight.
-Do not auto-enumerate into the manifest, do not substitute candidates, do not create Organizations,
-and do not execute batch `--commit` in that same slice.
+Use only the exact reviewed manifest with SHA-256
+`0644ba99b1bdae7079160db125dc214550cf5fab07aed14b3497d0c97191a8a8` in the next separate
+commit slice. Re-verify canonical master, concurrent PRs and staging baseline, recreate the same
+explicit two-item manifest manually, run a fresh commit-time no-write preflight, and require exact
+identity/hash/zero-write equality with this seventh dry-run. Only then execute one canonical
+reviewed batch commit with the exact expected manifest SHA. Do not expand, substitute or
+auto-select candidates, and do not create Organizations.
