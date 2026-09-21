@@ -1278,9 +1278,67 @@ Staging must stay noindex.
 - The ninth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
   `9cde9f2d0047b23c1dcdec12f4c85b41d998650c01c669d786776712bb9c0f04`.
 
+## Current checkpoint — tenth reviewed Gukgam 20-item manifest dry-run (2026-09-22)
+
+- Exact canonical `master` was `320895f4632c63b940fa642a57c0795d7cfc3d3d`; the worktree
+  was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Fresh staging baseline was Organizations `347`, Claims `5512`, ClaimEvidence `5512`, Gukgam
+  observations `57`, Gukgam source runs `14`, public Claim-backed targets `46` and public
+  committee count `3`; public HTML exposed neither `review_key` nor `match_class`.
+- Read-only discovery found `64` current exact-one audited-target occurrences without a published
+  Gukgam Claim. Exactly the first `20` were selected in canonical reviewed-schedule discovery order.
+  The 21st occurrence, 영화진흥위원회 (`schedule:3:audited-target:10`), was explicitly outside
+  this manifest boundary.
+- The manually written twenty-item manifest canonicalized to SHA-256
+  `71167ba4936f2212dc7b15195d1a247902d27061882d05fe96e3d98ec1319898`.
+- Explicit reviewed manifest items were:
+  - 한국농업기술진흥원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:7` — Organization `d7314288-bd56-5cea-82fc-e62e55615001`
+  - 한국마사회 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:4:audited-target:4` — Organization `dc61f48c-e361-52fa-9753-77a5829652c7`
+  - 해양환경공단 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:2` — Organization `8f406a63-8e71-5f13-93ba-ff4d059af867`
+  - 부산항만공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:4` — Organization `5190c91c-9bf2-5961-9143-db6d8f25e4fd`
+  - 인천항만공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:5` — Organization `03acf9f3-dc64-57f3-8fed-9888cd57be21`
+  - 여수광양항만공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:6` — Organization `724df4e1-493f-5aca-82de-7b9db9e14cf2`
+  - 울산항만공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:7` — Organization `342c5bf1-67d9-5807-b9a7-a4ef3c7ec5ea`
+  - 해양수산과학기술진흥원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:8` — Organization `4030bed7-0f2b-54d3-be82-b396022df1e2`
+  - 한국어촌어항공단 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:9` — Organization `9282e978-81e4-5ed1-8b86-03008b255fcb`
+  - 국립인천해양박물관 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:10` — Organization `8dced1eb-e115-5f91-83a7-295e7205c465`
+  - 한국항로표지기술원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:11` — Organization `e6c2c245-4aca-5710-8c07-7d73b3c3f2fe`
+  - 한국해양조사협회 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:12` — Organization `733b47d2-b314-563d-a673-877f49d67f77`
+  - 한국산림복지진흥원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:2` — Organization `3d98e0b2-d311-5d7f-a733-a7031446599e`
+  - 한국수목원정원관리원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:3` — Organization `28b70174-38ca-5e34-9ccc-53f3394763aa`
+  - 한국임업진흥원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:4` — Organization `dafb1cd2-6f8d-5527-aa59-1b66bb0afc85`
+  - 국가유산진흥원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:2:audited-target:7` — Organization `68e40a6a-21c5-564f-ab5b-48e0ec352fc7`
+  - 한국콘텐츠진흥원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:1` — Organization `fba0fd3e-607c-5c3e-bb60-d073c4ebe654`
+  - 한국문화정보원 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:7` — Organization `03fc31c6-6c37-5f01-8ae4-b0beccbb7711`
+  - 세종학당재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:8` — Organization `2f793b53-fe24-5d79-8716-585f0bf75af1`
+  - 국립아시아문화전당재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:3:audited-target:9` — Organization `c1a2cdb7-1133-5e7c-b5e3-d7e95d51339b`
+- Two unchanged executions of the canonical no-write batch preflight produced byte-identical
+  receipts. Both returned `DRY_RUN`, `item_count=20`, `write_performed=false`,
+  `batch_commit_available=false`, `automatic_candidate_enumeration=false` and
+  `network_fetch=false`.
+- The exact canonical dry-run receipt bytes are pinned by SHA-256
+  `efc12263bd56bf66b56d23ab61ecc0bdad30f7159c772cec56e0da9debaed836`; this receipt covers all
+  twenty prospective Claim/Evidence IDs and their exact Organization/Observation/Snapshot/Source
+  values, so the next commit slice must reproduce the complete receipt, not only the manifest hash.
+- Agriculture items use SourceSnapshot `43a11905-2beb-4cc5-a829-f3d78a6492e4`, Source
+  `920a5369-5315-44ab-9c76-eea01b94164e` and exact schedule-row observations
+  `15517e33-2665-43a1-8de3-b22d503c9beb`, `d2043a2a-e5f1-4641-b536-dbd93036606d`,
+  `9bec7c98-0e52-418d-92c1-1ab671e78b3a` and `f8bb8742-2e7a-46cc-badb-48a9ec2e2bdf`.
+- Culture/Sports/Tourism items use SourceSnapshot `670b558e-c9ea-473f-b5ee-1833a80ef27e`, Source
+  `94055d1a-977d-4568-b004-7a3ebcfd6c03` and exact schedule-row observations
+  `0de1aa78-759b-4809-9363-3e000c823db4` and `7a9e51a5-a4d1-4e02-be89-96fbba6f7cfa`.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5512`,
+  ClaimEvidence `5512`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed
+  targets `46` and public committee count `3`; public HTML exposed neither `review_key` nor
+  `match_class`. No batch commit was executed in this slice.
+- All private tunnels and temporary discovery/manifest/preflight/Web artifacts were closed or
+  deleted after verification. No public API/Postgres domain or new Railway resource was created.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice using exactly the next `20` current unpublished exact-one
-reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an
-explicit twenty-item manifest, run the unchanged no-write preflight twice, require deterministic
-receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
+Use only the exact reviewed twenty-item manifest with SHA-256
+`71167ba4936f2212dc7b15195d1a247902d27061882d05fe96e3d98ec1319898` in the next separate
+commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly
+the twenty documented `(review_key, organization_id)` pairs, and run a fresh no-write preflight.
+Require exact receipt SHA-256 `efc12263bd56bf66b56d23ab61ecc0bdad30f7159c772cec56e0da9debaed836`
+before one atomic commit. Do not add 영화진흥위원회 or any later occurrence.
