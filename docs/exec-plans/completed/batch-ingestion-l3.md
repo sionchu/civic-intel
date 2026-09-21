@@ -454,7 +454,7 @@ Then propose exactly one next feeder as Next Best Action.
 
 ## Next Best Action
 
-The [Government Public Ethics Committee retired-public-official employment-review source gate](government-public-ethics-employment-review-l3.md)
+The [Government Public Ethics Committee retired-public-official employment-review source gate](../blocked/government-public-ethics-employment-review-l3.md)
 and the follow-on [KDI institute-profile source gate](../../architecture/POLICY_RESEARCH_FEEDER.md#institute-profile-source-gate-kdi-pilot-2026-09-13)
 are complete. MPM remains `L1 CONTRACT_STAGED; L3 promotion blocked`, and the KDI automated
 research-career path remains `L0 RESEARCHED; BLOCKED`; neither has an implementation ExecPlan

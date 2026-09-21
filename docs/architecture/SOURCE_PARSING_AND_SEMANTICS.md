@@ -98,7 +98,7 @@ The official [historical member-career service contract](https://open.assembly.g
 is the concrete validation case for this document. It is a separate service from the current
 National Assembly roster API; the catalog names its endpoint `nfzegpkvaclgtscxt`, requires a
 term-scoped `PROFILE_UNIT_CD` query, labels the service version `1 (21-01-08)`, and reports no
-request limit. The active [CHANGE plan's source gate](../exec-plans/active/change-discovery-experience-v1.md)
+request limit. The active [CHANGE plan's source gate](../exec-plans/completed/change-discovery-experience-v1.md)
 records the read-only 2026-09-13 contract probe: pages were complete for the observed code
 range, but the provider does not publish a finite code manifest, stable row key, correction
 semantics or service-specific reuse decision. Its separate term-inventory service publishes

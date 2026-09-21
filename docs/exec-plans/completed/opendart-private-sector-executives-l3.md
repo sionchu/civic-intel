@@ -306,6 +306,6 @@ immutability and review isolation pass locally, so this plan closes at L3.
 ## Next Best Action
 
 The Government Public Ethics Committee retired-public-official employment-review lane is now
-tracked by [the source-gate plan](government-public-ethics-employment-review-l3.md). It remains
+tracked by [the source-gate plan](../blocked/government-public-ethics-employment-review-l3.md). It remains
 L1 until the exact published universe, decision-record identifier, coverage/version semantics
 and permitted structured access contract are established.

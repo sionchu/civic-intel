@@ -1067,10 +1067,34 @@ Staging must stay noindex.
 - The seventh reviewed batch is fully committed and verified. Do not replay manifest SHA-256
   `0644ba99b1bdae7079160db125dc214550cf5fab07aed14b3497d0c97191a8a8`.
 
+## Current checkpoint — control-plane RE0 and reviewed-batch operating decision (2026-09-21)
+
+- RE0 started from exact `origin/master` `145900ff6082846998f350c6529b6854faf78996`; the prior
+  local master was one commit behind, so no change was made until the checkout was fast-forwarded.
+- `docs/exec-plans/active/` had accumulated historical plans. Status audit moved `34` explicitly
+  completed plans to `docs/exec-plans/completed/` and `7` blocked/source-gate plans to
+  `docs/exec-plans/blocked/`. Only this Gukgam plan remains in `active/`.
+- Documentation links were rewritten to the canonical new paths and a local Markdown-link audit
+  found only two cross-category relative links; both were corrected.
+- GitHub control-plane cleanup closed stale/superseded PRs `#98`, `#84`, `#69` and obsolete issue
+  `#62`. Draft PR `#75` remains open as `KEEP DEFERRED` for the later CONNECTION phase and must be
+  rebased/re-reviewed before any future merge.
+- The reviewed Gukgam manifest/commit implementation has no two-item production limit: it accepts
+  a non-empty explicit manifest Sequence, re-preflights every supplied item, rejects partial
+  publication state and persists the complete batch in one transaction.
+- A new local regression exercised one explicit ten-item reviewed manifest through the same
+  canonical no-write preflight and batch commit path. The focused Gukgam batch test file passed
+  `12/12`; the ten-item case created zero Organizations, reused `10`, created `10` Claims and
+  preserved deterministic manifest/hash and zero-write preflight semantics.
+- Therefore the next expansion trial uses an operational cap of `10` explicitly reviewed items.
+  This is an operator/runbook decision, not a schema or parser limit and not permission to
+  auto-enumerate, rank, expand aliases, substitute candidates or create Organizations.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice for the next reviewed manifest. Re-read current staging and
-current exact-one unpublished reviewed occurrences, manually select only the next two in canonical
-reviewed-schedule order, assemble an explicit manifest, and run the unchanged no-write preflight.
-Do not auto-enumerate into the manifest, do not substitute candidates, do not create Organizations,
-and do not execute batch `--commit` in that same slice.
+Run one separate dry-run-only Gukgam slice using exactly the next `10` current unpublished
+exact-one reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first,
+record the ten review keys and existing Organization IDs explicitly, build one manifest manually,
+run the unchanged no-write preflight twice, require deterministic receipt equality and unchanged
+staging/public counts, and do not execute batch `--commit` in that same slice. A successful dry-run
+may be followed only by a separate commit slice using the exact manifest SHA from that dry-run.

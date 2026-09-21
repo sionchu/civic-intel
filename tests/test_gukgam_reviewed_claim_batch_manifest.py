@@ -203,6 +203,59 @@ def test_batch_manifest_dry_run_is_deterministic_and_writes_nothing(
     )
 
 
+def test_ten_item_manifest_uses_same_preflight_and_atomic_commit_contract(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository, database_url = migrated_repository(tmp_path / "batch-ten-items.db")
+    raw = packet_payload()
+    provider_record_key = commit_packet(repository, raw)
+    targets = raw["schedule"][0]["audited_targets"][:10]
+    organization_ids = [insert_organization(repository, target) for target in targets]
+    review_keys = [
+        gukgam_review_key(provider_record_key, index)
+        for index in range(1, 11)
+    ]
+    manifest = parse_reviewed_gukgam_claim_batch_manifest(
+        manifest_payload(list(zip(review_keys, organization_ids, strict=True)))
+    )
+    manifest_path = tmp_path / "ten-item-manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest.canonical_payload(), ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    assert main(
+        ["--database-url", database_url, "--manifest", str(manifest_path)]
+    ) == 0
+    dry_run = json.loads(capsys.readouterr().out)
+    assert dry_run["item_count"] == 10
+    assert dry_run["write_performed"] is False
+    assert dry_run["automatic_candidate_enumeration"] is False
+    assert repository.claims() == []
+
+    assert batch_commit_main(
+        [
+            "--database-url",
+            database_url,
+            "--manifest",
+            str(manifest_path),
+            "--expected-manifest-sha256",
+            manifest.sha256(),
+            "--commit",
+        ]
+    ) == 0
+    committed = json.loads(capsys.readouterr().out)
+    assert committed["status"] == "COMMITTED"
+    assert committed["item_count"] == 10
+    assert committed["organizations_created"] == 0
+    assert committed["organizations_reused"] == 10
+    assert committed["claims_created"] == 10
+    assert committed["claims_reused"] == 0
+    assert committed["write_performed"] is True
+    assert len(repository.claims()) == 10
+
+
 def test_batch_manifest_rejects_duplicate_review_key() -> None:
     organization_id = uuid4()
     review_key = "row:audited-target:1"
