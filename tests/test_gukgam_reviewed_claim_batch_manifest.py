@@ -14,7 +14,12 @@ from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_pla
 from packages.domain.db import OrganizationRow
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
-from packages.rendering.gukgam_organization_binding_review import gukgam_review_key
+from packages.rendering.gukgam_organization_binding_review import (
+    EXACT_ONE,
+    build_gukgam_organization_binding_review,
+    gukgam_review_key,
+)
+from packages.rendering.gukgam_schedule_review import load_current_gukgam_schedule_review
 from packages.verification.gukgam_reviewed_plan_import import (
     GUKGAM_REVIEWED_PLAN_FEEDER,
     ReviewedGukgamArtifactProof,
@@ -22,6 +27,8 @@ from packages.verification.gukgam_reviewed_plan_import import (
 )
 from workers.gukgam_reviewed_claim_batch_commit import (
     GUKGAM_REVIEWED_CLAIM_BATCH_COMMIT_SEMANTICS,
+    commit_reviewed_gukgam_claim_batch,
+    prepare_reviewed_gukgam_claim_batch_commit,
 )
 from workers.gukgam_reviewed_claim_batch_commit import (
     main as batch_commit_main,
@@ -254,6 +261,61 @@ def test_ten_item_manifest_uses_same_preflight_and_atomic_commit_contract(
     assert committed["claims_reused"] == 0
     assert committed["write_performed"] is True
     assert len(repository.claims()) == 10
+
+
+def test_batch_commit_reuses_one_organization_for_repeated_audit_occurrences(
+    tmp_path: Path,
+) -> None:
+    repository, _database_url = migrated_repository(
+        tmp_path / "batch-repeated-organization.db"
+    )
+    commit_packet(repository, packet_payload())
+    organization_id = insert_organization(repository, "과학기술정보통신부")
+    review = build_gukgam_organization_binding_review(
+        load_current_gukgam_schedule_review(repository),
+        repository.organizations(current_only=True),
+    )
+    repeated = [
+        item
+        for item in review.items
+        if item.audited_target == "과학기술정보통신부"
+        and item.match_class == EXACT_ONE
+        and len(item.candidates) == 1
+        and item.candidates[0].organization_id == organization_id
+    ]
+    assert len(repeated) == 2
+
+    manifest = parse_reviewed_gukgam_claim_batch_manifest(
+        manifest_payload(
+            [(item.review_key, organization_id) for item in repeated]
+        )
+    )
+    prepared = prepare_reviewed_gukgam_claim_batch_commit(
+        repository,
+        manifest,
+        expected_manifest_sha256=manifest.sha256(),
+    )
+    first = commit_reviewed_gukgam_claim_batch(repository, prepared)
+    assert first["status"] == "COMMITTED"
+    assert first["item_count"] == 2
+    assert first["organizations_created"] == 0
+    assert first["organizations_reused"] == 1
+    assert first["claims_created"] == 2
+    assert first["claims_reused"] == 0
+    assert len(repository.claims(organization_id=organization_id)) == 2
+
+    retry = prepare_reviewed_gukgam_claim_batch_commit(
+        repository,
+        manifest,
+        expected_manifest_sha256=manifest.sha256(),
+    )
+    second = commit_reviewed_gukgam_claim_batch(repository, retry)
+    assert second["status"] == "REUSED"
+    assert second["organizations_created"] == 0
+    assert second["organizations_reused"] == 1
+    assert second["claims_created"] == 0
+    assert second["claims_reused"] == 2
+    assert second["write_performed"] is False
 
 
 def test_batch_manifest_rejects_duplicate_review_key() -> None:

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
 
+from packages.domain.contracts import Organization
 from packages.persistence import OrganizationClaimImportError, SqlAlchemyRepository
 from packages.persistence.repository import OrganizationClaimBatchResult
 from packages.rendering.gukgam_organization_binding_review import (
@@ -212,8 +213,17 @@ def persist_prepared_reviewed_gukgam_claim_batch(
             "Gukgam prepared batch persistence refuses pre-existing Claims"
         )
 
+    organizations_by_id: dict[UUID, Organization] = {}
+    for item in dry_run.prepared_items:
+        existing = organizations_by_id.get(item.organization.id)
+        if existing is not None and existing != item.organization:
+            raise ValueError(
+                "Gukgam prepared batch has inconsistent duplicate Organization semantics"
+            )
+        organizations_by_id[item.organization.id] = item.organization
+
     return repository.import_organization_claim_batch(
-        [item.organization for item in dry_run.prepared_items],
+        list(organizations_by_id.values()),
         [
             (item.organization, item.claim, [item.evidence])
             for item in dry_run.prepared_items
