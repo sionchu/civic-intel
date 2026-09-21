@@ -3222,6 +3222,39 @@ start/end date semantics.
 - The private Railway PostgreSQL tunnel and temporary commit/preflight/Web artifacts were closed or removed after verification. No public API/Postgres domain, new Railway resource or Organization creation occurred.
 - The eleventh reviewed batch is fully committed and verified. Do not replay manifest SHA-256 `2d4be686649de5ee76a6ba82d5658098feb1f895721d1287c2e630c10e84b884`.
 
+## Current checkpoint — twelfth reviewed Gukgam 20-item manifest dry-run (2026-09-22)
+
+- Exact canonical `master` was `98b419de391ca3a108790152d5a3c735093d1165`; the worktree was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Fresh staging baseline was Organizations `347`, Claims `5552`, ClaimEvidence `5552`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `86` and public committee count `4`.
+- Read-only discovery found `24` current exact-one audited-target occurrences without a published Gukgam Claim.
+- Exactly the first `20` occurrences in canonical reviewed-schedule order were selected explicitly; the remaining four begin with 전국재해구호협회 (`3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:8`) and were excluded from this manifest.
+- The manually written twenty-item manifest canonicalized to SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`.
+- Explicit reviewed manifest items and prospective Claim/Evidence IDs were:
+  - 대한체육회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:6:audited-target:1` — Organization `b49fbf94-cd32-5ece-b905-7e856be28fe7` — Claim `b52aa637-f16b-5ac7-8668-aeafffcf93cc` — Evidence `3560d080-1851-54ab-be04-23bd968f8e34`
+  - 서울올림픽기념국민체육진흥공단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:6:audited-target:2` — Organization `c62ae3a0-74fa-5c57-b832-e5988e3ec2b7` — Claim `9397658d-41fa-5119-b8bf-f3b507abea67` — Evidence `e2c79dc2-3219-58bb-9acd-99ba7e8d85f2`
+  - 스포츠윤리센터 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:6:audited-target:5` — Organization `fdc2cacb-6ecc-5e4f-a939-31901753e351` — Claim `3bab6314-9e6d-59e2-befe-024e413914af` — Evidence `8b1c12ab-47ce-5065-b699-66267b15e549`
+  - 대한장애인체육회 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:6:audited-target:6` — Organization `bea8e753-c2ea-5609-9241-b795b8a54eb2` — Claim `8f13fc54-59dc-5f1d-b1f9-3a2bcd606081` — Evidence `c948a7e4-d278-58a4-9a57-3535b62d51bd`
+  - 태권도진흥재단 — `3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:6:audited-target:7` — Organization `71d93bc7-58ea-5f62-944e-8342b663477c` — Claim `bf16c651-0bf3-57f2-b412-4368665f0f86` — Evidence `50100d78-ce2e-5151-a2bc-d4a338cba236`
+  - 한국지능정보사회진흥원 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:4` — Organization `463e5ec7-6743-5b19-b71a-5407bc0f6572` — Claim `a446f4e8-4679-5ea5-8fea-9b979166a1f9` — Evidence `64c72d40-7afd-5e98-a4f4-bb281741637a`
+  - 한국승강기안전공단 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:5` — Organization `120bdf2e-94c5-5713-a332-48e7caf6aadd` — Claim `511d541a-96c4-5156-b95d-af9b66b0bb62` — Evidence `b915ab25-6807-552a-a777-61161f7b7d8b`
+  - 민주화운동기념사업회 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:6` — Organization `831eacda-b90e-5c31-9907-04488360b133` — Claim `89272288-ab2b-5b3a-ab77-ead76a0ebb60` — Evidence `738d25db-7399-5ba0-8c9d-70961d60e668`
+  - 한국관세정보원 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:10` — Organization `30cb580d-2397-5151-8403-2073dfcd12c0` — Claim `a8eb6f90-a1fe-571b-a681-09d65d8b5b8e` — Evidence `4bfbc811-1671-510b-aa37-4606c86d6781`
+  - 한국수출입은행 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:3` — Organization `348e6aae-4bca-5418-ab6e-7e3595755856` — Claim `d2fb8df6-b092-506d-a758-52ce3604a163` — Evidence `5ae5f1bf-7523-5322-8b2e-2b4f8695f848`
+  - 한국조폐공사 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:4` — Organization `d1be0a71-ce79-5bbe-9fff-cf8cf870dd33` — Claim `bfe4e858-35bd-590e-a475-a09806b751a5` — Evidence `bae0eef3-1808-5132-b458-b83b971f2900`
+  - 한국투자공사 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:5` — Organization `10932068-6af0-5656-a889-75b4ae38ea76` — Claim `a5ef886e-3f93-5519-b003-3bfd05e782e3` — Evidence `73df5949-a65a-537c-a99d-45e62dbe34e2`
+  - 한국재정정보원 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:6` — Organization `ce185bd2-e0b5-5428-8bef-248190e5a13d` — Claim `3d693e6f-5f40-5999-9055-bbde5d702a3d` — Evidence `36f71213-35f9-54e1-9d7a-32c1954d5064`
+  - 한국원산지정보원 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:7` — Organization `1bad0861-000e-5859-90b6-35a5b55d9452` — Claim `76c73045-98cf-5c94-9d46-e7adbfcbec5b` — Evidence `5c400af5-9ad6-5296-985a-4236edc4a3de`
+  - 한국수출입은행 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:1` — Organization `348e6aae-4bca-5418-ab6e-7e3595755856` — Claim `fd4b2fdd-ebee-5c02-bcb5-cfeb84257006` — Evidence `9e9d8b9e-ba80-5520-8d9d-1651b70f7b76`
+  - 한국조폐공사 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:2` — Organization `d1be0a71-ce79-5bbe-9fff-cf8cf870dd33` — Claim `11a4494c-f0d9-5929-b9bd-8eb1bc5dbde8` — Evidence `d2e6de1c-b44b-57b6-8630-428727b4b639`
+  - 한국투자공사 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:3` — Organization `10932068-6af0-5656-a889-75b4ae38ea76` — Claim `2d4afa56-39cb-5824-9317-2093c2501665` — Evidence `cf3f4baf-8a7b-5879-b9c7-0d16fbf3c28f`
+  - 한국재정정보원 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:4` — Organization `ce185bd2-e0b5-5428-8bef-248190e5a13d` — Claim `0405289c-5dde-592f-a4ec-56b389d10b50` — Evidence `f8b1372c-0f0a-572d-af20-b9cdb0880e6d`
+  - 한국원산지정보원 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:5` — Organization `1bad0861-000e-5859-90b6-35a5b55d9452` — Claim `401031de-aa86-5d20-a85a-35d0e77dfef0` — Evidence `42350ca1-7acb-541a-876c-54449b722ba9`
+  - 한국관세정보원 — `3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:8` — Organization `30cb580d-2397-5151-8403-2073dfcd12c0` — Claim `11c6cbf8-e143-524d-932b-a75b073c8913` — Evidence `39408c85-beb6-5e0d-a027-86858ef8aba8`
+- Two unchanged staging no-write preflights produced byte-identical receipts. Receipt SHA-256 was `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e`.
+- Both receipts returned `DRY_RUN`, `item_count=20`, `all_preflights_passed=true`, `write_performed=false`, `batch_commit_available=false`, `automatic_candidate_enumeration=false` and `network_fetch=false`; every item preserved `claim_persisted=false` and `organization_created=false`.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5552`, ClaimEvidence `5552`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `86` and public committee count `4`; public HTML exposed neither `review_key` nor `match_class`.
+- No batch commit was executed in this slice.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice using exactly the next `20` current unpublished exact-one reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an explicit twenty-item manifest, run the unchanged no-write preflight twice, require deterministic receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
+Use only the exact reviewed twenty-item manifest with SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7` in the next separate commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly these twenty `(review_key, organization_id)` pairs, and require a fresh no-write preflight receipt byte-identical to SHA-256 `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e` before one atomic commit. Do not add the remaining four occurrences.
