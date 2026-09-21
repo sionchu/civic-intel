@@ -1090,11 +1090,72 @@ Staging must stay noindex.
   This is an operator/runbook decision, not a schema or parser limit and not permission to
   auto-enumerate, rank, expand aliases, substitute candidates or create Organizations.
 
+## Current checkpoint — eighth reviewed Gukgam 10-item manifest dry-run (2026-09-21)
+
+- Exact canonical `master` was `84e3b3c004ddf288e2808bbc0ad12fee8cc53a57`; the worktree
+  was clean and no newer concurrent Gukgam batch PR existed before this slice. Draft PR `#75`
+  remained the only open PR and stayed deferred/out of scope.
+- Fresh staging baseline was Organizations `347`, Claims `5482`, ClaimEvidence `5482`, Gukgam
+  observations `57`, Gukgam source runs `14`, public Claim-backed targets `16` and public
+  committee count `1`. Public HTML exposed neither `review_key` nor `match_class`.
+- Read-only discovery found `94` current exact-one audited-target occurrences without a published
+  Gukgam Claim. The operating decision from control-plane RE0 was applied: select exactly the
+  first `10` occurrences in canonical reviewed-schedule discovery order, with no automatic
+  manifest enumeration, ranking, alias expansion, candidate substitution or Organization creation.
+- The selected set is seven Science Committee occurrences followed by three Defense Committee
+  occurrences. The next occurrence, 국방과학연구소 (`schedule:4:audited-target:2`), was explicitly
+  outside this manifest boundary.
+- The manually written ten-item manifest canonicalized to SHA-256
+  `d9102c2bd71002725228322458dd45d40187bb5ef00131969ba1ee1e2c7fdbf0`.
+- Explicit reviewed manifest items were:
+  - 한국원자력의학원 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:38` — Organization `db1109cf-bef6-5fd7-850f-697fc4d833e0`
+  - 국립대구과학관 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:39` — Organization `03cd9918-a60e-5dc5-8e0a-96084680dd51`
+  - 국립광주과학관 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:40` — Organization `6a338202-0120-533e-bd36-f0fe96f6c71a`
+  - 국립부산과학관 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:41` — Organization `6bd19af3-91fd-57af-96db-4ff42b8f5c70`
+  - 한국나노기술원 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:43` — Organization `f0c3ef32-b11d-58b6-827d-bd3d86e8d65c`
+  - 과학기술사업화진흥원 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:44` — Organization `f70d7fc6-f4f6-529a-a535-35f70742e231`
+  - 한국여성과학기술인육성재단 — `3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:45` — Organization `eb3c9580-c608-51ac-8793-e86bd0d77e62`
+  - 한국국방연구원 — `3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1:audited-target:23` — Organization `8dd66d94-2631-59d8-94de-07ebdb46fe45`
+  - 국방전직교육원 — `3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1:audited-target:25` — Organization `1d0d0df5-c42a-5501-b839-379764c1d3cb`
+  - 전쟁기념사업회 — `3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1:audited-target:27` — Organization `f18a9294-2269-51cb-8dbf-97c030844461`
+- Canonical manifest serialization sorts by `review_key`, so the deterministic receipt lists the
+  three Defense items before the seven Science items. That serialization order does not change the
+  reviewed discovery selection or authorize candidate reordering/substitution.
+- Two unchanged executions of the canonical no-write batch preflight produced byte-identical
+  receipts (`131.68 s` total for the two staging preflights). Both returned `DRY_RUN`,
+  `item_count=10`, `write_performed=false`, `batch_commit_available=false`,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- Prospective Claim / ClaimEvidence IDs were:
+  - 한국국방연구원 `62c22119-c37a-5db4-991d-8c4b829a31f8` / `a5a604eb-f59f-5e42-8fbb-558131225284`
+  - 국방전직교육원 `e17f3b83-4e2b-56ef-816d-23d81744f221` / `f7855eee-00f4-5dc0-a27e-ca5dcd31e81e`
+  - 전쟁기념사업회 `6fec67aa-241f-5bac-ad14-3425db29a58c` / `b8a22604-11f8-5f47-aa56-890f8717bad6`
+  - 한국원자력의학원 `c13f270a-fc3e-519e-a848-5a003ef7dd93` / `2277da96-0603-52a0-be27-f197cd0ca267`
+  - 국립대구과학관 `a7a8448f-a713-55ce-8e6b-d208d568b0a0` / `20f0146d-c581-5a26-a739-6b5c74763d98`
+  - 국립광주과학관 `096c85e4-a832-5818-84ad-8b07e2f65484` / `363c4b82-8b18-5ef3-9b22-c2f17d171bc3`
+  - 국립부산과학관 `6f44724a-8c6a-591f-aa4f-836c3c656e8b` / `4a9c56e5-d43d-54c6-a648-24789420450f`
+  - 한국나노기술원 `c641c758-fa07-5c0b-aaa8-e1896e0f33f6` / `8db3a546-4e32-5672-8298-b1f4725152a9`
+  - 과학기술사업화진흥원 `20b19389-0a07-58d6-9b30-76edc27f2555` / `89c848a1-b776-5f0c-979d-263ca39f255f`
+  - 한국여성과학기술인육성재단 `7779fa5e-0a39-5fc6-9ac3-3b2aa789bdc1` / `3d3f886b-1165-566c-8d98-814724e4f250`
+- The three Defense items share FeederObservation `fc649498-3c45-4c9a-941c-48cd6ad8a7f4`,
+  SourceSnapshot `9d011d49-f683-4873-9f24-d545b170393c` and Source
+  `077b433b-47b3-4501-a51f-e4fd248fb885`. The seven Science items share FeederObservation
+  `42fe6d0c-8da1-44ad-aaf6-826a24b7eb57`, SourceSnapshot
+  `78ceba04-d4ff-4b78-a41c-527de8a9b728` and Source
+  `429d851c-3a6c-4756-8b3a-3ace5266d064`.
+- Every item preserved `organization_created=false`, `claim_persisted=false`,
+  `claim_created=false`, `binding_committed=false` and `network_fetch=false`.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5482`,
+  ClaimEvidence `5482`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed
+  targets `16` and public committee count `1`. No batch commit was executed in this slice.
+- The private tunnel and all temporary discovery/manifest/preflight/Web artifacts were closed or
+  deleted after use. The project PostgreSQL driver remains installed because it is a canonical
+  `pyproject.toml` dependency.
+
 ## Next concrete action
 
-Run one separate dry-run-only Gukgam slice using exactly the next `10` current unpublished
-exact-one reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first,
-record the ten review keys and existing Organization IDs explicitly, build one manifest manually,
-run the unchanged no-write preflight twice, require deterministic receipt equality and unchanged
-staging/public counts, and do not execute batch `--commit` in that same slice. A successful dry-run
-may be followed only by a separate commit slice using the exact manifest SHA from that dry-run.
+Use only the exact reviewed ten-item manifest with SHA-256
+`d9102c2bd71002725228322458dd45d40187bb5ef00131969ba1ee1e2c7fdbf0` in the next separate
+commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly
+these ten `(review_key, organization_id)` pairs, and run a fresh no-write preflight. Require exact
+manifest/hash/Organization/Claim/Evidence/provenance/zero-write equality with this receipt before
+one canonical atomic commit. Do not add the eleventh candidate or any later occurrence.
