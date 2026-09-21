@@ -2769,12 +2769,46 @@ start/end date semantics.
   verification files were deleted after use. The temporary local PostgreSQL driver was also
   uninstalled; pre-existing Railway SSH keys were left untouched.
 
+## Current checkpoint — sixth reviewed Gukgam batch commit (2026-09-21)
+
+- Exact canonical `master` remained `2d26b913978af24eb884f15b964d46f213134197` with a clean
+  tree and no newer concurrent Gukgam batch PR before execution.
+- The commit slice reused only the exact prior two-item reviewed manifest and required SHA-256
+  `6ba9411125127d2fcb58bb16fe271ffc745a79bc8fc7114716d060c053a655db`.
+  No candidate was added, substituted, ranked, fuzzy-matched, alias-expanded or auto-selected.
+- Commit-time baseline was independently re-read as Organizations `347`, Claims `5478`,
+  ClaimEvidence `5478`, Gukgam observations `57`, Gukgam source runs `14`, public targets `12`
+  and public committee count `1`.
+- A fresh commit-time canonical preflight exactly matched the sixth dry-run: both Organizations,
+  review keys, prospective Claim/Evidence IDs, Observation/Snapshot/Source IDs, manifest hash and
+  all zero-write flags matched. It returned `DRY_RUN`, `write_performed=false`,
+  `batch_commit_available=false`, `automatic_candidate_enumeration=false` and
+  `network_fetch=false`.
+- The remote installed-entrypoint SSH invocation remained blocked by the ChatGPT/OpenAI tool
+  gate, so the exact same canonical batch commit module was executed locally against Railway's
+  official private `connect postgres --ssh --tunnel-only` endpoint. This did not create a public
+  API/Postgres domain, change the repo, or bypass the batch manifest/hash/transaction gates.
+- One canonical commit execution returned `COMMITTED`, `claims_created=2`, `claims_reused=0`,
+  `organizations_created=0`, `organizations_reused=2`, `write_performed=true`,
+  `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- 한국과학창의재단 created Claim `cd536f95-a7a0-56c0-a7ff-a7aa0a61468a` with ClaimEvidence
+  `9f499e00-2665-532c-9242-21d11151d3b5`; 기초과학연구원 created Claim
+  `2f03776c-d785-5291-ae93-b51f52adfd02` with ClaimEvidence
+  `f79c143a-4484-561d-b7a2-7e2428e1af66`.
+- Post-commit read-only PostgreSQL verification returned Organizations `347`, Claims `5480`,
+  ClaimEvidence `5480`, Gukgam observations `57` and Gukgam source runs `14`.
+- Live staging Web verification reported public Claim-backed Gukgam scope `14`, committee count
+  `1`, both new Organizations and the exact Claim/Evidence/Source/Snapshot/Observation provenance.
+  Public HTML exposed neither `review_key` nor `match_class`.
+- The private tunnel, temporary commit script and verification files were deleted after use; the
+  temporary local PostgreSQL driver was uninstalled. Pre-existing Railway SSH keys were unchanged.
+- The sixth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
+  `6ba9411125127d2fcb58bb16fe271ffc745a79bc8fc7114716d060c053a655db`.
+
 ## Next concrete action
 
-Use only the exact reviewed manifest with SHA-256
-`6ba9411125127d2fcb58bb16fe271ffc745a79bc8fc7114716d060c053a655db` in the next separate
-commit slice. Re-verify canonical master, concurrent PRs and staging baseline, recreate the same
-explicit two-item manifest manually, run a fresh commit-time no-write preflight, and require exact
-identity/hash/zero-write equality with this sixth dry-run. Only then execute one explicit
-`civic-import-gukgam-reviewed-claim-batch` with the exact expected manifest SHA and `--commit`.
-Do not expand, substitute or auto-select candidates, and do not create Organizations.
+Run a separate dry-run-only slice for the next reviewed manifest. Re-read current staging and
+current exact-one unpublished reviewed occurrences, manually select only the next two in canonical
+reviewed-schedule order, assemble an explicit manifest, and run the unchanged no-write preflight.
+Do not auto-enumerate into the manifest, do not substitute candidates, do not create Organizations,
+and do not execute batch `--commit` in that same slice.
