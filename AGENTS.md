@@ -41,6 +41,32 @@ For batch/full-enumeration work also read:
 - Checkpoints advance only with committed source/snapshot/observation data.
 - Do not model private-family discovery or precise residence in publishable contracts.
 
+## Statement and curated-source ingestion
+
+- Treat partisan, advocacy, media, research and other curated compilations as discovery sources
+  unless their reviewed `SourcePolicy` and field authority explicitly permit stronger use. They may
+  nominate statement candidates; they do not by themselves establish a canonical position,
+  contradiction, wrongdoing or truth claim.
+- Prefer deterministic extraction from structured/native text and layout-aware parsing before OCR
+  or model-assisted extraction. For PDFs preserve exact document, page, section/table and column or
+  side locators. OCR is a candidate transcription when no reliable text layer exists, not source
+  truth.
+- Separate seed extraction from source verification: discovery candidate -> locate the primary or
+  original source -> capture `SourceSnapshot` -> persist a policy-minimized `FeederObservation` ->
+  resolve identity -> pass the normal Claim/ClaimEvidence publication gate. If the primary source
+  cannot be verified, keep the item discovery/review-only.
+- Preserve exact quote boundaries, source-reported date, role/context, source URL or attachment
+  locator, and parser/normalization revision. Never guess or synthesize missing quote text, dates,
+  sources, identities or provenance.
+- Model assistance is advisory only for context summaries, topic suggestions, quote-boundary
+  proposals and related-statement retrieval/reranking. It cannot generate quotation text, repair
+  missing provenance, authorize a Person merge, or label a statement as a lie, flip-flop or
+  contradiction.
+- A source-provided taxonomy may be retained as source-scoped metadata, but it is not automatically
+  a canonical Civic Intel taxonomy. Related statements may be grouped by explicit topic/evidence;
+  relations such as clarifies, qualifies, supersedes or potentially contrasts remain derived and
+  reviewable, and fail closed to UNKNOWN when evidence is insufficient.
+
 ## Canonical persistence rules
 
 - Pydantic contracts own semantics; SQLAlchemy rows persist them; Alembic is the only schema
