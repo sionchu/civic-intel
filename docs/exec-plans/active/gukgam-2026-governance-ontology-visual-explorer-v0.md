@@ -1180,9 +1180,77 @@ Staging must stay noindex.
 - The eighth reviewed batch is fully committed and verified. Do not replay manifest SHA-256
   `d9102c2bd71002725228322458dd45d40187bb5ef00131969ba1ee1e2c7fdbf0`.
 
+## Current checkpoint — reviewed-batch operating cap expansion (2026-09-21)
+
+- The eighth reviewed ten-item batch committed atomically and passed independent post-commit DB and
+  public Web verification with zero Organization creation, zero automatic candidate enumeration
+  and unchanged source/observation counts.
+- User approval explicitly expands the next operating trial beyond ten items.
+- The next trial cap is `20` explicitly reviewed items. This changes only operator batch size; it
+  does not authorize automatic manifest enumeration, ranking, fuzzy matching, alias expansion,
+  candidate substitution or Organization creation.
+- Dry-run and write remain separate slices. A twenty-item dry-run must prove deterministic receipts
+  and unchanged staging/public counts before any later commit slice.
+
+## Current checkpoint — ninth reviewed Gukgam 20-item manifest dry-run (2026-09-21)
+
+- Exact canonical `master` was `1b9d466f71a416c33a39fba10c8219734dbbff97`; the worktree
+  was clean before the slice and deferred draft PR `#75` remained out of scope.
+- Fresh staging baseline was Organizations `347`, Claims `5492`, ClaimEvidence `5492`, Gukgam
+  observations `57`, Gukgam source runs `14`, public Claim-backed targets `26` and public
+  committee count `2`; public HTML exposed neither `review_key` nor `match_class`.
+- Read-only discovery found `84` current exact-one audited-target occurrences without a published
+  Gukgam Claim. The approved expanded operating cap selected exactly the first `20` in canonical
+  reviewed-schedule order; the 21st occurrence, 한국농업기술진흥원 (`schedule:3:audited-target:7`),
+  was explicitly outside this manifest.
+- The manually written twenty-item manifest canonicalized to SHA-256
+  `9cde9f2d0047b23c1dcdec12f4c85b41d998650c01c669d786776712bb9c0f04`.
+- Explicit reviewed manifest items were:
+  - 국방과학연구소 — `3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:4:audited-target:2` — Organization `4a182dce-0f81-5832-a26f-a0aa7f2bcefb`
+  - 축산물품질평가원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:2` — Organization `f932bef7-3644-583e-9f23-b3b7757f6523`
+  - 가축위생방역지원본부 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:3` — Organization `64c30255-d978-5ff7-b9e2-1063fa609bed`
+  - 농업정책보험금융원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:4` — Organization `2cdb14b0-4d15-5790-9b50-1f93baaa6f79`
+  - 농림식품기술기획평가원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:5` — Organization `ac08219f-64e2-5ac0-856d-f6348afe982b`
+  - 농림수산식품교육문화정보원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:6` — Organization `50d241b8-6909-58a3-97bf-d97e89235eeb`
+  - 국립농업박물관 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:8` — Organization `a5dcdc8a-4aef-5507-a2d2-a28f12d39eb7`
+  - 한국수산자원공단 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:2` — Organization `a6c2727c-d1e1-5c4a-8dfc-89ec2c9c442f`
+  - 한국해양수산연수원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:3` — Organization `03cbb525-805a-58d9-99b3-7a54db0abd14`
+  - 한국해양진흥공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:4` — Organization `35783223-f568-5052-a128-93489a690864`
+  - 한국해양과학기술원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:5` — Organization `5927aaa2-aec8-5c13-b685-f00e242a1c96`
+  - 한국해양교통안전공단 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:6` — Organization `32d0efa8-5dcc-5e8d-834f-94a9cb6061a7`
+  - 국립해양생물자원관 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:7` — Organization `3570e89a-e3e5-5da6-b802-58e8b225ffac`
+  - 국립해양박물관 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:8` — Organization `c8f1550a-2c37-558e-8f1a-ad81f5ff23b3`
+  - 국립울진해양과학관 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:9` — Organization `8ca3659d-776b-520f-a6f6-630618e86f5f`
+  - 한국농어촌공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:2` — Organization `8f7e5441-b836-5e17-b5f2-032fa8f66682`
+  - 한국농수산식품유통공사 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:3` — Organization `8c640fe4-5063-51c3-8eff-0c78251007fd`
+  - 국제식물검역인증원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:4` — Organization `0a5f50f0-770b-5396-aec4-281b2af312f9`
+  - 한식진흥원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:5` — Organization `c4d81996-bbf3-5f41-87d5-b52079f2da07`
+  - 한국식품산업클러스터진흥원 — `3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:6` — Organization `fdcf5b2a-21bf-5a44-9add-2fbbea5ce73d`
+- Two unchanged executions of the canonical no-write batch preflight produced byte-identical
+  receipts. Both returned `DRY_RUN`, `item_count=20`, `write_performed=false`,
+  `batch_commit_available=false`, `automatic_candidate_enumeration=false` and
+  `network_fetch=false`.
+- The exact canonical dry-run receipt bytes are pinned by SHA-256
+  `b6f211014fcaa093e2af44284dc0efc1b7221f31abd3387c114614792b049ec7`; this receipt covers all
+  twenty prospective Claim/Evidence IDs and their Organization/Observation/Snapshot/Source values.
+- The Defense item used FeederObservation `4d1d4d64-586e-4fcf-a7fb-9fbc2a4b4407`,
+  SourceSnapshot `9d011d49-f683-4873-9f24-d545b170393c` and Source
+  `077b433b-47b3-4501-a51f-e4fd248fb885`.
+- The Agriculture items used SourceSnapshot `43a11905-2beb-4cc5-a829-f3d78a6492e4` and Source
+  `920a5369-5315-44ab-9c76-eea01b94164e`, with exact schedule-row observations retained by the
+  receipt (`7f2586d4-c1b6-457f-9fbf-f7da4aedc8ce`, `c535004b-bd33-4d58-af00-851c4852e91f`,
+  `15517e33-2665-43a1-8de3-b22d503c9beb`).
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5492`,
+  ClaimEvidence `5492`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed
+  targets `26` and public committee count `2`; public HTML still exposed neither `review_key` nor
+  `match_class`. No batch commit was executed in this slice.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice using exactly the next `10` current unpublished exact-one
-reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first, build an
-explicit ten-item manifest, run the unchanged no-write preflight twice, require deterministic
-receipt equality and unchanged counts, and do not execute `--commit` in that same slice.
+Use only the exact reviewed twenty-item manifest with SHA-256
+`9cde9f2d0047b23c1dcdec12f4c85b41d998650c01c669d786776712bb9c0f04` in the next separate
+commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly
+the twenty documented `(review_key, organization_id)` pairs, and run a fresh no-write preflight.
+Require the canonical receipt SHA-256
+`b6f211014fcaa093e2af44284dc0efc1b7221f31abd3387c114614792b049ec7` before one atomic
+commit. Do not add the 21st candidate or any later occurrence.
