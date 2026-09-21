@@ -91,7 +91,7 @@ recommendation algorithm or new persistence abstraction is in scope.
   Derived Intelligence boundary. Linked it from `ARCHITECTURE.md`, `docs/INDEX.md` and
   `docs/product/V0_SCOPE.md`; no code, schema, migration, feeder or dependency was added.
 - Defined the first CHANGE discovery slice in
-  `docs/exec-plans/active/change-discovery-experience-v1.md`. The plan uses existing temporal
+  `docs/exec-plans/completed/change-discovery-experience-v1.md`. The plan uses existing temporal
   Claim/Evidence inputs, requires pinned scope and provenance, and leaves implementation for the
   next approved vertical slice.
 - Added `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md` as the companion governing document
@@ -537,7 +537,7 @@ produce no name universe.
 
 - `AGENTS.md`
 - `DESIGN.md`
-- `docs/exec-plans/active/evidence-directory-site-v1.md`
+- `docs/exec-plans/completed/evidence-directory-site-v1.md`
 - `ARCHITECTURE.md`
 - `apps/api/main.py`
 - `apps/web/app/admin/review/page.tsx`
@@ -561,13 +561,13 @@ produce no name universe.
 - `docs/architecture/POLICY_RESEARCH_FEEDER.md`
 - `docs/architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
-- `docs/exec-plans/active/batch-ingestion-l3.md`
+- `docs/exec-plans/completed/batch-ingestion-l3.md`
 - `docs/architecture/IDENTITY_RESOLUTION.md`
 - `docs/INDEX.md`
-- `docs/exec-plans/active/assembly-roster-evidence-directory.md`
+- `docs/exec-plans/completed/assembly-roster-evidence-directory.md`
 - `workers/assembly_roster.py`
 - `tests/test_assembly_evidence_directory.py`
-- `docs/exec-plans/active/cleaneye-local-public-institution-executives-l3.md`
+- `docs/exec-plans/blocked/cleaneye-local-public-institution-executives-l3.md`
 - `HANDOFF.md`
 
 Source parsing and semantics documentation milestone:
@@ -576,7 +576,7 @@ Source parsing and semantics documentation milestone:
 - `ARCHITECTURE.md`
 - `docs/INDEX.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
-- `docs/exec-plans/active/change-discovery-experience-v1.md`
+- `docs/exec-plans/completed/change-discovery-experience-v1.md`
 - `docs/product/CIVIC_INTEL_NORTH_STAR.md`
 - `HANDOFF.md`
 
@@ -586,14 +586,14 @@ North Star documentation milestone:
 - `ARCHITECTURE.md`
 - `docs/INDEX.md`
 - `docs/product/V0_SCOPE.md`
-- `docs/exec-plans/active/change-discovery-experience-v1.md`
+- `docs/exec-plans/completed/change-discovery-experience-v1.md`
 
 Latest ALIO full-enumeration hardening also touched:
 
 - `docs/architecture/BATCH_INGESTION.md`
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `docs/architecture/PUBLIC_INSTITUTION_FEEDER.md`
-- `docs/exec-plans/active/alio-public-institution-executives-l3.md`
+- `docs/exec-plans/completed/alio-public-institution-executives-l3.md`
 - `packages/connectors/alio_disclosures.py`
 - `packages/domain/enums.py`
 - `tests/test_alio_public_institutions.py`
@@ -652,7 +652,7 @@ institution aggregate to a named Person.
   `civic-stage-alio-money` entry point using shared source/run/checkpoint/observation persistence.
 - Added `money.alio-head-expense-yoy.v1` as an in-memory deterministic projection with exact
   source/snapshot/observation references and explicit zero-baseline behavior.
-- Added the active plan `docs/exec-plans/active/alio-item12-money-v0.md` and updated the public
+- Added the active plan `docs/exec-plans/completed/alio-item12-money-v0.md` and updated the public
   institution, source semantics, coverage, North Star and index documentation.
 
 ### Verification evidence
@@ -693,7 +693,7 @@ institution aggregate to a named Person.
 - `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 - `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md`
 - `docs/product/CIVIC_INTEL_NORTH_STAR.md`
-- `docs/exec-plans/active/alio-item12-money-v0.md`
+- `docs/exec-plans/completed/alio-item12-money-v0.md`
 - `docs/INDEX.md`
 - `HANDOFF.md`
 
@@ -800,8 +800,8 @@ observation-only.
 - `docs/architecture/PUBLIC_INSTITUTION_FEEDER.md`
 - `docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md`
 - `docs/product/CIVIC_INTEL_NORTH_STAR.md`
-- `docs/exec-plans/active/alio-item12-claim-backed-money-projection-v0.md`
-- `docs/exec-plans/active/organization-claim-publication-v0.md`
+- `docs/exec-plans/completed/alio-item12-claim-backed-money-projection-v0.md`
+- `docs/exec-plans/completed/organization-claim-publication-v0.md`
 - `docs/INDEX.md`
 - `HANDOFF.md`
 
@@ -882,7 +882,7 @@ before adding any further ALIO institution Claims or a public organization page.
 
 ### Completed
 
-- Added [`alio-reviewed-organization-binding-workflow-v0.md`](docs/exec-plans/active/alio-reviewed-organization-binding-workflow-v0.md)
+- Added [`alio-reviewed-organization-binding-workflow-v0.md`](docs/exec-plans/completed/alio-reviewed-organization-binding-workflow-v0.md)
   as the separate active plan required before extending the reviewed C0908 slice.
 - Added `workers/alio_reviewed_claim_import.py` and the
   `civic-import-alio-reviewed-claims` entry point. It requires an existing current canonical
@@ -918,7 +918,7 @@ Create a new execution plan before adding further institution Claims or a public
 
 ### Completed
 
-- Added [`organization-evidence-page-v0.md`](docs/exec-plans/active/organization-evidence-page-v0.md)
+- Added [`organization-evidence-page-v0.md`](docs/exec-plans/completed/organization-evidence-page-v0.md)
   and implemented `apps/web/app/organizations/[id]/page.tsx` as a bounded, direct-ID public
   read surface for existing canonical Organization Claims.
 - Reused the existing Organization, Claim, ClaimEvidence, Source, SourcePolicy and Claim-backed
@@ -988,7 +988,7 @@ direct-ID route smoke before adding further Organization coverage or identity-bi
 ## Objective
 
 Execute M0 and M1 from the canonical
-[`evidence-preview-v1.md`](docs/exec-plans/active/evidence-preview-v1.md) plan: make the reviewed
+[`evidence-preview-v1.md`](docs/exec-plans/completed/evidence-preview-v1.md) plan: make the reviewed
 ALIO two-year Claim operation atomic/idempotent/recoverable, make public read failures honest,
 verify the real standalone artifact in a browser, prove PostgreSQL load/restore, and prepare the
 hosting contract without external deployment.
@@ -1223,7 +1223,7 @@ existing successful-enumeration and source-specific materialization gates.
 
 - The ALIO reviewed Organization binding → two fiscal-year Claim → MONEY staging smoke is closed
   at `b8b23984de5aad4ce762afbd528558a25a764116`; its Verify run `34945537685` passed.
-- The next active plan is `docs/exec-plans/active/assembly-person-bootstrap-v1.md`. It reuses the
+- The next active plan is `docs/exec-plans/completed/assembly-person-bootstrap-v1.md`. It reuses the
   existing Assembly enumerator, shared batch persistence and source-specific materialization gate;
   no new schema, repository, resolver or UI path is authorized.
 - The required order is current staging logical backup/restore receipt, successful unfiltered full
@@ -1301,7 +1301,7 @@ existing successful-enumeration and source-specific materialization gates.
 
 ## Current checkpoint — Assembly reviewed distinct-Person resolution v1 (2026-09-16)
 
-- The active plan is `docs/exec-plans/active/assembly-reviewed-distinct-person-v1.md`. The local
+- The active plan is `docs/exec-plans/completed/assembly-reviewed-distinct-person-v1.md`. The local
   implementation is committed as `d81499f433256dc59f8fcf2dca0ec77a34ba2a01` on the isolated
   `codex/change-discovery-plan` branch and is now pushed to `origin/master`; it has not been
   deployed or applied to staging.
@@ -1657,7 +1657,7 @@ keeping the L1 reviewed-Claim path and its coverage limits unchanged.
 
 ## Current checkpoint — ALIO Organization & Executive Content Activation v1 (2026-09-18)
 
-- The active plan `docs/exec-plans/active/alio-organization-executive-content-activation-v1.md`
+- The active plan `docs/exec-plans/completed/alio-organization-executive-content-activation-v1.md`
   is complete from `fabe85d6bd87c60a47ef506b4bd968ade48f8c12`. Work was isolated in
   `.worktrees/alio-organization-activation`; the root checkout, its dirty user changes and
   other worktrees were preserved.
@@ -1742,7 +1742,7 @@ Make the private key corresponding to the already-registered `dev.new` Railway k
   destroyed and final `sandbox list` was empty.
 
 The full evidence and reopen condition are in
-`docs/exec-plans/active/alio-railway-sandbox-recovery-v1.md`.
+`docs/exec-plans/blocked/alio-railway-sandbox-recovery-v1.md`.
 
 ## Next concrete action
 
@@ -1765,7 +1765,7 @@ Organization Claim publication.
   `--commit` was not executed.
 
 The active plan and exact query-shape contract are in
-`docs/exec-plans/active/alio-organization-importer-batch-read-v1.md`.
+`docs/exec-plans/completed/alio-organization-importer-batch-read-v1.md`.
 
 ## Next concrete action
 
@@ -1850,7 +1850,7 @@ Perform the separately approved first live staging ALIO Organization publication
   Railway service/resource/domain/plan state remained unchanged.
 
 The full blocked evidence and reopen condition are in
-`docs/exec-plans/active/alio-organization-live-staging-publication-v1.md`.
+`docs/exec-plans/completed/alio-organization-live-staging-publication-v1.md`.
 
 ## Next concrete action
 
@@ -1874,7 +1874,7 @@ explicit reviewed binding before any further staging execution.
 - No importer, staging DB write, schema change, deployment or Railway resource change occurred in
   this fix. Targeted ALIO tests passed: 46 passed.
 - `ALIO_ORGANIZATION_CONTENT_DEPLOYED_STAGING — PASS` is closed in
-  `docs/exec-plans/active/alio-organization-live-staging-publication-v1.md` and the dedicated
+  `docs/exec-plans/completed/alio-organization-live-staging-publication-v1.md` and the dedicated
   contract plan.
 
 ## Next concrete action
@@ -1915,7 +1915,7 @@ another feeder.
 - `REVIEWED_CROSS_LANE_PERSON_PACKET_KIM_DONGCHEOL — PASS` is closed. No staging write, importer,
   feeder, production-code or schema change occurred.
 
-The active plan is `docs/exec-plans/active/alio-assembly-cross-lane-kim-dongcheol-v1.md`.
+The active plan is `docs/exec-plans/completed/alio-assembly-cross-lane-kim-dongcheol-v1.md`.
 
 ## Next concrete action
 
@@ -1945,7 +1945,7 @@ existing People, inspect same-name and birth-date conflicts, and choose among `L
   `35368004198` passed; local full verification passed and the isolated worktree was clean before
   this closure update.
 
-The active plan is `docs/exec-plans/active/cross-lane-identity-candidate-pipeline-v0.md`.
+The active plan is `docs/exec-plans/completed/cross-lane-identity-candidate-pipeline-v0.md`.
 
 ## Next concrete action
 
@@ -2875,10 +2875,34 @@ start/end date semantics.
 - The seventh reviewed batch is fully committed and verified. Do not replay manifest SHA-256
   `0644ba99b1bdae7079160db125dc214550cf5fab07aed14b3497d0c97191a8a8`.
 
+## Current checkpoint — control-plane RE0 and reviewed-batch operating decision (2026-09-21)
+
+- RE0 started from exact `origin/master` `145900ff6082846998f350c6529b6854faf78996`; the prior
+  local master was one commit behind, so no change was made until the checkout was fast-forwarded.
+- `docs/exec-plans/active/` had accumulated historical plans. Status audit moved `34` explicitly
+  completed plans to `docs/exec-plans/completed/` and `7` blocked/source-gate plans to
+  `docs/exec-plans/blocked/`. Only this Gukgam plan remains in `active/`.
+- Documentation links were rewritten to the canonical new paths and a local Markdown-link audit
+  found only two cross-category relative links; both were corrected.
+- GitHub control-plane cleanup closed stale/superseded PRs `#98`, `#84`, `#69` and obsolete issue
+  `#62`. Draft PR `#75` remains open as `KEEP DEFERRED` for the later CONNECTION phase and must be
+  rebased/re-reviewed before any future merge.
+- The reviewed Gukgam manifest/commit implementation has no two-item production limit: it accepts
+  a non-empty explicit manifest Sequence, re-preflights every supplied item, rejects partial
+  publication state and persists the complete batch in one transaction.
+- A new local regression exercised one explicit ten-item reviewed manifest through the same
+  canonical no-write preflight and batch commit path. The focused Gukgam batch test file passed
+  `12/12`; the ten-item case created zero Organizations, reused `10`, created `10` Claims and
+  preserved deterministic manifest/hash and zero-write preflight semantics.
+- Therefore the next expansion trial uses an operational cap of `10` explicitly reviewed items.
+  This is an operator/runbook decision, not a schema or parser limit and not permission to
+  auto-enumerate, rank, expand aliases, substitute candidates or create Organizations.
+
 ## Next concrete action
 
-Run a separate dry-run-only slice for the next reviewed manifest. Re-read current staging and
-current exact-one unpublished reviewed occurrences, manually select only the next two in canonical
-reviewed-schedule order, assemble an explicit manifest, and run the unchanged no-write preflight.
-Do not auto-enumerate into the manifest, do not substitute candidates, do not create Organizations,
-and do not execute batch `--commit` in that same slice.
+Run one separate dry-run-only Gukgam slice using exactly the next `10` current unpublished
+exact-one reviewed occurrences in canonical reviewed-schedule order. Re-read current staging first,
+record the ten review keys and existing Organization IDs explicitly, build one manifest manually,
+run the unchanged no-write preflight twice, require deterministic receipt equality and unchanged
+staging/public counts, and do not execute batch `--commit` in that same slice. A successful dry-run
+may be followed only by a separate commit slice using the exact manifest SHA from that dry-run.

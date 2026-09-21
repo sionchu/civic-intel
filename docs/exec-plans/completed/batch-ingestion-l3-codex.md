@@ -15,7 +15,7 @@ read, in order:
 8. `docs/architecture/FEEDER_SOURCE_COVERAGE.md`
 9. `docs/roles/BATCH_INGESTION_AGENT.md`
 10. `.agents/skills/batch-ingestion-foundation/SKILL.md`
-11. `docs/exec-plans/active/batch-ingestion-l3.md`
+11. `docs/exec-plans/completed/batch-ingestion-l3.md`
 12. `docs/workflows/CHANGE_CONTROL.md`
 13. `docs/workflows/DEFINITION_OF_DONE.md`
 
