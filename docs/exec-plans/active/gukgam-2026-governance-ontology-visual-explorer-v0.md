@@ -1447,6 +1447,20 @@ Staging must stay noindex.
 - Before and after both dry-runs, staging remained Organizations `347`, Claims `5552`, ClaimEvidence `5552`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `86` and public committee count `4`; public HTML exposed neither `review_key` nor `match_class`.
 - No batch commit was executed in this slice.
 
+## Current checkpoint — repeated Organization batch blocker and adapter fix (2026-09-22)
+
+- Exact canonical `master` was `46f42fb1c785d28c47cd54d47ff5837d983f0f2f`; the worktree was clean before the commit attempt.
+- The twelfth manifest remained exactly `20` items with SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`.
+- Commit-time staging baseline still matched the dry-run: Organizations `347`, Claims `5552`, ClaimEvidence `5552`, Gukgam observations `57`, Gukgam source runs `14`, public targets `86` and public committee count `4`.
+- A fresh no-write preflight produced receipt SHA-256 `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e`, exactly matching the canonical dry-run receipt.
+- The canonical commit path re-preflighted successfully, but persistence stopped before any database write with `OrganizationClaimImportError: organization batch contains duplicate ids`.
+- Independent read-only counts immediately after the failure remained Claims `5552` and ClaimEvidence `5552`; the twelfth manifest was not committed.
+- Root cause: a valid reviewed batch can contain multiple audit occurrences for the same canonical Organization, but the source-specific persistence adapter passed one Organization parent entry per manifest item. The repository correctly rejects duplicate parent IDs even though distinct Claims for the same Organization are valid.
+- The fix keeps all manifest items and Claim/Evidence rows unchanged while deduplicating only the Organization parent list by canonical Organization ID before the atomic repository call. A duplicate ID with inconsistent Organization semantics fails closed.
+- Exact-retry receipt semantics now also report `organizations_reused` as the unique Organization count rather than manifest item count.
+- The real Science reviewed fixture proves the repeated-occurrence case: `과학기술정보통신부` appears in two audit occurrences. The regression commits two Claims while reusing one Organization, and an exact retry reuses one Organization and both Claims.
+- Focused Gukgam batch tests passed `13/13`; Ruff and mypy passed for the changed batch worker files.
+
 ## Next concrete action
 
-Use only the exact reviewed twenty-item manifest with SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7` in the next separate commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly these twenty `(review_key, organization_id)` pairs, and require a fresh no-write preflight receipt byte-identical to SHA-256 `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e` before one atomic commit. Do not add the remaining four occurrences.
+Merge this smallest persistence-adapter fix first. Then reopen a fresh private staging tunnel, re-verify canonical master and the unchanged `347/5552/5552/57/14` baseline, recreate only the exact twelfth manifest SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`, require a fresh no-write receipt byte-identical to SHA-256 `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e`, and only then execute one atomic commit. This manifest has `20` Claims over `14` unique Organizations; do not add the final four occurrences.

@@ -108,10 +108,13 @@ def commit_reviewed_gukgam_claim_batch(
     prepared: ReviewedGukgamClaimBatchCommit,
 ) -> dict[str, object]:
     item_count = len(prepared.prepared_items)
+    organization_count = len(
+        {item.organization.id for item in prepared.prepared_items}
+    )
     if prepared.all_reused:
         status = "REUSED"
         organizations_created = 0
-        organizations_reused = item_count
+        organizations_reused = organization_count
         claims_created = 0
         claims_reused = item_count
     else:
