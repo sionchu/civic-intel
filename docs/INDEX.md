@@ -77,6 +77,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Gukgam 2026 Governance Ontology + Visual Explorer v0](exec-plans/active/gukgam-2026-governance-ontology-visual-explorer-v0.md)
 - [MOIS Standard Organization Code Universe v0](exec-plans/completed/mois-organization-code-universe-v0.md)
 - [org.go Top-Level Organization Universe v0](exec-plans/completed/orggo-top-level-organization-universe-v0.md)
+- [org.go Organization Proposal v0](exec-plans/completed/orggo-organization-proposal-v0.md)
 - [ALIO Local Acquisition Recovery v1](exec-plans/blocked/alio-local-acquisition-recovery-v1.md)
 - [ALIO Railway Sandbox Recovery v1](exec-plans/blocked/alio-railway-sandbox-recovery-v1.md)
 - [CleanEye local-public-institution executives collection-review plan](exec-plans/blocked/cleaneye-local-public-institution-executives-l3.md)

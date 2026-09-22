@@ -1543,6 +1543,17 @@ Staging must stay noindex.
 - Exact-name planning comparison against current Gukgam `NO_EXACT` rows found `27` distinct provider-name overlaps covering `41` occurrences.
 - This source closes at `L2 SINGLE_PULL`; it is evidence for a later reviewed Organization proposal only and does not authorize automatic binding.
 
+## Current checkpoint — org.go review-only Organization proposal (2026-09-22)
+
+- Canonical base was `1deb820ac1d4fef2d0b15bfce4e3b1f8f8c98cb4`; the source slice was already merged and deferred draft PR `#75` remained out of scope.
+- A pure rendering proposal builder now consumes only live org.go provider rows, the current Gukgam binding-review report and current canonical Organizations. It performs no persistence writes.
+- Match semantics are exactly `EXACT_PROVIDER_NAME_TO_GUKGAM_NO_EXACT_LABEL_ONLY`; duplicate provider codes/names, stale Organization-universe counts, unexpected candidates and current canonical exact-name conflicts fail closed.
+- Targeted Ruff/mypy passed and proposal regression passed `5/5`.
+- A live read-only run used `63` org.go provider rows, `347` current Organizations and `390` Gukgam review items and produced `27` review-only Organization proposals covering `41` Gukgam occurrences with canonical conflict count `0`.
+- Proposal core output reproduced deterministically across repeated live runs with SHA-256 `e0c0a6e39cf0844c3b653bd7884356dff5cca56d78044888fe111940a4f9d194`. Transport-only page hashes were excluded from that semantic hash.
+- Normalized review artifact is `docs/research/gukgam_2026_orggo_organization_proposal_2026-09-22.json`.
+- Post-run staging counts remained Organizations `347`, Claims `5576`, ClaimEvidence `5576`; no Organization, Claim, binding or publication write occurred.
+
 ## Next concrete action
 
-Keep production launch approval-gated. Build a review-only Organization proposal for the `27` org.go rows whose exact provider name equals a current Gukgam `NO_EXACT` label. Preserve `orgCode`, category, `chartId` and source locator; perform no Organization writes, fuzzy/alias matching or Gukgam Claim publication.
+Keep production launch approval-gated. Define a separate reviewed Organization materialization contract for the 27 proposal items. It must accept only an explicit reviewed manifest, re-check current canonical-name conflicts and provider `orgCode` uniqueness at commit time, create no duplicate Organization, and must not publish Gukgam Claims in the same slice. Do not infer any non-exact name, alias or organizational relationship.

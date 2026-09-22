@@ -1,0 +1,724 @@
+{
+  "canonical_name_conflict_count": 0,
+  "current_organization_count": 347,
+  "gukgam_occurrence_count": 41,
+  "items": [
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-26",
+          "audited_target": "경찰청",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1f0091fd-0acd-48ab-afc8-ba6162e88e68",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12:audited-target:6"
+        },
+        {
+          "audit_date": "2026-10-12",
+          "audited_target": "경찰청",
+          "committee_name": "행정안전위원회",
+          "observation_id": "4b5ba91d-4f48-4396-8f0f-e18ee8d5d10e",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:3",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:3:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "경찰청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "31",
+        "org_code": "1320000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1320000&chartId=31"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "과학기술정보통신부",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "60da2bea-e409-4d9c-b5cc-6aa72699da31",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-23",
+          "audited_target": "과학기술정보통신부",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "ddfee3a8-642a-4b3d-969e-d59d0b3ab7e3",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:8",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:8:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "과학기술정보통신부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "60",
+        "org_code": "1721000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1721000&chartId=60"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-15",
+          "audited_target": "관세청",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "9606542e-cd77-4229-9292-4696817b6640",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:5",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:5:audited-target:2"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "관세청",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "f1813f21-7bb7-4820-9d68-6be35f9e4420",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9:audited-target:4"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "관세청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "39",
+        "org_code": "1220000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1220000&chartId=39"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-15",
+          "audited_target": "국가데이터처",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "9606542e-cd77-4229-9292-4696817b6640",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:5",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:5:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "국가데이터처",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "f1813f21-7bb7-4820-9d68-6be35f9e4420",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9:audited-target:2"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "국가데이터처",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "37",
+        "org_code": "1241000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1241000&chartId=37"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-30",
+          "audited_target": "국가안보실",
+          "committee_name": "국회운영위원회",
+          "observation_id": "19c3a4d3-7076-4c96-8008-09ccded29eba",
+          "provider_record_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:3",
+          "review_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:3:audited-target:2"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국가안보실",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관에 준하는 기관",
+        "chart_id": "12",
+        "org_code": "1025000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80%EC%97%90+%EC%A4%80%ED%95%98%EB%8A%94+%EA%B8%B0%EA%B4%80&orgCode=1025000&chartId=12"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-29",
+          "audited_target": "국가인권위원회",
+          "committee_name": "국회운영위원회",
+          "observation_id": "73155589-6502-414d-8432-4eb6460af344",
+          "provider_record_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:1",
+          "review_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:1:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국가인권위원회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관에 준하는 기관",
+        "chart_id": "7",
+        "org_code": "1620000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80%EC%97%90+%EC%A4%80%ED%95%98%EB%8A%94+%EA%B8%B0%EA%B4%80&orgCode=1620000&chartId=7"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "국방부",
+          "committee_name": "국방위원회",
+          "observation_id": "fc649498-3c45-4c9a-941c-48cd6ad8a7f4",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국방부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "56",
+        "org_code": "1290000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1290000&chartId=56"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-13",
+          "audited_target": "국세청",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "cd09346c-6a87-494c-a02d-d95c7b107d6f",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:4",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:4:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "국세청",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "f1813f21-7bb7-4820-9d68-6be35f9e4420",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9:audited-target:3"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "국세청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "40",
+        "org_code": "1210000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1210000&chartId=40"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-23",
+          "audited_target": "기획예산처",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "ecd4fa4c-b2d1-4801-aa32-ebb2458f1da2",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-08",
+          "audited_target": "기획예산처",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "680e0745-a0d7-4f87-aff2-7386974b322f",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:2",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:2:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "기획예산처",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "62",
+        "org_code": "1050050",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1050050&chartId=62"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "농림축산식품부",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "7f2586d4-c1b6-457f-9fbf-f7da4aedc8ce",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:1:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "농림축산식품부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "52",
+        "org_code": "1543000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1543000&chartId=52"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-14",
+          "audited_target": "농촌진흥청",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "15517e33-2665-43a1-8de3-b22d503c9beb",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:3:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "농촌진흥청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "28",
+        "org_code": "1390000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1390000&chartId=28"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-30",
+          "audited_target": "대통령경호처",
+          "committee_name": "국회운영위원회",
+          "observation_id": "19c3a4d3-7076-4c96-8008-09ccded29eba",
+          "provider_record_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:3",
+          "review_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:3:audited-target:3"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "대통령경호처",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관에 준하는 기관",
+        "chart_id": "11",
+        "org_code": "1021100",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80%EC%97%90+%EC%A4%80%ED%95%98%EB%8A%94+%EA%B8%B0%EA%B4%80&orgCode=1021100&chartId=11"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-30",
+          "audited_target": "대통령비서실",
+          "committee_name": "국회운영위원회",
+          "observation_id": "19c3a4d3-7076-4c96-8008-09ccded29eba",
+          "provider_record_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:3",
+          "review_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:3:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "대통령비서실",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관에 준하는 기관",
+        "chart_id": "13",
+        "org_code": "1015000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80%EC%97%90+%EC%A4%80%ED%95%98%EB%8A%94+%EA%B8%B0%EA%B4%80&orgCode=1015000&chartId=13"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "문화체육관광부",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "68b409c3-2ba8-40e1-957e-8669f6d6066e",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:1",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:1:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "문화체육관광부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "53",
+        "org_code": "1371000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1371000&chartId=53"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-12",
+          "audited_target": "방송미디어통신위원회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "cc892561-5182-4933-b207-6f51dd31b8a7",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:2",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:2:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "방송미디어통신위원회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "d1a5c235-4082-46d9-b87f-03cd4df42b91",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:7",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:7:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "방송미디어통신위원회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "20",
+        "org_code": "1571000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1571000&chartId=20"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-13",
+          "audited_target": "방위사업청",
+          "committee_name": "국방위원회",
+          "observation_id": "4d1d4d64-586e-4fcf-a7fb-9fbc2a4b4407",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:4",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:4:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "방위사업청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "32",
+        "org_code": "1690000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1690000&chartId=32"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-12",
+          "audited_target": "병무청",
+          "committee_name": "국방위원회",
+          "observation_id": "cde7c432-04e5-455e-8e92-f395944acd53",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:3",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:3:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "병무청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "33",
+        "org_code": "1300000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1300000&chartId=33"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "산림청",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "f8bb8742-2e7a-46cc-badb-48a9ec2e2bdf",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "산림청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "27",
+        "org_code": "1400000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1400000&chartId=27"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-26",
+          "audited_target": "소방청",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1f0091fd-0acd-48ab-afc8-ba6162e88e68",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12:audited-target:7"
+        },
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "소방청",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1101103d-41b5-463c-b86a-a2b43249ee28",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2:audited-target:3"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "소방청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "30",
+        "org_code": "1661000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1661000&chartId=30"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-13",
+          "audited_target": "우주항공청",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "d79afce8-2e4d-4d87-b6c6-2340b1136078",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:3",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:3:audited-target:2"
+        },
+        {
+          "audit_date": "2026-10-23",
+          "audited_target": "우주항공청",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "ddfee3a8-642a-4b3d-969e-d59d0b3ab7e3",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:8",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:8:audited-target:5"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "우주항공청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "36",
+        "org_code": "1834100",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1834100&chartId=36"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-13",
+          "audited_target": "원자력안전위원회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "d79afce8-2e4d-4d87-b6c6-2340b1136078",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:3",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:3:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-23",
+          "audited_target": "원자력안전위원회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "ddfee3a8-642a-4b3d-969e-d59d0b3ab7e3",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:8",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:8:audited-target:3"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "원자력안전위원회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "15",
+        "org_code": "1079960",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1079960&chartId=15"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-26",
+          "audited_target": "인사혁신처",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1f0091fd-0acd-48ab-afc8-ba6162e88e68",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12:audited-target:5"
+        },
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "인사혁신처",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1101103d-41b5-463c-b86a-a2b43249ee28",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2:audited-target:2"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "인사혁신처",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "43",
+        "org_code": "1760000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1760000&chartId=43"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "재정경제부",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "24f6ec98-5dca-424c-83fb-c09301961cc5",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:1",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:1:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "재정경제부",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "f1813f21-7bb7-4820-9d68-6be35f9e4420",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "재정경제부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "63",
+        "org_code": "1053000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1053000&chartId=63"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-15",
+          "audited_target": "조달청",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "9606542e-cd77-4229-9292-4696817b6640",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:5",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:5:audited-target:3"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "조달청",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "f1813f21-7bb7-4820-9d68-6be35f9e4420",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:9:audited-target:5"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "조달청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "38",
+        "org_code": "1230000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1230000&chartId=38"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-19",
+          "audited_target": "해양경찰청",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "9bec7c98-0e52-418d-92c1-1ab671e78b3a",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:5:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "해양경찰청",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "21",
+        "org_code": "1532000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1532000&chartId=21"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-12",
+          "audited_target": "해양수산부",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "c535004b-bd33-4d58-af00-851c4852e91f",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:2:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "해양수산부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "45",
+        "org_code": "1192000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1192000&chartId=45"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-26",
+          "audited_target": "행정안전부",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1f0091fd-0acd-48ab-afc8-ba6162e88e68",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12:audited-target:1"
+        },
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "행정안전부",
+          "committee_name": "행정안전위원회",
+          "observation_id": "663c9050-e9d4-4c5e-8b89-0dc6c74544a7",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "행정안전부",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "category": "중앙행정기관",
+        "chart_id": "55",
+        "org_code": "1741000",
+        "source_locator": "https://www.org.go.kr/cop/bbs/getInstiChartDetail.do?codeNum=%EC%A4%91%EC%95%99%ED%96%89%EC%A0%95%EA%B8%B0%EA%B4%80&orgCode=1741000&chartId=55"
+      }
+    }
+  ],
+  "limitations": [
+    "Exact provider-name equality is a review proposal only and does not create an Organization.",
+    "Current canonical Organization names are rechecked and any exact conflict fails closed.",
+    "No alias expansion, fuzzy similarity, ranking, embeddings, or organizational proximity is used.",
+    "No Gukgam binding, Claim, ClaimEvidence, or public publication is performed."
+  ],
+  "match_rule": "EXACT_PROVIDER_NAME_TO_GUKGAM_NO_EXACT_LABEL_ONLY",
+  "proposal_count": 27,
+  "provider_row_count": 63,
+  "semantics": "REVIEW_ONLY_ORGGO_ORGANIZATION_PROPOSAL_V1",
+  "status": "REVIEW_ONLY"
+}
