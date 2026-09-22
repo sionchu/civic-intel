@@ -3344,6 +3344,18 @@ start/end date semantics.
 - Real Edge CDP layout QA passed at desktop `1440x1200` and mobile `390x844`: `documentElement.scrollWidth` was `1425` and `390` respectively, horizontal overflow was `false`, overflowing-element set was empty, scope `110` rendered in both viewports, and no browser console/runtime errors were observed.
 - Railway `production` still contains zero services. This staging release-candidate proof does not authorize creating production services, a production domain, or enabling indexing.
 
+## Current checkpoint — MOIS Organization-code L1 source contract closed (2026-09-22)
+
+- Exact canonical base at slice start was `ca81a34726972d20b46c32d7ccaaa77f748e9d7f`; this slice changed only the new MOIS source contract/connector/tests plus source inventory docs.
+- Official source is data.go.kr dataset `15077870`, endpoint `StanOrgCd2/getStanOrgCdList2`, current-only selector `stop_selt=0`, provider key `org_cd`.
+- The connector injects `ServiceKey` only at request time, redacts credential-shaped response fields, rejects credential-bearing discovery URLs, preserves provider hierarchy/lifecycle fields, and does not create canonical Organizations or Gukgam bindings.
+- Final fail-closed parser contract rejects malformed row lists, malformed pagination metadata, invalid provider codes/dates and non-current rows. Provider `use_cd` is retained only as `use_code` without stronger inferred meaning.
+- Targeted MOIS regression passed `15/15`; Ruff and mypy passed. Full repository verification passed `489` tests with `1` skipped and Golden Set `passed: true`.
+- Branch-wide Web lint/typecheck/test/build verification passed before the final connector-only fail-closed edits; Web files were unchanged by this slice. GitHub Verify remains the final merge gate.
+- `MOIS_ORG_CODE_API_KEY` is absent on both the operator host and staging services, so live fetch remains explicitly `NOT_RUN`. No secret, SourceRun, worker, migration, Organization, Claim or publication was created.
+- Exact-name planning comparison indicates this independent official source could potentially cover `27` distinct current Gukgam `NO_EXACT` labels / `41` occurrences after a future credentialed pull and separate reviewed Organization materialization contract.
+- The MOIS plan is closed at L1 and moved to `docs/exec-plans/completed/`; it must not be promoted to L2/L3 without a credentialed live receipt and separate approval.
+
 ## Next concrete action
 
-The reviewed exact-one publication loop and exact-master staging release candidate are complete. Production launch is now an explicit external-state boundary: before creating any production `postgres`/`api`/`web` services or public production Web domain, obtain operator approval for the billable/public exposure change and prepare the exact resource/domain/indexing plan. In parallel, keep the `280` `NO_EXACT_CANONICAL_NAME_OVERLAP` occurrences in a separate Organization-coverage workstream; they are not release blockers for the explicitly bounded-incomplete 110-target beta and must not be auto-bound or published.
+Keep production launch approval-gated and leave the `280` `NO_EXACT_CANONICAL_NAME_OVERLAP` occurrences unpublished. While `MOIS_ORG_CODE_API_KEY` is absent, continue a read-only search for credential-free official Organization-universe sources that can independently cover the remaining labels. Do not derive Organizations from Gukgam text, and do not fuzzy-bind or auto-publish any `NO_EXACT` occurrence. If an approved MOIS credential becomes available later, the next MOIS slice is only a bounded current-row pull plus review-only Organization proposals.
