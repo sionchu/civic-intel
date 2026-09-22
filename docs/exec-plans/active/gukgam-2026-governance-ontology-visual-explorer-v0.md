@@ -1536,6 +1536,13 @@ Staging must stay noindex.
 - Real Edge CDP layout QA passed at desktop `1440x1200` and mobile `390x844`: `documentElement.scrollWidth` was `1425` and `390` respectively, horizontal overflow was `false`, overflowing-element set was empty, scope `110` rendered in both viewports, and no browser console/runtime errors were observed.
 - Railway `production` still contains zero services. This staging release-candidate proof does not authorize creating production services, a production domain, or enabling indexing.
 
+## Current checkpoint — org.go credential-free Organization source proof (2026-09-22)
+
+- A separate official Organization-universe source was proven from the MOIS Government Organization Management System top-level institution-chart list.
+- The credential-free connector parsed the current provider total of `63` rows over seven pages with `63` unique `orgCode` values and names; no Organization/Claim/Gukgam write occurred.
+- Exact-name planning comparison against current Gukgam `NO_EXACT` rows found `27` distinct provider-name overlaps covering `41` occurrences.
+- This source closes at `L2 SINGLE_PULL`; it is evidence for a later reviewed Organization proposal only and does not authorize automatic binding.
+
 ## Next concrete action
 
-The reviewed exact-one publication loop and exact-master staging release candidate are complete. Production launch is now an explicit external-state boundary: before creating any production `postgres`/`api`/`web` services or public production Web domain, obtain operator approval for the billable/public exposure change and prepare the exact resource/domain/indexing plan. In parallel, keep the `280` `NO_EXACT_CANONICAL_NAME_OVERLAP` occurrences in a separate Organization-coverage workstream; they are not release blockers for the explicitly bounded-incomplete 110-target beta and must not be auto-bound or published.
+Keep production launch approval-gated. Build a review-only Organization proposal for the `27` org.go rows whose exact provider name equals a current Gukgam `NO_EXACT` label. Preserve `orgCode`, category, `chartId` and source locator; perform no Organization writes, fuzzy/alias matching or Gukgam Claim publication.
