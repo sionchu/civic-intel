@@ -1476,6 +1476,21 @@ Staging must stay noindex.
 - The fresh tunnel and its exact project/environment child SSH process were closed after verification. Temporary credential/tunnel/manifest/preflight/commit/Web artifacts were removed. No public API/Postgres domain, new Railway resource or Organization creation occurred.
 - The twelfth reviewed batch is fully committed and verified. Do not replay manifest SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`.
 
+## Current checkpoint — final reviewed Gukgam 4-item manifest dry-run (2026-09-22)
+
+- Exact canonical `master` was `76a2b5d66e5dbc127450fbda2a8bb0162a948080`; the worktree was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Fresh staging baseline was Organizations `347`, Claims `5572`, ClaimEvidence `5572`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `106` and public committee count `6`.
+- Read-only discovery found exactly `4` current exact-one audited-target occurrences without a published Gukgam Claim; no later exact-one occurrence remained.
+- The explicit four-item manifest canonicalized to SHA-256 `cb05916c68b61afa7a1fafda449134225b7e6801a990b851316025a30222d4e2`.
+- 전국재해구호협회 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:8` — Organization `f6b54412-5014-55e0-aee5-ea0f6c5528c6` — Claim `6bd85d9d-043e-5337-96f6-1e9f505d22c7` — Evidence `af00e287-3e39-586d-9f56-bf39ab9d9664`.
+- 공무원연금공단 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2:audited-target:6` — Organization `24c556cf-8d8c-5a96-b9a9-0a0fcd1740c4` — Claim `bcefe8d4-de7c-56d2-bb87-e0f8892ed475` — Evidence `4a85a81a-d6b2-566e-87ef-930072c77ea4`.
+- 한국소방산업기술원 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2:audited-target:7` — Organization `08d1e45c-56c7-5f84-a5af-b6234dcf9f2b` — Claim `079c6c3c-06c9-5a4f-8266-152c74f972f5` — Evidence `94c1d45a-9fc2-5c64-a5cc-0f181df10bd5`.
+- 한국도로교통공단 — `3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:3:audited-target:2` — Organization `ca18675d-95cc-58b6-8c39-3af213b04bfc` — Claim `2720e9cf-9c29-5868-9115-261c45b506fe` — Evidence `400a2583-8235-5928-b133-02abd8d0ff47`.
+- Two unchanged staging no-write preflights produced byte-identical receipts. Receipt SHA-256 was `4b22c3ee1c0e75aef36474fde71300456e44d30bc599b96d20b6b08d9b62eb50`.
+- Both receipts returned `DRY_RUN`, `item_count=4`, `all_preflights_passed=true`, `write_performed=false`, `batch_commit_available=false`, `automatic_candidate_enumeration=false` and `network_fetch=false`; every item preserved `claim_persisted=false` and `organization_created=false`.
+- Before and after both dry-runs, staging remained Organizations `347`, Claims `5572`, ClaimEvidence `5572`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `106` and public committee count `6`; public HTML exposed neither `review_key` nor `match_class`.
+- No batch commit was executed in this slice.
+
 ## Next concrete action
 
-Run one separate dry-run-only slice for the remaining current unpublished exact-one reviewed occurrences. Re-read staging discovery first; the previous pre-commit discovery left exactly `4` occurrences after this twenty-item manifest: 전국재해구호협회, 공무원연금공단, 한국소방산업기술원 and 한국도로교통공단. Build an explicit manifest only from the fresh discovery result, run the unchanged no-write preflight twice, require deterministic receipt equality and unchanged staging/public counts, and do not execute `--commit` in that same slice.
+Use only the exact reviewed four-item manifest with SHA-256 `cb05916c68b61afa7a1fafda449134225b7e6801a990b851316025a30222d4e2` in the next separate commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly these four `(review_key, organization_id)` pairs, and require a fresh no-write preflight receipt byte-identical to SHA-256 `4b22c3ee1c0e75aef36474fde71300456e44d30bc599b96d20b6b08d9b62eb50` before one atomic commit.
