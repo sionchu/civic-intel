@@ -3314,6 +3314,22 @@ start/end date semantics.
 - A fresh reviewed-schedule binding discovery after the commit returned `unpublished_exact_one=0`. The current exact-one reviewed publication backlog is therefore exhausted; do not continue the batch loop or infer/auto-resolve non-exact-one occurrences.
 - No public API/Postgres domain, new Railway resource or Organization creation occurred. The final reviewed four-item manifest is fully committed and must not be replayed.
 
+## Current checkpoint — Gukgam post-coverage audit + public-beta release gate (2026-09-22)
+
+- Exact canonical `master` was `92a7efc99949c618a310cc2ea9f7ddd4a94238e6`; the worktree was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Final reviewed exact-one publication state is Organizations `347`, Claims `5576`, ClaimEvidence `5576`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `110` and public committee count `6`.
+- Fresh binding-review audit contains `390` audited-target mentions across `359` distinct target labels.
+- Match classes are exactly `110` `EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY` mentions and `280` `NO_EXACT_CANONICAL_NAME_OVERLAP` mentions; `MULTIPLE_EXACT_CANONICAL_NAME_OVERLAPS_REVIEW_REQUIRED` count is `0`.
+- All `110/110` exact-one mentions are published; current unpublished exact-one count remains `0`. Distinct exact-one target count is `103`; distinct no-exact target count is `256`.
+- Committee occurrence coverage is: 과학기술정보방송통신위원회 `23/96` (`24.0%`), 국방위원회 `4/73` (`5.5%`), 국회운영위원회 `0/10` (`0.0%`), 농림축산식품해양수산위원회 `34/49` (`69.4%`), 문화체육관광위원회 `30/69` (`43.5%`), 재정경제기획위원회 `12/48` (`25.0%`), 행정안전위원회 `7/45` (`15.6%`).
+- The remaining `280` mentions are coverage gaps, not ambiguous duplicate exact-name candidates. They must not be fuzzy-bound, alias-expanded, ranked, auto-selected or materialized from Gukgam observations.
+- Repository public-release history/privacy checklist was already completed on 2026-08-31; this audit does not reopen that gate.
+- Railway staging still has exactly `postgres`, private `api` and public `web`; all report successful latest deployments, and the PostgreSQL volume remains in `asia-southeast1-eqsg3a`.
+- Railway `production` currently has zero services. Creating production services or a production public domain remains a separate external-state action requiring explicit approval.
+- Staging Web remains intentionally non-indexable: `/robots.txt` returns `Disallow: /`, the Gukgam page contains `noindex` and `nofollow`, and the page still renders the explicit bounded-incomplete scope message.
+- Current canonical master is newer than the latest staging Web/API deployments (both were created on 2026-09-20). Therefore staging is not yet an exact-master release candidate even though its live database contains the final reviewed publication state.
+- Public beta may expose the current `110` Claim-backed occurrences only as explicitly bounded incomplete coverage; the remaining no-exact universe requires a separate Organization acquisition/binding contract, not another reviewed-batch loop.
+
 ## Next concrete action
 
-Stop the reviewed exact-one publication loop. In a separate read-only product/release slice, re-audit the remaining Gukgam review classes (`ZERO`, `MULTIPLE` or otherwise non-exact-one) without fuzzy matching, alias expansion or automatic binding, and separately evaluate the public-beta release gate now that current exact-one coverage is exhausted. Do not publish any non-exact-one occurrence without a new explicit reviewed binding contract.
+Prepare one exact-master staging release candidate without enabling indexing or creating production resources. Deploy the current canonical master to the existing staging Web/API services through the reviewed staging deployment path, then run full desktop/mobile/public-route QA plus current count/provenance/noindex checks. If and only if staging passes, present the production resource/domain change for explicit approval. Keep the `280` no-exact occurrences in a separate read-only Organization-coverage workstream; do not bind or publish them during release preparation.
