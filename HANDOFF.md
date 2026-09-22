@@ -3356,6 +3356,18 @@ start/end date semantics.
 - Exact-name planning comparison indicates this independent official source could potentially cover `27` distinct current Gukgam `NO_EXACT` labels / `41` occurrences after a future credentialed pull and separate reviewed Organization materialization contract.
 - The MOIS plan is closed at L1 and moved to `docs/exec-plans/completed/`; it must not be promoted to L2/L3 without a credentialed live receipt and separate approval.
 
+## Current checkpoint — org.go credential-free Organization universe L2 proof (2026-09-22)
+
+- Exact canonical base at slice start was `44acaa0df49a6b2e799991e0e4234ba62dd98fe3`; no concurrent non-draft PR existed.
+- Official source is the MOIS Government Organization Management System institution-chart list at `www.org.go.kr/cop/bbs/getInstiChartList.do?pageIndex={n}`.
+- Conservative SourcePolicy allows fetch + normalized metadata only and blocks raw/fulltext retention, excerpts, AI transmission and commercialization because the public site exposes no blanket reuse license.
+- The connector preserves only provider-authored `organization_name`, category, seven-digit `orgCode` and `chartId`; these are not Civic Intel Organization IDs and do not authorize Gukgam binding.
+- Targeted connector regression passed `9/9`; Ruff and mypy passed. Full repository verification passed `498` tests with `1` skipped and Golden Set `passed: true`; Web lint/typecheck/test passed `23/23`, and Next build completed compile/typecheck/static-route generation before the known Windows process-exit anomaly. GitHub Verify remains the final Linux/deployment artifact gate. Parser semantics fail closed on malformed detail locators, duplicate provider codes/locators, missing or ambiguous total count, missing labels and row-count overflow.
+- A credential-free reviewed live pull traversed seven bounded pages and returned provider total `63`, page counts `10/10/10/10/10/10/3`, `63` unique `orgCode` values and `63` unique names.
+- Provider categories were `중앙행정기관 49`, `중앙행정기관에 준하는 기관 8`, `헌법기관 4`, `헌법상 자문기구 1`, `기타 1`. Per-page HTML SHA-256 receipts are recorded in `ORGGO_TOP_LEVEL_ORGANIZATION_FEEDER.md`; raw HTML is not retained canonically.
+- Exact-name planning comparison against the current Gukgam `NO_EXACT` universe produced `27` distinct label overlaps covering `41` occurrences. This is planning evidence only; no Organization row, Claim, binding or publication was created.
+- The lane closes at `L2 SINGLE_PULL`; L3 is not claimed because no persistent SourceRun/checkpoint/resume/idempotent enumeration contract exists.
+
 ## Next concrete action
 
-Keep production launch approval-gated and leave the `280` `NO_EXACT_CANONICAL_NAME_OVERLAP` occurrences unpublished. While `MOIS_ORG_CODE_API_KEY` is absent, continue a read-only search for credential-free official Organization-universe sources that can independently cover the remaining labels. Do not derive Organizations from Gukgam text, and do not fuzzy-bind or auto-publish any `NO_EXACT` occurrence. If an approved MOIS credential becomes available later, the next MOIS slice is only a bounded current-row pull plus review-only Organization proposals.
+Keep production launch approval-gated. Build a separate **review-only Organization proposal** for the `27` org.go rows whose exact provider name equals a current Gukgam `NO_EXACT` label. Preserve provider `orgCode`, category, `chartId`, source locator and current canonical-name conflict checks; perform no Organization writes, no fuzzy/alias/embedding matching and no Gukgam Claim publication. Only after that proposal is reviewed should a separate Organization materialization contract be considered.
