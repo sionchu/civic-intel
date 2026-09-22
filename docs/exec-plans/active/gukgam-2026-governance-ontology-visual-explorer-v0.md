@@ -1461,6 +1461,21 @@ Staging must stay noindex.
 - The real Science reviewed fixture proves the repeated-occurrence case: `과학기술정보통신부` appears in two audit occurrences. The regression commits two Claims while reusing one Organization, and an exact retry reuses one Organization and both Claims.
 - Focused Gukgam batch tests passed `13/13`; Ruff and mypy passed for the changed batch worker files.
 
+## Current checkpoint — twelfth reviewed Gukgam 20-item batch commit (2026-09-22)
+
+- Exact canonical `master` was `8c72490c3b1e9a0fb9985de9ec5f0859dc5e2a64`; the worktree was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Commit-time baseline exactly matched the twelfth dry-run: Organizations `347`, Claims `5552`, ClaimEvidence `5552`, Gukgam observations `57`, Gukgam source runs `14`, public targets `86` and public committee count `4`.
+- Remote Desktop inspection found `24` stale local `railway connect postgres --ssh --tunnel-only` processes for this exact staging project/environment. Only those matching tunnel processes and their child SSH processes were terminated; a single fresh private Railway tunnel then connected successfully. No public DB endpoint was created.
+- The exact reviewed twenty-item manifest was rebuilt from the canonical HANDOFF pairs and retained SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`.
+- A fresh no-write preflight through the clean tunnel produced receipt SHA-256 `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e`, byte-identical to the canonical dry-run receipt, with `DRY_RUN`, `item_count=20`, `write_performed=false`, `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The canonical commit path re-preflighted the same manifest and executed exactly one atomic transaction.
+- The commit returned `COMMITTED`, `item_count=20`, `claims_created=20`, `claims_reused=0`, `organizations_created=0`, `organizations_reused=14`, `write_performed=true`, `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The complete commit receipt bytes are pinned by SHA-256 `803ed920bb663bb0ddab563046a9be15158eacd4c3b6994bf705fc9ce74aed44`; all `20/20` Claims persisted across `14` unique existing Organizations.
+- Post-commit read-only PostgreSQL verification returned Organizations `347`, Claims `5572`, ClaimEvidence `5572`, Gukgam observations `57` and Gukgam source runs `14`.
+- Live staging Web verification returned public Claim-backed targets `106` across `6` committees. All `14/14` unique new Organization names, `20/20` Claim IDs and `20/20` ClaimEvidence IDs were present in the rendered public projection, while `review_key` and `match_class` remained absent.
+- The fresh tunnel and its exact project/environment child SSH process were closed after verification. Temporary credential/tunnel/manifest/preflight/commit/Web artifacts were removed. No public API/Postgres domain, new Railway resource or Organization creation occurred.
+- The twelfth reviewed batch is fully committed and verified. Do not replay manifest SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`.
+
 ## Next concrete action
 
-Merge this smallest persistence-adapter fix first. Then reopen a fresh private staging tunnel, re-verify canonical master and the unchanged `347/5552/5552/57/14` baseline, recreate only the exact twelfth manifest SHA-256 `c8da8721d501a4d6bf3a0fbfca6fa9b2952ea8bfa3efcb4a29b787e6fa062fa7`, require a fresh no-write receipt byte-identical to SHA-256 `103fecb5c066b36946d6f46da1d180d55e71ec24e4d4d155b40386ecdeb55e6e`, and only then execute one atomic commit. This manifest has `20` Claims over `14` unique Organizations; do not add the final four occurrences.
+Run one separate dry-run-only slice for the remaining current unpublished exact-one reviewed occurrences. Re-read staging discovery first; the previous pre-commit discovery left exactly `4` occurrences after this twenty-item manifest: 전국재해구호협회, 공무원연금공단, 한국소방산업기술원 and 한국도로교통공단. Build an explicit manifest only from the fresh discovery result, run the unchanged no-write preflight twice, require deterministic receipt equality and unchanged staging/public counts, and do not execute `--commit` in that same slice.
