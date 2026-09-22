@@ -3299,6 +3299,21 @@ start/end date semantics.
 - Before and after both dry-runs, staging remained Organizations `347`, Claims `5572`, ClaimEvidence `5572`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `106` and public committee count `6`; public HTML exposed neither `review_key` nor `match_class`.
 - No batch commit was executed in this slice.
 
+## Current checkpoint — final reviewed Gukgam 4-item batch commit (2026-09-22)
+
+- Exact canonical `master` was `624801fa8390590df6e2be46d30cd325cb677e38`; the worktree was clean and deferred draft PR `#75` remained the only concurrent PR, out of scope.
+- Commit-time baseline exactly matched the final four-item dry-run: Organizations `347`, Claims `5572`, ClaimEvidence `5572`, Gukgam observations `57`, Gukgam source runs `14`, public Claim-backed targets `106` and public committee count `6`.
+- The exact four-item manifest recreated from canonical HANDOFF review pairs retained SHA-256 `cb05916c68b61afa7a1fafda449134225b7e6801a990b851316025a30222d4e2`.
+- A fresh no-write preflight produced receipt SHA-256 `4b22c3ee1c0e75aef36474fde71300456e44d30bc599b96d20b6b08d9b62eb50`, byte-identical to the canonical dry-run receipt, with `DRY_RUN`, `item_count=4`, `write_performed=false`, `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The canonical commit path re-preflighted the same manifest and executed exactly one atomic transaction.
+- The commit returned `COMMITTED`, `item_count=4`, `claims_created=4`, `claims_reused=0`, `organizations_created=0`, `organizations_reused=4`, `write_performed=true`, `automatic_candidate_enumeration=false` and `network_fetch=false`.
+- The exact commit receipt bytes are pinned by SHA-256 `a8236c9cc84e484b180b3ac136bed9c6ebdf0a7ab5a641bfc315bb081c6d882f`.
+- Persisted items were 전국재해구호협회 Claim `6bd85d9d-043e-5337-96f6-1e9f505d22c7` / Evidence `af00e287-3e39-586d-9f56-bf39ab9d9664`, 공무원연금공단 Claim `bcefe8d4-de7c-56d2-bb87-e0f8892ed475` / Evidence `4a85a81a-d6b2-566e-87ef-930072c77ea4`, 한국소방산업기술원 Claim `079c6c3c-06c9-5a4f-8266-152c74f972f5` / Evidence `94c1d45a-9fc2-5c64-a5cc-0f181df10bd5`, and 한국도로교통공단 Claim `2720e9cf-9c29-5868-9115-261c45b506fe` / Evidence `400a2583-8235-5928-b133-02abd8d0ff47`.
+- Post-commit read-only PostgreSQL verification returned Organizations `347`, Claims `5576`, ClaimEvidence `5576`, Gukgam observations `57` and Gukgam source runs `14`.
+- Live staging Web verification returned public Claim-backed targets `110` across `6` committees; all `4/4` new Claim IDs and `4/4` new ClaimEvidence IDs were present, while `review_key` and `match_class` remained absent.
+- A fresh reviewed-schedule binding discovery after the commit returned `unpublished_exact_one=0`. The current exact-one reviewed publication backlog is therefore exhausted; do not continue the batch loop or infer/auto-resolve non-exact-one occurrences.
+- No public API/Postgres domain, new Railway resource or Organization creation occurred. The final reviewed four-item manifest is fully committed and must not be replayed.
+
 ## Next concrete action
 
-Use only the exact reviewed four-item manifest with SHA-256 `cb05916c68b61afa7a1fafda449134225b7e6801a990b851316025a30222d4e2` in the next separate commit slice. Re-verify canonical master, concurrent work and staging baseline, recreate exactly these four `(review_key, organization_id)` pairs, and require a fresh no-write preflight receipt byte-identical to SHA-256 `4b22c3ee1c0e75aef36474fde71300456e44d30bc599b96d20b6b08d9b62eb50` before one atomic commit.
+Stop the reviewed exact-one publication loop. In a separate read-only product/release slice, re-audit the remaining Gukgam review classes (`ZERO`, `MULTIPLE` or otherwise non-exact-one) without fuzzy matching, alias expansion or automatic binding, and separately evaluate the public-beta release gate now that current exact-one coverage is exhausted. Do not publish any non-exact-one occurrence without a new explicit reviewed binding contract.
