@@ -340,3 +340,118 @@ def test_operator_factory_masks_invalid_connection_configuration(monkeypatch):
         create_operator_app()
     assert "private-secret" not in str(error.value)
     assert error.value.__suppress_context__ is True
+
+
+def test_operator_pre_ping_replaces_closed_connection_and_preserves_read_only(repository):
+    readonly = SqlAlchemyRepository(str(repository.engine.url), pool_pre_ping=True)
+    configure_read_only(readonly)
+    try:
+        with readonly.engine.connect() as connection:
+            dbapi_connection = connection.connection.driver_connection
+        dbapi_connection.close()  # Simulate an idle pooled socket closing outside SQLAlchemy.
+        assert readonly.operator_records("people")["total"] == 10
+        with pytest.raises(OperationalError), readonly.engine.begin() as connection:
+            connection.execute(text("UPDATE people SET canonical_name = 'INVALID'"))
+    finally:
+        readonly.engine.dispose()
+
+
+def test_operator_expected_database_failure_is_safe_503(repository, monkeypatch):
+    from sqlalchemy.exc import SQLAlchemyError
+
+    def disconnected():
+        raise SQLAlchemyError("private-password-must-not-leak")
+
+    monkeypatch.setattr(repository, "operator_summary", disconnected)
+    with TestClient(
+        create_app(repository, enable_review_surface=True, operator_token=TOKEN),
+        base_url="http://127.0.0.1",
+    ) as client:
+        response = client.get("/admin/operations", headers={"x-civic-operator-token": TOKEN})
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "SERVICE_UNAVAILABLE"
+    assert "private-password" not in response.text
+
+
+def test_operator_connection_monitor_resets_and_checks_dead_process(monkeypatch):
+    from types import SimpleNamespace
+
+    from workers import operator_console as launcher
+
+    alive = SimpleNamespace(poll=lambda: None)
+    dead = SimpleNamespace(poll=lambda: 1)
+    monkeypatch.setattr(launcher, "_ready", lambda port: False)
+    assert launcher._backend_failures([alive], 8310, 0) == 1
+    assert launcher._backend_failures([alive], 8310, 1) == 2
+    monkeypatch.setattr(launcher, "_ready", lambda port: True)
+    assert launcher._backend_failures([alive], 8310, 1) == 0
+    assert launcher._backend_failures([dead], 8310, 0) == 2
+
+
+def test_operator_backend_recovery_replaces_owned_backend_only(monkeypatch):
+    from workers import operator_console as launcher
+
+    old, new = object(), object()
+    processes = [old]
+    stopped = []
+    environment = {"CIVIC_OPERATOR_TOKEN": TOKEN, "CIVIC_OPERATOR_ENABLED": "1"}
+    monkeypatch.setattr(launcher, "_stop", stopped.append)
+
+    def restart(env, port, project, owned):
+        assert env is environment and port == 8310 and project == "reviewed-project"
+        assert owned == []
+        owned.append(new)
+
+    monkeypatch.setattr(launcher, "_start_backend", restart)
+    attempts = launcher._recover_backend(environment, 8310, "reviewed-project", processes, 0)
+    assert attempts == 1 and processes == [new] and stopped == [old]
+    assert environment == {"CIVIC_OPERATOR_TOKEN": TOKEN, "CIVIC_OPERATOR_ENABLED": "1"}
+
+
+def test_operator_backend_recovery_has_finite_attempts_and_masks_errors(monkeypatch, capsys):
+    from workers import operator_console as launcher
+
+    attempts = []
+    monkeypatch.setattr(launcher, "_stop", lambda process: None)
+
+    def failed(*args):
+        attempts.append(1)
+        raise RuntimeError("private-password-must-not-leak")
+
+    monkeypatch.setattr(launcher, "_start_backend", failed)
+    with pytest.raises(RuntimeError, match="recovery exhausted"):
+        launcher._recover_backend({}, 8310, "reviewed-project", [], 0)
+    assert len(attempts) == 2
+    assert "private-password" not in capsys.readouterr().out
+    with pytest.raises(RuntimeError, match="recovery exhausted"):
+        launcher._recover_backend({}, 8310, "reviewed-project", [], 2)
+    assert len(attempts) == 2
+
+
+def test_operator_initial_transient_failure_uses_same_bounded_recovery(monkeypatch):
+    from types import SimpleNamespace
+
+    from workers import operator_console as launcher
+
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setattr(launcher, "_available", lambda port: True)
+    monkeypatch.setattr(launcher.shutil, "which", lambda name: "local-test-tool")
+    monkeypatch.setattr(Path, "exists", lambda self: True)
+    monkeypatch.setattr(launcher, "_stop", lambda process: None)
+    calls = []
+
+    def start(env, port, project, owned):
+        assert env["PGCONNECT_TIMEOUT"] == "5"
+        assert env["CIVIC_OPERATOR_ENABLED"] == "1"
+        assert project == "00000000-0000-0000-0000-000000000001"
+        calls.append(env["CIVIC_OPERATOR_TOKEN"])
+        if len(calls) == 1:
+            raise RuntimeError("Temporary private tunnel unavailability")
+        owned.append(SimpleNamespace(poll=lambda: None))
+
+    monkeypatch.setattr(launcher, "_start_backend", start)
+    monkeypatch.setattr(
+        launcher.subprocess, "Popen", lambda *args, **kwargs: SimpleNamespace(poll=lambda: 0)
+    )
+    assert launcher.main(["--railway-project", "00000000-0000-0000-0000-000000000001"]) == 1
+    assert len(calls) == 2 and calls[0] == calls[1]

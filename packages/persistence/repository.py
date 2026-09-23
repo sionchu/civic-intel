@@ -214,11 +214,11 @@ def _expected_schema_revision() -> str:
 
 
 class SqlAlchemyRepository:
-    def __init__(self, database_url: str | None = None):
+    def __init__(self, database_url: str | None = None, *, pool_pre_ping: bool = False):
         url = normalize_database_url(
             database_url or os.getenv("DATABASE_URL") or "sqlite:///./civic_intel.db"
         )
-        self.engine = create_engine(url)
+        self.engine = create_engine(url, pool_pre_ping=pool_pre_ping)
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
 
     def operator_summary(self) -> dict[str, Any]:

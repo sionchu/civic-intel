@@ -203,7 +203,7 @@ def create_operator_app() -> Any:
     ):
         raise RuntimeError("An existing migrated database is required; no automatic creation")
     try:
-        repository = SqlAlchemyRepository(url)
+        repository = SqlAlchemyRepository(url, pool_pre_ping=True)
         configure_read_only(repository)
         repository.assert_ready()
     except (SQLAlchemyError, DatabaseNotReady, OSError, ValueError):

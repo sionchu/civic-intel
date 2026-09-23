@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import secrets
 from contextlib import asynccontextmanager
@@ -10,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from packages.connectors.alio_disclosures import ALIO_ITEM12_SOURCE_CONTRACT
 from packages.domain.contracts import ClaimEvidence
@@ -793,6 +795,20 @@ def create_app(
             }
 
     if operator_token:
+        @app.exception_handler(SQLAlchemyError)
+        async def operator_database_error(request: Request, error: SQLAlchemyError) -> JSONResponse:
+            original = getattr(error, "orig", None)
+            sqlstate = getattr(original, "sqlstate", None)
+            state = sqlstate if isinstance(sqlstate, str) and re.fullmatch(r"[A-Z0-9]{5}", sqlstate) else "unknown"
+            logging.getLogger(__name__).warning(
+                "private_db_unavailable class=%s sqlstate=%s invalidated=%s",
+                type(original).__name__, state, bool(getattr(error, "connection_invalidated", False)),
+            )
+            return _error_response(
+                request, status_code=503, code="SERVICE_UNAVAILABLE",
+                message="Private database connection unavailable. Refresh after reconnection.",
+            )
+
         from apps.api.operator import build_operator_router
 
         app.include_router(build_operator_router(target, operator_label))
