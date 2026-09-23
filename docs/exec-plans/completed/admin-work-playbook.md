@@ -43,9 +43,31 @@ Local full suite565 passed/1 skipped; Ruff/mypy93 files and Golden passed. Web l
 26 UI tests, production build and standalone checks passed. These are local results, not CI.
 Native named-role probe remains BLOCKED: selector/restrictions unverified, zero child launches.
 
-## Next action
+## Preparation-slice closure — 2026-09-24
 
-Finish Aside browser acceptance and review the exact final diff, then submit this preparation
-slice to CI. Verify the new private operator runtime against staging without real-data mutations.
-Track the named-role execution integration as a separate blocked prerequisite; never report it
-as completed because request drafts can be downloaded.
+Status: COMPLETE for contextual request preparation only. Actual agent execution remains BLOCKED.
+PR144 merged as `98dd4ca069c784c525996ad9ce707b86b483ccf9`; GitHub Verify35889018114
+passed with565 tests/1 skipped, Web26 tests, Golden, migrations/PostgreSQL/artifact gates.
+The existing private admin on3315/8315 was restarted from the merged worktree with its prior
+ADMIN WRITE capability preserved. No cloud service deployment or schema change was required.
+Desktop Start now uses `C:\Users\getch\civic-intel-playbook`; Open remains the same3315 URL.
+
+Actual staging Aside verification recorded9 checks: exact two selected IDs/64-character view
+versions, merged code/assigned role, no dispatch/human attestation, reference-only content,
+matching Markdown, six recipes, selection invalidation, desktop no overflow and existing admin
+write capability. Note edits independently invalidated the previous export. The saved viewport
+screenshot was inspected. A few one-shot harness calls failed on unsupported Aside methods or
+navigation timing; interactive Aside snapshots and real downloads established the final evidence.
+Mobile viewport behavior remains unverified; no unauthorized browser fallback was used.
+
+Fresh before/after read-only PostgreSQL audits at2026-09-23T16:56:05Z and17:16:19Z matched:
+People299, Organizations347, Claims/Evidence5576/5576, observations4170, snapshots370;
+all inspected domain fingerprints and table counts unchanged. Schema0007 and admin receipts0.
+Anonymous private playbook API403; untrusted-Host private Web404. Source acquisition, real-person
+registration/link/merge, Claim publication and the independent org.go27 commit were not executed.
+
+## Next dependency
+
+See [the blocked native execution prerequisite](../blocked/admin-agent-execution.md).
+Do not call the full agent lifecycle complete because a DRAFT can be exported. Enabling a runner
+requires actual named-role/tool isolation and event/timeout evidence, not another task label.

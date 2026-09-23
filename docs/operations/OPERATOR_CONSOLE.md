@@ -249,3 +249,39 @@ PASS/no issues, with no tool calls. This is independent text review, not named-r
 The strict-config invocation after metadata repair exited successfully without loader errors.
 The earlier native named-role smoke remains BLOCKED/zero children. No application test, browser
 QA, runtime deployment, live source collection or administrative record change is claimed here.
+
+
+## Installed playbook preparation — 2026-09-24
+
+Implementation PR144 / commit98dd4ca069c784c525996ad9ce707b86b483ccf9 passed Verify35889018114
+(565 tests/1 skipped). The operator's existing3315/8315 private admin now runs this merged code
+from `C:\Users\getch\civic-intel-playbook`; Desktop Start was updated, Open still targets3315.
+Existing ADMIN WRITE controls are retained. This was a local operator-runtime update, not a cloud
+API/Web deployment, migration or data-import run.
+
+Open `http://127.0.0.1:3315/admin/review?tab=playbook` for all six tasks. For data work use the existing
+record list, select exact records and expand 업무 플레이북; prepare/download the bounded reference
+DRAFT. The executing-agent state remains NOT_CONNECTED. A generated request ID is not a job ID.
+No task is persisted/dispatched and no source content is automatically sent to a model.
+
+Actual staging Aside checks covered exact two selected IDs/versions, current code and role,
+reference-only JSON/Markdown, six recipes, input/selection invalidation, preserved admin-write
+capability and desktop layout. Nine structured checks passed; a separate note-edit check also
+passed. The real viewport screenshot was visually inspected. Mobile viewport QA remains unverified.
+Previous one-shot harness failures were API/timing issues, not successful tests; final evidence
+came from interactive Aside browser actions and downloaded artifacts. No browser backend fallback.
+
+Before/after read-only audits matched all inspected fingerprints and table counts, including
+People299, Organizations347, Claims/Evidence5576/5576, observations4170, snapshots370 and zero admin
+receipts; schema remains0007. Anonymous private API403 and untrusted-Host Web404 were rechecked.
+No live Person/Claim decision, source collection, schema change or org.go27 commit was performed.
+The [completed preparation plan](../exec-plans/completed/admin-work-playbook.md) records this scope;
+[the native execution prerequisite](../exec-plans/blocked/admin-agent-execution.md) remains blocked.
+
+
+A follow-up synthetic probe on2026-09-24 used only a disposable workspace and provided prompt,
+ignored user-wide config, disabled apps/plugins/shell/browser/computer tools, and tested the installed
+native multi_agent_v2 feature without changing project/global settings. It again returned BLOCKED:
+no role selector in collaboration.spawn_agent, no child ID, no configured marker returned and zero
+children launched. This confirms the tested route still does not justify enabling live dispatch;
+it does not prove that every native interface or future client has the same limitation.

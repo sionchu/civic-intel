@@ -3428,9 +3428,21 @@ start/end date semantics.
 - Mutating browser17/17 plus link/merge proofs used disposable PostgreSQL only. No live Person
   decisions, publication, source acquisition or org.go27 Organization commit occurred.
 
+## Current checkpoint — contextual playbook deployed (2026-09-24)
+
+PR144 merged98dd4ca; Verify35889018114 passed565 tests/1 skipped. Existing private admin3315/8315
+runs the merged worktree `C:\Users\getch\civic-intel-playbook`; Desktop Start updated.
+Nine actual staging Aside checks plus note invalidation passed. Exact2-reference JSON/Markdown
+are DRAFTs, not dispatched tasks. Existing ADMIN WRITE controls retained; no model data transfer.
+Fresh before/after domain fingerprints/counts unchanged; schema0007/admin receipts0. No source
+collection, real Person/Claim mutation, cloud deployment or org.go27 commit. Mobile QA unverified.
+Closure: docs/exec-plans/completed/admin-work-playbook.md. Native role dispatch is still blocked;
+zero child runtime proof. Do not treat a copied request or role label as actual execution.
+
 ## Next concrete action
 
-Review a bounded ALIO source-person batch in the activated admin, then explicitly register/link
-approved records and separately approve their draft role Claims. Treat candidate names as review
-inputs, not identity proof. The previous exact org.go27 Organization-only atomic commit remains
-pending as an independent action, not something performed by dashboard activation.
+Resolve the isolated native named-role/tool-permission prerequisite in
+`docs/exec-plans/blocked/admin-agent-execution.md`, then connect one bounded read-only recipe to
+actual job/event/result evidence. Until then the UI must retain 실행 미연동. Existing bounded ALIO
+human-reviewed admin work and the independent org.go27 import are separate approved scopes, not
+automatic effects of playbook preparation.
