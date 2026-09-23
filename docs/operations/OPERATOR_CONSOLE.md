@@ -40,6 +40,13 @@ be migrated. No startup migration, seeding, collection, or import is performed.
 Open `http://127.0.0.1:3310/admin/review` on that computer. A phone or another computer's
 localhost is not the operator host. Ctrl+C closes the launcher's owned API, Web and tunnel.
 No public hosting or multi-user authentication is included in this local operating mode.
+The launcher probes actual database readiness every 30 seconds. Two consecutive failures or an
+exited backend trigger a bounded recovery of only the owned private tunnel/API, while keeping
+Web and the server-only token unchanged. At most two reconnection attempts are allowed per launch;
+a persistent failure exits with a restart instruction instead of retrying indefinitely. Refresh the
+page after recovery. PostgreSQL connect timeout is five seconds; an operator-only pre-ping replaces
+stale pooled connections before use. A disconnected read remains SERVICE_UNAVAILABLE, never zero.
+
 
 ## Views and meanings
 
@@ -150,4 +157,35 @@ The pending exact 27-item org.go atomic commit remains an independent operationa
 - One intermediate Windows server transport log recorded a client-disconnect `WinError 10054`;
   the completed browser checks passed and the subsequent final launcher was healthy. This was not
   hidden or treated as evidence of a successful request.
-- GitHub Verify is a separate PR gate; local/browser acceptance does not claim remote CI success.
+- PR #139 GitHub Verify `35832816026` passed, including `525 passed / 1 skipped`, PostgreSQL
+  migration/load, backup/restore, container builds and installed-entrypoint verification. It was
+  merged as `38cd7c1c5009f42c2d4fabf359492a78accffe5e`.
+- A subsequent hour-plus idle-session check found SSL EOF followed by a nonfunctional private
+  tunnel although its process remained alive. Initial short browser acceptance did not prove
+  long-session durability. The runtime recovery correction is specifically scoped to that failure;
+  canonical data/identity/publication contracts and public runtime defaults remain unchanged.
+
+
+## Private-session recovery acceptance (2026-09-23)
+
+A runtime-only correction preserves the public defaults and existing canonical repository while
+adding private-engine pre-ping, safe database-error handling, actual readiness checks and bounded
+recovery of the launcher's own tunnel/API. Transient initial connection failures use the same
+finite attempt budget. No raw exception message or SQL parameters enter the recovery diagnostics.
+
+The actual staging fault test first reached a ready private session, then terminated only its owned
+SSH forward (not the PostgreSQL service). After two failed readiness checks, the launcher replaced
+the private backend while retaining the Web process and server-only token. The same browser URL
+then passed all 15 interaction checks again, including SQL pagination/search, canonical role graph,
+27-item no-write preflight, fresh reload, keyboard access and both desktop/mobile layouts.
+Recorded counters remained People 299, Organizations 347, Claims 5576, observations 4170, Sources
+370 and 11 persisted lanes. No org.go commit, publication, migration or source acquisition occurred.
+
+This proves the bounded disconnect/reconnect case, not indefinite uptime or immunity to future
+network/provider outages. The launcher exits after its two-attempt budget is exhausted; start it
+again only after connectivity is available. During a failure the UI reports SERVICE_UNAVAILABLE,
+not a successful empty collection.
+
+Final recovery regression: `531 passed / 1 skipped`, Golden Set passed; Ruff and mypy passed.
+The `20` operator tests include stale-connection replacement, write rejection, safe 503, finite
+reconnection, dead-process detection and transient-startup recovery. Web sources were unchanged.

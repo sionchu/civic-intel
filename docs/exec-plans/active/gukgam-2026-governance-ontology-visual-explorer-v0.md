@@ -1579,6 +1579,11 @@ Staging must stay noindex.
   including mobile/desktop layout, pagination, fresh reload, graph and exact 27-row preflight.
 - Default public operator Web `404`, anonymous private API `403`, external-Host private Web `404`.
   No staging DB write, org.go commit, Gukgam publication, public deployment or new cloud resource.
+- PR #139 passed GitHub Verify `35832816026` and merged as
+  `38cd7c1c5009f42c2d4fabf359492a78accffe5e`. A later long-idle check exposed stale private
+  DB connections; the operator-only recovery correction adds pre-ping and bounded owned-backend
+  reconnection. Actual owned-SSH disconnection/recovery passed the same `15/15` browser checks
+  afterward, with no canonical DB writes. Public runtime defaults remain unchanged.
 - Runbook and exact scope: `docs/operations/OPERATOR_CONSOLE.md`. The org.go atomic commit below
   remains a separate pending operational action; implementing the console did not execute it.
 

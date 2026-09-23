@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import queue
 import re
@@ -74,8 +75,9 @@ def _railway_tunnel(project: str, processes: list[subprocess.Popen]) -> str:
     environment = os.environ.copy()
     if os.name == "nt":
         git_ssh = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/usr/bin"
-        if (git_ssh / "ssh.exe").is_file():
-            environment["PATH"] = str(git_ssh) + os.pathsep + environment.get("PATH", "")
+        system_ssh = Path(os.environ.get("WINDIR", "C:/Windows")) / "System32/OpenSSH"
+        ssh_paths = [str(path) for path in (git_ssh, system_ssh) if (path / "ssh.exe").is_file()]
+        environment["PATH"] = os.pathsep.join(ssh_paths + [environment.get("PATH", "")])
     process = subprocess.Popen(
         [
             railway,
@@ -118,6 +120,84 @@ def _railway_tunnel(project: str, processes: list[subprocess.Popen]) -> str:
     raise RuntimeError("Private Railway tunnel unavailable; verify CLI login and SSH locally")
 
 
+def _ready(port: int) -> bool:
+    try:
+        with urlopen(f"http://127.0.0.1:{port}/ready", timeout=5) as response:
+            return response.status == 200 and json.loads(response.read(1024)) == {"status": "ready"}
+    except (OSError, ValueError):
+        return False
+
+
+def _backend_failures(processes: list[subprocess.Popen], port: int, previous: int) -> int:
+    if any(process.poll() is not None for process in processes):
+        return 2
+    return 0 if _ready(port) else previous + 1
+
+
+def _start_backend(
+    environment: dict[str, str], port: int, project: str | None, processes: list[subprocess.Popen]
+) -> None:
+    if project:
+        print("Opening the existing private staging database tunnel...", flush=True)
+        environment["DATABASE_URL"] = _railway_tunnel(project, processes)
+    print("Verifying the read-only database session...", flush=True)
+    parsed = make_url(environment["DATABASE_URL"])
+    if parsed.get_backend_name() == "sqlite" and (
+        not parsed.database or not Path(parsed.database).is_file()
+    ):
+        raise RuntimeError("An existing migrated SQLite database is required")
+    api = subprocess.Popen(
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "apps.api.operator:create_operator_app",
+            "--factory",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(port),
+            "--no-access-log",
+        ],
+        cwd=ROOT,
+        env=environment,
+    )
+    processes.append(api)
+    deadline = time.monotonic() + 90
+    while time.monotonic() < deadline:
+        if api.poll() is not None:
+            raise RuntimeError("Private API failed to start")
+        if _ready(port):
+            return
+        time.sleep(0.5)
+    raise RuntimeError("Private API readiness timed out")
+
+
+def _recover_backend(
+    environment: dict[str, str],
+    port: int,
+    project: str | None,
+    processes: list[subprocess.Popen],
+    attempts: int,
+) -> int:
+    # Only restart our private read-only session. Never mutate DB, source jobs or cloud resources.
+    while attempts < 2:
+        attempts += 1
+        for process in reversed(processes):
+            _stop(process)
+        processes.clear()
+        print(f"Private database connection lost; reconnecting ({attempts}/2).", flush=True)
+        try:
+            _start_backend(environment, port, project, processes)
+            print("Private database reconnected. Refresh the existing console page.", flush=True)
+            return attempts
+        except (OSError, RuntimeError, ValueError, SQLAlchemyError):
+            continue
+    raise RuntimeError(
+        "Private connection recovery exhausted; restart the console after checking connectivity"
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Loopback-only read-only Civic Intel operator console"
@@ -156,18 +236,11 @@ def main(argv: list[str] | None = None) -> int:
     if not script.exists():
         parser.error("Run npm --prefix apps/web ci and npm --prefix apps/web run build first")
     processes: list[subprocess.Popen] = []
+    web: subprocess.Popen | None = None
     try:
         environment = os.environ.copy()
-        if args.railway_project:
-            environment["DATABASE_URL"] = _railway_tunnel(str(args.railway_project), processes)
-            label = "STAGING"
-        else:
-            label = args.label
-        parsed = make_url(environment["DATABASE_URL"])
-        if parsed.get_backend_name() == "sqlite" and (
-            not parsed.database or not Path(parsed.database).is_file()
-        ):
-            raise RuntimeError("An existing migrated SQLite database is required")
+        project = str(args.railway_project) if args.railway_project else None
+        label = "STAGING" if project else args.label
         environment.update(
             {
                 "CIVIC_OPERATOR_ENABLED": "1",
@@ -179,45 +252,31 @@ def main(argv: list[str] | None = None) -> int:
                 "HOSTNAME": "127.0.0.1",
                 "PORT": str(args.web_port),
                 "PYTHONIOENCODING": "utf-8",
+                "PGCONNECT_TIMEOUT": "5",
             }
         )
-        api = subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "uvicorn",
-                "apps.api.operator:create_operator_app",
-                "--factory",
-                "--host",
-                "127.0.0.1",
-                "--port",
-                str(args.api_port),
-                "--no-access-log",
-            ],
-            cwd=ROOT,
-            env=environment,
-        )
-        processes.append(api)
-        deadline = time.monotonic() + 90
-        while time.monotonic() < deadline:
-            if api.poll() is not None:
-                raise RuntimeError("Private API failed to start")
-            try:
-                with urlopen(f"http://127.0.0.1:{args.api_port}/ready", timeout=1) as response:
-                    if response.status == 200:
-                        break
-            except OSError:
-                time.sleep(0.2)
-        else:
-            raise RuntimeError("Private API readiness timed out")
+        attempts = 0
+        try:
+            _start_backend(environment, args.api_port, project, processes)
+        except (OSError, RuntimeError, SQLAlchemyError):
+            attempts = _recover_backend(environment, args.api_port, project, processes, attempts)
         web_command = [node, str(script)]
         if args.dev:
             web_command += ["dev", "--hostname", "127.0.0.1", "--port", str(args.web_port)]
         web = subprocess.Popen(web_command, cwd=web_root, env=environment)
-        processes.append(web)
         print(f"Operator console: http://127.0.0.1:{args.web_port}/admin/review", flush=True)
         print(f"{label}, database read-only. Ctrl+C closes owned services/tunnel.", flush=True)
-        while all(process.poll() is None for process in processes):
+        failures = 0
+        next_check = time.monotonic() + 30
+        while web.poll() is None:
+            if time.monotonic() >= next_check or any(p.poll() is not None for p in processes):
+                failures = _backend_failures(processes, args.api_port, failures)
+                if failures >= 2:
+                    attempts = _recover_backend(
+                        environment, args.api_port, project, processes, attempts
+                    )
+                    failures = 0
+                next_check = time.monotonic() + 30
             time.sleep(1)
         return 1
     except KeyboardInterrupt:
@@ -229,6 +288,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
     finally:
+        if web is not None:
+            _stop(web)
         for process in reversed(processes):
             _stop(process)
 
