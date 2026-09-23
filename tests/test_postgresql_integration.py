@@ -69,4 +69,4 @@ def test_postgresql_migration_load_and_public_api_contracts() -> None:
         expected_people=10,
         expected_organization_claims=2,
     )
-    assert report["alembic_revision"] == "0006"
+    assert report["alembic_revision"] == "0007"

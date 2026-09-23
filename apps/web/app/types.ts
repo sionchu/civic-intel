@@ -230,7 +230,7 @@ export type OntologyEdge = {
   id: string;
   source: string;
   target: string;
-  relation_type: "HELD_ROLE" | "WORKED_AT" | "STUDIED_AT" | "SERVED_ON" | "DIRECTOR_OF" | "APPOINTED_TO" | "APPEARED_AT" | "QUESTIONED" | "AUDITED_BY" | "LISTS_EXECUTIVE";
+  relation_type: "HELD_ROLE" | "WORKED_AT" | "STUDIED_AT" | "SERVED_ON" | "DIRECTOR_OF" | "APPOINTED_TO" | "APPEARED_AT" | "QUESTIONED" | "AUDITED_BY" | "LISTS_EXECUTIVE" | "DISCLOSED_ROLE_AT";
   label: string;
   claim_id: string;
   evidence_ids: string[];

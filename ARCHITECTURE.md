@@ -12,7 +12,7 @@ Pydantic contracts define canonical semantics. SQLAlchemy rows persist those con
 Alembic is the only schema creation/change path. API and workers share the single
 `packages.persistence.SqlAlchemyRepository`; FastAPI never reads module-level fixture
 dictionaries. Normal runtime startup
-only verifies that the configured database is at the current Alembic head. It does not
+verifies the declared read-compatible Alembic revisions (0006/0007 during the additive admin rollout). It does not
 call `create_all()` and does not seed Golden Set 001. Golden seeding is an explicit,
 disposable development/test operation against an empty migrated database.
 
@@ -30,8 +30,9 @@ Origin clusters determine independent-source counts. SUPPORT and REFUTE remain d
 Decision episodes may be rendered only when they explicitly reference a published Claim and
 its ClaimEvidence; legacy or incomplete episode records stay out of the public projection.
 Review-only identity and source-operational metadata are not public data. The API review surface
-is disabled by default because V0 has no authenticated operator boundary; test/internal callers
-must opt in explicitly.
+is disabled by default. The private local-OS operator factory supports explicit token-gated
+admin commands with signed previews, transaction revalidation and append-only receipts; public
+callers never inherit that authority. See [Admin operations](docs/architecture/ADMIN_OPERATIONS.md).
 
 Anonymous Source reads are reachability-scoped: a Source is public only when a current publishable
 Claim/Evidence path on a public eligible Person or Organization reaches it. The public Source DTO

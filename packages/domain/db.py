@@ -306,3 +306,18 @@ class HypothesisEvidenceRow(Base):
     hypothesis_id: Mapped[str] = mapped_column(ForeignKey("hypotheses.id"))
     claim_evidence_id: Mapped[str] = mapped_column(ForeignKey("claim_evidence.id"))
     stance: Mapped[str] = mapped_column(String(16))
+
+
+class AdminOperationRow(Base):
+    """Append-only receipt written atomically with a successful operator command."""
+    __tablename__ = "admin_operations"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    actor: Mapped[str] = mapped_column(String(100), index=True)
+    action: Mapped[str] = mapped_column(String(40), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    command_hash: Mapped[str] = mapped_column(String(64))
+    state_hash: Mapped[str] = mapped_column(String(64))
+    reason: Mapped[str] = mapped_column(Text)
+    targets: Mapped[list] = mapped_column(JSON)
+    changes: Mapped[list] = mapped_column(JSON)
+    result: Mapped[dict] = mapped_column(JSON)

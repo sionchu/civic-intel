@@ -28,7 +28,7 @@ MANIFEST = ROOT / "docs/research/orggo_reviewed_organization_manifest_2026-09-22
 PROPOSAL = ROOT / "docs/research/gukgam_2026_orggo_organization_proposal_2026-09-22.json"
 
 
-def configure_read_only(repository: SqlAlchemyRepository) -> None:
+def configure_read_only(repository: SqlAlchemyRepository, *, allow_writes: bool = False) -> None:
     """Apply database-enforced read-only defaults to this dedicated engine only."""
     dialect = repository.engine.dialect.name
     if dialect not in {"sqlite", "postgresql"}:
@@ -39,14 +39,15 @@ def configure_read_only(repository: SqlAlchemyRepository) -> None:
         cursor = connection.cursor()
         try:
             if dialect == "sqlite":
-                cursor.execute("PRAGMA query_only = ON")
+                cursor.execute("PRAGMA query_only = OFF" if allow_writes else "PRAGMA query_only = ON")
                 cursor.execute("PRAGMA busy_timeout = 5000")
             else:
                 connection.autocommit = True
-                cursor.execute("SET default_transaction_read_only = on")
+                cursor.execute("SET default_transaction_read_only = off" if allow_writes else "SET default_transaction_read_only = on")
                 cursor.execute("SET statement_timeout = 15000")
                 cursor.execute("SET idle_in_transaction_session_timeout = 20000")
-                cursor.execute("SET default_transaction_isolation = 'repeatable read'")
+                cursor.execute("SET default_transaction_isolation = 'read committed'" if allow_writes
+                               else "SET default_transaction_isolation = 'repeatable read'")
                 connection.autocommit = False
         finally:
             cursor.close()
@@ -190,6 +191,8 @@ def create_operator_app() -> Any:
     url = os.environ.get("DATABASE_URL", "")
     token = os.environ.get("CIVIC_OPERATOR_TOKEN", "")
     label = os.environ.get("CIVIC_OPERATOR_LABEL", "LOCAL")
+    writes = os.environ.get("CIVIC_OPERATOR_WRITES") == "1"
+    actor = os.environ.get("CIVIC_OPERATOR_ACTOR", "local-operator")
     if not url or not token or os.environ.get("CIVIC_OPERATOR_ENABLED") != "1":
         raise RuntimeError("Explicit DATABASE_URL and operator opt-in are required")
     if label not in {"LOCAL", "STAGING", "RESTORED", "TEST"}:
@@ -204,12 +207,15 @@ def create_operator_app() -> Any:
         raise RuntimeError("An existing migrated database is required; no automatic creation")
     try:
         repository = SqlAlchemyRepository(url, pool_pre_ping=True)
-        configure_read_only(repository)
+        configure_read_only(repository, allow_writes=writes)
         repository.assert_ready()
+        if writes and not repository.admin_schema_ready():
+            raise RuntimeError("Admin writes require the reviewed 0007 migration")
     except (SQLAlchemyError, DatabaseNotReady, OSError, ValueError):
         raise RuntimeError(
             "Private operator database is not ready; no migration or write performed"
         ) from None
     return create_app(
-        repository, enable_review_surface=True, operator_token=token, operator_label=label
+        repository, enable_review_surface=True, operator_token=token, operator_label=label,
+        operator_writes=writes, operator_actor=actor
     )

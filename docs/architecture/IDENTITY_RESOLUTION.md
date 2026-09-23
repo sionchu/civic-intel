@@ -188,3 +188,15 @@ a distinct Person when its exact provider record, current successful source chec
 candidate contradiction are revalidated. That outcome is recorded as `REVIEWED_CREATE` with
 `REVIEWED_DISTINCT_IDENTITY`; it is not emitted by the automatic gate and never merges the
 candidate Person.
+
+
+## Private admin-reviewed source records
+
+The approved admin workflow adds a manual ALIO source-context registration/link path alongside
+reviewed bundles, not an automatic feeder rule. The operator reviews the exact official row and
+institution/role context, confirms the before/after packet, and receives an atomic audit receipt.
+New Person role Claims remain DRAFT/CLAIM until separate publication. Existing exact name/alias
+candidates block blind new creation; a cross-source link or Person merge requires a reviewed
+official continuity basis through the existing resolver. See [Admin operations](ADMIN_OPERATIONS.md).
+The review attestation is recorded human judgment, never a model score or proof of unique identity
+across all sources. Unsupported dependent records block merge rather than silently moving them.

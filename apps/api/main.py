@@ -22,6 +22,7 @@ from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_PREDICATE,
 )
 from packages.rendering.governance_ontology import (
+    add_reviewed_person_roles,
     build_organization_governance_ontology,
     build_person_governance_ontology,
 )
@@ -83,8 +84,12 @@ def create_app(
     enable_review_surface: bool = False,
     operator_token: str | None = None,
     operator_label: str = "LOCAL",
+    operator_writes: bool = False,
+    operator_actor: str = "local-operator",
 ) -> FastAPI:
     target = target_repository or repository
+    if operator_writes and (not operator_token or not re.fullmatch(r"[A-Za-z0-9_.@-]{1,100}", operator_actor)):
+        raise ValueError("Admin writes require an explicit private actor and token")
     if operator_token is not None and (
         not enable_review_surface or not re.fullmatch(r"[A-Za-z0-9_-]{32,128}", operator_token)
     ):
@@ -143,6 +148,11 @@ def create_app(
 
     @app.exception_handler(HTTPException)
     async def framework_http_error(request: Request, exc: HTTPException) -> JSONResponse:
+        if (operator_token and request.url.path.startswith("/admin/operations")
+                and isinstance(exc.detail, dict) and isinstance(exc.detail.get("code"), str)
+                and isinstance(exc.detail.get("message"), str)):
+            return _error_response(request, status_code=exc.status_code,
+                                   code=exc.detail["code"], message=exc.detail["message"])
         code = {
             403: "ACCESS_DENIED",
             404: "PUBLIC_RECORD_NOT_FOUND",
@@ -322,6 +332,15 @@ def create_app(
             "asset_disclosure_ids": [],
         }
 
+    def reviewed_role_graph(graph, *, person_id=None, organization_id=None):
+        contexts = target.reviewed_person_role_contexts(person_id=person_id, organization_id=organization_id)
+        evidence = [item for _, _, _, items in contexts for item in items]
+        sources = target.sources(item.source_id for item in evidence)
+        policies = target.policies(item.policy_id for item in sources.values())
+        eligible = [context for context in contexts if validate_claim_publication(
+            context[0], context[1], list(context[3]), sources, policies).publishable]
+        return add_reviewed_person_roles(graph, eligible).to_dict()
+
     @app.get("/ontology/people/{person_id}")
     def person_ontology(person_id: UUID) -> dict:
         item = person_or_404(person_id, public=True)
@@ -347,11 +366,9 @@ def create_app(
             ).publishable:
                 eligible_claims.append(claim)
                 eligible_evidence[claim.id] = tuple(evidence)
-        return build_person_governance_ontology(
-            item,
-            eligible_claims,
-            eligible_evidence,
-        ).to_dict()
+        return reviewed_role_graph(build_person_governance_ontology(
+            item, eligible_claims, eligible_evidence,
+        ), person_id=person_id)
 
     @app.get("/ontology/organizations/{organization_id}")
     def organization_ontology(organization_id: UUID) -> dict:
@@ -378,11 +395,9 @@ def create_app(
             ).publishable:
                 eligible_claims.append(claim)
                 eligible_evidence[claim.id] = tuple(evidence)
-        return build_organization_governance_ontology(
-            item,
-            eligible_claims,
-            eligible_evidence,
-        ).to_dict()
+        return reviewed_role_graph(build_organization_governance_ontology(
+            item, eligible_claims, eligible_evidence,
+        ), organization_id=organization_id)
 
     @app.get("/organizations")
     def organizations() -> list[dict]:
@@ -812,6 +827,10 @@ def create_app(
         from apps.api.operator import build_operator_router
 
         app.include_router(build_operator_router(target, operator_label))
+        from apps.api.admin import build_admin_router
+
+        app.include_router(build_admin_router(target, operator_token,
+                                             writes=operator_writes, actor=operator_actor))
 
     @app.get("/{public_path:path}", include_in_schema=False)
     def public_route_not_found(public_path: str) -> dict:

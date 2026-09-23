@@ -81,8 +81,9 @@ source status feel more authoritative than the evidence.
 
 Roster records are flat clickable rows with canonical name, evidenced role, available profile
 fields, evidence/as-of metadata and a clear profile link. Profile claims and sources are separate
-panels. Review cards remain visibly read-only and keep operational IDs in expandable audit
-details.
+panels. Public review displays remain read-only. The explicitly enabled private admin workspace uses
+selected-record review, before/after previews, final confirmation and server-acknowledged receipts.
+Operational IDs and full audit details remain expandable; mutation success is never optimistic.
 
 ### Reviewed portraits
 

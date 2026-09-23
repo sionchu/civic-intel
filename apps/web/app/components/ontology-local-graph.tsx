@@ -4,6 +4,7 @@ import type { OntologyGraph } from "../types";
 
 const RELATION_LABELS: Record<string, string> = {
   HELD_ROLE: "직책",
+  DISCLOSED_ROLE_AT: "검토된 공시상 직책",
   WORKED_AT: "경력",
   STUDIED_AT: "학력",
   SERVED_ON: "위원회",
@@ -39,7 +40,7 @@ export default function OntologyLocalGraph({
       <div className="ontology-visual" aria-hidden="true">
         <svg viewBox={`0 0 720 ${height}`} role="presentation">
           {visibleEdges.map((edge, index) => {
-            const target = nodeById.get(edge.target);
+            const target = nodeById.get(edge.source === graph.center_node_id ? edge.target : edge.source);
             const targetY = 44 + index * 76;
             const relation = RELATION_LABELS[edge.relation_type] ?? edge.relation_type;
             return (
@@ -71,7 +72,7 @@ export default function OntologyLocalGraph({
 
       <div className="ontology-relations" aria-label="공식 기록상 연결 목록">
         {graph.edges.map((edge) => {
-          const target = nodeById.get(edge.target);
+          const target = nodeById.get(edge.source === graph.center_node_id ? edge.target : edge.source);
           const firstSource = edge.source_ids[0];
           return (
             <article className="ontology-relation" key={edge.id}>

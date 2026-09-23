@@ -282,3 +282,29 @@ def build_organization_governance_ontology(
         nodes=tuple(nodes),
         edges=tuple(edges),
     )
+
+
+
+def add_reviewed_person_roles(graph: OntologyGraph, contexts: Sequence[tuple]) -> OntologyGraph:
+    """Attach only gate-checked, exact persisted Person/Organization role bindings."""
+    nodes = {node.id: node for node in graph.nodes}
+    edges = list(graph.edges)
+    for claim, person, organization, evidence in contexts:
+        if not evidence or claim.publication_status != PublicationStatus.PUBLISHED:
+            continue
+        person_key, organization_key = f"person:{person.id}", f"organization:{organization.id}"
+        if graph.center_node_id not in {person_key, organization_key}:
+            continue
+        nodes[person_key] = OntologyNode(person_key, "PERSON", person.canonical_name, person.id)
+        nodes[organization_key] = OntologyNode(organization_key, "ORGANIZATION", organization.name, organization.id)
+        stances = {item.stance for item in evidence}
+        edges.append(OntologyEdge(
+            id=f"edge:{claim.id}", source=person_key, target=organization_key,
+            relation_type="DISCLOSED_ROLE_AT", label=claim.qualifiers.get("position_text", "공시상 직책"),
+            claim_id=claim.id, evidence_ids=tuple(item.id for item in evidence),
+            source_ids=_ordered_unique(tuple(item.source_id for item in evidence)),
+            epistemic_status=claim.epistemic_status.value, publication_status=claim.publication_status.value,
+            source_conflict={EvidenceStance.SUPPORT, EvidenceStance.REFUTE} <= stances,
+            valid_from=_iso(claim.valid_from), valid_to=_iso(claim.valid_to),
+        ))
+    return OntologyGraph(graph.center_node_id, tuple(nodes.values()), tuple(edges))
