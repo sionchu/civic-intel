@@ -221,6 +221,24 @@ class SqlAlchemyRepository:
         self.engine = create_engine(url)
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
 
+    def operator_summary(self) -> dict[str, Any]:
+        from packages.persistence.operator_queries import summary
+
+        with self.sessions() as session:
+            return summary(session)
+
+    def operator_records(self, kind: str, **filters: Any) -> dict[str, Any]:
+        from packages.persistence.operator_queries import records
+
+        with self.sessions() as session:
+            return records(session, kind, **filters)
+
+    def operator_record_detail(self, kind: str, record_id: str) -> dict[str, Any] | None:
+        from packages.persistence.operator_queries import detail
+
+        with self.sessions() as session:
+            return detail(session, kind, record_id)
+
     def assert_ready(self) -> None:
         database = inspect(self.engine)
         tables = set(database.get_table_names())

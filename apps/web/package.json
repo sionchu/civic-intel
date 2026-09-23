@@ -13,6 +13,7 @@
     "test": "node scripts/check-portrait-assets.mjs && node --test tests/ui.test.mjs"
   },
   "dependencies": {
+    "cytoscape": "3.34.3",
     "next": "^16.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
