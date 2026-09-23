@@ -1,42 +1,58 @@
 # Native admin agent execution prerequisite
 
-Status: BLOCKED; request preparation is delivered by
-[the completed playbook slice](../completed/admin-work-playbook.md), not an execution system.
+Status: BLOCKED. Request preparation is delivered by
+[the completed playbook slice](../completed/admin-work-playbook.md); it is not task dispatch.
 
-## Observed prerequisite
+## Current evidence — 2026-09-24
 
-The installed Codex0.154.0 native probe exposed `collaboration.spawn_agent`, but did not expose
-or prove a named-role configuration selector. A task_name is not that selector. Zero children
-were launched; effective child tools/credential restrictions were not verified. This is evidence
-about the tested invocation, not proof that every Codex interface lacks the feature.
+Civic Intel now declares every expected custom role in project `.codex/config.toml` with
+`agents.<name>.description` and `agents.<name>.config_file`. Each referenced standalone file in
+`.codex/agents/` retains the required `name`, `description` and `developer_instructions`.
+The playbook fails closed when those two layers do not agree.
 
-Project role files remain canonical in `.codex/agents/` and `docs/roles/ROLE_MODEL.md`.
-No wrapper/harness replacement, broad credential inheritance, extra provider login or lowered
-sandbox protection is authorized to bypass the missing proof. A shell read-only label does not
-isolate an independently authorized MCP, remote desktop, account or operational DB.
+A `codex exec --strict-config` synthetic read-only run accepted this project configuration.
+The host currently reports Codex CLI `0.156.1`; an earlier project audit observed `0.154.0`.
+This checkpoint records the versions actually observed and does not infer how the installed
+version changed.
+
+In non-interactive `codex exec`, the visible native `spawn_agent` schema exposes exactly
+`fork_turns`, `message`, `model`, `reasoning_effort`, and `task_name`. It exposes no
+`agent_type` selector. Enabling the installed `multi_agent_v2` feature for one synthetic run
+did not change that schema.
+A synthetic request explicitly asking for the configured `record_curator` type returned BLOCKED
+and reported zero child agents. No role-only child handoff was produced. This is the relevant
+negative result; task naming is not accepted as evidence that a configured role layer loaded.
+
+The interactive CLI path described by OpenAI could not be tested through the current remote
+command channel because its stdin is not a TTY. Wrapping it with the installed Git `winpty`
+still returned a non-TTY condition. That is a limitation of this remote execution channel,
+not proof that interactive Codex cannot load custom agents.
+
+Current OpenAI references used for this checkpoint:
+- https://learn.chatgpt.com/docs/agent-configuration/subagents
+- https://learn.chatgpt.com/docs/config-file/config-reference
+
+The documentation describes custom Codex agents and also states that subagents inherit the
+parent permission mode and configured tools unless specifically overridden. Therefore a role
+name or read-only shell label is not sufficient proof of MCP, account, remote-desktop or
+operational-database isolation.
 
 ## Smallest unblocking proof
 
-Use a disposable workspace with synthetic inputs and no operational credentials. Prove the native
-selection/loading of one configured read-only role, actual child ID, observable allowed tools,
-no recursive spawn, bounded timeout/cancel and structured result. The parent must not substitute
-a generic task name or paste a marker to claim that a role file was loaded. Capture the effective
-runtime configuration without printing secrets. Check the supported current client/schema rather
-than assuming a flag or UI version enables the capability.
+Use an actual interactive local Codex session, or a future non-interactive interface that exposes
+configured role selection, with synthetic inputs and no operational credentials. Spawn exactly
+one `record_curator`, capture the actual child/thread ID, verify its configured role instructions
+and effective tools, prove it cannot recursively spawn, and prove bounded wait/stop behavior.
+Only after that proof may the dashboard gain one narrowly allowlisted read-only execution adapter
+with input/state/policy revalidation, explicit launch consent, idempotent request identity, real
+job/events/results and no canonical data writes. Existing admin preview/confirmation/receipt
+remains the only approved mutation path; an agent cannot synthesize `human_verified`.
 
-Only after that proof, implement one narrowly allowlisted read-only adapter with input/state/policy
-revalidation, explicit launch consent, idempotent request identity, real job/events/results, and
-no canonical data writes. Existing admin preview/confirmation/receipt remains the sole approved
-path for mutations; human_verified cannot be synthesized by an agent.
+An Agents API/SDK integration is a separate alternative, not an implicit fallback. It introduces
+a new runtime and can introduce API billing, tool credentials and session persistence, so it
+requires its own approved integration and cost/security review before implementation.
 
-Until verified, the playbook correctly displays execution NOT_CONNECTED, dispatch_enabled=false,
-job_id=null. Source runs, review dispositions, code work and committed admin operations remain
-separate authorities. A drafted task is not dispatched, running, independently verified or applied.
-
-
-A follow-up synthetic probe on2026-09-24 used only a disposable workspace and provided prompt,
-ignored user-wide config, disabled apps/plugins/shell/browser/computer tools, and tested the installed
-native multi_agent_v2 feature without changing project/global settings. It again returned BLOCKED:
-no role selector in collaboration.spawn_agent, no child ID, no configured marker returned and zero
-children launched. This confirms the tested route still does not justify enabling live dispatch;
-it does not prove that every native interface or future client has the same limitation.
+Until unblocked, the playbook must continue to report `NOT_CONNECTED`,
+`dispatch_enabled=false`, and `job_id=null`. A drafted task is not dispatched, running,
+independently verified or applied. Source runs, review dispositions, code work and committed
+admin operations remain separate authorities.

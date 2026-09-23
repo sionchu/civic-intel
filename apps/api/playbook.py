@@ -104,20 +104,39 @@ CODE_AREAS = {
 
 
 def configuration(root: Path = ROOT) -> dict[str, Any]:
-    files = [
-        "AGENTS.md",
-        ROLE_MODEL,
-        *[
-            f".codex/agents/{role}.toml"
-            for role in sorted({r["role"] for r in RECIPES} | {"risk_reviewer"})
-        ],
-    ]
+    roles = sorted({r["role"] for r in RECIPES} | {"risk_reviewer"})
+    files = ["AGENTS.md", ROLE_MODEL, ".codex/config.toml"]
     try:
+        project_config_path = root / ".codex/config.toml"
+        project_config = tomllib.loads(project_config_path.read_text(encoding="utf-8"))
+        agent_table = project_config.get("agents")
+        if not isinstance(agent_table, dict) or agent_table.get("enabled") is not True:
+            raise ValueError("Project multi-agent configuration is disabled")
+        declared_files: list[str] = []
+        for role in roles:
+            declaration = agent_table.get(role)
+            if not isinstance(declaration, dict):
+                raise TypeError(f"Role {role} is not declared")
+            description = declaration.get("description")
+            config_file = declaration.get("config_file")
+            if not isinstance(description, str) or not description.strip():
+                raise ValueError(f"Role {role} has no description")
+            if not isinstance(config_file, str) or not config_file.strip():
+                raise ValueError(f"Role {role} has no config layer")
+            layer_path = (project_config_path.parent / config_file).resolve()
+            agents_root = (project_config_path.parent / "agents").resolve()
+            if layer_path.parent != agents_root or layer_path.name != f"{role}.toml":
+                raise ValueError(f"Role {role} config path is outside the canonical agent directory")
+            value = tomllib.loads(layer_path.read_text(encoding="utf-8"))
+            if value.get("name") != role:
+                raise ValueError(f"Role {role} config layer name mismatch")
+            if value.get("description") != description:
+                raise ValueError(f"Role {role} description mismatch")
+            if not value.get("developer_instructions"):
+                raise ValueError(f"Role {role} config layer has no developer instructions")
+            declared_files.append(layer_path.relative_to(root).as_posix())
+        files.extend(declared_files)
         hashes = {path: hashlib.sha256((root / path).read_bytes()).hexdigest() for path in files}
-        for role in {r["role"] for r in RECIPES} | {"risk_reviewer"}:
-            value = tomllib.loads((root / f".codex/agents/{role}.toml").read_text(encoding="utf-8"))
-            if value.get("name") != role or not value.get("developer_instructions"):
-                raise ValueError("Role configuration is incomplete")
         revision = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=root,
@@ -145,7 +164,7 @@ def configuration(root: Path = ROOT) -> dict[str, Any]:
             "policy_refs": hashes,
             "role_model_path": ROLE_MODEL,
         }
-    except (OSError, ValueError, subprocess.SubprocessError):
+    except (OSError, TypeError, ValueError, subprocess.SubprocessError):
         return {
             "available": False,
             "base_commit": None,
