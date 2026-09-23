@@ -112,10 +112,11 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.match(profile, /trace\.stance/);
   assert.match(profile, /snapshot_id/);
   assert.match(profile, /policy_summary/);
-  assert.match(review, /getReviewReport/);
+  assert.match(review, /requireOperator/);
+  assert.match(review, /operatorRead/);
   assert.match(review, /item\.action/);
   assert.match(review, /item\.status/);
-  assert.doesNotMatch(review, /<button|onClick/);
+  assert.doesNotMatch(review, /method="post"|--commit|approve|merge/i);
   assert.doesNotMatch(layout, /admin\/review/);
 });
 
@@ -351,4 +352,25 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(types, /BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY/);
   assert.doesNotMatch(page, /review_key|match_class|candidate_relationship/);
   assert.doesNotMatch(data, /admin\/gukgam\/2026\/organization-binding/);
+});
+
+
+test("operator console is opt-in, bounded, read-only and keeps tokens server-only", async () => {
+  const read = async (name) => readFile(new URL(`../app/admin/review/${name}`, import.meta.url), "utf8");
+  const data = await read("operator-data.ts");
+  const page = await read("page.tsx");
+  const graph = await read("operator-graph.tsx");
+  assert.match(data, /import "server-only"/);
+  assert.match(data, /CIVIC_OPERATOR_ENABLED/);
+  assert.match(data, /notFound/);
+  assert.match(data, /127\.0\.0\.1/);
+  assert.match(data, /X-Civic-Operator-Token/);
+  assert.match(data, /cache: "no-store"/);
+  assert.match(page, /await requireOperator\(\)/);
+  assert.match(page, /method="get"/);
+  assert.match(page, /limit: "25"/);
+  assert.match(graph, /import\("cytoscape"\)/);
+  assert.match(graph, /graph\.truncated/);
+  assert.match(graph, /키보드용 노드/);
+  assert.doesNotMatch(graph, /CIVIC_OPERATOR_TOKEN|NEXT_PUBLIC|fetch\(|axios/);
 });

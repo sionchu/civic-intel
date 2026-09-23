@@ -1565,6 +1565,23 @@ Staging must stay noindex.
 - Two staging no-write preflights were byte-identical with receipt SHA-256 `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`: current Organizations `347`, items `27`, to create `27`, reuse `0`, `write_performed=false`, `automatic_candidate_enumeration=false`, `gukgam_claim_publication=false`, `network_fetch=false`.
 - Post-dry-run staging remained Organizations `347`, Claims `5576`, ClaimEvidence `5576`; no write occurred.
 
+## Current checkpoint — private collection and DB operator console (2026-09-23)
+
+- From base `84426b3434632f5e870d4804f020408d95228f61`, implemented a private read-only operator
+  workspace in the existing `/admin/review` route: live collection lanes, 12 allowlisted record
+  browsers, exact-reference lineage, existing public-role ontology and exact org.go preflight.
+- PostgreSQL remains SSOT; no schema, source-collection, identity/publication or commit semantics
+  changed. Runtime binds to loopback and enforces database read-only connections plus private tokens.
+- Actual staging remained People `299`, Organizations `347`, Claims/Evidence `5576/5576`,
+  observations `4170`, Sources `370`, runs `21`, and `11` persisted feeder/scope lanes.
+- Local full regression `524 passed / 1 skipped`, final operator regressions `14 passed`, Golden,
+  Ruff, mypy and Web lint/typecheck/tests `24/24`/build passed. Edge staging QA passed `15/15`,
+  including mobile/desktop layout, pagination, fresh reload, graph and exact 27-row preflight.
+- Default public operator Web `404`, anonymous private API `403`, external-Host private Web `404`.
+  No staging DB write, org.go commit, Gukgam publication, public deployment or new cloud resource.
+- Runbook and exact scope: `docs/operations/OPERATOR_CONSOLE.md`. The org.go atomic commit below
+  remains a separate pending operational action; implementing the console did not execute it.
+
 ## Next concrete action
 
 After this contract is merged, run one separate staging commit slice using only the exact 27-item manifest SHA `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab` and the reviewed proposal artifact. Re-check canonical master/concurrency/staging counts, require a fresh no-write preflight byte-identical to receipt SHA `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`, then execute one Organization-only atomic commit. Do not publish any Gukgam Claim in the same slice.

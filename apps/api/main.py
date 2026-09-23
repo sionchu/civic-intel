@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import re
+import secrets
 from contextlib import asynccontextmanager
+from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, Request
@@ -76,20 +79,45 @@ def create_app(
     target_repository: SqlAlchemyRepository | None = None,
     *,
     enable_review_surface: bool = False,
+    operator_token: str | None = None,
+    operator_label: str = "LOCAL",
 ) -> FastAPI:
     target = target_repository or repository
+    if operator_token is not None and (
+        not enable_review_surface or not re.fullmatch(r"[A-Za-z0-9_-]{32,128}", operator_token)
+    ):
+        raise ValueError("Operator token requires private opt-in and at least 32 safe characters")
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         bootstrap_repository(target)
         yield
 
-    app = FastAPI(title="Civic Intel API", version="0.5.0", lifespan=lifespan)
+    app = FastAPI(
+        title="Civic Intel API", version="0.5.0", lifespan=lifespan,
+        docs_url=None if operator_token else "/docs",
+        redoc_url=None if operator_token else "/redoc",
+        openapi_url=None if operator_token else "/openapi.json",
+    )
 
     @app.middleware("http")
     async def request_identity(request: Request, call_next):
         request.state.request_id = str(uuid4())
+        if operator_token and request.url.path.startswith("/admin"):
+            try:
+                hostname = urlsplit("http://" + request.headers.get("host", "")).hostname
+            except ValueError:
+                hostname = None
+            supplied = request.headers.get("x-civic-operator-token", "")
+            if (hostname not in {"127.0.0.1", "localhost", "::1"}
+                    or request.headers.get("origin")
+                    or not secrets.compare_digest(supplied.encode(), operator_token.encode())):
+                return _error_response(request, status_code=403, code="ACCESS_DENIED",
+                                       message="Operator access denied.")
         response = await call_next(request)
+        if request.url.path.startswith("/admin"):
+            response.headers["Cache-Control"] = "private, no-store"
+            response.headers["X-Robots-Tag"] = "noindex, nofollow"
         response.headers["X-Request-ID"] = request.state.request_id
         return response
 
@@ -763,6 +791,11 @@ def create_app(
                     review_item_payload(item) for item in target.identity_review_items()
                 ],
             }
+
+    if operator_token:
+        from apps.api.operator import build_operator_router
+
+        app.include_router(build_operator_router(target, operator_label))
 
     @app.get("/{public_path:path}", include_in_schema=False)
     def public_route_not_found(public_path: str) -> dict:

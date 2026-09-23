@@ -7,7 +7,6 @@ import type {
   Organization,
   OrganizationSummary,
   Person,
-  ReviewReport,
   Source,
 } from "./types";
 
@@ -87,4 +86,3 @@ export function getOrganizationMoney(
   );
 }
 export function getSource(id: string): Promise<ApiResult<Source>> { return getJson(`/sources/${id}`); }
-export function getReviewReport(): Promise<ApiResult<ReviewReport>> { return getJson("/admin/review"); }
