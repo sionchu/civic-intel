@@ -172,3 +172,47 @@ The older deployed public Web still returns200 for its legacy read-only review s
 PUBLIC_RECORD_NOT_FOUND with no new admin controls or operational rows; POST to its admin actions
 path returns404. HTTP200 from that old shell is not an admin deployment or data-access success.
 This activation deliberately did not redeploy the separate public Web service.
+
+
+## Project subagent guidance and cheatsheet proposal (2026-09-24)
+
+Repository-wide delegation is defined in [ROLE_MODEL.md](../roles/ROLE_MODEL.md), with thin
+project `.codex/agents/` adapters and a three-child limit. User-wide configuration and running
+admin processes are unchanged. The two existing skill documents now have required YAML metadata;
+their procedures were not rewritten. These are instruction/configuration changes, not a new
+agent runner, task-dispatch API, source run or DB mutation.
+
+A restricted native smoke parsed the project config but could not load/execute the requested
+named roles: its permitted-file shell read was rejected and it reported no named-role selector.
+Zero children executed. This does not establish that all Codex clients lack support; it means
+this invocation did not verify named-role execution. Do not label custom-agent runtime or MCP/DB
+isolation as validated. Use only explicitly authorized isolated work until effective access is tested.
+
+The [Gajae-Code cheatsheet](https://github.com/Yeachan-Heo/gajae-code/tree/main/docs/cheatsheet)
+was inspected as a visual interaction reference: clarify -> plan/review -> act -> evidence,
+role cards, workflow/operation categories, and troubleshooting. GJC is a different agent harness;
+its commands are not Civic Intel commands. No GJC binary, provider login, bot or MCP was installed.
+
+Recommended UI extension (PROPOSED, not implemented here):
+- Add a contextual '업무 플레이북' panel with bounded recipes linked to existing collection,
+  person review, evidence, preview and history pages. Keep current management screens intact.
+- Each recipe states its input scope, responsible role, resulting artifact, approval boundary
+  and current action: navigate, create a task DRAFT, preview, or confirm through existing admin.
+- Separate workflow guide, coordinator/child events, SourceRun/Checkpoint state, review disposition
+  and actual admin receipt. Without runner events show '미연동', not fabricated running/progress.
+- Start by binding navigation and exact input references. A later bounded dispatch integration
+  must return a real task/job ID, actor/tool permissions, state transitions, cancellation semantics
+  and verifiable artifacts before an 'agent running' control is enabled. Shell text from the UI
+  must never become an unrestricted execution endpoint.
+
+The playbook is a presentation adapter for canonical instructions/contracts, not a new editable
+policy store. No runtime UI code, schema, live records or deployed services changed in this slice.
+
+
+Instruction-slice verification: six TOML files parsed; required metadata for both existing skills
+was added without changing their bodies; changed-document relative links and `git diff --check`
+passed. A separate restricted Codex session reviewed the exact policy/config texts and returned
+PASS/no issues, with no tool calls. This is independent text review, not named-role runtime QA.
+The strict-config invocation after metadata repair exited successfully without loader errors.
+The earlier native named-role smoke remains BLOCKED/zero children. No application test, browser
+QA, runtime deployment, live source collection or administrative record change is claimed here.

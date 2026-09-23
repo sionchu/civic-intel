@@ -1,3 +1,8 @@
+---
+name: public-official-profiler
+description: Research evidence-backed public official profiles after identity resolution and source-policy validation.
+---
+
 # Public official profiler
 
 Use structured evidence as the system of record. Resolve identity before an
