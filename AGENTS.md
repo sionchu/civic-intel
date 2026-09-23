@@ -16,6 +16,18 @@ For batch/full-enumeration work also read:
 - `docs/architecture/IDENTITY_RESOLUTION.md`
 - `.agents/skills/batch-ingestion-foundation/SKILL.md`
 
+## Multi-agent coordination
+
+Before delegation read `docs/roles/ROLE_MODEL.md`, the canonical role/ownership contract.
+Use one MAIN and at most three concurrent children initially. Pin base commit, inputs,
+owned paths, scope, effective permissions, side effects, budgets and acceptance evidence.
+Shared paths have one owner; editing agents use isolated worktrees, which do not isolate
+DBs, credentials, ports or browser sessions. Parallelize research/local work/review, but
+serialize operational mutation runners until shared exclusion has been verified.
+Inspect command effects: `civic-sync` is not acquisition-only. Agent recommendations are
+not human attestations, publication approval, commit receipts or deployment evidence.
+Keep required unresolved domain states visible. Custom role adapters are in `.codex/agents/`.
+
 ## Non-negotiable invariants
 
 - Preserve `rendered item → Claim → ClaimEvidence → Source → SourcePolicy`.
@@ -77,7 +89,7 @@ For batch/full-enumeration work also read:
   do not create parallel persistence logic.
 - Every persistence change requires a forward and reversible Alembic migration plus
   deterministic regression coverage.
-- Runtime startup verifies schema head; it does not create tables or auto-migrate.
+- Runtime startup verifies declared read-compatible schema revisions; it does not create tables or auto-migrate.
 
 ## Change discipline
 

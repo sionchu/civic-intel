@@ -1,3 +1,8 @@
+---
+name: batch-ingestion-foundation
+description: Build and verify source-bounded policy-first batch ingestion using existing canonical workers and persistence.
+---
+
 # Batch ingestion foundation
 
 Use this skill when moving a reviewed official/public source from single-pull staging toward
