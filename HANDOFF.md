@@ -3412,23 +3412,25 @@ start/end date semantics.
 - Runbook and exact scope: `docs/operations/OPERATOR_CONSOLE.md`. The org.go atomic commit below
   remains a separate pending operational action; implementing the console did not execute it.
 
-## Current checkpoint — admin work queue and confirmed mutations (2026-09-23)
+## Current checkpoint — admin workflow activated (2026-09-23)
 
-- User goal is a real management admin, not a read-only dashboard. The active controlling slice is
-  `docs/exec-plans/active/admin-review-workflow.md`; contracts are in `docs/architecture/ADMIN_OPERATIONS.md`.
-- Implemented observation-derived ALIO backlog and hold/exclude/reopen, human-reviewed Person
-  registration/link/merge, Claim review/publication/withdrawal/correction, name correction and
-  soft deactivation through signed preview -> explicit confirmation -> atomic audit receipt.
-- One additive migration0007 records immutable admin operations. Reads accept0006/0007 during
-  rollout; writes require0007 and explicit private operator mode. Original snapshots/observations
-  are unchanged. Name/alias candidates do not become automatic identities.
-- Original staging backup and disposable PostgreSQL restore/upgrade/downgrade/upgrade proof passed.
-  Named ALIO queue is3624 UNREVIEWED records,3076 distinct name strings, canonicalPeople299.
-- Full local suite552 passed/1 skipped, Golden passed; final admin22 tests, Ruff/mypy passed.
-  Synthetic PostgreSQL link/merge/idempotency passed; real browser mutation QA17 checks passed.
-- GitHub CI and real staging activation remain separate gates. The older org.go27 Organization
-  atomic commit below remains independent and was not executed during this slice.
+- Admin workflow PR141 is merged at `e141dc363a2c9357fb43519dde70f168a08c946d`; Verify35852398793
+  passed with553 tests/1 skipped. Closure: `docs/exec-plans/completed/admin-review-workflow.md`.
+- Explicit deployment of the exact tracked archive to the existing staging API succeeded:
+  `62438070-020c-4af2-bb7f-666065421dde`; migration0007 applied; readiness200. Merge alone did not
+  trigger this deployment. No new cloud service/domain and no public admin were created.
+- Private admin session: `http://127.0.0.1:3315/admin/review`; desktop Start/Open shortcuts updated.
+  Commands support source review, registration/link/merge, Claim approval/withdrawal/correction,
+  name correction and soft deactivation via signed preview/confirm/atomic receipt.
+- Actual staging browser13/13 passed. Real-data inspection after activation: schema0007,
+  admin_operations0, named ALIO backlog3624 UNREVIEWED /3076 name strings. People299, Org347,
+  Claims/Evidence5576/5576, observations4170 and snapshots370 fingerprints remain unchanged.
+- Mutating browser17/17 plus link/merge proofs used disposable PostgreSQL only. No live Person
+  decisions, publication, source acquisition or org.go27 Organization commit occurred.
 
 ## Next concrete action
 
-After this contract is merged, run one separate staging commit slice using only the exact 27-item manifest SHA `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab` and the reviewed proposal artifact. Re-check canonical master/concurrency/staging counts, require a fresh no-write preflight byte-identical to receipt SHA `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`, then execute one Organization-only atomic commit. Do not publish any Gukgam Claim in the same slice.
+Review a bounded ALIO source-person batch in the activated admin, then explicitly register/link
+approved records and separately approve their draft role Claims. Treat candidate names as review
+inputs, not identity proof. The previous exact org.go27 Organization-only atomic commit remains
+pending as an independent action, not something performed by dashboard activation.

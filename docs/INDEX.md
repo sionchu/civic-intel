@@ -46,7 +46,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Evidence Preview deployment preparation](operations/EVIDENCE_PREVIEW_DEPLOYMENT.md)
 - [Private collection and DB admin console](operations/OPERATOR_CONSOLE.md)
 - [Admin operation contracts](architecture/ADMIN_OPERATIONS.md)
-- [Admin review workflow execution plan](exec-plans/active/admin-review-workflow.md)
+- [Admin review workflow execution plan](exec-plans/completed/admin-review-workflow.md)
 - [CleanEye local public institution feeder](architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md)
 - [Policy research feeder](architecture/POLICY_RESEARCH_FEEDER.md)
 - [Legal career feeder](architecture/LEGAL_CAREER_FEEDER.md)

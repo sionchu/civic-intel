@@ -142,3 +142,33 @@ as migration tests. CI and actual staging activation must be reported separately
   this recorded backup proof. Staging schema/application activation is checked separately.
 - No live source collection, original org.go27 commit or real Person decision was performed by
   implementation tests. Existing source/domain fingerprints remain the acceptance baseline.
+
+
+## Installed staging admin — 2026-09-23
+
+The operator PC shortcuts `Civic Intel - Start.cmd` / `Civic Intel - Open.url` use ports3315/8315:
+`http://127.0.0.1:3315/admin/review`. Start uses the canonical admin worktree and `--enable-writes`;
+this is an explicitly enabled local-OS admin session, not a public administrative website.
+
+PR141 merge `e141dc363a2c9357fb43519dde70f168a08c946d` passed GitHub Verify35852398793
+(553 passed /1 skipped). A merge did not start an API deployment automatically. An exact tracked
+source archive was explicitly uploaded to the existing staging API; deployment
+`62438070-020c-4af2-bb7f-666065421dde` succeeded, with pre-deploy0006->0007 and readiness200.
+
+Actual staging browser13/13 checks passed without a real command commit. Post-activation DB
+inspection found schema0007, zero admin-operation receipts and unchanged six-table domain
+fingerprints. Canonical People remain299; ALIO workload is3624 unreviewed named records /3076
+name strings. Registration, linking and approval are now usable workflows, not already completed
+collection work. Closure is in [the completed admin plan](../exec-plans/completed/admin-review-workflow.md).
+
+One old standalone audit tunnel expired during verification; it was not the active admin session.
+The successful final inspection used a fresh native read-only audit process. The first browser
+harness run attempted to serialize a DOM node; the harness was corrected to return a Boolean,
+then all13 real checks passed. No runtime behavior patch or additional data mutation was needed.
+
+
+Access checks on the activated host: anonymous private API403 and untrusted-Host private Web404.
+The older deployed public Web still returns200 for its legacy read-only review shell, but renders
+PUBLIC_RECORD_NOT_FOUND with no new admin controls or operational rows; POST to its admin actions
+path returns404. HTTP200 from that old shell is not an admin deployment or data-access success.
+This activation deliberately did not redeploy the separate public Web service.
