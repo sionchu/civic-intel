@@ -11,8 +11,11 @@ depends_on = None
 
 
 def upgrade() -> None:
-    Base.metadata.create_all(bind=op.get_bind())
+    # Later audit tables are owned exclusively by their numbered migrations.
+    tables = [table for table in Base.metadata.sorted_tables if table.name != "admin_operations"]
+    Base.metadata.create_all(bind=op.get_bind(), tables=tables)
 
 
 def downgrade() -> None:
-    Base.metadata.drop_all(bind=op.get_bind())
+    tables = [table for table in Base.metadata.sorted_tables if table.name != "admin_operations"]
+    Base.metadata.drop_all(bind=op.get_bind(), tables=tables)

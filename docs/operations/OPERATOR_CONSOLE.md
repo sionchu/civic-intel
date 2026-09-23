@@ -1,191 +1,144 @@
-# Operator Console
+# Civic Intel private admin console
 
-Private, read-only management of collected Civic Intel data. This extends the existing
-`/admin/review` surface, not a second database, public dashboard, or generic SQL editor.
+The existing `/admin/review` workspace now supports source-record review and confirmed management,
+not only DB inspection. Public routes remain read-only. See
+[Admin operation contracts](../architecture/ADMIN_OPERATIONS.md) for transaction, identity and audit semantics.
 
-## Run
+## Start on the operator computer
 
-Use the repository's Python environment, Node.js, and existing migrated database.
-Install/build the Web once after checkout:
+Use the repository Python environment and existing Node.js installation. After checkout:
 
 ```text
 npm --prefix apps/web ci
 npm --prefix apps/web run build
 ```
 
-For the existing Civic Intel Railway staging project, an authenticated Railway CLI and
-an already-authorized SSH key are required. No database connection string needs to be
-copied into a command, file, browser, or chat:
+Read/preview mode on the existing Railway staging database:
 
 ```text
 python -m workers.operator_console --railway-project f403bc33-2190-4177-9150-2971e25dd9ee
 ```
 
-This uses only the existing `staging` / `postgres` service and a private SSH tunnel.
-It does not create a service/domain, change Railway configuration, or register new data.
-On Windows the launcher uses installed Git OpenSSH when available; the inspected host's
-Windows OpenSSH tunnel exited 255 while Git OpenSSH worked without changing key permissions.
-
-Alternatively, supply `DATABASE_URL` through the current process environment and run:
+Confirmed admin-write mode, only after the reviewed 0007 schema is deployed:
 
 ```text
-python -m workers.operator_console --label LOCAL
+python -m workers.operator_console --railway-project f403bc33-2190-4177-9150-2971e25dd9ee --enable-writes
 ```
 
-Do not combine `DATABASE_URL` with `--railway-project`. A SQLite file must already exist and
-be migrated. No startup migration, seeding, collection, or import is performed.
-`--dev` uses the Next development server. Default ports are API `8310` and Web `3310`;
-`--api-port` and `--web-port` select other unused ports. Both bind only to `127.0.0.1`.
+`--actor` defaults to the local OS user. `--api-port` / `--web-port` choose unused ports; defaults
+are 8310 / 3310. For an existing local/restored database, supply DATABASE_URL through the process
+environment and use `--label LOCAL`, `RESTORED` or `TEST`. Do not combine DATABASE_URL with the
+Railway option. No URL/password is printed or persisted; the private SSH tunnel is owned by the
+launcher. All listeners bind to 127.0.0.1. Ctrl+C closes its own Web/API/tunnel processes.
 
-Open `http://127.0.0.1:3310/admin/review` on that computer. A phone or another computer's
-localhost is not the operator host. Ctrl+C closes the launcher's owned API, Web and tunnel.
-No public hosting or multi-user authentication is included in this local operating mode.
-The launcher probes actual database readiness every 30 seconds. Two consecutive failures or an
-exited backend trigger a bounded recovery of only the owned private tunnel/API, while keeping
-Web and the server-only token unchanged. At most two reconnection attempts are allowed per launch;
-a persistent failure exits with a restart instruction instead of retrying indefinitely. Refresh the
-page after recovery. PostgreSQL connect timeout is five seconds; an operator-only pre-ping replaces
-stale pooled connections before use. A disconnected read remains SERVICE_UNAVAILABLE, never zero.
+Open `http://127.0.0.1:3310/admin/review` on that computer, not another device's localhost.
+Read-only sessions cannot commit even if a client fabricates a confirm request. Write mode fails
+closed before startup when 0007 is absent. The screen explicitly distinguishes READ/PREVIEW from
+ADMIN WRITE and displays the actor. The console does not run migrations itself.
 
+## Main workflows
 
-## Views and meanings
+**인물 검토·등록** is the default work queue. Named ALIO source rows appear whether or not a review
+row was previously persisted. Filter 미검토, 보류, 대상 제외, 인물 연결 완료 or name/alias candidates.
+Read institution, role, source-period and evidence context. Select individual rows or the visible
+page (at most 25), enter a reason, preview and explicitly confirm. New Person registration creates
+a role draft; the receipt offers a follow-on Claim review/publish action. Same-name/alias candidates
+block naive new creation. Source record count and distinct name strings never claim unique people.
 
-- **Collection status:** actual DB counts and per-feeder/scope latest run, latest successful run,
-  checkpoint timestamp, observation versions and distinct provider keys. A successful run does
-  not imply exhaustive provider coverage. No invented coverage percentage or L3/L4 promotion.
-- **DB records and connections:** 12 allowlisted kinds, SQL-side search/filtering, deterministic
-  pagination (25 by default, at most 100 via API), and a selected record inspector.
-- **Stored reference lineage:** exact foreign keys only; at most three levels, 80 nodes and a
-  bounded neighbor window. Limits are visible. Incoming neighbors expand at the selected root
-  and Claim-evidence links only; shared Source/Run hubs do not pull in unrelated siblings. Source policy, observations, snapshots, runs,
-  Claims, Evidence, subjects and stored review/identity links remain distinct types.
-- **Published role relations:** the existing Person/Organization ontology API, not a new gate.
-  Current support is `HELD_ROLE` and ALIO `LISTS_EXECUTIVE`; other declared relation vocabulary
-  is not silently implemented. Noncanonical role-holder/office nodes are not Persons. At most
-  60 eligible edges are displayed, with an explicit truncation notice and text alternative.
-- **Reviewed manifest:** reuse the exact checked-in org.go proposal/manifest and canonical
-  no-write preflight. `READY_NO_WRITE`, `ALL_PRESENT`, partial or conflict states describe a
-  fresh inspection; they are not a historical commit receipt. Organization creation and
-  Gukgam Claim publication stay separate. No commit action exists here.
-- **Source strategy:** render the existing `FEEDER_SOURCE_COVERAGE.md` matrix as documented
-  capability and limitations, separately from measured DB lanes. No heuristic lane matching.
+**DB 목록·연결** preserves the 12 existing bounded record browsers and exact-reference graph. Selected
+Person records have name correction, explicit reviewed merge and soft deactivation. Selected Claims
+have review, approval/publication, withdrawal and correction-draft controls. For link/merge choose a
+current Person, search existing Evidence by name/content, inspect its source and attest the official
+cross-role continuity. Selecting an Evidence ID alone does not make the identity judgment true.
 
-Current/superseded versions, epistemic status, publication status, identity status and source-run
-status are not interchangeable. An OPEN-review count excludes resolved review rows; all review
-rows can still be inspected in the record browser.
+**변경 이력** shows actual committed receipts with actor/time/reason/request ID and before/after.
+No optimistic success is shown. If a response is lost, check the same request ID before creating a
+new request. Retrying the identical operation is idempotent. A changed/expired preview must be rebuilt.
 
-## Read API and access boundary
+**수집 현황**, **검토 manifest**, **출처 계획·제약** retain the measured DB lane counts, exact org.go
+no-write preflight and clearly separate documented source capabilities. The old 27-item org.go
+Organization commit is still independent; no new admin command executes that import automatically.
 
-Private factory: `apps.api.operator:create_operator_app`.
-New GET routes (only registered with explicit operator opt-in and a strong server-only token):
+Deletion means public removal/deactivation while preserving source/audit records; there
+is no arbitrary hard-delete button. Claim correction creates a new attributable CLAIM draft, not a
+rewritten official source row or automatically inferred typed relationship. A review/merge blocked
+by source versions, identity conflict or unsupported domain dependencies must be investigated, not
+forced by editing SQL.
+
+## API
+
+Existing read endpoints stay under `/admin/operations`. New allowlisted endpoints:
 
 ```text
-/admin/operations
-/admin/operations/records?kind=observations&q=...&feeder=...&scope=...&offset=0&limit=25
-/admin/operations/records/{kind}/{uuid}
-/admin/operations/manifest
+GET  /admin/operations/capabilities
+GET  /admin/operations/people-review?q=...&state=UNREVIEWED&offset=0&limit=25
+GET  /admin/operations/evidence-options?q=...
+GET  /admin/operations/history?offset=0&limit=25
+POST /admin/operations/preview
+POST /admin/operations/commit
 ```
 
-Record kinds: organizations, people, claims, observations, sources, runs, evidence,
-snapshots, reviews, policies, links and checkpoints. Unsupported filters fail explicitly.
-The default public API retains disabled admin access. Private API requests require the token,
-a loopback Host and no browser Origin. The Next server checks opt-in/loopback before reads
-and supplies the token server-to-server; it is not a client prop, public env variable or URL.
-Operational responses are no-store. Missing access and database errors never become zero counts.
+Browser POSTs go to `/admin/review/actions`; that handler checks exact same-origin, explicit intent,
+JSON type and bounded input, then supplies the private API token server-to-server. A signed preview
+is command-specific and is not the API credential. No mutation route accepts SQL, a table name or
+arbitrary field updates. See `packages/domain/admin.py` for the actual command schema.
 
-The private factory uses the existing `SqlAlchemyRepository` with database-enforced read-only
-connection defaults: PostgreSQL `default_transaction_read_only=on`, repeatable-read and a
-15-second statement timeout; SQLite `query_only=ON`. Canonical repository defaults are unchanged.
-All operational selectors use the existing mapped tables/session, not a parallel repository.
+PostgreSQL read-only mode uses repeatable-read with 15-second statement timeout; admin sessions use
+READ COMMITTED and the explicit command locking protocol. Both modes pre-ping stale pooled sockets.
+Readiness is checked every 30 seconds. After two failures the launcher can replace its own private
+backend while retaining Web/token, within a finite two-retry budget. Connection failure remains an
+error, never zero records. Restart after connectivity returns if the finite budget is exhausted.
 
-DTOs explicitly allow fields. Raw snapshots/fulltext, excerpts, unrestricted normalized JSON,
-identity hints, cursor blobs, raw error summaries, credentials and contact fields are omitted.
-Source URLs retain only known locator query parameters. Selected-map JSON export contains only
-the same bounded DTO; it is not a database dump or full-corpus export.
+## Structural research and deliberate choices
 
-## References and deliberate non-adoptions
+- [OpenRefine reconciliation](https://openrefine.org/docs/manual/reconciling): iterative faceted
+  judgments, candidate review and original-value preservation. We do not inherit same-string mass
+  matching as person identity authority.
+- [React-admin mutations](https://marmelab.com/react-admin/Actions.html): wait for server acceptance
+  before announcing success. Native Next components are retained; no second admin framework added.
+- [OCCRP Aleph](https://docs.aleph.occrp.org/): entity/evidence investigation and contextual links.
+- [Law Orbit](https://github.com/gschamisle/law-orbit): selected-center graph and source inspection.
+  Existing Cytoscape 3.34.3 remains the sole renderer; no decorative 3D engine.
+- [Splink](https://moj-analytical-services.github.io/splink/): probabilistic record-linkage candidate
+  research, not an identity approval engine or dependency added here.
+- [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3): multilingual retrieval candidate. The official HF
+  repository was inspected; no model download/inference/embedding store was needed for this workflow.
+- [Postgres MCP](https://github.com/crystaldba/postgres-mcp) and
+  [Korean Law ALIO MCP](https://github.com/scvcoder/korean-law-alio-mcp): no unrestricted SQL access or
+  external legal corpus was added. Future tool access must use the same bounded approval contract.
 
-- [Law Orbit](https://github.com/gschamisle/law-orbit): selected-center exploration and preserving
-  context while inspecting evidence. No copied assets, branding, law corpus or 3D engine.
-- [OpenMetadata](https://github.com/open-metadata/OpenMetadata): catalog, lineage and operational
-  status as interaction references. No extra metadata platform/store is installed.
-- [Cytoscape.js](https://js.cytoscape.org/): the single operator network renderer, pinned to
-  `3.34.3` with bundled TypeScript types. Stable 2D layout, pan/zoom/fit, node inspection and
-  an equivalent keyboard-readable relation list; no graph authoring or score-based layout.
-- [React Flow](https://reactflow.dev/examples): considered as an editor/workflow alternative,
-  not added alongside the read-only network renderer.
-- [Postgres MCP](https://github.com/crystaldba/postgres-mcp): considered for schema/health/EXPLAIN
-  diagnostics. Not installed; no unrestricted SQL/MCP endpoint is exposed by this console.
-- [Korean Law ALIO MCP](https://github.com/scvcoder/korean-law-alio-mcp): potential future
-  law/internal-regulation discovery reference, not a UI or canonical identity/rights authority.
-  No external MCP data is imported by this slice.
+## Verification and rollout evidence
 
-## Verification and remaining boundaries
+Tests cover source-derived backlog, no-write previews, signed expiry/tampering, stale state,
+idempotency, batch rollback, explicit source-context registration/link/merge, draft/publication/
+withdrawal/correction, alias conflicts, dependency guards, database-enforced append-only audit,
+foreign keys and populated migration round trips. Browser testing exercises real mutations against
+a separate PostgreSQL fixture, not just source-string assertions or mock success messages.
 
-Regression tests in `tests/test_operator_console.py` cover counts, version/key semantics,
-bounded reads, pagination, exact-reference lineage, non-merging names, allowlisted fields,
-default-denied access, read-only engine enforcement, manifest drift and private tunnel parsing.
-Web source-contract tests supplement, but do not replace, real-browser QA.
+The 2026-09-23 pre-rollout staging backup was restored into a local PostgreSQL 18.6 database.
+0006 -> 0007 -> 0006 -> 0007 completed only there; domain fingerprints matched before/after:
+People 299, Organizations 347, Claims/Evidence 5576/5576, observations 4170, snapshots 370.
+The actual named ALIO workload is 3624 unreviewed records and 3076 distinct name strings, not
+3076 verified people. Original staging rows were unchanged during this proof.
 
-No DB editing, deletion, identity approval, automatic binding, Gukgam publication, org.go commit,
-production deployment, public domain, scheduler or arbitrary source collection is included.
-The pending exact 27-item org.go atomic commit remains an independent operational slice.
-
-## Acceptance recorded on 2026-09-23
-
-- Implemented from canonical base `84426b3434632f5e870d4804f020408d95228f61` in the isolated
-  `work/operator-console-v0` worktree. Root checkout and deferred draft PR #75 were not modified.
-- Actual private staging reads returned People `299`, Organizations `347`, Claims `5576`,
-  ClaimEvidence `5576`, observation versions/unique keys `4170/4170`, Sources/Snapshots `370/370`,
-  SourceRuns `21`, checkpoints `10`, IdentityReviewItems `1` with OPEN `0`, and `11` persisted lanes.
-  Before/after counters were identical. OPEN=0 is not a claim that computed review queues are empty.
-- Fresh canonical org.go inspection returned `READY_NO_WRITE`, exact `27` items, CREATE `27`,
-  REUSE `0`. The Organization-only commit and all Gukgam publication remain unexecuted.
-- The one-command launcher reached the existing private Railway staging database without creating
-  public endpoints or cloud services. Read-only and 15-second SQL statement timeout were verified
-  on the PostgreSQL session. All source acquisition paths remained unused.
-- Local full regression passed `524` tests with `1` skipped; Golden Set passed. After the final
-  invalid-configuration masking regression, all `14` operator tests, Ruff and mypy passed again.
-  Web lint/typecheck, `24` UI contract tests, production build and standalone artifact checks passed.
-  A clean `npm ci` accepted the minimal lockfile addition; no other package version was changed.
-- Real Edge/CDP verification passed `15/15` checks against staging, including list pagination,
-  SQL search, graph rendering/selection, keyboard alternative, native fresh reload preserving
-  selection, existing public-role projection, 27-row preflight, source catalog, desktop `1440x1100`
-  and mobile `390x844` layouts. No browser console/runtime errors or page horizontal overflow occurred.
-- The default non-operator Web returned `404`, anonymous private API returned `403`, and an
-  external Host on the private Web returned `404`. Operational API calls remained server-to-server.
-- One intermediate Windows server transport log recorded a client-disconnect `WinError 10054`;
-  the completed browser checks passed and the subsequent final launcher was healthy. This was not
-  hidden or treated as evidence of a successful request.
-- PR #139 GitHub Verify `35832816026` passed, including `525 passed / 1 skipped`, PostgreSQL
-  migration/load, backup/restore, container builds and installed-entrypoint verification. It was
-  merged as `38cd7c1c5009f42c2d4fabf359492a78accffe5e`.
-- A subsequent hour-plus idle-session check found SSL EOF followed by a nonfunctional private
-  tunnel although its process remained alive. Initial short browser acceptance did not prove
-  long-session durability. The runtime recovery correction is specifically scoped to that failure;
-  canonical data/identity/publication contracts and public runtime defaults remain unchanged.
+Backup SHA-256: `2e6edd95cc990a928c311e3220ceb81826f12ea197a1bf221c991f32dcb54624`.
+Keep the logical backup outside Git on the operator host. No real-person decisions were executed
+as migration tests. CI and actual staging activation must be reported separately from local tests.
 
 
-## Private-session recovery acceptance (2026-09-23)
+## Implementation acceptance before rollout (2026-09-23)
 
-A runtime-only correction preserves the public defaults and existing canonical repository while
-adding private-engine pre-ping, safe database-error handling, actual readiness checks and bounded
-recovery of the launcher's own tunnel/API. Transient initial connection failures use the same
-finite attempt budget. No raw exception message or SQL parameters enter the recovery diagnostics.
-
-The actual staging fault test first reached a ready private session, then terminated only its owned
-SSH forward (not the PostgreSQL service). After two failed readiness checks, the launcher replaced
-the private backend while retaining the Web process and server-only token. The same browser URL
-then passed all 15 interaction checks again, including SQL pagination/search, canonical role graph,
-27-item no-write preflight, fresh reload, keyboard access and both desktop/mobile layouts.
-Recorded counters remained People 299, Organizations 347, Claims 5576, observations 4170, Sources
-370 and 11 persisted lanes. No org.go commit, publication, migration or source acquisition occurred.
-
-This proves the bounded disconnect/reconnect case, not indefinite uptime or immunity to future
-network/provider outages. The launcher exits after its two-attempt budget is exhausted; start it
-again only after connectivity is available. During a failure the UI reports SERVICE_UNAVAILABLE,
-not a successful empty collection.
-
-Final recovery regression: `531 passed / 1 skipped`, Golden Set passed; Ruff and mypy passed.
-The `20` operator tests include stale-connection replacement, write rejection, safe 503, finite
-reconnection, dead-process detection and transient-startup recovery. Web sources were unchanged.
+- The full local suite passed 552 tests with 1 skipped and Golden passed; after the final
+  institution/role search regression, all 22 focused admin tests, Ruff and mypy passed.
+- Fresh disposable PostgreSQL tests independently passed reviewed Person linking, reviewed merge
+  and idempotent retry. These used synthetic source records, not live Person decisions.
+- Real Edge browser mutation QA passed 17 checks: batch preview/cancel/hold/reopen, registration
+  into a draft, publication and exact Person–Organization graph, correction draft/replacement,
+  withdrawal, alias-preserving rename, soft deactivation, durable history, intent/CSRF rejection,
+  keyboard and desktop/mobile rendering. The final rebuilt production artifact passed the same
+  17 checks again against a newly initialized PostgreSQL fixture.
+- The populated staging backup/restore/migration proof above is complete. Master is configured to
+  auto-deploy API with `python -m alembic upgrade head`; merge therefore requires successful CI and
+  this recorded backup proof. Staging schema/application activation is checked separately.
+- No live source collection, original org.go27 commit or real Person decision was performed by
+  implementation tests. Existing source/domain fingerprints remain the acceptance baseline.

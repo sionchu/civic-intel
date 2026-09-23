@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import os
 import queue
@@ -140,7 +141,8 @@ def _start_backend(
     if project:
         print("Opening the existing private staging database tunnel...", flush=True)
         environment["DATABASE_URL"] = _railway_tunnel(project, processes)
-    print("Verifying the read-only database session...", flush=True)
+    mode = "confirmed admin" if environment.get("CIVIC_OPERATOR_WRITES") == "1" else "read-only"
+    print(f"Verifying the {mode} database session...", flush=True)
     parsed = make_url(environment["DATABASE_URL"])
     if parsed.get_backend_name() == "sqlite" and (
         not parsed.database or not Path(parsed.database).is_file()
@@ -210,6 +212,8 @@ def main(argv: list[str] | None = None) -> int:
         type=UUID,
         help="Optional explicit Railway project; opens its existing staging/postgres private tunnel",
     )
+    parser.add_argument("--enable-writes", action="store_true", help="Enable confirmed admin commands; requires schema 0007")
+    parser.add_argument("--actor", default=getpass.getuser(), help="Local OS operator identity recorded in receipts")
     parser.add_argument("--api-port", type=int, default=8310)
     parser.add_argument("--web-port", type=int, default=3310)
     parser.add_argument(
@@ -244,6 +248,8 @@ def main(argv: list[str] | None = None) -> int:
         environment.update(
             {
                 "CIVIC_OPERATOR_ENABLED": "1",
+                "CIVIC_OPERATOR_WRITES": "1" if args.enable_writes else "0",
+                "CIVIC_OPERATOR_ACTOR": args.actor,
                 "CIVIC_OPERATOR_TOKEN": secrets.token_urlsafe(32),
                 "CIVIC_OPERATOR_LABEL": label,
                 "CIVIC_OPERATOR_API_URL": f"http://127.0.0.1:{args.api_port}",
@@ -265,7 +271,8 @@ def main(argv: list[str] | None = None) -> int:
             web_command += ["dev", "--hostname", "127.0.0.1", "--port", str(args.web_port)]
         web = subprocess.Popen(web_command, cwd=web_root, env=environment)
         print(f"Operator console: http://127.0.0.1:{args.web_port}/admin/review", flush=True)
-        print(f"{label}, database read-only. Ctrl+C closes owned services/tunnel.", flush=True)
+        mode = "CONFIRMED ADMIN WRITES" if args.enable_writes else "database read-only"
+        print(f"{label}, {mode}. Ctrl+C closes owned services/tunnel.", flush=True)
         failures = 0
         next_check = time.monotonic() + 30
         while web.poll() is None:

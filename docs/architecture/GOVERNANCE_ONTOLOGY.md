@@ -126,3 +126,13 @@ event has an exact canonical/source-scoped binding contract.
 V0 uses the existing SQLAlchemy repository and FastAPI read path. Do not add Neo4j, Apache AGE,
 OpenSearch, a vector database or another persistence layer without measured traversal/search
 evidence that the current architecture cannot satisfy.
+
+
+## Reviewed ALIO Person–Organization roles
+
+The admin-reviewed `ALIO_REVIEWED_PERSON_ROLE` predicate can project `DISCLOSED_ROLE_AT` only after
+its Claim is published and passes the existing publication gate. Both endpoints use exact current
+canonical IDs. The read query additionally requires the original observation hash and an active
+stored PersonObservationLink. Named source-listed role-holder nodes remain noncanonical records;
+review candidates, drafts, withheld records and same-name lookalikes do not become these edges.
+Generic correction drafts do not silently inherit this source-specific relation predicate.

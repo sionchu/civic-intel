@@ -5,11 +5,23 @@ import { operatorRead, requireOperator } from "./operator-data";
 import { KIND_LABELS, publicOntologyDetail, type Overview, type RecordPage, type OperatorDetail, type Manifest } from "./operator-types";
 import OperatorGraphView from "./operator-graph";
 import ReadState from "../../components/read-state";
+import AdminQueue from "./admin-queue";
+import AdminActions from "./admin-actions";
+import { ACTION_LABELS, type AdminCapabilities, type ReviewQueue, type AdminHistory } from "./admin-types";
 import "./operator.css";
+import "./admin.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "수집·DB 운영 | Civic Intel", robots: { index: false, follow: false } };
-const TABS = { overview: "수집 현황", records: "DB 목록·연결", manifest: "검토 manifest", catalog: "출처 계획·제약" };
+export const metadata: Metadata = { title: "인물·수집 데이터 관리 | Civic Intel", robots: { index: false, follow: false } };
+const TABS = { "people-review": "인물 검토·등록", history: "변경 이력", overview: "수집 현황", records: "DB 목록·연결", manifest: "검토 manifest", catalog: "출처 계획·제약" };
+const STATUS_OPTIONS: Record<string, Record<string, string>> = {
+  claims: { DRAFT: "초안", REVIEW: "검토 중", PUBLISHED: "공개", WITHHELD: "비공개", CURRENT: "현재 버전", SUPERSEDED: "대체된 버전" },
+  people: { RESOLVED: "확인된 인물", REVIEW: "신원 검토", UNRESOLVED: "미확정", CURRENT: "활성", SUPERSEDED: "비활성" },
+  organizations: { CURRENT: "활성", SUPERSEDED: "비활성" },
+  runs: { RUNNING: "실행 중", SUCCESS: "성공", PARTIAL: "부분 완료", FAILED: "실패" },
+  reviews: { OPEN: "미처리", RESOLVED: "처리 완료", REJECTED: "대상 제외" },
+  links: { CURRENT: "활성 연결", SUPERSEDED: "이전 연결" },
+};
 const METRICS = [
   ["current_people", "현재 인물"], ["current_organizations", "현재 기관"], ["current_claims", "현재 Claim"],
   ["published_claims", "공개 상태 Claim"], ["observations", "수집 기록 버전"], ["observation_keys", "고유 공급자 키"],
@@ -32,16 +44,24 @@ export default async function ReviewPage({ searchParams }: {
   await requireOperator(); // Gate before any operational fetch, including during public rendering.
   const raw = await searchParams;
   const get = (key: string) => typeof raw[key] === "string" ? raw[key] as string : "";
-  const tab = get("tab") in TABS ? get("tab") as keyof typeof TABS : "overview";
+  const tab = get("tab") in TABS ? get("tab") as keyof typeof TABS : "people-review";
   const kind = get("kind") in KIND_LABELS ? get("kind") : "organizations";
   const q = get("q").slice(0, 200), status = get("status").slice(0, 32);
   const feeder = get("feeder").slice(0, 100), scope = get("scope").slice(0, 300);
   const offset = Math.min(100000, Math.max(0, Number.parseInt(get("offset"), 10) || 0));
   const view = get("view") === "relations" ? "relations" : "lineage";
   const query = new URLSearchParams({ tab, kind, q, status, feeder, scope, view, offset: String(offset) });
-  const overviewResult = await operatorRead<Overview>("/admin/operations");
+  const [overviewResult, capabilityResult] = await Promise.all([
+    operatorRead<Overview>("/admin/operations"), operatorRead<AdminCapabilities>("/admin/operations/capabilities"),
+  ]);
   if (overviewResult.state === "error") return <div className="site-page"><h1>수집·DB 운영</h1><ReadState error={overviewResult.error} /></div>;
   const overview = overviewResult.data;
+  if (capabilityResult.state === "error") return <div className="site-page"><h1>관리 기능 연결 실패</h1><ReadState error={capabilityResult.error} /></div>;
+  const capabilities = capabilityResult.data;
+  const queueState = get("state") || "UNREVIEWED";
+  if (tab === "people-review") query.set("state", queueState);
+  const queueResult = tab === "people-review" ? await operatorRead<ReviewQueue>(`/admin/operations/people-review?${new URLSearchParams({ q, state: queueState, offset: String(offset), limit: "25" })}`) : null;
+  const historyResult = tab === "history" ? await operatorRead<AdminHistory>(`/admin/operations/history?offset=${offset}&limit=25`) : null;
   const listResult = tab === "records" ? await operatorRead<RecordPage>(`/admin/operations/records?${new URLSearchParams({ kind, q, status, feeder, scope, offset: String(offset), limit: "25" })}`) : null;
   const list = listResult?.state === "success" ? listResult.data : null;
   const focusKind = get("focus_kind") in KIND_LABELS ? get("focus_kind") : kind;
@@ -64,18 +84,34 @@ export default async function ReviewPage({ searchParams }: {
 
   return <div className="site-page operator-page" data-view={tab}>
     <header className="operator-header"><div><div className="eyebrow">Civic Intel / Operator workspace</div>
-      <h1>수집·DB 운영</h1><p>무엇을 수집했고, 어디에 저장했으며, 어떤 근거로 연결되었는지 확인합니다.</p></div>
-      <div className="operator-runtime"><strong>{overview.environment_label} · READ ONLY</strong>
-        <span>확인 {time(overview.checked_at)} KST</span><span>스키마 {overview.schema_expected} · 환경명은 운영자 지정</span>
+      <h1>인물·수집 데이터 관리</h1><p>무엇을 수집했고, 어디에 저장했으며, 어떤 근거로 연결되었는지 확인합니다.</p></div>
+      <div className="operator-runtime"><strong>{overview.environment_label} · {capabilities.writes_enabled ? "ADMIN WRITE" : "READ / PREVIEW"}</strong>
+        <span>확인 {time(overview.checked_at)} KST</span><span>스키마 {capabilities.schema_ready ? capabilities.schema_required : "0006 · 변경 이력 준비 필요"} · 환경명은 운영자 지정</span>
         <form action="/admin/review" method="get">
           {[...query.entries()].map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
           {focusId && <><input type="hidden" name="focus_kind" value={focusKind} /><input type="hidden" name="focus_id" value={focusId} /></>}
           <button className="operator-refresh" type="submit">현재 DB 다시 확인 ↻</button>
         </form></div></header>
-    <aside className="operator-scope">DB 조회 전용 · 검토 수는 저장된 OPEN 항목 기준입니다. 수집 완료, 신원 확정, 공개 여부는 서로 다릅니다. 수정·삭제·병합·공개는 이 화면에서 실행하지 않습니다.</aside>
-    <div className="operator-metrics">{METRICS.map(([key, label]) => <div key={key}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString("ko-KR") ?? "—"}</strong></div>)}</div>
+    <aside className="operator-scope">운영자 {capabilities.actor} · {capabilities.writes_enabled ? "미리보기와 최종 확인을 거친 작업만 DB에 반영합니다." : "현재 연결에서는 목록 검토와 변경 미리보기를 사용할 수 있습니다."} 인물 검토 큐는 수집 기록을 기준으로 계산하며 DB의 OPEN 항목 수와 다릅니다. 원본 수집 기록은 보존합니다.</aside>
+    <div className="operator-metrics">{METRICS.filter(([key]) => tab !== "people-review" || ["current_people", "current_organizations", "observations"].includes(key)).map(([key, label]) => <div key={key}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString("ko-KR") ?? "—"}</strong></div>)}</div>
     <nav className="operator-tabs" aria-label="운영 메뉴">{Object.entries(TABS).map(([key, label]) => <Link prefetch={false}
       key={key} aria-current={tab === key ? "page" : undefined} href={`/admin/review?tab=${key}`}>{label}</Link>)}</nav>
+
+    {tab === "people-review" && (queueResult?.state === "success" ? <AdminQueue key={`${queueState}:${q}:${offset}`} queue={queueResult.data} capabilities={capabilities} q={q} state={queueState} />
+      : queueResult?.state === "error" ? <ReadState error={queueResult.error} /> : null)}
+    {tab === "history" && <section><div className="operator-section-head"><div><span className="micro-label">COMMITTED ADMIN OPERATIONS</span><h2>운영 변경 이력</h2></div></div>
+      {historyResult?.state === "error" && <ReadState error={historyResult.error} />}
+      {historyResult?.state === "success" && (!historyResult.data.available ? <p className="admin-notice">아직 변경 이력 DB가 준비되지 않았습니다. 이 환경에서 작업 완료를 주장하지 않습니다.</p> : <>
+        <p>DB 반영이 완료된 작업 {historyResult.data.total}건. 취소·실패한 미리보기는 완료 이력에 포함하지 않습니다.</p>
+        {historyResult.data.items.map((entry) => <article className="admin-history-entry" key={entry.id}>
+          <div className="operator-section-head"><strong>{ACTION_LABELS[entry.action] ?? entry.action}</strong><span>{entry.actor} · {time(entry.created_at)}</span></div>
+          <p>{entry.reason}</p><small>요청 ID {entry.id} · 변경 {entry.result.changed_rows}행</small>
+          <details><summary>변경 전후와 처리 결과</summary><pre>{JSON.stringify({ changes: entry.changes, result: entry.result }, null, 2)}</pre></details>
+        </article>)}
+        <nav className="operator-pagination">{offset > 0 && <Link href={pageHref(Math.max(0, offset - 25))} prefetch={false}>← 이전</Link>}
+          {offset + 25 < historyResult.data.total && <Link href={pageHref(offset + 25)} prefetch={false}>다음 →</Link>}</nav>
+      </>)}
+    </section>}
 
     {tab === "overview" && <section><div className="operator-section-head"><div><span className="micro-label">PERSISTED COLLECTION LANES</span><h2>실제 DB 수집 경로</h2></div>
       <span>{overview.lanes.length}개 범위{overview.lanes_truncated ? " · 목록 제한 500" : ""}</span></div>
@@ -98,7 +134,7 @@ export default async function ReviewPage({ searchParams }: {
       <Link key={key} href={recordLink(key)} prefetch={false} aria-current={key === kind ? "page" : undefined}>{label} <small>{overview.counts[key]?.toLocaleString()}</small></Link>)}</nav>
       <form className="operator-filters" method="get" action="/admin/review"><input type="hidden" name="tab" value="records" /><input type="hidden" name="kind" value={kind} />
         <label>이름·내용·ID 검색<input type="search" name="q" defaultValue={q} maxLength={200} placeholder="수집된 이름이나 기록을 검색" /></label>
-        {["claims", "people", "organizations", "runs", "reviews", "links"].includes(kind) && <label>상태<input name="status" defaultValue={status} maxLength={32} placeholder={kind === "claims" ? "PUBLISHED / DRAFT" : kind === "runs" ? "SUCCESS / FAILED" : "CURRENT / OPEN 등"} /></label>}
+        {["claims", "people", "organizations", "runs", "reviews", "links"].includes(kind) && <label>상태<select name="status" defaultValue={status}><option value="">전체 상태</option>{Object.entries(STATUS_OPTIONS[kind] ?? {}).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>}
         {laneKind && <><label>수집 경로<input name="feeder" defaultValue={feeder} maxLength={100} /></label><label>수집 범위<input name="scope" defaultValue={scope} maxLength={300} /></label></>}
         <button type="submit">검색·필터 적용</button><Link href={recordLink(kind)} prefetch={false}>초기화</Link></form>
       {listResult?.state === "error" && <ReadState error={listResult.error} />}
@@ -117,6 +153,7 @@ export default async function ReviewPage({ searchParams }: {
             <Link prefetch={false} href={viewHref("lineage")} aria-current={view === "lineage" ? "page" : undefined}>DB 근거·수집 경로</Link>
             <Link prefetch={false} href={viewHref("relations")} aria-current={view === "relations" ? "page" : undefined}>공개된 직책·임원 관계</Link>
           </nav>}
+          {detailResult?.state === "success" && ["people", "claims", "observations"].includes(focusKind) && <AdminActions key={`action:${focusKind}:${focusId}`} kind={focusKind} ids={[focusId]} labels={[detailResult.data.record.label]} capabilities={capabilities} />}
           {detailResult?.state === "success" ? <OperatorGraphView key={`${focusKind}:${focusId}:${view}`} detail={detailResult.data} contextQuery={query.toString()} />
           : detailResult?.state === "error" ? <ReadState error={detailResult.error} /> : <p className="operator-empty">목록에서 기록을 선택하면 연결 지도와 내용이 표시됩니다.</p>}</div></div>}
     </section>}

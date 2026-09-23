@@ -89,7 +89,8 @@ class DatabaseNotReady(RuntimeError):
     pass
 
 
-EXPECTED_SCHEMA_REVISION = "0006"
+EXPECTED_SCHEMA_REVISION = "0007"
+READ_COMPATIBLE_SCHEMA_REVISIONS = frozenset({"0006", EXPECTED_SCHEMA_REVISION})
 
 
 class GoldenSeedError(RuntimeError):
@@ -239,6 +240,81 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             return detail(session, kind, record_id)
 
+    def reviewed_person_role_contexts(self, *, person_id: UUID | None = None,
+                                     organization_id: UUID | None = None) -> list[tuple]:
+        from packages.domain.admin import PERSON_ROLE_PREDICATE
+        from packages.domain.db import OrganizationRow
+
+        conditions = [ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+            ClaimRow.publication_status == "PUBLISHED", ClaimRow.superseded_at.is_(None),
+            PersonRow.superseded_at.is_(None), PersonRow.identity_status == "RESOLVED",
+            OrganizationRow.superseded_at.is_(None), PersonObservationLinkRow.superseded_at.is_(None),
+            FeederObservationRow.content_hash == ClaimRow.qualifiers["immutable_observation_hash"].as_string(),
+            ClaimRow.qualifiers["source_contract"].as_string() == "alio_reviewed_person_role"]
+        if person_id:
+            conditions.append(PersonRow.id == str(person_id))
+        if organization_id:
+            conditions.append(OrganizationRow.id == str(organization_id))
+        with self.sessions() as session:
+            rows = session.execute(select(ClaimRow, PersonRow, OrganizationRow)
+                .join(PersonRow, ClaimRow.person_id == PersonRow.id)
+                .join(OrganizationRow, ClaimRow.qualifiers["organization_id"].as_string() == OrganizationRow.id)
+                .join(FeederObservationRow, ClaimRow.qualifiers["source_observation_id"].as_string() == FeederObservationRow.id)
+                .join(PersonObservationLinkRow, (PersonObservationLinkRow.person_id == PersonRow.id)
+                    & (PersonObservationLinkRow.observation_id == FeederObservationRow.id))
+                .where(*conditions).order_by(ClaimRow.id).limit(200)).all()
+            claim_ids = [row[0].id for row in rows]
+            evidence = session.scalars(select(ClaimEvidenceRow).where(ClaimEvidenceRow.claim_id.in_(claim_ids))).all()
+            by_claim: dict[str, list[ClaimEvidence]] = {}
+            for item in evidence:
+                by_claim.setdefault(item.claim_id, []).append(self._evidence(item))
+            return [(self._claim(claim), self._person(person), self._organization(organization),
+                     tuple(by_claim.get(claim.id, []))) for claim, person, organization in rows]
+
+    def admin_preview(self, command):
+        from packages.persistence.admin_workflow import build_plan
+
+        with self.sessions() as session, session.no_autoflush:
+            return build_plan(session, command).report()
+
+    def admin_commit(self, command, actor: str, state_hash: str) -> dict[str, Any]:
+        from packages.persistence.admin_workflow import commit_command
+
+        with self.sessions() as session:
+            if self.engine.dialect.name == "sqlite":
+                session.execute(text("BEGIN IMMEDIATE"))
+            try:
+                result = commit_command(session, command, actor, state_hash)
+                session.commit()
+                return result
+            except Exception:
+                session.rollback()
+                raise
+
+    def admin_evidence_options(self, q: str = "", limit: int = 10) -> list[dict[str, Any]]:
+        from packages.persistence.admin_queries import evidence_options
+
+        with self.sessions() as session:
+            return evidence_options(session, q, limit)
+
+    def admin_queue(self, **filters: Any) -> dict[str, Any]:
+        from packages.persistence.admin_queries import person_review_queue
+
+        with self.sessions() as session:
+            return person_review_queue(session, **filters)
+
+    def admin_history(self, offset: int = 0, limit: int = 25) -> dict[str, Any]:
+        from packages.persistence.admin_workflow import history
+
+        with self.sessions() as session:
+            return history(session, offset, limit)
+
+    def admin_schema_ready(self) -> bool:
+        from packages.persistence.admin_workflow import admin_schema_ready
+
+        with self.sessions() as session:
+            return admin_schema_ready(session)
+
     def assert_ready(self) -> None:
         database = inspect(self.engine)
         tables = set(database.get_table_names())
@@ -263,7 +339,7 @@ class SqlAlchemyRepository:
         expected = _expected_schema_revision()
         with self.engine.connect() as connection:
             current = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        if current != expected:
+        if current not in READ_COMPATIBLE_SCHEMA_REVISIONS:
             raise DatabaseNotReady(
                 f"Database schema revision is {current!r}; expected {expected!r}. "
                 "Run `python -m alembic upgrade head`."

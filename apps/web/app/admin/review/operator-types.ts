@@ -86,7 +86,7 @@ export function publicOntologyDetail(graph: import("../../types").OntologyGraph,
   });
   return { record, graph: { center: graph.center_node_id, nodes,
     edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target,
-      label: edge.relation_type, review_only: false })),
+      label: edge.relation_type === "DISCLOSED_ROLE_AT" ? "검토된 공시상 직책" : edge.relation_type, review_only: false })),
     truncated: graph.edges.length > edges.length, max_nodes: 80, max_depth: 1,
     semantics: "PUBLIC_CANONICAL_CLAIM_EVIDENCE_RELATIONS",
   } };

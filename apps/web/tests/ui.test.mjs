@@ -116,7 +116,7 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.match(review, /operatorRead/);
   assert.match(review, /item\.action/);
   assert.match(review, /item\.status/);
-  assert.doesNotMatch(review, /method="post"|--commit|approve|merge/i);
+  assert.doesNotMatch(review, /method="post"|--commit/);
   assert.doesNotMatch(layout, /admin\/review/);
 });
 
@@ -373,4 +373,21 @@ test("operator console is opt-in, bounded, read-only and keeps tokens server-onl
   assert.match(graph, /graph\.truncated/);
   assert.match(graph, /키보드용 노드/);
   assert.doesNotMatch(graph, /CIVIC_OPERATOR_TOKEN|NEXT_PUBLIC|fetch\(|axios/);
+});
+
+
+test("admin workflows use confirmed server receipts and never expose server credentials", async () => {
+  const action = await readFile(new URL("../app/admin/review/admin-actions.tsx", import.meta.url), "utf8");
+  const route = await readFile(new URL("../app/admin/review/actions/route.ts", import.meta.url), "utf8");
+  const queue = await readFile(new URL("../app/admin/review/admin-queue.tsx", import.meta.url), "utf8");
+  assert.match(action, /변경 미리보기/);
+  assert.match(action, /preview_token/);
+  assert.match(action, /confirmed: true/);
+  assert.match(action, /await adminRequest<AdminReceipt>/);
+  assert.match(route, /origin !== `http:\/\/\$\{host\}`/);
+  assert.match(route, /x-civic-admin-intent/);
+  assert.match(route, /await requireOperator/);
+  assert.match(queue, /named_record_total/);
+  assert.match(queue, /동일인 미확정/);
+  assert.doesNotMatch(action + queue, /CIVIC_OPERATOR_TOKEN|DATABASE_URL/);
 });
