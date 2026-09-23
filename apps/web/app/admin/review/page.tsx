@@ -10,10 +10,12 @@ import AdminActions from "./admin-actions";
 import { ACTION_LABELS, type AdminCapabilities, type ReviewQueue, type AdminHistory } from "./admin-types";
 import "./operator.css";
 import "./admin.css";
+import WorkPlaybook, { type PlaybookCatalog } from "./work-playbook";
+import "./work-playbook.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "인물·수집 데이터 관리 | Civic Intel", robots: { index: false, follow: false } };
-const TABS = { "people-review": "인물 검토·등록", history: "변경 이력", overview: "수집 현황", records: "DB 목록·연결", manifest: "검토 manifest", catalog: "출처 계획·제약" };
+const TABS = { playbook: "업무 플레이북", "people-review": "인물 검토·등록", history: "변경 이력", overview: "수집 현황", records: "DB 목록·연결", manifest: "검토 manifest", catalog: "출처 계획·제약" };
 const STATUS_OPTIONS: Record<string, Record<string, string>> = {
   claims: { DRAFT: "초안", REVIEW: "검토 중", PUBLISHED: "공개", WITHHELD: "비공개", CURRENT: "현재 버전", SUPERSEDED: "대체된 버전" },
   people: { RESOLVED: "확인된 인물", REVIEW: "신원 검토", UNRESOLVED: "미확정", CURRENT: "활성", SUPERSEDED: "비활성" },
@@ -51,13 +53,15 @@ export default async function ReviewPage({ searchParams }: {
   const offset = Math.min(100000, Math.max(0, Number.parseInt(get("offset"), 10) || 0));
   const view = get("view") === "relations" ? "relations" : "lineage";
   const query = new URLSearchParams({ tab, kind, q, status, feeder, scope, view, offset: String(offset) });
-  const [overviewResult, capabilityResult] = await Promise.all([
+  const [overviewResult, capabilityResult, playbookResult] = await Promise.all([
     operatorRead<Overview>("/admin/operations"), operatorRead<AdminCapabilities>("/admin/operations/capabilities"),
+    operatorRead<PlaybookCatalog>("/admin/operations/playbook"),
   ]);
   if (overviewResult.state === "error") return <div className="site-page"><h1>수집·DB 운영</h1><ReadState error={overviewResult.error} /></div>;
   const overview = overviewResult.data;
   if (capabilityResult.state === "error") return <div className="site-page"><h1>관리 기능 연결 실패</h1><ReadState error={capabilityResult.error} /></div>;
   const capabilities = capabilityResult.data;
+  const playbook = playbookResult.state === "success" ? playbookResult.data : undefined;
   const queueState = get("state") || "UNREVIEWED";
   if (tab === "people-review") query.set("state", queueState);
   const queueResult = tab === "people-review" ? await operatorRead<ReviewQueue>(`/admin/operations/people-review?${new URLSearchParams({ q, state: queueState, offset: String(offset), limit: "25" })}`) : null;
@@ -97,7 +101,8 @@ export default async function ReviewPage({ searchParams }: {
     <nav className="operator-tabs" aria-label="운영 메뉴">{Object.entries(TABS).map(([key, label]) => <Link prefetch={false}
       key={key} aria-current={tab === key ? "page" : undefined} href={`/admin/review?tab=${key}`}>{label}</Link>)}</nav>
 
-    {tab === "people-review" && (queueResult?.state === "success" ? <AdminQueue key={`${queueState}:${q}:${offset}`} queue={queueResult.data} capabilities={capabilities} q={q} state={queueState} />
+    {tab === "playbook" && (playbook ? <WorkPlaybook catalog={playbook} initialRecipe="product_fix" expanded /> : playbookResult.state === "error" ? <ReadState error={playbookResult.error} /> : null)}
+    {tab === "people-review" && (queueResult?.state === "success" ? <AdminQueue key={`${queueState}:${q}:${offset}`} queue={queueResult.data} capabilities={capabilities} q={q} state={queueState} playbook={playbook} />
       : queueResult?.state === "error" ? <ReadState error={queueResult.error} /> : null)}
     {tab === "history" && <section><div className="operator-section-head"><div><span className="micro-label">COMMITTED ADMIN OPERATIONS</span><h2>운영 변경 이력</h2></div></div>
       {historyResult?.state === "error" && <ReadState error={historyResult.error} />}
@@ -105,6 +110,7 @@ export default async function ReviewPage({ searchParams }: {
         <p>DB 반영이 완료된 작업 {historyResult.data.total}건. 취소·실패한 미리보기는 완료 이력에 포함하지 않습니다.</p>
         {historyResult.data.items.map((entry) => <article className="admin-history-entry" key={entry.id}>
           <div className="operator-section-head"><strong>{ACTION_LABELS[entry.action] ?? entry.action}</strong><span>{entry.actor} · {time(entry.created_at)}</span></div>
+          {playbook && <WorkPlaybook catalog={playbook} initialRecipe="result_check" records={[{ id: entry.id, kind: "operations", version: entry.version, label: ACTION_LABELS[entry.action] ?? entry.action, status: "COMMITTED", fields: {} }]} />}
           <p>{entry.reason}</p><small>요청 ID {entry.id} · 변경 {entry.result.changed_rows}행</small>
           <details><summary>변경 전후와 처리 결과</summary><pre>{JSON.stringify({ changes: entry.changes, result: entry.result }, null, 2)}</pre></details>
         </article>)}
@@ -124,7 +130,7 @@ export default async function ReviewPage({ searchParams }: {
             <td>확인 {lane.records_seen ?? "—"}<small>신규 {lane.observations_created ?? "—"} · 변화 없음 {lane.observations_unchanged ?? "—"}</small></td>
             <td><small>성공 {time(lane.last_success_at)}</small><small>체크포인트 {time(lane.checkpoint_updated_at)}</small></td>
             <td><Link prefetch={false} href={`/admin/review?${new URLSearchParams({ tab: "records", kind: "observations", feeder: lane.feeder, scope: lane.scope_key })}`}>기록 목록 →</Link>
-              {lane.latest_run_id && <small><Link prefetch={false} href={recordLink("runs", lane.latest_run_id)}>실행 근거 →</Link></small>}</td></tr>)}</tbody></table></div>}
+              {lane.latest_run_id && <small><Link prefetch={false} href={recordLink("runs", lane.latest_run_id)}>실행 근거·업무 준비 →</Link></small>}</td></tr>)}</tbody></table></div>}
       <details className="operator-db-inventory"><summary>DB 테이블별 전체 행 수 확인</summary><div className="operator-inventory-grid">
         {Object.entries(KIND_LABELS).map(([key, label]) => <Link key={key} prefetch={false} href={recordLink(key)}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString() ?? 0}</strong></Link>)}
       </div><p className="operator-note">전체 행에는 과거·대체된 버전이 포함될 수 있습니다. 위의 현재 레코드 수와 구분합니다.</p></details>
@@ -153,6 +159,7 @@ export default async function ReviewPage({ searchParams }: {
             <Link prefetch={false} href={viewHref("lineage")} aria-current={view === "lineage" ? "page" : undefined}>DB 근거·수집 경로</Link>
             <Link prefetch={false} href={viewHref("relations")} aria-current={view === "relations" ? "page" : undefined}>공개된 직책·임원 관계</Link>
           </nav>}
+          {detailResult?.state === "success" && playbook && ["observations", "people", "organizations", "claims", "evidence", "runs"].includes(focusKind) && <WorkPlaybook key={`work:${focusKind}:${focusId}`} catalog={playbook} records={[detailResult.data.record]} initialRecipe={focusKind === "observations" ? "person_review" : focusKind === "runs" ? "collection_check" : "result_check"} />}
           {detailResult?.state === "success" && ["people", "claims", "observations"].includes(focusKind) && <AdminActions key={`action:${focusKind}:${focusId}`} kind={focusKind} ids={[focusId]} labels={[detailResult.data.record.label]} capabilities={capabilities} />}
           {detailResult?.state === "success" ? <OperatorGraphView key={`${focusKind}:${focusId}:${view}`} detail={detailResult.data} contextQuery={query.toString()} />
           : detailResult?.state === "error" ? <ReadState error={detailResult.error} /> : <p className="operator-empty">목록에서 기록을 선택하면 연결 지도와 내용이 표시됩니다.</p>}</div></div>}

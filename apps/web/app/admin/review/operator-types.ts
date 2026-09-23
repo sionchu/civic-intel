@@ -1,6 +1,6 @@
 export type FieldValue = string | number | boolean | string[] | null;
 export type OperatorRecord = {
-  id: string; kind: string; label: string; status: string;
+  id: string; kind: string; label: string; status: string; version?: string;
   fields: Record<string, FieldValue>;
 };
 export type OperatorGraph = {

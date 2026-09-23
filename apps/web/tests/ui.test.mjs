@@ -391,3 +391,21 @@ test("admin workflows use confirmed server receipts and never expose server cred
   assert.match(queue, /동일인 미확정/);
   assert.doesNotMatch(action + queue, /CIVIC_OPERATOR_TOKEN|DATABASE_URL/);
 });
+
+
+test("playbook prepares exact reference drafts and never pretends to dispatch", async () => {
+  const load = (name) => readFile(new URL(`../app/admin/review/${name}`, import.meta.url), "utf8");
+  const [playbook, page, queue, route] = await Promise.all([load("work-playbook.tsx"), load("page.tsx"), load("admin-queue.tsx"), load("actions/route.ts")]);
+  assert.match(playbook, /work_order_draft/);
+  assert.match(playbook, /version: item\.version/);
+  assert.match(playbook, /prepared\?\.signature === signature/);
+  assert.match(playbook, /에이전트 실행 미연동/);
+  assert.match(playbook, /source_content_included/);
+  assert.match(playbook, /clipboard\.writeText/);
+  assert.match(playbook, /Markdown 내려받기/);
+  assert.match(queue, /records=\{selectedItems\}/);
+  assert.match(page, /entry\.version/);
+  assert.match(route, /work_order_draft: "playbook\/draft"/);
+  assert.match(route, /Object\.hasOwn/);
+  assert.doesNotMatch(playbook, /CIVIC_OPERATOR_TOKEN|DATABASE_URL|child_process|spawn\(/);
+});

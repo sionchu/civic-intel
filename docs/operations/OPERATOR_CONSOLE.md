@@ -193,20 +193,53 @@ was inspected as a visual interaction reference: clarify -> plan/review -> act -
 role cards, workflow/operation categories, and troubleshooting. GJC is a different agent harness;
 its commands are not Civic Intel commands. No GJC binary, provider login, bot or MCP was installed.
 
-Recommended UI extension (PROPOSED, not implemented here):
-- Add a contextual '업무 플레이북' panel with bounded recipes linked to existing collection,
-  person review, evidence, preview and history pages. Keep current management screens intact.
-- Each recipe states its input scope, responsible role, resulting artifact, approval boundary
-  and current action: navigate, create a task DRAFT, preview, or confirm through existing admin.
-- Separate workflow guide, coordinator/child events, SourceRun/Checkpoint state, review disposition
-  and actual admin receipt. Without runner events show '미연동', not fabricated running/progress.
-- Start by binding navigation and exact input references. A later bounded dispatch integration
-  must return a real task/job ID, actor/tool permissions, state transitions, cancellation semantics
-  and verifiable artifacts before an 'agent running' control is enabled. Shell text from the UI
-  must never become an unrestricted execution endpoint.
+## Work playbook — implementation 2026-09-24
 
-The playbook is a presentation adapter for canonical instructions/contracts, not a new editable
-policy store. No runtime UI code, schema, live records or deployed services changed in this slice.
+The existing admin now includes 업무 플레이북, with contextual entry points from selected ALIO
+records, DB record details, source-run details and committed operation history. Six recipes map
+current work to source_worker, record_curator, product_builder and independent review roles.
+Existing admin controls, source status and provenance graph remain intact.
+
+1. Select 1–25 records in 인물 검토·등록 and expand 업무 플레이북, or open a record/run/history item.
+2. Choose the task, inspect its role/input/output boundary and add a bounded note without secrets.
+3. Prepare a DRAFT. Server validates exact IDs and allowlisted-view versions; a missing/changed
+   item rejects the entire selection. Code revision and current canonical instruction hashes are
+   re-read for each request, not cached forever at process startup.
+4. Copy or download Markdown/reference JSON. Request ID is not an execution ID. Changing selection,
+   role recipe or note invalidates the prepared export. Nothing is saved as an agent job.
+
+Identity-link requests require one observation, one candidate Person and selected Evidence;
+lookup responses are bound to their kind/context to prevent stale asynchronous selection.
+Collection-error requests require exactly one FAILED/PARTIAL source run. A product-fix request
+can describe code work without selecting live rows; proposed paths are not granted permissions.
+
+The export is deliberately reference-only: IDs, allowed foreign-key/hash anchors and scope names;
+no provider body, names, excerpts, URLs, contacts, raw errors or existing operation reasons are
+copied into it automatically. User-entered notes remain explicitly untrusted context, not shell
+instructions or permission. This is not an automatic scrubber for secrets entered manually.
+Source content must be separately checked against SourcePolicy before any later AI access.
+A reference version identifies the allowed selected view, not the entire graph/database snapshot.
+
+Endpoints on the explicitly opted-in private API only:
+
+```text
+GET  /admin/operations/playbook
+POST /admin/operations/playbook/draft
+```
+
+The browser uses the existing same-origin/intent-checked `/admin/review/actions` with the fixed
+`work_order_draft` operation; no arbitrary shell/path/role/privilege input or dispatch route exists.
+These reads also work in read-only DB mode. No migration, new task DB or secondary source store.
+
+### Execution integration remains blocked
+
+A fresh synthetic native Codex probe reported `collaboration.spawn_agent` but no selector that
+verified loading the named record_curator configuration; zero children executed and effective
+child tool/credential restrictions were not established. Do not replace this with a task-name
+label or silently enable a generic broad-privilege runner. The UI accurately shows 실행 미연동.
+A future adapter must prove role loading, isolated inputs/tools, job ID/state/timeout/cancellation
+and evidence handoff before a dispatch control is enabled. The request-preparation slice is usable;
+it is not the completion of the agent execution/QA/approval/commit lifecycle.
 
 
 Instruction-slice verification: six TOML files parsed; required metadata for both existing skills

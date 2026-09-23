@@ -45,6 +45,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Railway first deployment v0](exec-plans/completed/railway-first-deployment-v0.md)
 - [Evidence Preview deployment preparation](operations/EVIDENCE_PREVIEW_DEPLOYMENT.md)
 - [Private collection and DB admin console](operations/OPERATOR_CONSOLE.md)
+- [Admin work playbook implementation](exec-plans/active/admin-work-playbook.md)
 - [Admin operation contracts](architecture/ADMIN_OPERATIONS.md)
 - [Admin review workflow execution plan](exec-plans/completed/admin-review-workflow.md)
 - [CleanEye local public institution feeder](architecture/CLEANEYE_LOCAL_PUBLIC_INSTITUTION_FEEDER.md)
