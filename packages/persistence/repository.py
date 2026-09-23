@@ -193,6 +193,12 @@ class OrganizationClaimBatchResult:
 
 
 @dataclass(frozen=True)
+class OrganizationBatchResult:
+    organizations_created: int
+    organizations_reused: int
+
+
+@dataclass(frozen=True)
 class _OrganizationClaimValidationContext:
     sources: dict[UUID, Source]
     policies: dict[UUID, SourcePolicy]
@@ -3164,6 +3170,24 @@ class SqlAlchemyRepository:
             except Exception:
                 session.rollback()
                 raise
+
+    def import_organization_batch(
+        self,
+        organizations: Sequence[Organization],
+    ) -> OrganizationBatchResult:
+        """Atomically create or reuse an explicit Organization batch without Claims."""
+
+        if not organizations:
+            raise OrganizationClaimImportError("organization batch must not be empty")
+        result = self.import_organization_claim_batch(organizations, ())
+        if result.claims or result.claims_created or result.claims_reused:
+            raise OrganizationClaimImportError(
+                "organization-only batch unexpectedly produced Claim results"
+            )
+        return OrganizationBatchResult(
+            organizations_created=result.organizations_created,
+            organizations_reused=result.organizations_reused,
+        )
 
     def people(self) -> list[Person]:
         with self.sessions() as session:

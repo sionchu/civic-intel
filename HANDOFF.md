@@ -3379,6 +3379,17 @@ start/end date semantics.
 - Normalized review artifact is `docs/research/gukgam_2026_orggo_organization_proposal_2026-09-22.json`.
 - Post-run staging counts remained Organizations `347`, Claims `5576`, ClaimEvidence `5576`; no Organization, Claim, binding or publication write occurred.
 
+## Current checkpoint — org.go reviewed Organization materialization contract dry-run (2026-09-23)
+
+- Canonical base was `ca80add4598acbd24a27f945052ba127c30835a6`; the 27-item review-only proposal was already merged and deferred draft PR `#75` remained out of scope.
+- A source-specific reviewed Organization manifest contract now binds the exact 27 proposal rows to provider name/category/`orgCode`/`chartId`/source locator and proposal SHA `e0c0a6e39cf0844c3b653bd7884356dff5cca56d78044888fe111940a4f9d194`.
+- Deterministic Organization IDs are UUIDv5 values derived only from the seven-digit org.go `orgCode` in a source-specific namespace. Same-name canonical conflicts, deterministic-ID/name collisions, unrelated Organization-universe drift and partial materialization state fail closed.
+- The reviewed manifest SHA is `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab`; commit requires that exact operator-confirmed SHA and explicit `--commit`.
+- Organization-only persistence reuses the existing atomic Organization/Claim transaction seam with an empty Claim batch. It creates/reuses only supplied Organizations and cannot publish Gukgam Claims in this slice.
+- Targeted Ruff/mypy passed and materialization regression passed `8/8`; full repository verification passed `511` tests with `1` skipped and Golden Set `passed: true`, and Web lint/typecheck/test passed `23/23`. GitHub Verify remains the final Linux/deployment artifact gate.
+- Two staging no-write preflights were byte-identical with receipt SHA-256 `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`: current Organizations `347`, items `27`, to create `27`, reuse `0`, `write_performed=false`, `automatic_candidate_enumeration=false`, `gukgam_claim_publication=false`, `network_fetch=false`.
+- Post-dry-run staging remained Organizations `347`, Claims `5576`, ClaimEvidence `5576`; no write occurred.
+
 ## Next concrete action
 
-Keep production launch approval-gated. Define a separate reviewed Organization materialization contract for the 27 proposal items. It must accept only an explicit reviewed manifest, re-check current canonical-name conflicts and provider `orgCode` uniqueness at commit time, create no duplicate Organization, and must not publish Gukgam Claims in the same slice. Do not infer any non-exact name, alias or organizational relationship.
+After this contract is merged, run one separate staging commit slice using only the exact 27-item manifest SHA `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab` and the reviewed proposal artifact. Re-check canonical master/concurrency/staging counts, require a fresh no-write preflight byte-identical to receipt SHA `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`, then execute one Organization-only atomic commit. Do not publish any Gukgam Claim in the same slice.

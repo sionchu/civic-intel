@@ -30,6 +30,8 @@ civic-import-alio-reviewed-claims = "workers.alio_reviewed_claim_import:main"
 civic-import-gukgam-reviewed-claim = "workers.gukgam_reviewed_claim_import:main"
 civic-preflight-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch_manifest:main"
 civic-import-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch_commit:main"
+civic-preflight-orggo-reviewed-organizations = "workers.orggo_reviewed_organization_manifest:main"
+civic-import-orggo-reviewed-organizations = "workers.orggo_reviewed_organization_commit:main"
 civic-sync = "workers.sync:main"
 
 [build-system]
