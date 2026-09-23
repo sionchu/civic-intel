@@ -827,6 +827,9 @@ def create_app(
         from apps.api.operator import build_operator_router
 
         app.include_router(build_operator_router(target, operator_label))
+        from apps.api.playbook import build_playbook_router
+
+        app.include_router(build_playbook_router(target, actor=operator_actor, label=operator_label))
         from apps.api.admin import build_admin_router
 
         app.include_router(build_admin_router(target, operator_token,

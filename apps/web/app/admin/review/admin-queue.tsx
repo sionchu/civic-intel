@@ -5,10 +5,11 @@ import Link from "next/link";
 import { DISPOSITION_LABELS, adminRequest, type AdminCapabilities, type ReviewQueue } from "./admin-types";
 import type { OperatorDetail } from "./operator-types";
 import AdminActions from "./admin-actions";
+import WorkPlaybook, { type PlaybookCatalog } from "./work-playbook";
 import OperatorGraphView from "./operator-graph";
 
-export default function AdminQueue({ queue, capabilities, q, state }: {
-  queue: ReviewQueue; capabilities: AdminCapabilities; q: string; state: string;
+export default function AdminQueue({ queue, capabilities, q, state, playbook }: {
+  queue: ReviewQueue; capabilities: AdminCapabilities; q: string; state: string; playbook?: PlaybookCatalog;
 }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [detail, setDetail] = useState<OperatorDetail | null>(null);
@@ -54,6 +55,7 @@ export default function AdminQueue({ queue, capabilities, q, state }: {
         <span>{queue.offset + (queue.items.length ? 1 : 0)}–{queue.offset + queue.items.length} / {queue.total.toLocaleString()}</span>
         {queue.offset + queue.limit < queue.total && <Link prefetch={false} href={href(state, queue.offset + queue.limit)}>다음 →</Link>}</nav>
     </div><div className="admin-review-detail">
+      {playbook && <WorkPlaybook catalog={playbook} records={selectedItems} initialRecipe="person_review" />}
       <AdminActions kind="observations" ids={activeIds} labels={selectedItems.map((item) => String(item.fields.canonical_name ?? item.label))} capabilities={capabilities} />
       {error && <p className="admin-error" role="alert">{error}</p>}
       {detail ? <OperatorGraphView key={detail.graph.center} detail={detail} contextQuery="tab=records&kind=observations" /> : <p className="operator-empty">행의 ‘원문 경로·연결 확인’을 누르면 선택한 기록의 근거를 이 자리에서 확인합니다. 항목 선택과 근거 열람은 별개입니다.</p>}

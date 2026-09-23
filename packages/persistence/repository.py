@@ -271,6 +271,12 @@ class SqlAlchemyRepository:
             return [(self._claim(claim), self._person(person), self._organization(organization),
                      tuple(by_claim.get(claim.id, []))) for claim, person, organization in rows]
 
+    def prepare_work_order_references(self, request) -> dict[str, Any]:
+        from packages.persistence.work_orders import prepare_references
+
+        with self.sessions() as session, session.no_autoflush:
+            return prepare_references(session, request)
+
     def admin_preview(self, command):
         from packages.persistence.admin_workflow import build_plan
 

@@ -120,6 +120,7 @@ def row_data(row: Any) -> dict[str, Any]:
 
 def receipt(row: db.AdminOperationRow) -> dict[str, Any]:
     return {
+        "version": digest({"id": row.id, "command_hash": row.command_hash, "state_hash": row.state_hash}),
         "id": row.id,
         "actor": row.actor,
         "action": row.action,

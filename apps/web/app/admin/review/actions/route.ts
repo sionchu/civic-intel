@@ -15,16 +15,22 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     if (body.length > 64000) throw new Error("too large");
-    input = JSON.parse(body);
+    const parsed: unknown = JSON.parse(body);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("object required");
+    input = parsed as typeof input;
+    if (typeof input.operation !== "string") throw new Error("operation required");
   } catch {
     return NextResponse.json({ error: { message: "잘못된 요청 형식입니다." } }, { status: 400 });
   }
-  const allowed: Record<string, string> = { preview: "preview", commit: "commit" };
-  let path = allowed[input.operation ?? ""];
+  const allowed: Record<string, string> = { preview: "preview", commit: "commit", work_order_draft: "playbook/draft" };
+  let path = Object.hasOwn(allowed, input.operation ?? "") ? allowed[input.operation!] : "";
   let method = "POST";
   if (input.operation === "lookup") {
     const lookup = input.payload as { kind?: string; q?: string; id?: string };
-    if (!lookup || !["people", "evidence", "observations", "claims"].includes(lookup.kind ?? "")) {
+    if (!lookup || typeof lookup !== "object" || Array.isArray(lookup)
+      || (lookup.q !== undefined && typeof lookup.q !== "string")
+      || (lookup.id !== undefined && (typeof lookup.id !== "string" || !/^[0-9a-f-]{36}$/i.test(lookup.id)))
+      || !["people", "evidence", "observations", "claims"].includes(lookup.kind ?? "")) {
       return NextResponse.json({ error: { message: "지원하지 않는 조회입니다." } }, { status: 400 });
     }
     method = "GET";

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from datetime import date, datetime
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -250,7 +252,13 @@ def _record(kind: str, row: Any) -> dict[str, Any]:
             if "superseded_at" in fields
             else "STORED"
         )
+    # A version of the allowlisted read view, not a hash asserting the whole DB is frozen.
+    version = hashlib.sha256(json.dumps(
+        {"kind": kind, "id": str(row["id"]), "fields": fields},
+        ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+    ).encode()).hexdigest()
     return {
+        "version": version,
         "kind": kind,
         "id": str(row["id"]),
         "label": str(label)[:250],
