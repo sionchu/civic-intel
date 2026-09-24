@@ -20,17 +20,21 @@ In non-interactive `codex exec`, the visible native `spawn_agent` schema exposes
 `agent_type` selector. Enabling the installed `multi_agent_v2` feature for one synthetic run
 did not change that schema.
 A synthetic request explicitly asking for the configured `record_curator` type returned BLOCKED
-and reported zero child agents. No role-only child handoff was produced. This is the relevant
-negative result; task naming is not accepted as evidence that a configured role layer loaded.
+and reported zero child agents. A separate explicit GPT-5.5 coordinator control also returned
+BLOCKED with zero children; changing only the coordinator model did not expose a role selector on
+this installed runtime. No role-only child handoff was produced. This is the relevant negative
+result; task naming is not accepted as evidence that a configured role layer loaded.
 
 The interactive CLI path described by OpenAI could not be tested through the current remote
 command channel because its stdin is not a TTY. Wrapping it with the installed Git `winpty`
 still returned a non-TTY condition. That is a limitation of this remote execution channel,
 not proof that interactive Codex cannot load custom agents.
 
-Current OpenAI references used for this checkpoint:
+Current OpenAI/upstream references used for this checkpoint:
 - https://learn.chatgpt.com/docs/agent-configuration/subagents
 - https://learn.chatgpt.com/docs/config-file/config-reference
+- https://github.com/openai/codex/issues/31893
+- https://github.com/openai/codex/issues/31814
 
 The documentation describes custom Codex agents and also states that subagents inherit the
 parent permission mode and configured tools unless specifically overridden. Therefore a role
