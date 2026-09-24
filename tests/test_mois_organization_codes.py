@@ -259,3 +259,47 @@ def test_invalid_pagination_metadata_fails_closed() -> None:
     )
     with pytest.raises(MoisOrganizationCodeApiError, match="invalid totalCount"):
         connector.fetch(connector.discover()[0])
+
+def test_current_provider_stan_org_cd_envelope_is_supported() -> None:
+    payload = {
+        "StanOrgCd": [
+            {
+                "head": [
+                    {"totalCount": 1},
+                    {"numOfRows": 1, "pageNo": 1, "type": "JSON"},
+                    {"RESULT": {"resultCode": "INFO-0", "resultMsg": "NOMAL SERVICE"}},
+                ]
+            },
+            {"row": [organization_row()]},
+        ]
+    }
+    connector = MoisOrganizationCodeConnector(
+        api_key=SECRET,
+        transport=transport_for(payload),
+        page_size=1,
+    )
+
+    document = connector.fetch(connector.discover()[0])
+    records = connector.parse_organizations(document)
+
+    assert len(records) == 1
+    assert records[0].org_code == "1741000"
+    assert document.metadata["total_count"] == "1"
+    assert document.metadata["provider_page_no"] == "1"
+    assert document.metadata["provider_page_size"] == "1"
+    assert document.metadata["result_code"] == "INFO-0"
+
+def test_encoded_data_go_key_is_decoded_once_before_request() -> None:
+    encoded = "abc%2Bdef%2Fghi%3D"
+    decoded = "abc+def/ghi="
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.params["ServiceKey"] == decoded
+        return httpx.Response(200, json=response_payload([organization_row()]))
+
+    connector = MoisOrganizationCodeConnector(
+        api_key=encoded,
+        transport=httpx.MockTransport(handler),
+    )
+    records = connector.parse_organizations(connector.fetch(connector.discover()[0]))
+    assert len(records) == 1

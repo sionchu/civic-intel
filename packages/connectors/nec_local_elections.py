@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import ClassVar
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urlparse
 from uuid import UUID
 
 import httpx
@@ -157,7 +157,7 @@ class _NecApiConnector(Connector):
         value = self._api_key or os.getenv("NEC_API_KEY")
         if not value:
             raise MissingNecApiKey("NEC_API_KEY is required for live fetch")
-        return value
+        return unquote(value)
 
     def discover(self) -> list[str]:
         params: dict[str, str] = {
@@ -215,6 +215,8 @@ class _NecApiConnector(Connector):
             if isinstance(header, dict) and str(header.get("resultCode") or "00") not in {
                 "00",
                 "0",
+                "INFO-00",
+                "INFO-0",
             }:
                 raise NecApiError("NEC API returned a provider error")
             body = response.get("body")

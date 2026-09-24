@@ -229,8 +229,13 @@ def parse_corporation_codes_body(body: str) -> tuple[DartCorporationRecord, ...]
         if corp_code in seen_codes:
             raise DartApiError("duplicate OpenDART corporation code")
         stock_code = _optional(row, "stock_code")
-        if stock_code is not None and (len(stock_code) != 6 or not stock_code.isdigit()):
-            raise DartApiError("OpenDART stock code must be 6 digits when present")
+        if stock_code is not None and (
+            len(stock_code) != 6
+            or not all(char.isdigit() or "A" <= char <= "Z" for char in stock_code)
+        ):
+            raise DartApiError(
+                "OpenDART stock code must be 6 uppercase alphanumeric characters when present"
+            )
         records.append(
             DartCorporationRecord(
                 corp_code=corp_code,
