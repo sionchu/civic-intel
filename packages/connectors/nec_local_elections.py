@@ -137,8 +137,8 @@ class _NecApiConnector(Connector):
             raise ValueError("unsupported local election type")
         if page_no < 1:
             raise ValueError("page_no must be >= 1")
-        if not 1 <= page_size <= 1000:
-            raise ValueError("page_size must be between 1 and 1000")
+        if not 1 <= page_size <= 100:
+            raise ValueError("page_size must be between 1 and 100")
         self.election_id = election_id
         self.election_type = election_type
         self._api_key = api_key

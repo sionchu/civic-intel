@@ -267,3 +267,12 @@ def test_encoded_data_go_key_is_decoded_once_before_request() -> None:
     )
     records = connector.parse_candidates(connector.fetch(connector.discover()[0]))
     assert len(records) == 1
+
+def test_connector_rejects_page_size_above_live_provider_cap() -> None:
+    with pytest.raises(ValueError, match="between 1 and 100"):
+        NecCandidateConnector(
+            election_id="20260603",
+            election_type=4,
+            api_key=SECRET,
+            page_size=101,
+        )\n
