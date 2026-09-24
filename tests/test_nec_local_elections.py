@@ -275,4 +275,4 @@ def test_connector_rejects_page_size_above_live_provider_cap() -> None:
             election_type=4,
             api_key=SECRET,
             page_size=101,
-        )\n
+        )
