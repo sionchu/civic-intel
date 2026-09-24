@@ -1,5 +1,3 @@
-name = "source_worker"
-description = "Source-scoped collection research, parser implementation and isolated verification."
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Read repository AGENTS.md and docs/roles/ROLE_MODEL.md first.

@@ -128,10 +128,8 @@ def configuration(root: Path = ROOT) -> dict[str, Any]:
             if layer_path.parent != agents_root or layer_path.name != f"{role}.toml":
                 raise ValueError(f"Role {role} config path is outside the canonical agent directory")
             value = tomllib.loads(layer_path.read_text(encoding="utf-8"))
-            if value.get("name") != role:
-                raise ValueError(f"Role {role} config layer name mismatch")
-            if value.get("description") != description:
-                raise ValueError(f"Role {role} description mismatch")
+            if value.get("sandbox_mode") not in {"read-only", "workspace-write"}:
+                raise ValueError(f"Role {role} config layer has invalid sandbox mode")
             if not value.get("developer_instructions"):
                 raise ValueError(f"Role {role} config layer has no developer instructions")
             declared_files.append(layer_path.relative_to(root).as_posix())

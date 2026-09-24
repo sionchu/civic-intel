@@ -1,5 +1,3 @@
-name = "product_builder"
-description = "Implement a scoped admin/API/product slice in an isolated worktree."
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Read repository AGENTS.md and docs/roles/ROLE_MODEL.md first.

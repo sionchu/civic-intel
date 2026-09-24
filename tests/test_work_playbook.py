@@ -60,9 +60,9 @@ def test_project_config_declares_playbook_roles_with_canonical_layers():
         assert declaration["description"]
         assert declaration["config_file"] == f"agents/{role}.toml"
         layer = tomllib.loads((ROOT / ".codex" / declaration["config_file"]).read_text(encoding="utf-8"))
-        assert layer["name"] == role
-        assert layer["description"] == declaration["description"]
+        assert layer["sandbox_mode"] in {"read-only", "workspace-write"}
         assert layer["developer_instructions"]
+        assert "name" not in layer and "description" not in layer
 
 
 def test_configuration_fails_closed_when_role_declaration_is_missing(tmp_path):

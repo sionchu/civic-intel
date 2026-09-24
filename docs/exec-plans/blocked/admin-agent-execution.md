@@ -7,8 +7,9 @@ Status: BLOCKED. Request preparation is delivered by
 
 Civic Intel now declares every expected custom role in project `.codex/config.toml` with
 `agents.<name>.description` and `agents.<name>.config_file`. Each referenced standalone file in
-`.codex/agents/` retains the required `name`, `description` and `developer_instructions`.
-The playbook fails closed when those two layers do not agree.
+`.codex/agents/` is a role-specific config layer containing sandbox settings and
+`developer_instructions`; role names/descriptions remain in the parent declaration.
+The playbook fails closed when a declared role/layer is missing or malformed.
 
 A `codex exec --strict-config` synthetic read-only run accepted this project configuration.
 The host currently reports Codex CLI `0.156.1`; an earlier project audit observed `0.154.0`.
