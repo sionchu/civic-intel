@@ -25,7 +25,8 @@ const STATUS_OPTIONS: Record<string, Record<string, string>> = {
   links: { CURRENT: "활성 연결", SUPERSEDED: "이전 연결" },
 };
 const METRICS = [
-  ["current_people", "현재 인물"], ["current_organizations", "현재 기관"], ["current_claims", "현재 Claim"],
+  ["current_people", "전체 Person"], ["resolved_people", "신원 확인 완료"], ["source_context_review_people", "source-context 확인 대기"],
+  ["current_organizations", "현재 기관"], ["current_claims", "현재 Claim"],
   ["published_claims", "공개 상태 Claim"], ["observations", "수집 기록 버전"], ["observation_keys", "고유 공급자 키"],
   ["sources", "출처"], ["open_reviews", "DB 미해결 검토"],
 ];
@@ -97,7 +98,7 @@ export default async function ReviewPage({ searchParams }: {
           <button className="operator-refresh" type="submit">현재 DB 다시 확인 ↻</button>
         </form></div></header>
     <aside className="operator-scope">운영자 {capabilities.actor} · {capabilities.writes_enabled ? "미리보기와 최종 확인을 거친 작업만 DB에 반영합니다." : "현재 연결에서는 목록 검토와 변경 미리보기를 사용할 수 있습니다."} 인물 검토 큐는 수집 기록을 기준으로 계산하며 DB의 OPEN 항목 수와 다릅니다. 원본 수집 기록은 보존합니다.</aside>
-    <div className="operator-metrics">{METRICS.filter(([key]) => tab !== "people-review" || ["current_people", "current_organizations", "observations"].includes(key)).map(([key, label]) => <div key={key}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString("ko-KR") ?? "—"}</strong></div>)}</div>
+    <div className="operator-metrics">{METRICS.filter(([key]) => tab !== "people-review" || ["current_people", "resolved_people", "source_context_review_people", "observations"].includes(key)).map(([key, label]) => <div key={key}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString("ko-KR") ?? "—"}</strong></div>)}</div>
     <nav className="operator-tabs" aria-label="운영 메뉴">{Object.entries(TABS).map(([key, label]) => <Link prefetch={false}
       key={key} aria-current={tab === key ? "page" : undefined} href={`/admin/review?tab=${key}`}>{label}</Link>)}</nav>
 

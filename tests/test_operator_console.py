@@ -137,6 +137,9 @@ def test_operator_counts_are_real_and_versions_are_not_identities(repository):
     assert summary["counts"]["observations"] == 3
     assert summary["counts"]["observation_keys"] == 2
     assert summary["counts"]["current_people"] == 10
+    assert summary["counts"]["resolved_people"] == 10
+    assert summary["counts"]["review_people"] == 0
+    assert summary["counts"]["source_context_review_people"] == 0
     lane = next(item for item in summary["lanes"] if item["feeder"] == "test_lane")
     assert lane["latest_run_status"] == "PARTIAL"
     assert lane["last_success_at"] is None

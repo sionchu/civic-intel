@@ -37,8 +37,10 @@ from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_FEEDER,
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SCOPE,
-    ALIO_EXECUTIVE_SOURCE_CONTRACT,
-    validate_alio_item4_observation,
+)
+from packages.verification.alio_person_materialization import (
+    AlioPersonMaterializationError,
+    validate_alio_person_source_context,
 )
 from packages.verification.claims import validate_claim_publication
 from packages.verification.cross_lane_identity import (
@@ -392,16 +394,6 @@ def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, st
     snapshot_row = plan.get(db.SourceSnapshotRow, row.snapshot_id)
     source_row = plan.get(db.SourceRow, snapshot_row.source_id)
     policy_row = plan.get(db.SourcePolicyRow, source_row.policy_id)
-    fields = validate_alio_item4_observation(
-        SqlAlchemyRepository._observation(row),
-        snapshot=SqlAlchemyRepository._snapshot(snapshot_row),
-        source=SqlAlchemyRepository._source(source_row),
-        policy=SqlAlchemyRepository._policy(policy_row),
-    )
-    if fields["name_status"] != "PUBLIC":
-        raise AdminError(
-            "NO_PUBLIC_PERSON", "가림·공석·비공개 행은 인물 등록 대상으로 사용할 수 없습니다."
-        )
     checkpoints = plan.query(
         db.SourceCheckpointRow,
         db.SourceCheckpointRow.feeder == ALIO_EXECUTIVE_FEEDER,
@@ -410,22 +402,8 @@ def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, st
     )
     if not checkpoints or not checkpoints[0].last_run_id:
         raise AdminError("CHECKPOINT_REQUIRED", "성공한 수집 체크포인트가 필요합니다.")
-    checkpoint = checkpoints[0]
-    run = plan.get(db.SourceRunRow, checkpoint.last_run_id)
-    metadata = checkpoint.metadata_json
-    if (
-        run.status != "SUCCESS"
-        or run.feeder != row.feeder
-        or run.scope_key != row.scope_key
-        or run.checkpoint_after != checkpoint.cursor
-        or metadata.get("source_contract") != ALIO_EXECUTIVE_SOURCE_CONTRACT
-        or metadata.get("seen_provider_hashes", {}).get(row.provider_record_key) != row.content_hash
-        or metadata.get("seen_current_disclosures", {}).get(fields["disclosure_no"])
-        != fields["alio_apba_id"]
-    ):
-        raise AdminError(
-            "SOURCE_VERSION_CONFLICT", "현재 성공한 수집 기준과 선택한 기록이 일치하지 않습니다."
-        )
+    checkpoint_row = checkpoints[0]
+    run_row = plan.get(db.SourceRunRow, checkpoint_row.last_run_id)
     versions = plan.query(
         db.FeederObservationRow,
         db.FeederObservationRow.feeder == row.feeder,
@@ -433,34 +411,43 @@ def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, st
         db.FeederObservationRow.provider_record_key == row.provider_record_key,
         limit=10,
     )
-    if len({item.content_hash for item in versions}) != 1:
-        raise AdminError(
-            "SOURCE_VERSION_CONFLICT",
-            "원본 기록에 복수 버전이 있습니다. 먼저 원본 버전을 검토하세요.",
-        )
     evidence_rows = plan.query(
         db.ClaimEvidenceRow, db.ClaimEvidenceRow.feeder_observation_id == row.id
     )
     claims = [plan.get(db.ClaimRow, evidence.claim_id) for evidence in evidence_rows]
-    exact = [
-        claim
+    candidate_claims = tuple(
+        Claim.model_validate(claim, from_attributes=True)
         for claim in claims
         if claim.predicate == ALIO_EXECUTIVE_PREDICATE
-        and claim.organization_id
-        and claim.publication_status == "PUBLISHED"
-        and claim.superseded_at is None
-        and claim.qualifiers.get("source_contract") == ALIO_EXECUTIVE_SOURCE_CONTRACT
-    ]
-    identities = {claim.organization_id for claim in exact}
-    if len(identities) != 1:
-        raise AdminError(
-            "ORGANIZATION_BINDING_REQUIRED",
-            "먼저 이 공시의 정확한 기관 연결을 검토·등록해야 합니다.",
+    )
+    organization_ids = {
+        claim.organization_id for claim in candidate_claims if claim.organization_id is not None
+    }
+    organization_row = (
+        plan.get(db.OrganizationRow, next(iter(organization_ids)))
+        if len(organization_ids) == 1
+        else None
+    )
+    organization = (
+        Organization.model_validate(organization_row, from_attributes=True)
+        if organization_row is not None
+        else None
+    )
+    try:
+        context = validate_alio_person_source_context(
+            SqlAlchemyRepository._observation(row),
+            snapshot=SqlAlchemyRepository._snapshot(snapshot_row),
+            source=SqlAlchemyRepository._source(source_row),
+            policy=SqlAlchemyRepository._policy(policy_row),
+            checkpoint=SqlAlchemyRepository._checkpoint(checkpoint_row),
+            run=SqlAlchemyRepository._source_run(run_row),
+            versions=tuple(SqlAlchemyRepository._observation(item) for item in versions),
+            organization_claims=candidate_claims,
+            organization=organization,
         )
-    organization = plan.get(db.OrganizationRow, next(iter(identities)))
-    if organization.superseded_at or organization.name != fields["institution_name"]:
-        raise AdminError("ORGANIZATION_CONFLICT", "공시의 기관명과 현재 canonical 기관이 다릅니다.")
-    return row, fields, organization, source_row
+    except AlioPersonMaterializationError as exc:
+        raise AdminError(exc.code, exc.message) from exc
+    return row, context.fields, organization_row, source_row
 
 
 def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) -> list[Any]:
@@ -795,6 +782,88 @@ def _protect_indirect_dependencies(plan: Plan, person_id: str, claims: list[Any]
 def _person_action(plan: Plan, identifier: UUID) -> None:
     person = _current_person(plan, identifier)
     action = plan.command.action
+    if action == AdminAction.RESOLVE_PERSON:
+        if person.identity_status != IdentityStatus.REVIEW.value:
+            raise AdminError(
+                "IDENTITY_NOT_REVIEW",
+                "이 인물은 deterministic source-context 신원 검토 대상이 아닙니다.",
+            )
+        links = plan.query(
+            db.PersonObservationLinkRow,
+            db.PersonObservationLinkRow.person_id == person.id,
+            db.PersonObservationLinkRow.superseded_at.is_(None),
+            limit=10,
+        )
+        source_links = [
+            row
+            for row in links
+            if row.decision_class == "DETERMINISTIC_SOURCE_CONTEXT"
+        ]
+        if len(source_links) != 1:
+            raise AdminError(
+                "SOURCE_CONTEXT_LINK_REQUIRED",
+                "정확히 하나의 deterministic ALIO source-context 연결이 필요합니다.",
+            )
+        source_link = source_links[0]
+        observation, fields, organization, _ = _alio_person_record(
+            plan, UUID(source_link.observation_id)
+        )
+        role_claims = plan.query(
+            db.ClaimRow,
+            db.ClaimRow.person_id == person.id,
+            db.ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+            db.ClaimRow.superseded_at.is_(None),
+            limit=10,
+        )
+        exact_claims = [
+            row
+            for row in role_claims
+            if row.publication_status == PublicationStatus.DRAFT.value
+            and row.qualifiers.get("source_observation_id") == observation.id
+            and row.qualifiers.get("immutable_observation_hash") == observation.content_hash
+            and row.qualifiers.get("organization_id") == organization.id
+            and row.qualifiers.get("canonical_name") == fields["canonical_name"]
+            and row.qualifiers.get("position_text") == fields["position_text"]
+            and row.qualifiers.get("identity_scope")
+            == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
+        ]
+        if len(exact_claims) != 1:
+            raise AdminError(
+                "SOURCE_CONTEXT_CLAIM_REQUIRED",
+                "deterministic ALIO 역할 초안이 현재 source-context와 일치하지 않습니다.",
+            )
+        evidence_rows = plan.query(
+            db.ClaimEvidenceRow,
+            db.ClaimEvidenceRow.claim_id == exact_claims[0].id,
+            limit=10,
+        )
+        if len(evidence_rows) != 1:
+            raise AdminError(
+                "SOURCE_CONTEXT_EVIDENCE_REQUIRED",
+                "deterministic ALIO 역할 초안의 정확한 Evidence가 필요합니다.",
+            )
+        evidence = evidence_rows[0]
+        if (
+            evidence.feeder_observation_id != observation.id
+            or evidence.snapshot_id != observation.snapshot_id
+        ):
+            raise AdminError(
+                "SOURCE_CONTEXT_EVIDENCE_CONFLICT",
+                "역할 초안 Evidence가 현재 ALIO 관측과 일치하지 않습니다.",
+            )
+        plan.update(person, identity_status=IdentityStatus.RESOLVED.value)
+        plan.outcomes.append(
+            {
+                "person_id": person.id,
+                "identity_status_before": IdentityStatus.REVIEW.value,
+                "identity_status_after": IdentityStatus.RESOLVED.value,
+                "observation_id": observation.id,
+                "claim_id": exact_claims[0].id,
+                "claim_publication_status": exact_claims[0].publication_status,
+                "cross_source_merge": False,
+            }
+        )
+        return
     if action == AdminAction.RENAME_PERSON:
         _evidence_context(
             plan, [plan.get(db.ClaimEvidenceRow, item) for item in plan.command.evidence_ids]

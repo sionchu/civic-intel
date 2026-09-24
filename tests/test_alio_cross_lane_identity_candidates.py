@@ -37,10 +37,12 @@ class FakeCandidateRepository:
         organizations: tuple[Organization, ...],
         contexts: dict[UUID, tuple[tuple[Claim, ...], dict[UUID, tuple[ClaimEvidence, ...]]]],
         people: tuple[Person, ...],
+        linked_by_observation: dict[UUID, frozenset[UUID]] | None = None,
     ) -> None:
         self._organizations = organizations
         self._contexts = contexts
         self._people = people
+        self._linked_by_observation = linked_by_observation or {}
         self.calls: list[str] = []
 
     def assert_ready(self) -> None:
@@ -60,6 +62,17 @@ class FakeCandidateRepository:
     def public_people(self) -> list[Person]:
         self.calls.append("public_people")
         return list(self._people)
+
+    def active_person_ids_by_observation(
+        self, observation_ids: tuple[UUID, ...]
+    ) -> dict[UUID, frozenset[UUID]]:
+        self.calls.append("active_person_ids_by_observation")
+        return {
+            observation_id: self._linked_by_observation.get(observation_id, frozenset())
+            for observation_id in observation_ids
+            if observation_id in self._linked_by_observation
+        }
+
 
 
 def alio_claim(
@@ -147,6 +160,7 @@ def test_exact_name_overlap_generates_one_review_candidate() -> None:
         "assert_ready",
         "public_organizations",
         "published_organization_claim_contexts",
+        "active_person_ids_by_observation",
         "public_people",
     ]
 
@@ -335,3 +349,22 @@ def test_resolved_without_bridge_fails_closed(monkeypatch: pytest.MonkeyPatch) -
 
     with pytest.raises(AlioCandidatePipelineError, match="bridge evidence"):
         generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
+
+def test_existing_observation_link_is_not_reoffered_as_cross_lane_candidate() -> None:
+    organization = Organization(id=stable_id(31), name="연결기관")
+    person = Person(id=stable_id(32), canonical_name="김연결", identity_status=IdentityStatus.RESOLVED)
+    claim, evidence = alio_claim(organization, claim_number=20, name="김연결")
+    assert evidence.feeder_observation_id is None
+    observation_id = stable_id(900)
+    evidence = evidence.model_copy(update={"feeder_observation_id": observation_id})
+    repository = FakeCandidateRepository(
+        (organization,),
+        {organization.id: ((claim,), {claim.id: (evidence,)})},
+        (person,),
+        {observation_id: frozenset({person.id})},
+    )
+
+    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
+
+    assert result.candidates == ()
+    assert "active_person_ids_by_observation" in repository.calls

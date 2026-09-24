@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.orm import Session
 
 from packages.domain import db
@@ -20,6 +20,7 @@ def _queue_base():
     observation = db.FeederObservationRow
     review = db.IdentityReviewItemRow
     link = db.PersonObservationLinkRow
+    person = db.PersonRow
     reviews = select(
         review.observation_id,
         review.status,
@@ -35,6 +36,8 @@ def _queue_base():
         select(
             link.observation_id,
             func.min(link.person_id).label("person_id"),
+            func.min(link.action).label("link_action"),
+            func.min(link.decision_class).label("link_decision_class"),
             func.count().label("link_count"),
         )
         .where(link.superseded_at.is_(None))
@@ -43,6 +46,14 @@ def _queue_base():
     )
     state = case(
         (links.c.link_count > 1, "CONFLICT"),
+        (
+            and_(
+                links.c.person_id.is_not(None),
+                links.c.link_decision_class == "DETERMINISTIC_SOURCE_CONTEXT",
+                person.identity_status != "RESOLVED",
+            ),
+            "SOURCE_CONTEXT_REVIEW",
+        ),
         (links.c.person_id.is_not(None), "REGISTERED"),
         (reviews.c.disposition == "HELD", "HELD"),
         (reviews.c.status == "REJECTED", "EXCLUDED"),
@@ -74,9 +85,15 @@ def _queue_base():
         select(observation.id, name.label("name"),
             observation.normalized_json["institution_name"].as_string().label("institution"),
             observation.normalized_json["position_text"].as_string().label("position"),
-            state, links.c.person_id, candidates)
+            state,
+            links.c.person_id,
+            links.c.link_action,
+            links.c.link_decision_class,
+            candidates,
+        )
         .outerjoin(reviews, (reviews.c.observation_id == observation.id) & (reviews.c.rn == 1))
         .outerjoin(links, links.c.observation_id == observation.id)
+        .outerjoin(person, person.id == links.c.person_id)
         .where(
             observation.feeder == ALIO_EXECUTIVE_FEEDER,
             observation.scope_key == ALIO_EXECUTIVE_SCOPE,
@@ -96,6 +113,7 @@ def person_review_queue(
         "HELD",
         "EXCLUDED",
         "REGISTERED",
+        "SOURCE_CONTEXT_REVIEW",
         "CONFLICT",
         "HAS_CANDIDATE",
     }:
@@ -166,6 +184,8 @@ def person_review_queue(
                 **item,
                 "disposition": row["disposition"],
                 "linked_person_id": row["person_id"],
+                "link_action": row["link_action"],
+                "link_decision_class": row["link_decision_class"],
                 "candidate_count": row["candidate_count"],
                 "candidates": by_name.get(row["name"], [])[:10],
             }
@@ -177,7 +197,14 @@ def person_review_queue(
         "items": items,
         "counts": {
             state: total_counts.get(state, 0)
-            for state in ("UNREVIEWED", "HELD", "EXCLUDED", "REGISTERED", "CONFLICT")
+            for state in (
+                "UNREVIEWED",
+                "HELD",
+                "EXCLUDED",
+                "SOURCE_CONTEXT_REVIEW",
+                "REGISTERED",
+                "CONFLICT",
+            )
         },
         "named_record_total": sum(total_counts.values()),
         "distinct_names": session.scalar(select(func.count(func.distinct(base.c.name)))) or 0,

@@ -73,3 +73,5 @@
 @media(max-width:820px) { .operator-page[data-view=people-review] .operator-runtime { display:flex; flex-wrap:wrap; text-align:left; } .operator-page[data-view=people-review] .operator-metrics > div { display:grid; gap:5px; } }
 
 .operator-filters select { width:100%; min-height:44px; font:inherit; font-size:14px; padding:10px 12px; color:var(--color-ink); background:var(--color-surface); border:1px solid var(--color-line-strong); border-radius:4px; }
+
+.admin-source-context { display:block; margin-top:7px; color:var(--color-accent); font-weight:600; }

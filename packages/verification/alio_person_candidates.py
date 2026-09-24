@@ -159,6 +159,13 @@ def generate_alio_cross_lane_candidates(
 
     repository.assert_ready()
     alio_claims = _load_published_alio_claims(repository)
+    observation_ids = tuple(
+        evidence.feeder_observation_id
+        for _, _, evidence_items in alio_claims
+        for evidence in evidence_items
+        if evidence.feeder_observation_id is not None
+    )
+    linked_people_by_observation = repository.active_person_ids_by_observation(observation_ids)
     people = tuple(
         item
         for item in repository.public_people()
@@ -174,7 +181,17 @@ def generate_alio_cross_lane_candidates(
     for organization, claim, evidence in alio_claims:
         executive_name = _optional_qualifier(claim.qualifiers, "canonical_name")
         assert executive_name is not None
+        already_linked = {
+            person_id
+            for evidence_item in evidence
+            if evidence_item.feeder_observation_id is not None
+            for person_id in linked_people_by_observation.get(
+                evidence_item.feeder_observation_id, frozenset()
+            )
+        }
         for person in people_by_name.get(_normalized_name(executive_name), ()):
+            if person.id in already_linked:
+                continue
             alio_candidate = IdentityCandidate(
                 canonical_name=executive_name,
                 birth_date=None,

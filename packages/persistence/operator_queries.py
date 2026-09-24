@@ -360,6 +360,29 @@ def summary(session: Session) -> dict[str, Any]:
             select(
                 *(count(model).label(kind) for kind, model in MODELS.items()),
                 count(db.PersonRow, db.PersonRow.superseded_at.is_(None)).label("current_people"),
+                count(
+                    db.PersonRow,
+                    db.PersonRow.superseded_at.is_(None),
+                    db.PersonRow.identity_status == "RESOLVED",
+                ).label("resolved_people"),
+                count(
+                    db.PersonRow,
+                    db.PersonRow.superseded_at.is_(None),
+                    db.PersonRow.identity_status == "REVIEW",
+                ).label("review_people"),
+                count(
+                    db.PersonRow,
+                    db.PersonRow.superseded_at.is_(None),
+                    db.PersonRow.identity_status == "REVIEW",
+                    select(db.PersonObservationLinkRow.id)
+                    .where(
+                        db.PersonObservationLinkRow.person_id == db.PersonRow.id,
+                        db.PersonObservationLinkRow.superseded_at.is_(None),
+                        db.PersonObservationLinkRow.decision_class
+                        == "DETERMINISTIC_SOURCE_CONTEXT",
+                    )
+                    .exists(),
+                ).label("source_context_review_people"),
                 count(db.OrganizationRow, db.OrganizationRow.superseded_at.is_(None)).label(
                     "current_organizations"
                 ),
