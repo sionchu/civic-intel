@@ -88,7 +88,9 @@ jobs:
           pg_dump --host 127.0.0.1 --username civic --dbname civic_intel --format custom --file /tmp/civic-intel.dump
           createdb --host 127.0.0.1 --username civic civic_intel_restore
           pg_restore --host 127.0.0.1 --username civic --dbname civic_intel_restore --exit-on-error /tmp/civic-intel.dump
-          python -m packages.verification.postgresql --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore --expected-people 10 --expected-organization-claims 2
+          # PostgreSQL integration above seeds the 10-person Golden roster and then
+          # atomically materializes three synthetic ALIO source-context REVIEW People.
+          python -m packages.verification.postgresql --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore --expected-people 13 --expected-organization-claims 2
 
       - name: Verify deployment artifacts
         env:
