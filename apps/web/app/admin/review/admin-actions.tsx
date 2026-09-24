@@ -16,11 +16,11 @@ const BRIDGE = new Set(["LINK_PERSON", "MERGE_PERSON"]);
 const EDIT = new Set(["CORRECT_CLAIM", "RENAME_PERSON"]);
 const DESTRUCTIVE = new Set(["EXCLUDE", "WITHDRAW", "DEACTIVATE_PERSON", "MERGE_PERSON"]);
 
-export default function AdminActions({ kind, ids, capabilities, labels = [] }: {
-  kind: string; ids: string[]; capabilities: AdminCapabilities; labels?: string[];
+export default function AdminActions({ kind, ids, capabilities, labels = [], status }: {
+  kind: string; ids: string[]; capabilities: AdminCapabilities; labels?: string[]; status?: string;
 }) {
   const router = useRouter();
-  const actions = OPERATIONS[kind] ?? [];
+  const actions = (OPERATIONS[kind] ?? []).filter((item) => item !== "RESOLVE_PERSON" || status === "REVIEW");
   const [action, setAction] = useState(actions[0] ?? "");
   const [reason, setReason] = useState("");
   const [value, setValue] = useState("");

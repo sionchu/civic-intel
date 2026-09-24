@@ -4,6 +4,8 @@ import argparse
 import json
 import re
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from packages.persistence import SqlAlchemyRepository
 from packages.verification.alio_person_materialization import AlioPersonMaterializationError
 
@@ -50,6 +52,8 @@ def main(argv: list[str] | None = None) -> int:
             result = repository.prepare_alio_person_materialization().to_dict()
     except (AlioPersonMaterializationError, RuntimeError, TypeError, ValueError) as exc:
         parser.error(str(exc))
+    except SQLAlchemyError:
+        parser.error("database operation failed; connection details were suppressed")
 
     print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
     return 0

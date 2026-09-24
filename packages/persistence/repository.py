@@ -15,6 +15,7 @@ from packages.connectors.open_assembly import (
     POLICY_ID as ASSEMBLY_MEMBER_POLICY_ID,
 )
 from packages.connectors.open_assembly import OpenAssemblyMemberConnector
+from packages.domain.admin import PERSON_ROLE_PREDICATE
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -3364,6 +3365,9 @@ class SqlAlchemyRepository:
             select(ClaimRow.id)
             .where(
                 ClaimRow.person_id == PersonRow.id,
+                ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+                ClaimRow.qualifiers["identity_scope"].as_string()
+                == "DETERMINISTIC_ALIO_SOURCE_CONTEXT",
                 ClaimRow.superseded_at.is_(None),
                 ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
             )

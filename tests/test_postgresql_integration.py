@@ -98,6 +98,8 @@ def test_postgresql_safe_alio_person_materialization_is_atomic_and_idempotent() 
     assert receipt["created_claims"] == 3
     assert receipt["claim_publication"] is False
     assert len(repository.people()) == before_people + 3
+    with TestClient(create_app(repository)) as client:
+        assert len(client.get("/people").json()) == before_people
     created_ids = [
         item.packet.person.id
         for item in preflight.create_items

@@ -161,7 +161,7 @@ export default async function ReviewPage({ searchParams }: {
             <Link prefetch={false} href={viewHref("relations")} aria-current={view === "relations" ? "page" : undefined}>공개된 직책·임원 관계</Link>
           </nav>}
           {detailResult?.state === "success" && playbook && ["observations", "people", "organizations", "claims", "evidence", "runs"].includes(focusKind) && <WorkPlaybook key={`work:${focusKind}:${focusId}`} catalog={playbook} records={[detailResult.data.record]} initialRecipe={focusKind === "observations" ? "person_review" : focusKind === "runs" ? "collection_check" : "result_check"} />}
-          {detailResult?.state === "success" && ["people", "claims", "observations"].includes(focusKind) && <AdminActions key={`action:${focusKind}:${focusId}`} kind={focusKind} ids={[focusId]} labels={[detailResult.data.record.label]} capabilities={capabilities} />}
+          {detailResult?.state === "success" && ["people", "claims", "observations"].includes(focusKind) && <AdminActions key={`action:${focusKind}:${focusId}`} kind={focusKind} ids={[focusId]} labels={[detailResult.data.record.label]} status={detailResult.data.record.status} capabilities={capabilities} />}
           {detailResult?.state === "success" ? <OperatorGraphView key={`${focusKind}:${focusId}:${view}`} detail={detailResult.data} contextQuery={query.toString()} />
           : detailResult?.state === "error" ? <ReadState error={detailResult.error} /> : <p className="operator-empty">목록에서 기록을 선택하면 연결 지도와 내용이 표시됩니다.</p>}</div></div>}
     </section>}

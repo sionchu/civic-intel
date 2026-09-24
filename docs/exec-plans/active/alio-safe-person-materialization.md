@@ -61,6 +61,8 @@ For each created Person:
 - no public Person/profile while identity_status remains REVIEW;
 - no public `DISCLOSED_ROLE_AT` edge until human RESOLVE_PERSON and the existing publication
   approval later succeed.
+- A deterministic source-context Person remains off the public Person surface until its exact
+  `ALIO_REVIEWED_PERSON_ROLE` Claim is PUBLISHED; an unrelated published Claim is not enough.
 
 ## Dry-run / commit contract
 
@@ -129,7 +131,7 @@ Read-only staging audit before implementation:
 
 The source-specific verifier, atomic repository path, dry-run CLI, source-context REVIEW state,
 explicit RESOLVE_PERSON admin action and dashboard accounting are implemented in the isolated
-branch. Focused Python/web/mypy checks are passing.
+branch. Full Python/web/mypy checks are passing: 582 pytest passed / 2 skipped, Golden passed, Web 26/26 and production standalone build passed.
 
 Read-only staging dry-run was executed twice from the exact branch code; both runs were
 byte-equivalent:

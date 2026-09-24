@@ -85,12 +85,17 @@ jobs:
         env:
           PGPASSWORD: civic
         run: |
+          expected_people="$(psql --host 127.0.0.1 --username civic --dbname civic_intel --tuples-only --no-align --command "select count(*) from people")"
+          expected_organization_claims="$(psql --host 127.0.0.1 --username civic --dbname civic_intel --tuples-only --no-align --command "select count(*) from claims where organization_id is not null and publication_status='PUBLISHED' and superseded_at is null")"
+          expected_public_people="$(python -c "from packages.persistence import SqlAlchemyRepository; print(len(SqlAlchemyRepository('postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel').public_people()))")"
           pg_dump --host 127.0.0.1 --username civic --dbname civic_intel --format custom --file /tmp/civic-intel.dump
           createdb --host 127.0.0.1 --username civic civic_intel_restore
           pg_restore --host 127.0.0.1 --username civic --dbname civic_intel_restore --exit-on-error /tmp/civic-intel.dump
-          # PostgreSQL integration above seeds the 10-person Golden roster and then
-          # atomically materializes three synthetic ALIO source-context REVIEW People.
-          python -m packages.verification.postgresql --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore --expected-people 13 --expected-organization-claims 2
+          python -m packages.verification.postgresql \
+            --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore \
+            --expected-people "$expected_people" \
+            --expected-public-people "$expected_public_people" \
+            --expected-organization-claims "$expected_organization_claims"
 
       - name: Verify deployment artifacts
         env:

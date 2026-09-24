@@ -28,6 +28,7 @@ from packages.persistence.alio_person_materialization import (
 from packages.verification.alio_person_materialization import (
     PERSON_ROLE_PREDICATE,
 )
+from packages.verification.postgresql import verify_restored_database
 
 
 def ready_repository(tmp_path: Path, provider: FakeAlioProvider | None = None):
@@ -416,6 +417,29 @@ def test_source_context_person_requires_human_resolution_before_registered_state
     assert claims[0].publication_status == PublicationStatus.DRAFT
     assert repository.admin_queue(state="SOURCE_CONTEXT_REVIEW")["total"] == 2
     assert repository.admin_queue(state="REGISTERED")["total"] == 1
+    with repository.sessions() as session:
+        session.add(
+            db.ClaimRow(
+                id=str(uuid4()),
+                person_id=str(person_id),
+                organization_id=None,
+                subject="다른 공개 기록",
+                predicate="UNRELATED_PUBLISHED_CLAIM",
+                object_text="ALIO 역할 Claim과 무관한 공개 기록",
+                proposition="ALIO 역할 Claim과 무관한 공개 기록이다.",
+                qualifiers={},
+                epistemic_status="CLAIM",
+                publication_status="PUBLISHED",
+                asserted_as_true=False,
+                resolution_note=None,
+                valid_from=datetime.now(UTC),
+                valid_to=None,
+                recorded_at=datetime.now(UTC),
+                superseded_at=None,
+            )
+        )
+        session.commit()
+
     with TestClient(create_app(repository)) as client:
         assert all(row["id"] != str(person_id) for row in client.get("/people").json())
         assert client.get(f"/people/{person_id}").status_code == 404
@@ -533,3 +557,26 @@ def test_renamed_source_context_person_with_preserved_alias_remains_noop(tmp_pat
     selected = next(row for row in rerun.items if row.observation_id == item.observation_id)
     assert selected.action == "NOOP"
     assert selected.reason == "ALREADY_MANAGED"
+
+def test_restore_verifier_separates_review_people_from_public_roster(tmp_path: Path):
+    repository, _ = ready_repository(tmp_path)
+    preflight = repository.prepare_alio_person_materialization()
+    repository.commit_alio_person_materialization(expected_receipt_sha256=preflight.sha256())
+    with repository.sessions() as session:
+        organization_claims = session.scalar(
+            select(func.count())
+            .select_from(db.ClaimRow)
+            .where(
+                db.ClaimRow.organization_id.is_not(None),
+                db.ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                db.ClaimRow.superseded_at.is_(None),
+            )
+        ) or 0
+    report = verify_restored_database(
+        str(repository.engine.url),
+        expected_people=3,
+        expected_public_people=0,
+        expected_organization_claims=organization_claims,
+    )
+    assert report["people"] == 3
+    assert report["public_people"] == 0
