@@ -38,6 +38,14 @@ ADMIN WRITE and displays the actor. The console does not run migrations itself.
 
 ## Main workflows
 
+**ALIO source-context materialization** is a separate deterministic batch prerequisite, not an
+admin shortcut. Its dry-run can create only the exact singleton/no-collision/current-version
+subset as identity `REVIEW` People with DRAFT role Claims. The queue displays those linked rows as
+**source-context 신원 확인 필요**. Selecting the resulting Person exposes **source-context 신원
+확인 (RESOLVE_PERSON)**, which revalidates the current ALIO row/Organization/Claim/Evidence and
+requires explicit human review. It does not publish the role or merge a cross-source identity.
+Repeated names, existing Person/alias collisions and source drift remain review work.
+
 **인물 검토·등록** is the default work queue. Named ALIO source rows appear whether or not a review
 row was previously persisted. Filter 미검토, 보류, 대상 제외, 인물 연결 완료 or name/alias candidates.
 Read institution, role, source-period and evidence context. Select individual rows or the visible
@@ -285,3 +293,9 @@ native multi_agent_v2 feature without changing project/global settings. It again
 no role selector in collaboration.spawn_agent, no child ID, no configured marker returned and zero
 children launched. This confirms the tested route still does not justify enabling live dispatch;
 it does not prove that every native interface or future client has the same limitation.
+
+The operator summary separates **전체 Person**, **신원 확인 완료**, and
+**source-context 확인 대기**. The total Person row count must never be read as a count of globally
+resolved identities. Deterministic ALIO source-context nodes increase the first and third counters
+until a human RESOLVE_PERSON action succeeds; public visibility still requires a separately
+published eligible Claim.

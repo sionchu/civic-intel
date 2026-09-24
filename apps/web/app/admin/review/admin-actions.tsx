@@ -9,18 +9,18 @@ import type { OperatorRecord } from "./operator-types";
 const OPERATIONS: Record<string, string[]> = {
   observations: ["HOLD", "REGISTER_PERSON", "LINK_PERSON", "EXCLUDE", "REOPEN"],
   claims: ["SUBMIT_REVIEW", "PUBLISH", "WITHDRAW", "CORRECT_CLAIM"],
-  people: ["RENAME_PERSON", "MERGE_PERSON", "DEACTIVATE_PERSON"],
+  people: ["RESOLVE_PERSON", "RENAME_PERSON", "MERGE_PERSON", "DEACTIVATE_PERSON"],
 };
-const IDENTITY = new Set(["REGISTER_PERSON", "LINK_PERSON", "MERGE_PERSON"]);
+const IDENTITY = new Set(["REGISTER_PERSON", "RESOLVE_PERSON", "LINK_PERSON", "MERGE_PERSON"]);
 const BRIDGE = new Set(["LINK_PERSON", "MERGE_PERSON"]);
 const EDIT = new Set(["CORRECT_CLAIM", "RENAME_PERSON"]);
 const DESTRUCTIVE = new Set(["EXCLUDE", "WITHDRAW", "DEACTIVATE_PERSON", "MERGE_PERSON"]);
 
-export default function AdminActions({ kind, ids, capabilities, labels = [] }: {
-  kind: string; ids: string[]; capabilities: AdminCapabilities; labels?: string[];
+export default function AdminActions({ kind, ids, capabilities, labels = [], status }: {
+  kind: string; ids: string[]; capabilities: AdminCapabilities; labels?: string[]; status?: string;
 }) {
   const router = useRouter();
-  const actions = OPERATIONS[kind] ?? [];
+  const actions = (OPERATIONS[kind] ?? []).filter((item) => item !== "RESOLVE_PERSON" || status === "REVIEW");
   const [action, setAction] = useState(actions[0] ?? "");
   const [reason, setReason] = useState("");
   const [value, setValue] = useState("");
@@ -84,6 +84,7 @@ export default function AdminActions({ kind, ids, capabilities, labels = [] }: {
     <label>작업<select value={action} onChange={(event) => { setAction(event.target.value); invalidate(); }}>
       {actions.map((item) => <option value={item} key={item}>{ACTION_LABELS[item]}</option>)}</select></label>
     {action === "REGISTER_PERSON" && <p className="operator-note">원문의 이름·기관·직책을 직접 확인한 기록만 선택하세요. 동일 이름 후보가 있으면 일괄 신규 등록을 중단합니다. 등록된 역할 Claim은 초안이며 자동 공개하지 않습니다.</p>}
+    {action === "RESOLVE_PERSON" && <p className="operator-note">자동 생성된 ALIO source-context Person만 확인합니다. 현재 공식 ALIO 행·기관 binding·역할 초안·Evidence를 다시 검증하며, 다른 출처와 동일인이라는 의미는 아닙니다. 신원 확인 뒤 역할 Claim은 여전히 별도 승인 대상입니다.</p>}
     {BRIDGE.has(action) && <fieldset><legend>{action === "MERGE_PERSON" ? "유지할 인물" : "연결 대상 인물"}</legend>
       <div className="admin-search"><input aria-label="연결 대상 이름 검색" value={targetQuery} onChange={(event) => setTargetQuery(event.target.value)} placeholder="인물 이름 또는 ID" />
         <button type="button" disabled={busy} onClick={lookup}>대상 검색</button></div>

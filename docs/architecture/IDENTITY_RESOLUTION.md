@@ -200,3 +200,26 @@ candidates block blind new creation; a cross-source link or Person merge require
 official continuity basis through the existing resolver. See [Admin operations](ADMIN_OPERATIONS.md).
 The review attestation is recorded human judgment, never a model score or proof of unique identity
 across all sources. Unsupported dependent records block merge rather than silently moving them.
+
+### Deterministic ALIO source-context REVIEW nodes
+
+The current ALIO item-4 L3 roster has no provider Person ID, so it does not gain the Assembly
+MONA_CD automatic identity rule. A narrower source-context materialization is allowed only for a
+current PUBLIC named row that is exact in the latest SUCCESS checkpoint, has no historical content
+drift, appears under a canonical name exactly once in that current ALIO universe, has no current
+Person/alias name collision, has no active Person link, and resolves through an exact published
+Organization binding and valid provenance.
+
+That path creates a deterministic Person ID scoped to the ALIO provider row and immutable hash,
+but stores the Person as `REVIEW`. It also creates one active
+`DETERMINISTIC_SOURCE_CONTEXT` observation link and one evidence-backed
+`ALIO_REVIEWED_PERSON_ROLE` Claim as `DRAFT / CLAIM / asserted_as_true=false`.
+It never publishes or merges across sources.
+
+`RESOLVE_PERSON` is a separate human admin action. It is available only for such a REVIEW Person
+and revalidates the exact current ALIO observation, checkpoint, Organization binding, DRAFT role
+Claim and Evidence before changing identity status to RESOLVED. Even then, the role Claim remains
+DRAFT until separate publication approval. This source-context resolution is not evidence that a
+future NEC/OpenDART/same-name record is the same human; cross-lane equality still requires the
+normal reviewed bridge evidence. An observation already linked to a Person is excluded from
+same-row ALIO name-overlap candidate suggestions.

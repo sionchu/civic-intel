@@ -187,6 +187,7 @@ def create_app(
             and (
                 person.identity_status != IdentityStatus.RESOLVED
                 or person.superseded_at is not None
+                or not target.person_is_public(person.id)
             )
         ):
             raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")

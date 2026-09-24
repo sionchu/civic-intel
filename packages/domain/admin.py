@@ -17,6 +17,7 @@ class AdminAction(StrEnum):
     EXCLUDE = "EXCLUDE"
     REOPEN = "REOPEN"
     REGISTER_PERSON = "REGISTER_PERSON"
+    RESOLVE_PERSON = "RESOLVE_PERSON"
     LINK_PERSON = "LINK_PERSON"
     SUBMIT_REVIEW = "SUBMIT_REVIEW"
     PUBLISH = "PUBLISH"
@@ -51,12 +52,18 @@ class AdminCommand(BaseModel):
             AdminAction.LINK_PERSON,
             AdminAction.CORRECT_CLAIM,
             AdminAction.RENAME_PERSON,
+            AdminAction.RESOLVE_PERSON,
             AdminAction.DEACTIVATE_PERSON,
             AdminAction.MERGE_PERSON,
         }
         if self.action in single and len(self.record_ids) != 1:
             raise ValueError("This operation accepts one selected source record")
-        identity = {AdminAction.REGISTER_PERSON, AdminAction.LINK_PERSON, AdminAction.MERGE_PERSON}
+        identity = {
+            AdminAction.REGISTER_PERSON,
+            AdminAction.RESOLVE_PERSON,
+            AdminAction.LINK_PERSON,
+            AdminAction.MERGE_PERSON,
+        }
         if self.action in identity and not self.human_verified:
             raise ValueError("Identity operations require explicit human review")
         if self.action in {AdminAction.LINK_PERSON, AdminAction.MERGE_PERSON}:

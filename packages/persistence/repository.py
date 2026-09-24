@@ -15,6 +15,7 @@ from packages.connectors.open_assembly import (
     POLICY_ID as ASSEMBLY_MEMBER_POLICY_ID,
 )
 from packages.connectors.open_assembly import OpenAssemblyMemberConnector
+from packages.domain.admin import PERSON_ROLE_PREDICATE
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -276,6 +277,39 @@ class SqlAlchemyRepository:
 
         with self.sessions() as session, session.no_autoflush:
             return prepare_references(session, request)
+
+    def prepare_alio_person_materialization(self):
+        from packages.persistence.alio_person_materialization import (
+            prepare_alio_person_materialization,
+        )
+
+        self.assert_ready()
+        with self.sessions() as session, session.no_autoflush:
+            return prepare_alio_person_materialization(session)
+
+    def commit_alio_person_materialization(
+        self,
+        *,
+        expected_receipt_sha256: str,
+    ) -> dict[str, Any]:
+        from packages.persistence.alio_person_materialization import (
+            commit_alio_person_materialization,
+        )
+
+        self.assert_ready()
+        with self.sessions() as session:
+            if self.engine.dialect.name == "sqlite":
+                session.execute(text("BEGIN IMMEDIATE"))
+            try:
+                result = commit_alio_person_materialization(
+                    session,
+                    expected_receipt_sha256=expected_receipt_sha256,
+                )
+                session.commit()
+                return result
+            except Exception:
+                session.rollback()
+                raise
 
     def admin_preview(self, command):
         from packages.persistence.admin_workflow import build_plan
@@ -592,6 +626,25 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             rows = session.scalars(statement.order_by(PersonObservationLinkRow.linked_at))
             return [self._person_observation_link(row) for row in rows]
+
+    def active_person_ids_by_observation(
+        self, observation_ids: Sequence[UUID]
+    ) -> dict[UUID, frozenset[UUID]]:
+        if not observation_ids:
+            return {}
+        requested = [str(item) for item in observation_ids]
+        statement = select(
+            PersonObservationLinkRow.observation_id,
+            PersonObservationLinkRow.person_id,
+        ).where(
+            PersonObservationLinkRow.observation_id.in_(requested),
+            PersonObservationLinkRow.superseded_at.is_(None),
+        )
+        grouped: dict[UUID, set[UUID]] = {}
+        with self.sessions() as session:
+            for observation_id, person_id in session.execute(statement):
+                grouped.setdefault(UUID(observation_id), set()).add(UUID(person_id))
+        return {key: frozenset(value) for key, value in grouped.items()}
 
     def assembly_base_profile_contexts(
         self, observation_ids: Sequence[UUID]
@@ -3296,19 +3349,51 @@ class SqlAlchemyRepository:
                 for row in session.scalars(select(PersonRow).order_by(PersonRow.id))
             ]
 
-    def public_people(self) -> list[Person]:
-        """Return only current, canonical identities eligible for public publication."""
-
-        statement = (
-            select(PersonRow)
+    @staticmethod
+    def _public_person_conditions():
+        deterministic_link = (
+            select(PersonObservationLinkRow.id)
             .where(
-                PersonRow.identity_status == IdentityStatus.RESOLVED.value,
-                PersonRow.superseded_at.is_(None),
+                PersonObservationLinkRow.person_id == PersonRow.id,
+                PersonObservationLinkRow.superseded_at.is_(None),
+                PersonObservationLinkRow.decision_class
+                == MaterializationDecisionClass.DETERMINISTIC_SOURCE_CONTEXT.value,
             )
-            .order_by(PersonRow.id)
+            .exists()
         )
+        published_claim = (
+            select(ClaimRow.id)
+            .where(
+                ClaimRow.person_id == PersonRow.id,
+                ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+                ClaimRow.qualifiers["identity_scope"].as_string()
+                == "DETERMINISTIC_ALIO_SOURCE_CONTEXT",
+                ClaimRow.superseded_at.is_(None),
+                ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+            )
+            .exists()
+        )
+        return (
+            PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+            PersonRow.superseded_at.is_(None),
+            (~deterministic_link) | published_claim,
+        )
+
+    def public_people(self) -> list[Person]:
+        """Return current resolved People eligible for the public Person surface."""
+
+        statement = select(PersonRow).where(*self._public_person_conditions()).order_by(PersonRow.id)
         with self.sessions() as session:
             return [self._person(row) for row in session.scalars(statement)]
+
+    def person_is_public(self, person_id: UUID) -> bool:
+        statement = (
+            select(PersonRow.id)
+            .where(PersonRow.id == str(person_id), *self._public_person_conditions())
+            .limit(1)
+        )
+        with self.sessions() as session:
+            return session.scalar(statement) is not None
 
     def organizations(self, *, current_only: bool = False) -> list[Organization]:
         statement = select(OrganizationRow)

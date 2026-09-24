@@ -121,6 +121,8 @@ def test_register_requires_explicit_human_review():
     with pytest.raises(ValueError):
         command("REGISTER_PERSON", uuid4())
     with pytest.raises(ValueError):
+        command("RESOLVE_PERSON", uuid4())
+    with pytest.raises(ValueError):
         command("MERGE_PERSON", uuid4(), target_person_id=uuid4(), human_verified=True)
     with pytest.raises(ValueError):
         command("HOLD", uuid4(), value="an ignored edit")

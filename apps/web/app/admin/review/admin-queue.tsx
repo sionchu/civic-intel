@@ -43,6 +43,7 @@ export default function AdminQueue({ queue, capabilities, q, state, playbook }: 
           <strong>{item.fields.canonical_name ?? item.label}</strong><span className="operator-tag">{DISPOSITION_LABELS[item.disposition] ?? item.disposition}</span></label>
         <p>{String(item.fields.institution_name ?? "기관 미기록")} · {String(item.fields.position_text ?? "직책 미기록")}</p>
         <small>{String(item.fields.term_start ?? "기간 미기록")} → {String(item.fields.term_end ?? "종료 미기록")}</small>
+        {item.link_decision_class === "DETERMINISTIC_SOURCE_CONTEXT" && <small className="admin-source-context">공식 ALIO 단일 현재 기록에서 자동 생성 · 다른 출처와 동일인 확정 아님 · 역할 Claim은 별도 승인</small>}
         {item.candidate_count > 0 && item.disposition !== "REGISTERED" && <aside className="admin-candidates"><strong>동일 이름 후보 {item.candidate_count}명 · 동일인 미확정</strong>
           {item.candidates.map((person) => <Link key={person.id} target="_blank" prefetch={false} href={`/admin/review?tab=records&kind=people&focus_kind=people&focus_id=${person.id}`}>{person.canonical_name} · {person.id.slice(0, 8)} ↗</Link>)}</aside>}
         <div className="admin-row-actions"><button type="button" disabled={busy} onClick={() => inspect(item.id)}>원문 경로·연결 확인</button>

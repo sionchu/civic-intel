@@ -17,6 +17,7 @@ def verify_restored_database(
     *,
     expected_people: int,
     expected_organization_claims: int,
+    expected_public_people: int | None = None,
 ) -> dict[str, int | str]:
     repository = SqlAlchemyRepository(database_url)
     repository.assert_ready()
@@ -44,14 +45,20 @@ def verify_restored_database(
             f"{organization_claims} != {expected_organization_claims}"
         )
 
+    public_people = expected_people if expected_public_people is None else expected_public_people
     with TestClient(create_app(repository)) as client:
         roster_response = client.get("/people")
-        if roster_response.status_code != 200 or len(roster_response.json()) != expected_people:
-            raise RuntimeError("restored public roster contract does not match persisted Person count")
+        if roster_response.status_code != 200 or len(roster_response.json()) != public_people:
+            raise RuntimeError(
+                "restored public roster contract mismatch: "
+                f"{len(roster_response.json()) if roster_response.status_code == 200 else 'HTTP_ERROR'} "
+                f"!= {public_people}"
+            )
 
     return {
         "alembic_revision": str(revision),
         "people": people,
+        "public_people": public_people,
         "published_organization_claims": organization_claims,
     }
 
@@ -61,11 +68,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--database-url", required=True)
     parser.add_argument("--expected-people", required=True, type=int)
     parser.add_argument("--expected-organization-claims", required=True, type=int)
+    parser.add_argument("--expected-public-people", type=int)
     args = parser.parse_args(argv)
     result = verify_restored_database(
         args.database_url,
         expected_people=args.expected_people,
         expected_organization_claims=args.expected_organization_claims,
+        expected_public_people=args.expected_public_people,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
