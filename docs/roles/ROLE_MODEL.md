@@ -26,9 +26,13 @@ be reported as sequential; changing role labels inside one analysis is not indep
 | quality_reviewer | Independent code/data/acceptance review | Reproducible findings and actual verification evidence | Cannot fix the submitted production diff while acting as its reviewer |
 | risk_reviewer | Rights, privacy, identity and public/write access | Evidence-based acceptance recommendation or blocker | Cannot grant itself rights, change access or publish |
 
-Role adapters live in `.codex/agents/`. They reference this contract; do not copy a second
-policy into every agent file. Existing Development, Quality, Risk and batch skill documents
-remain applicable. The profiler is optional deep enrichment, not a per-person ingestion gate.
+Civic Intel declares its expected custom roles in `.codex/config.toml` with
+`agents.<name>.description` and `agents.<name>.config_file`; the referenced standalone TOML
+layers in `.codex/agents/` contain the role-specific sandbox/config settings and
+`developer_instructions`; role names/descriptions live only in the parent declaration. The playbook treats a role as configured only when both declarations
+agree. This project rule is stricter than merely finding a role file on disk. Existing Development,
+Quality, Risk and batch skill documents remain applicable. The profiler is optional deep
+enrichment, not a per-person ingestion gate.
 
 ## Mandatory work order
 

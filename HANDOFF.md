@@ -3439,10 +3439,13 @@ collection, real Person/Claim mutation, cloud deployment or org.go27 commit. Mob
 Closure: docs/exec-plans/completed/admin-work-playbook.md. Native role dispatch is still blocked;
 zero child runtime proof. Do not treat a copied request or role label as actual execution.
 
+## Current checkpoint — custom Codex roles declared, native dispatch still blocked (2026-09-24)
+
+- Project custom roles are now declared through the official `[agents.<name>]` + `config_file` schema and the playbook fails closed when declaration/layer metadata drifts.
+- Codex CLI `0.156.1` strict-config accepted the project configuration; PR146 GitHub Verify passed.
+- Synthetic read-only native probes with default multi-agent, one-shot `multi_agent_v2`, and an explicit GPT-5.5 coordinator each produced zero child agents because the exposed spawn schema had no configured-role selector. Upstream openai/codex #31893/#31814 documents the same custom-role/task_name limitation.
+- No Civic Intel source row, Person, Claim, admin operation, deployment, browser runtime or DB state was changed by these probes. Dashboard execution remains NOT_CONNECTED.
+
 ## Next concrete action
 
-Resolve the isolated native named-role/tool-permission prerequisite in
-`docs/exec-plans/blocked/admin-agent-execution.md`, then connect one bounded read-only recipe to
-actual job/event/result evidence. Until then the UI must retain 실행 미연동. Existing bounded ALIO
-human-reviewed admin work and the independent org.go27 import are separate approved scopes, not
-automatic effects of playbook preparation.
+Keep the playbook request/export workflow as the operational handoff for MAIN and do not add a generic shell runner or claim that a task label is a subagent. Re-test one synthetic read-only `record_curator` only when the installed stable Codex runtime actually exposes configured role selection. Independent collection/curation/product work may continue under ROLE_MODEL ownership; canonical mutations still go through the existing admin preview/confirm/receipt path. The independent org.go27 Organization-only commit remains pending and unrelated.

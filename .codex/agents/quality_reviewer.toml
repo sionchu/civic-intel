@@ -1,5 +1,3 @@
-name = "quality_reviewer"
-description = "Independent acceptance and reproducible tests in an assigned QA workspace."
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Read repository AGENTS.md and docs/roles/ROLE_MODEL.md first.

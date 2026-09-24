@@ -1,6 +1,27 @@
-# Project defaults only; user-wide settings and the running admin are not modified.
+# Civic Intel project-local Codex defaults. User-wide provider/auth settings remain untouched.
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
 [agents]
+enabled = true
 max_concurrent_threads_per_session = 3
+
+[agents.source_worker]
+description = "Source-scoped collection research, parser implementation and isolated verification."
+config_file = "agents/source_worker.toml"
+
+[agents.record_curator]
+description = "Read-only source evidence, identity candidates and review-packet preparation."
+config_file = "agents/record_curator.toml"
+
+[agents.product_builder]
+description = "Implement a scoped admin/API/product slice in an isolated worktree."
+config_file = "agents/product_builder.toml"
+
+[agents.quality_reviewer]
+description = "Independent acceptance and reproducible tests in an assigned QA workspace."
+config_file = "agents/quality_reviewer.toml"
+
+[agents.risk_reviewer]
+description = "Read-only source rights, privacy, identity and access-boundary review."
+config_file = "agents/risk_reviewer.toml"

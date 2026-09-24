@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import tomllib
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
@@ -20,6 +22,7 @@ from packages.persistence import SqlAlchemyRepository
 from packages.persistence.admin_workflow import AdminError, digest, receipt
 
 TOKEN = "playbook-test-token-" + "a" * 32
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture
@@ -43,6 +46,38 @@ def request_for(repo, kind="observations", recipe="person_review", identifiers=N
 def prepare(repo, request):
     return draft(repo, request, actor="qa-operator", label="TEST", config=configuration())
 
+
+
+def test_project_config_declares_playbook_roles_with_canonical_layers():
+    project = tomllib.loads((ROOT / ".codex/config.toml").read_text(encoding="utf-8"))
+    agents = project["agents"]
+    assert agents["enabled"] is True
+    assert agents["max_concurrent_threads_per_session"] == 3
+    expected = {item["role"] for item in RECIPES} | {"risk_reviewer"}
+    assert expected <= set(agents)
+    for role in expected:
+        declaration = agents[role]
+        assert declaration["description"]
+        assert declaration["config_file"] == f"agents/{role}.toml"
+        layer = tomllib.loads((ROOT / ".codex" / declaration["config_file"]).read_text(encoding="utf-8"))
+        assert layer["sandbox_mode"] in {"read-only", "workspace-write"}
+        assert layer["developer_instructions"]
+        assert "name" not in layer and "description" not in layer
+
+
+def test_configuration_fails_closed_when_role_declaration_is_missing(tmp_path):
+    import shutil
+    shutil.copytree(ROOT / ".codex", tmp_path / ".codex")
+    (tmp_path / "AGENTS.md").write_text("test", encoding="utf-8")
+    (tmp_path / "docs/roles").mkdir(parents=True)
+    (tmp_path / "docs/roles/ROLE_MODEL.md").write_text("test", encoding="utf-8")
+    config_path = tmp_path / ".codex/config.toml"
+    lines = config_path.read_text(encoding="utf-8").splitlines()
+    marker = "[agents.record_curator]"
+    start = lines.index(marker)
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[agents.")), len(lines))
+    config_path.write_text("\n".join(lines[:start] + lines[end:]) + "\n", encoding="utf-8")
+    assert configuration(tmp_path)["available"] is False
 
 def test_six_recipes_read_canonical_roles_and_no_fake_runtime():
     config = configuration()
