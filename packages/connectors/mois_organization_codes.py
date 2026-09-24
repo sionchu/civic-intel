@@ -181,11 +181,11 @@ class MoisOrganizationCodeConnector(Connector):
                 raise MoisOrganizationCodeApiError(
                     "MOIS organization-code API returned a malformed response"
                 )
-            result_code: str | None = None
-            total_count: int | None = None
-            provider_page_no: int | None = None
-            provider_page_size: int | None = None
-            rows: list[dict] = []
+            legacy_result_code: str | None = None
+            legacy_total_count: int | None = None
+            legacy_page_no: int | None = None
+            legacy_page_size: int | None = None
+            legacy_rows: list[dict] = []
             for block in legacy:
                 if not isinstance(block, dict):
                     continue
@@ -195,28 +195,36 @@ class MoisOrganizationCodeConnector(Connector):
                         if not isinstance(item, dict):
                             continue
                         if "totalCount" in item:
-                            total_count = cls._optional_int(item.get("totalCount"), "totalCount")
+                            legacy_total_count = cls._optional_int(
+                                item.get("totalCount"), "totalCount"
+                            )
                         if "pageNo" in item:
-                            provider_page_no = cls._optional_int(item.get("pageNo"), "pageNo")
+                            legacy_page_no = cls._optional_int(item.get("pageNo"), "pageNo")
                         if "numOfRows" in item:
-                            provider_page_size = cls._optional_int(
+                            legacy_page_size = cls._optional_int(
                                 item.get("numOfRows"), "numOfRows"
                             )
                         result = item.get("RESULT")
                         if isinstance(result, dict):
-                            result_code = str(result.get("resultCode") or "")
+                            legacy_result_code = str(result.get("resultCode") or "")
                 candidate_rows = block.get("row")
                 if isinstance(candidate_rows, list):
                     if any(not isinstance(item, dict) for item in candidate_rows):
                         raise MoisOrganizationCodeApiError(
                             "MOIS organization-code API returned malformed row"
                         )
-                    rows.extend(candidate_rows)
-            if result_code not in {None, "", "0", "00", "INFO-0", "INFO-000"}:
+                    legacy_rows.extend(candidate_rows)
+            if legacy_result_code not in {None, "", "0", "00", "INFO-0", "INFO-000"}:
                 raise MoisOrganizationCodeApiError(
-                    f"MOIS organization-code API returned {result_code}"
+                    f"MOIS organization-code API returned {legacy_result_code}"
                 )
-            return rows, total_count, provider_page_no, provider_page_size, result_code
+            return (
+                legacy_rows,
+                legacy_total_count,
+                legacy_page_no,
+                legacy_page_size,
+                legacy_result_code,
+            )
         header = response.get("header")
         result_code: str | None = None
         if isinstance(header, dict):
