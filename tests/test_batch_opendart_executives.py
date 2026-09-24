@@ -421,3 +421,23 @@ def test_opendart_identity_materialization_is_review_required_without_person_cre
     reviews = repository.identity_review_items(IdentityReviewStatus.OPEN)
     assert len(reviews) == 1
     assert reviews[0].observation_id == observation.id
+
+def test_corp_code_master_accepts_current_six_character_alphanumeric_stock_code() -> None:
+    provider = FakeOpenDartProvider()
+    provider.corporations[1]["stock_code"] = "0068Y0"
+    connector = provider.universe_connector()
+
+    document = connector.fetch(connector.discover()[0])
+    corporations = connector.parse_corporations(document)
+
+    target = next(item for item in corporations if item.corp_code == "00000001")
+    assert target.stock_code == "0068Y0"
+
+
+def test_corp_code_master_rejects_non_six_character_or_symbol_stock_code() -> None:
+    provider = FakeOpenDartProvider()
+    provider.corporations[1]["stock_code"] = "0068-0"
+    connector = provider.universe_connector()
+
+    with pytest.raises(DartApiError, match="uppercase alphanumeric"):
+        connector.fetch(connector.discover()[0])

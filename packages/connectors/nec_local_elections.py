@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import ClassVar
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urlparse
 from uuid import UUID
 
 import httpx
@@ -137,8 +137,8 @@ class _NecApiConnector(Connector):
             raise ValueError("unsupported local election type")
         if page_no < 1:
             raise ValueError("page_no must be >= 1")
-        if not 1 <= page_size <= 1000:
-            raise ValueError("page_size must be between 1 and 1000")
+        if not 1 <= page_size <= 100:
+            raise ValueError("page_size must be between 1 and 100")
         self.election_id = election_id
         self.election_type = election_type
         self._api_key = api_key
@@ -157,7 +157,7 @@ class _NecApiConnector(Connector):
         value = self._api_key or os.getenv("NEC_API_KEY")
         if not value:
             raise MissingNecApiKey("NEC_API_KEY is required for live fetch")
-        return value
+        return unquote(value)
 
     def discover(self) -> list[str]:
         params: dict[str, str] = {
@@ -215,6 +215,8 @@ class _NecApiConnector(Connector):
             if isinstance(header, dict) and str(header.get("resultCode") or "00") not in {
                 "00",
                 "0",
+                "INFO-00",
+                "INFO-0",
             }:
                 raise NecApiError("NEC API returned a provider error")
             body = response.get("body")

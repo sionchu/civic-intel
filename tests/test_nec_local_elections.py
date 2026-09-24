@@ -233,3 +233,46 @@ def test_non_winner_candidacy_remains_a_valid_staged_episode() -> None:
     non_winner = next(item for item in staged if item.outcome == "NOT_WINNER")
     assert non_winner.registration_status == "등록"
     assert "nec_candidate_id:C-002" in non_winner.candidate.career_anchors
+
+@pytest.mark.parametrize("result_code", ["INFO-00", "INFO-0"])
+def test_provider_info_success_codes_are_accepted(result_code: str) -> None:
+    payload = response_payload(candidate_rows()[:1])
+    payload["response"]["header"]["resultCode"] = result_code
+    connector = NecCandidateConnector(
+        election_id="20260603",
+        election_type=4,
+        api_key=SECRET,
+        transport=transport_for(payload),
+    )
+
+    document = connector.fetch(connector.discover()[0])
+    records = connector.parse_candidates(document)
+
+    assert len(records) == 1
+    assert records[0].candidate_id == "C-001"
+
+def test_encoded_data_go_key_is_decoded_once_before_request() -> None:
+    encoded = "abc%2Bdef%2Fghi%3D"
+    decoded = "abc+def/ghi="
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.params["serviceKey"] == decoded
+        return httpx.Response(200, json=response_payload(candidate_rows()[:1]))
+
+    connector = NecCandidateConnector(
+        election_id="20260603",
+        election_type=4,
+        api_key=encoded,
+        transport=httpx.MockTransport(handler),
+    )
+    records = connector.parse_candidates(connector.fetch(connector.discover()[0]))
+    assert len(records) == 1
+
+def test_connector_rejects_page_size_above_live_provider_cap() -> None:
+    with pytest.raises(ValueError, match="between 1 and 100"):
+        NecCandidateConnector(
+            election_id="20260603",
+            election_type=4,
+            api_key=SECRET,
+            page_size=101,
+        )
