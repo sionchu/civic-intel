@@ -203,7 +203,7 @@ class Plan:
         statement = select(model).where(*conditions).order_by(model.id).limit(limit + 1)
         if self.locking:
             statement = statement.with_for_update()
-        rows = list(self.session.scalars(statement).all())
+        rows: list[Any] = list(self.session.scalars(statement).all())
         if len(rows) > limit:
             raise AdminError(
                 "IMPACT_LIMIT",

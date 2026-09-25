@@ -2717,7 +2717,10 @@ class SqlAlchemyRepository:
         for chunk in SqlAlchemyRepository._organization_claim_id_chunks(ids):
             if not chunk:
                 continue
-            for row in session.scalars(select(row_type).where(row_type.id.in_(chunk))):
+            loaded_rows: list[Any] = list(
+                session.scalars(select(row_type).where(row_type.id.in_(chunk)))
+            )
+            for row in loaded_rows:
                 rows[str(row.id)] = row
         return rows
 
