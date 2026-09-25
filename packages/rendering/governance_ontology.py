@@ -15,6 +15,9 @@ from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_base_profile import (
+    ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
+)
 
 
 class GovernanceOntologyError(ValueError):
@@ -96,6 +99,7 @@ class OntologyGraph:
 
 _RELATION_MAPPING: dict[str, tuple[str, str]] = {
     "HELD_ROLE": ("HELD_ROLE", "OFFICE"),
+    "ASSEMBLY_COMMITTEES": ("SERVED_ON", "COMMITTEE"),
 }
 
 
@@ -146,6 +150,14 @@ def build_person_governance_ontology(
     )
 
     for claim in eligible_claims:
+        if claim.predicate == "ASSEMBLY_COMMITTEES" and (
+            claim.qualifiers.get("source_contract") != ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+            or claim.qualifiers.get("field_name") != "committees"
+        ):
+            raise GovernanceOntologyError(
+                f"Assembly committee Claim has invalid source contract: {claim.id}"
+            )
+
         evidence = tuple(evidence_by_claim.get(claim.id, ()))
         if not evidence:
             raise GovernanceOntologyError(
