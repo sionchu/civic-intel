@@ -82,6 +82,7 @@ from packages.verification.materialization import (
     MaterializationResult,
     decide_materialization,
 )
+from packages.verification.nec_person_materialization import NEC_CANDIDACY_PREDICATE
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
@@ -304,6 +305,52 @@ class SqlAlchemyRepository:
                 result = commit_alio_person_materialization(
                     session,
                     expected_receipt_sha256=expected_receipt_sha256,
+                )
+                session.commit()
+                return result
+            except Exception:
+                session.rollback()
+                raise
+
+    def prepare_nec_person_materialization(
+        self,
+        *,
+        election_id: str = "20260603",
+        election_types: Sequence[int] = (3, 4, 5, 6, 11),
+    ):
+        from packages.persistence.nec_person_materialization import (
+            prepare_nec_person_materialization,
+        )
+
+        self.assert_ready()
+        with self.sessions() as session, session.no_autoflush:
+            return prepare_nec_person_materialization(
+                session,
+                election_id=election_id,
+                election_types=election_types,
+            )
+
+    def commit_nec_person_materialization(
+        self,
+        *,
+        expected_receipt_sha256: str,
+        election_id: str = "20260603",
+        election_types: Sequence[int] = (3, 4, 5, 6, 11),
+    ) -> dict[str, Any]:
+        from packages.persistence.nec_person_materialization import (
+            commit_nec_person_materialization,
+        )
+
+        self.assert_ready()
+        with self.sessions() as session:
+            if self.engine.dialect.name == "sqlite":
+                session.execute(text("BEGIN IMMEDIATE"))
+            try:
+                result = commit_nec_person_materialization(
+                    session,
+                    expected_receipt_sha256=expected_receipt_sha256,
+                    election_id=election_id,
+                    election_types=election_types,
                 )
                 session.commit()
                 return result
@@ -3365,9 +3412,22 @@ class SqlAlchemyRepository:
             select(ClaimRow.id)
             .where(
                 ClaimRow.person_id == PersonRow.id,
-                ClaimRow.predicate == PERSON_ROLE_PREDICATE,
-                ClaimRow.qualifiers["identity_scope"].as_string()
-                == "DETERMINISTIC_ALIO_SOURCE_CONTEXT",
+                (
+                    (
+                        (ClaimRow.predicate == PERSON_ROLE_PREDICATE)
+                        & (
+                            ClaimRow.qualifiers["identity_scope"].as_string()
+                            == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
+                        )
+                    )
+                    | (
+                        (ClaimRow.predicate == NEC_CANDIDACY_PREDICATE)
+                        & (
+                            ClaimRow.qualifiers["identity_scope"].as_string()
+                            == "DETERMINISTIC_NEC_CANDIDACY_SOURCE_CONTEXT"
+                        )
+                    )
+                ),
                 ClaimRow.superseded_at.is_(None),
                 ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
             )
