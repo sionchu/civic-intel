@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from enum import StrEnum
@@ -476,6 +477,18 @@ def _date(value: str, key: str) -> date:
     normalized = value.replace(".", "-").replace("/", "-")
     if len(normalized) == 8 and normalized.isdigit():
         normalized = f"{normalized[:4]}-{normalized[4:6]}-{normalized[6:8]}"
+    korean = re.fullmatch(
+        r"\s*(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일\s*",
+        value,
+    )
+    if korean:
+        normalized = "-".join(
+            (
+                korean.group(1),
+                korean.group(2).zfill(2),
+                korean.group(3).zfill(2),
+            )
+        )
     try:
         return date.fromisoformat(normalized)
     except ValueError:

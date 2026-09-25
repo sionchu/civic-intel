@@ -308,6 +308,7 @@ class OpenDartExecutiveEnumerator:
     FEEDER = "opendart_disclosed_executives"
     SEMANTIC_SCOPE = "corporate_executive_disclosure"
     SOURCE_CONTRACT = "opendart_corp_master_executive_status"
+    LISTED_SOURCE_CONTRACT = "opendart_listed_corp_master_executive_status"
 
     def __init__(
         self,
@@ -318,6 +319,7 @@ class OpenDartExecutiveEnumerator:
         report_code: str,
         executive_connector_factory: DartExecutiveConnectorFactory | None = None,
         policy: SourcePolicy | None = None,
+        listed_only: bool = False,
     ) -> None:
         if business_year < 2015 or business_year > 9999:
             raise ValueError("OpenDART business_year must be a 4-digit year from 2015")
@@ -327,7 +329,13 @@ class OpenDartExecutiveEnumerator:
         self.repository = repository
         self.business_year = business_year
         self.report_code = report_code
-        self.scope_key = f"all_corporations:{business_year}:{report_code}"
+        self.listed_only = listed_only
+        self.universe_mode = "LISTED_ONLY" if listed_only else "ALL_CORPORATIONS"
+        self.source_contract = (
+            self.LISTED_SOURCE_CONTRACT if listed_only else self.SOURCE_CONTRACT
+        )
+        scope_prefix = "listed_corporations" if listed_only else "all_corporations"
+        self.scope_key = f"{scope_prefix}:{business_year}:{report_code}"
         self.executive_connector_factory = executive_connector_factory or (
             lambda corp_code: OpenDartCorporateConnector(
                 dataset=DartCorporateDataset.EXECUTIVE_STATUS,
@@ -363,7 +371,8 @@ class OpenDartExecutiveEnumerator:
             self.FEEDER,
             self.scope_key,
             {
-                "source_contract": self.SOURCE_CONTRACT,
+                "source_contract": self.source_contract,
+                "universe_mode": self.universe_mode,
                 "business_year": self.business_year,
                 "report_code": self.report_code,
                 "resume": resume,
@@ -374,6 +383,8 @@ class OpenDartExecutiveEnumerator:
         try:
             universe_document = self.universe_connector.fetch(self.universe_connector.discover()[0])
             corporations = self.universe_connector.parse_corporations(universe_document)
+            if self.listed_only:
+                corporations = tuple(item for item in corporations if item.stock_code is not None)
             if not corporations:
                 raise DartApiError("OpenDART corporation universe must not be empty")
             universe_fingerprint = dart_corporation_universe_fingerprint(corporations)
@@ -393,6 +404,8 @@ class OpenDartExecutiveEnumerator:
                     checkpoint_total = int(prior_checkpoint.metadata["corporation_total"])
                     checkpoint_year = int(prior_checkpoint.metadata["business_year"])
                     checkpoint_report = str(prior_checkpoint.metadata["report_code"])
+                    checkpoint_contract = str(prior_checkpoint.metadata["source_contract"])
+                    checkpoint_mode = str(prior_checkpoint.metadata.get("universe_mode") or "ALL_CORPORATIONS")
                     companies_with_executives = int(
                         prior_checkpoint.metadata["companies_with_executives"]
                     )
@@ -407,6 +420,8 @@ class OpenDartExecutiveEnumerator:
                     or checkpoint_total != corporation_total
                     or checkpoint_year != self.business_year
                     or checkpoint_report != self.report_code
+                    or checkpoint_contract != self.source_contract
+                    or checkpoint_mode != self.universe_mode
                 ):
                     raise DartApiError("OpenDART corporation universe changed before resume")
                 if start_index < 0 or start_index >= corporation_total:
@@ -425,7 +440,8 @@ class OpenDartExecutiveEnumerator:
                     observations=[],
                     cursor="0",
                     checkpoint_metadata={
-                        "source_contract": self.SOURCE_CONTRACT,
+                        "source_contract": self.source_contract,
+                        "universe_mode": self.universe_mode,
                         "business_year": self.business_year,
                         "report_code": self.report_code,
                         "universe_fingerprint": universe_fingerprint,
@@ -500,7 +516,8 @@ class OpenDartExecutiveEnumerator:
                     observations=observations,
                     cursor=str(index),
                     checkpoint_metadata={
-                        "source_contract": self.SOURCE_CONTRACT,
+                        "source_contract": self.source_contract,
+                        "universe_mode": self.universe_mode,
                         "business_year": self.business_year,
                         "report_code": self.report_code,
                         "universe_fingerprint": universe_fingerprint,
@@ -596,6 +613,14 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Resume a partially committed full-scope executive enumeration.",
     )
+    parser.add_argument(
+        "--listed-only",
+        action="store_true",
+        help=(
+            "Restrict executive enumeration to corp-master rows with a non-empty stock_code "
+            "and persist a distinct listed-corporations scope."
+        ),
+    )
     parser.add_argument("--database-url")
     return parser
 
@@ -617,6 +642,7 @@ def main(argv: list[str] | None = None) -> int:
                 SqlAlchemyRepository(args.database_url),
                 business_year=args.business_year,
                 report_code=args.report_code,
+                listed_only=args.listed_only,
             ).enumerate(resume=args.resume)
         except (DartApiError, MissingDartApiKey, PolicyDenied, ValueError) as exc:
             parser.error(str(exc))
@@ -638,6 +664,8 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
+    if args.listed_only:
+        parser.error("--listed-only is valid only with --enumerate/--resume")
     if args.corp_code is None:
         parser.error("single-pull staging requires --corp-code")
     connector = OpenDartCorporateConnector(
