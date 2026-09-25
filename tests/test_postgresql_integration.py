@@ -15,11 +15,13 @@ from test_alio_item12_money import (
 )
 from test_alio_organization_activation import commit_prepared
 from test_batch_alio_executives import FakeAlioProvider
+from test_nec_safe_person_materialization import CandidateApi, candidate_row
 
 from apps.api.main import create_app
 from packages.persistence import SqlAlchemyRepository
 from packages.verification.postgresql import verify_restored_database
 from workers.alio_reviewed_claim_import import main as reviewed_claim_import_main
+from workers.local_elections import LocalElectionCandidateEnumerator
 from workers.public_institutions import AlioExecutiveEnumerator
 
 POSTGRES_TEST_URL = os.getenv("POSTGRES_TEST_URL")
@@ -117,6 +119,52 @@ def test_postgresql_safe_alio_person_materialization_is_atomic_and_idempotent() 
     assert rerun.action_counts()["NOOP"] == 3
     noop = repository.commit_alio_person_materialization(
         expected_receipt_sha256=rerun.sha256()
+    )
+    assert noop["status"] == "NOOP"
+    assert noop["write_performed"] is False
+    assert len(repository.people()) == before_people + 3
+
+@pytest.mark.skipif(not POSTGRES_TEST_URL, reason="POSTGRES_TEST_URL is not configured")
+def test_postgresql_safe_nec_person_materialization_is_atomic_and_idempotent() -> None:
+    assert POSTGRES_TEST_URL is not None
+    config = Config(str(Path("alembic.ini")))
+    config.set_main_option("sqlalchemy.url", POSTGRES_TEST_URL)
+    command.upgrade(config, "head")
+
+    repository = SqlAlchemyRepository(POSTGRES_TEST_URL)
+    before_people = len(repository.people())
+    before_public = len(repository.public_people())
+    api = CandidateApi(
+        {
+            1: [
+                candidate_row("PG-NEC-001", "포스트가"),
+                candidate_row("PG-NEC-002", "포스트나", birthday="19800203"),
+            ],
+            2: [candidate_row("PG-NEC-003", "포스트다", birthday="19900304")],
+        }
+    )
+    result = LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
+    assert result.run.status.value == "SUCCESS"
+
+    preflight = repository.prepare_nec_person_materialization(election_types=(4,))
+    assert preflight.action_counts()["CREATE"] == 3
+    receipt = repository.commit_nec_person_materialization(
+        expected_receipt_sha256=preflight.sha256(),
+        election_types=(4,),
+    )
+    assert receipt["status"] == "COMMITTED"
+    assert receipt["created_people"] == 3
+    assert receipt["created_claims"] == 3
+    assert receipt["claim_publication"] is False
+    assert len(repository.people()) == before_people + 3
+    assert len(repository.public_people()) == before_public
+
+    rerun = repository.prepare_nec_person_materialization(election_types=(4,))
+    assert rerun.action_counts()["CREATE"] == 0
+    assert rerun.action_counts()["NOOP"] == 3
+    noop = repository.commit_nec_person_materialization(
+        expected_receipt_sha256=rerun.sha256(),
+        election_types=(4,),
     )
     assert noop["status"] == "NOOP"
     assert noop["write_performed"] is False

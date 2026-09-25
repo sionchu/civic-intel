@@ -223,3 +223,31 @@ DRAFT until separate publication approval. This source-context resolution is not
 future NEC/OpenDART/same-name record is the same human; cross-lane equality still requires the
 normal reviewed bridge evidence. An observation already linked to a Person is excluded from
 same-row ALIO name-overlap candidate suggestions.
+
+### Deterministic NEC candidacy source-context REVIEW nodes
+
+A NEC candidate `huboid` is authoritative for the provider candidate record in the exact
+`(sgId, sgTypecode)` scope. It is not treated as a universal cross-source Person identifier.
+After a complete SUCCESS candidate enumeration, Civic Intel may create a private source-context
+Person only when the current observation is in the exact checkpoint manifest, has no historical
+content drift, exposes an exact birth date and jurisdiction, the `huboid` is unique across the
+covered current election scopes, and no current Person/alias collides with the candidate name.
+
+That path creates `Person(identity_status=REVIEW)`, one
+`DETERMINISTIC_SOURCE_CONTEXT` observation link, and one evidence-backed
+`NEC_LOCAL_ELECTION_CANDIDACY` Claim as `DRAFT / CLAIM / asserted_as_true=false`.
+Candidate-submitted education/career remains source observation metadata and is not promoted to
+canonical career FACT by this worker.
+
+The worker never AUTO_LINKs an existing Person from name, name+birth date, party, office or
+jurisdiction. Such rows remain REVIEW for later cross-lane identity evidence. It also does not
+infer an election result. Winner status requires the separately reviewed NEC winner API lane.
+These REVIEW nodes stay off the public Person surface; a future NEC-specific human review and
+separate Claim publication gate are required before public projection.
+
+
+RESOLVE_PERSON also supports this NEC source-context type, but only after revalidating the current
+SUCCESS candidate checkpoint and the exact DRAFT NEC_LOCAL_ELECTION_CANDIDACY Claim/Evidence.
+It changes only the Person identity status. The candidacy Claim still requires a separate PUBLISH
+action, and the public Person surface remains closed until that exact deterministic NEC source-
+context Claim is published. An unrelated published Claim cannot open the Person surface.

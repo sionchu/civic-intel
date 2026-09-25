@@ -138,6 +138,12 @@ explicitly labelled as submitted election-record data rather than independently 
 biographical FACT. A candidate absent from a partial winner page is `UNKNOWN`, not
 silently classified as a losing candidate.
 
+Complete unfiltered candidate scopes can be persisted with SourceRun/checkpoint/resume receipts.
+After a complete SUCCESS checkpoint, `civic-materialize-nec-safe-people` can prepare or commit
+only the deterministic no-drift/birth-date-present/no-current-Person-name-collision subset as
+private source-context `Person(REVIEW)` nodes with DRAFT candidacy Claims. It never name-links
+an existing Person, resolves cross-source identity, infers an election result or publishes a Claim.
+
 ## Policy-research staging
 
 `NkisResearchReportConnector` uses the official NKIS research-report Open API and requires an
@@ -208,15 +214,19 @@ request-rate limit. It stores normalized executive metadata and exact snapshot p
 not raw report HTML, gender, disclosure-staff identities or phone numbers.
 
 ALIO does not expose a stable executive-person identifier on this surface. The persisted
-`disclosureNo:row-ordinal` key identifies a disclosure row only, so materialization remains on
-the existing `REVIEW_REQUIRED` path and does not automatically create or merge Persons.
+`disclosureNo:row-ordinal` key identifies a disclosure row only. The exact current,
+no-history-drift, singleton-name, no-Person-name-collision subset may materialize as private
+deterministic source-context `Person(REVIEW)` nodes with DRAFT role Claims; cross-source
+identity, human resolution and publication remain separate gates.
 
 ## Safety and source rights
 
 All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
 metadata and short excerpts only; its policies are discovery-only or blocked, so tests
 cannot fetch them. Official connectors are opt-in and credential-gated; tests mock all
-network responses. Staging is review-only and does not mutate the canonical DB. The generic
+network responses. Explicit persistent staging/enumeration commands may write reviewed
+Source/Snapshot/Observation/checkpoint data, and dedicated materializers may create private REVIEW
+nodes; none of those operations bypasses identity or Claim publication gates. The generic
 HTTP connector remains dormant. The model has no private-family or precise-residence
 publication fields. Workers cannot publish claims.
 

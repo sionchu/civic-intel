@@ -48,6 +48,12 @@ from packages.verification.cross_lane_identity import (
     resolve_cross_lane_identity,
 )
 from packages.verification.identity import IdentityCandidate
+from packages.verification.nec_person_materialization import (
+    NEC_CANDIDACY_PREDICATE,
+    NEC_CANDIDATE_FEEDER,
+    NecPersonMaterializationError,
+    validate_nec_candidate_source_context,
+)
 from packages.verification.policy import PolicyAction, require_policy
 
 SAFE_CHANGE_FIELDS = {
@@ -197,7 +203,7 @@ class Plan:
         statement = select(model).where(*conditions).order_by(model.id).limit(limit + 1)
         if self.locking:
             statement = statement.with_for_update()
-        rows = list(self.session.scalars(statement).all())
+        rows: list[Any] = list(self.session.scalars(statement).all())
         if len(rows) > limit:
             raise AdminError(
                 "IMPACT_LIMIT",
@@ -448,6 +454,47 @@ def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, st
     except AlioPersonMaterializationError as exc:
         raise AdminError(exc.code, exc.message) from exc
     return row, context.fields, organization_row, source_row
+
+
+def _nec_person_record(plan: Plan, identifier: UUID):
+    from packages.persistence.repository import SqlAlchemyRepository
+
+    row = plan.get(db.FeederObservationRow, identifier)
+    if row.feeder != NEC_CANDIDATE_FEEDER:
+        raise AdminError("SOURCE_CONTEXT_UNSUPPORTED", "NEC 후보자 source-context 기록이 아닙니다.")
+    snapshot_row = plan.get(db.SourceSnapshotRow, row.snapshot_id)
+    source_row = plan.get(db.SourceRow, snapshot_row.source_id)
+    policy_row = plan.get(db.SourcePolicyRow, source_row.policy_id)
+    checkpoints = plan.query(
+        db.SourceCheckpointRow,
+        db.SourceCheckpointRow.feeder == NEC_CANDIDATE_FEEDER,
+        db.SourceCheckpointRow.scope_key == row.scope_key,
+        limit=1,
+    )
+    if not checkpoints or not checkpoints[0].last_run_id:
+        raise AdminError("CHECKPOINT_REQUIRED", "성공한 NEC 후보자 체크포인트가 필요합니다.")
+    checkpoint_row = checkpoints[0]
+    run_row = plan.get(db.SourceRunRow, checkpoint_row.last_run_id)
+    versions = plan.query(
+        db.FeederObservationRow,
+        db.FeederObservationRow.feeder == row.feeder,
+        db.FeederObservationRow.scope_key == row.scope_key,
+        db.FeederObservationRow.provider_record_key == row.provider_record_key,
+        limit=20,
+    )
+    try:
+        context = validate_nec_candidate_source_context(
+            SqlAlchemyRepository._observation(row),
+            snapshot=SqlAlchemyRepository._snapshot(snapshot_row),
+            source=SqlAlchemyRepository._source(source_row),
+            policy=SqlAlchemyRepository._policy(policy_row),
+            checkpoint=SqlAlchemyRepository._checkpoint(checkpoint_row),
+            run=SqlAlchemyRepository._source_run(run_row),
+            versions=tuple(SqlAlchemyRepository._observation(item) for item in versions),
+        )
+    except NecPersonMaterializationError as exc:
+        raise AdminError(exc.code, exc.message) from exc
+    return row, context, source_row
 
 
 def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) -> list[Any]:
@@ -805,32 +852,73 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
                 "정확히 하나의 deterministic ALIO source-context 연결이 필요합니다.",
             )
         source_link = source_links[0]
-        observation, fields, organization, _ = _alio_person_record(
-            plan, UUID(source_link.observation_id)
-        )
-        role_claims = plan.query(
-            db.ClaimRow,
-            db.ClaimRow.person_id == person.id,
-            db.ClaimRow.predicate == PERSON_ROLE_PREDICATE,
-            db.ClaimRow.superseded_at.is_(None),
-            limit=10,
-        )
-        exact_claims = [
-            row
-            for row in role_claims
-            if row.publication_status == PublicationStatus.DRAFT.value
-            and row.qualifiers.get("source_observation_id") == observation.id
-            and row.qualifiers.get("immutable_observation_hash") == observation.content_hash
-            and row.qualifiers.get("organization_id") == organization.id
-            and row.qualifiers.get("canonical_name") == fields["canonical_name"]
-            and row.qualifiers.get("position_text") == fields["position_text"]
-            and row.qualifiers.get("identity_scope")
-            == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
-        ]
+        observation_row = plan.get(db.FeederObservationRow, source_link.observation_id)
+        if observation_row.feeder == ALIO_EXECUTIVE_FEEDER:
+            observation, fields, organization, _ = _alio_person_record(
+                plan, UUID(source_link.observation_id)
+            )
+            candidate_claims = plan.query(
+                db.ClaimRow,
+                db.ClaimRow.person_id == person.id,
+                db.ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+                db.ClaimRow.superseded_at.is_(None),
+                limit=10,
+            )
+            exact_claims = [
+                row
+                for row in candidate_claims
+                if row.publication_status == PublicationStatus.DRAFT.value
+                and row.qualifiers.get("source_observation_id") == observation.id
+                and row.qualifiers.get("immutable_observation_hash") == observation.content_hash
+                and row.qualifiers.get("organization_id") == organization.id
+                and row.qualifiers.get("canonical_name") == fields["canonical_name"]
+                and row.qualifiers.get("position_text") == fields["position_text"]
+                and row.qualifiers.get("identity_scope")
+                == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
+            ]
+            context_label = "ALIO_ROLE"
+        elif observation_row.feeder == NEC_CANDIDATE_FEEDER:
+            observation, nec_context, _ = _nec_person_record(
+                plan, UUID(source_link.observation_id)
+            )
+            if (
+                person.canonical_name != nec_context.canonical_name
+                or person.birth_date != nec_context.birth_date
+            ):
+                raise AdminError(
+                    "SOURCE_CONTEXT_PERSON_CONFLICT",
+                    "NEC source-context Person의 이름·생년월일이 현재 공식 후보자 행과 다릅니다.",
+                )
+            candidate_claims = plan.query(
+                db.ClaimRow,
+                db.ClaimRow.person_id == person.id,
+                db.ClaimRow.predicate == NEC_CANDIDACY_PREDICATE,
+                db.ClaimRow.superseded_at.is_(None),
+                limit=10,
+            )
+            exact_claims = [
+                row
+                for row in candidate_claims
+                if row.publication_status == PublicationStatus.DRAFT.value
+                and row.qualifiers.get("source_observation_id") == observation.id
+                and row.qualifiers.get("immutable_observation_hash") == observation.content_hash
+                and row.qualifiers.get("candidate_id") == nec_context.candidate_id
+                and row.qualifiers.get("election_id") == nec_context.election_id
+                and row.qualifiers.get("election_type") == str(nec_context.election_type)
+                and row.qualifiers.get("identity_scope")
+                == "DETERMINISTIC_NEC_CANDIDACY_SOURCE_CONTEXT"
+            ]
+            context_label = "NEC_CANDIDACY"
+        else:
+            raise AdminError(
+                "SOURCE_CONTEXT_UNSUPPORTED",
+                "이 deterministic source-context 유형은 사람 확인을 지원하지 않습니다.",
+            )
+
         if len(exact_claims) != 1:
             raise AdminError(
                 "SOURCE_CONTEXT_CLAIM_REQUIRED",
-                "deterministic ALIO 역할 초안이 현재 source-context와 일치하지 않습니다.",
+                "deterministic source-context 초안 Claim이 현재 공식 관측과 일치하지 않습니다.",
             )
         evidence_rows = plan.query(
             db.ClaimEvidenceRow,
@@ -840,7 +928,7 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
         if len(evidence_rows) != 1:
             raise AdminError(
                 "SOURCE_CONTEXT_EVIDENCE_REQUIRED",
-                "deterministic ALIO 역할 초안의 정확한 Evidence가 필요합니다.",
+                "deterministic source-context Claim의 정확한 Evidence가 필요합니다.",
             )
         evidence = evidence_rows[0]
         if (
@@ -849,7 +937,7 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
         ):
             raise AdminError(
                 "SOURCE_CONTEXT_EVIDENCE_CONFLICT",
-                "역할 초안 Evidence가 현재 ALIO 관측과 일치하지 않습니다.",
+                "source-context Claim Evidence가 현재 공식 관측과 일치하지 않습니다.",
             )
         plan.update(person, identity_status=IdentityStatus.RESOLVED.value)
         plan.outcomes.append(
@@ -860,6 +948,7 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
                 "observation_id": observation.id,
                 "claim_id": exact_claims[0].id,
                 "claim_publication_status": exact_claims[0].publication_status,
+                "source_context_type": context_label,
                 "cross_source_merge": False,
             }
         )
