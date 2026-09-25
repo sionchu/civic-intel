@@ -2179,15 +2179,26 @@ class SqlAlchemyRepository:
                 created = 0
                 unchanged = 0
                 observation_ids: list[UUID] = []
-                for observation in observations:
-                    existing = session.scalar(
-                        select(FeederObservationRow).where(
-                            FeederObservationRow.feeder == observation.feeder,
-                            FeederObservationRow.scope_key == observation.scope_key,
-                            FeederObservationRow.provider_record_key
-                            == observation.provider_record_key,
-                            FeederObservationRow.content_hash == observation.content_hash,
+                provider_keys = {item.provider_record_key for item in observations}
+                existing_rows = (
+                    list(
+                        session.scalars(
+                            select(FeederObservationRow).where(
+                                FeederObservationRow.feeder == run_row.feeder,
+                                FeederObservationRow.scope_key == run_row.scope_key,
+                                FeederObservationRow.provider_record_key.in_(provider_keys),
+                            )
                         )
+                    )
+                    if provider_keys
+                    else []
+                )
+                existing_by_identity = {
+                    (row.provider_record_key, row.content_hash): row for row in existing_rows
+                }
+                for observation in observations:
+                    existing = existing_by_identity.get(
+                        (observation.provider_record_key, observation.content_hash)
                     )
                     if existing is not None:
                         unchanged += 1
@@ -2208,6 +2219,9 @@ class SqlAlchemyRepository:
                         content_hash=observation.content_hash,
                     )
                     session.add(row)
+                    existing_by_identity[
+                        (observation.provider_record_key, observation.content_hash)
+                    ] = row
                     created += 1
                     observation_ids.append(observation.id)
 
