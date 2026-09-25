@@ -177,6 +177,25 @@ DART_API_KEY=... civic-stage-corporate-dart \
   --report-code 11012
 ```
 
+For bounded persistent executive enumeration, the first reviewed operational scope is the
+complete current corp-code-master subset with a non-empty `stock_code`, using the 2025 annual
+report (`--business-year 2025 --report-code 11011`). It is persisted under a distinct
+`listed_corporations:2025:11011` checkpoint and does not silently claim coverage of all
+119k+ registered corporations.
+
+```bash
+civic-stage-corporate-dart \
+  --dataset EXECUTIVE_STATUS \
+  --business-year 2025 \
+  --report-code 11011 \
+  --enumerate --listed-only \
+  --database-url "$DATABASE_URL"
+```
+
+Use `--resume --listed-only` only after a partial run of that exact scope. The corp-master
+fingerprint is computed after the listed-company filter, so additions/removals/changes within the
+declared listed universe fail closed on resume.
+
 Supported datasets are:
 
 - `EXECUTIVE_STATUS`

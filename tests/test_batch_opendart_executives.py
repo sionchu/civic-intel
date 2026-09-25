@@ -441,3 +441,86 @@ def test_corp_code_master_rejects_non_six_character_or_symbol_stock_code() -> No
 
     with pytest.raises(DartApiError, match="uppercase alphanumeric"):
         connector.fetch(connector.discover()[0])
+
+def test_live_korean_tenure_end_date_is_parsed() -> None:
+    provider = FakeOpenDartProvider()
+    row = provider.executives["00000001"]["list"][0]
+    assert isinstance(row, dict)
+    row["tenure_end_on"] = "2027년 03월 25일"
+    connector = provider.executive_connector("00000001")
+
+    document = connector.fetch(connector.discover()[0])
+    records = connector.parse(document)
+
+    assert records[0].tenure_end_on.isoformat() == "2027-03-25"
+
+def test_listed_only_scope_filters_corp_master_before_executive_requests(
+    tmp_path: Path,
+) -> None:
+    provider = FakeOpenDartProvider()
+    repository = migrated_repository(tmp_path / "listed-only.db")
+    worker = OpenDartExecutiveEnumerator(
+        provider.universe_connector(),
+        repository,
+        business_year=2026,
+        report_code="11012",
+        executive_connector_factory=provider.executive_connector,
+        listed_only=True,
+    )
+
+    result = worker.enumerate()
+
+    assert result.run.status == SourceRunStatus.SUCCESS
+    assert result.run.scope_key == "listed_corporations:2026:11012"
+    assert result.corporations_committed == 2
+    assert result.corporations_covered == 2
+    assert result.companies_with_executives == 1
+    assert result.companies_without_executives == 1
+    assert result.unique_records == 2
+
+    checkpoint = repository.source_checkpoint(worker.FEEDER, worker.scope_key)
+    assert checkpoint is not None
+    assert checkpoint.cursor == "2"
+    assert checkpoint.metadata["corporation_total"] == 2
+    assert checkpoint.metadata["source_contract"] == worker.LISTED_SOURCE_CONTRACT
+    assert checkpoint.metadata["universe_mode"] == "LISTED_ONLY"
+
+    executive_requests = [
+        corp_code for path, corp_code in provider.requests if path == "/api/exctvSttus.json"
+    ]
+    assert executive_requests == ["00000001", "00000002"]
+    assert "00000003" not in executive_requests
+
+    observations = repository.feeder_observations(worker.FEEDER, worker.scope_key)
+    assert {item.normalized["corp_code"] for item in observations} == {"00000001"}
+    assert all(item.normalized["stock_code"] == "123456" for item in observations)
+
+
+def test_listed_only_scope_resumes_with_filtered_universe(tmp_path: Path) -> None:
+    provider = FakeOpenDartProvider()
+    provider.fail_once_for = "00000002"
+    repository = migrated_repository(tmp_path / "listed-resume.db")
+    worker = OpenDartExecutiveEnumerator(
+        provider.universe_connector(),
+        repository,
+        business_year=2026,
+        report_code="11012",
+        executive_connector_factory=provider.executive_connector,
+        listed_only=True,
+    )
+
+    with pytest.raises(DartApiError, match="request failed"):
+        worker.enumerate()
+
+    checkpoint = repository.source_checkpoint(worker.FEEDER, worker.scope_key)
+    assert checkpoint is not None
+    assert checkpoint.cursor == "1"
+    assert checkpoint.metadata["corporation_total"] == 2
+    assert checkpoint.metadata["universe_mode"] == "LISTED_ONLY"
+
+    resumed = worker.enumerate(resume=True)
+
+    assert resumed.run.status == SourceRunStatus.SUCCESS
+    assert resumed.corporations_committed == 1
+    assert resumed.corporations_covered == 2
+    assert resumed.unique_records == 2
