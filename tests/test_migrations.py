@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
@@ -97,3 +98,136 @@ def test_clean_database_migrates_through_batch_foundation(tmp_path: Path) -> Non
     }
     with engine.connect() as connection:
         assert connection.scalar(text("SELECT COUNT(*) FROM people")) == 1
+
+def test_data_go_policy_reconciliation_round_trips(tmp_path: Path) -> None:
+    database = tmp_path / "data-go-policy.db"
+    database_url = f"sqlite:///{database.as_posix()}"
+    config = Config("alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url)
+    command.upgrade(config, "0007")
+    engine = create_engine(database_url)
+
+    old_rate = (
+        "Development account 10,000 requests; operational account requires review approval"
+    )
+    old_note = (
+        "Reviewed against data.go.kr datasets 15000908 and 15000864 on 2026-08-31 for "
+        "the Central Election Commission candidate and winner APIs. Civic Intel discards "
+        "candidate address and stores only public-interest election metadata."
+    )
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                INSERT INTO source_policies (
+                    id, domain, source_class, collection_mode,
+                    can_fetch, can_store_metadata, can_store_fulltext,
+                    can_send_to_ai, can_show_excerpt, can_commercialize,
+                    robots_checked_at, terms_checked_at, license, rate_limit, policy_note
+                ) VALUES (
+                    :id, :domain, 'official_open_api', 'API',
+                    1, 1, 0, 0, 0, 1,
+                    NULL, :terms_checked_at, :license, :rate_limit, :policy_note
+                )
+                """
+            ),
+            {
+                "id": "12000000-0000-0000-0000-000000000001",
+                "domain": "apis.data.go.kr",
+                "terms_checked_at": datetime(2026, 8, 31, tzinfo=UTC),
+                "license": "이용허락범위 제한 없음",
+                "rate_limit": old_rate,
+                "policy_note": old_note,
+            },
+        )
+
+    command.upgrade(config, "0008")
+    with engine.connect() as connection:
+        row = connection.execute(
+            text(
+                """
+                SELECT terms_checked_at, rate_limit, policy_note
+                FROM source_policies
+                WHERE id = '12000000-0000-0000-0000-000000000001'
+                """
+            )
+        ).one()
+    assert "2026-09-22" in str(row.terms_checked_at)
+    assert "MOIS development/operation access is automatic" in row.rate_limit
+    assert "dataset 15077870" in row.policy_note
+    assert "unrelated apis.data.go.kr endpoints" in row.policy_note
+
+    command.downgrade(config, "0007")
+    with engine.connect() as connection:
+        row = connection.execute(
+            text(
+                """
+                SELECT terms_checked_at, rate_limit, policy_note
+                FROM source_policies
+                WHERE id = '12000000-0000-0000-0000-000000000001'
+                """
+            )
+        ).one()
+    assert "2026-08-31" in str(row.terms_checked_at)
+    assert row.rate_limit == old_rate
+    assert row.policy_note == old_note
+
+def test_data_go_policy_reconciliation_rejects_unexpected_policy_drift(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "data-go-policy-drift.db"
+    database_url = f"sqlite:///{database.as_posix()}"
+    config = Config("alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url)
+    command.upgrade(config, "0007")
+    engine = create_engine(database_url)
+
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                INSERT INTO source_policies (
+                    id, domain, source_class, collection_mode,
+                    can_fetch, can_store_metadata, can_store_fulltext,
+                    can_send_to_ai, can_show_excerpt, can_commercialize,
+                    robots_checked_at, terms_checked_at, license, rate_limit, policy_note
+                ) VALUES (
+                    :id, :domain, 'official_open_api', 'API',
+                    1, 1, 0, 0, 0, 1,
+                    NULL, :terms_checked_at, :license, :rate_limit, :policy_note
+                )
+                """
+            ),
+            {
+                "id": "12000000-0000-0000-0000-000000000001",
+                "domain": "apis.data.go.kr",
+                "terms_checked_at": datetime(2026, 8, 31, tzinfo=UTC),
+                "license": "이용허락범위 제한 없음",
+                "rate_limit": (
+                    "Development account 10,000 requests; operational account requires "
+                    "review approval"
+                ),
+                "policy_note": "unexpected policy drift",
+            },
+        )
+
+    with pytest.raises(
+        RuntimeError,
+        match="precondition failed for policy_note",
+    ):
+        command.upgrade(config, "0008")
+
+    with engine.connect() as connection:
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0007"
+        assert (
+            connection.scalar(
+                text(
+                    """
+                    SELECT policy_note
+                    FROM source_policies
+                    WHERE id = '12000000-0000-0000-0000-000000000001'
+                    """
+                )
+            )
+            == "unexpected policy drift"
+        )

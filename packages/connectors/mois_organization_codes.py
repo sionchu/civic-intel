@@ -2,16 +2,17 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import date
 from typing import ClassVar
 from urllib.parse import parse_qs, unquote, urlencode, urlparse
-from uuid import UUID
 
 import httpx
 
+from packages.connectors.data_go_kr import POLICY_ID as DATA_GO_KR_POLICY_ID
+from packages.connectors.data_go_kr import data_go_kr_policy
 from packages.domain.contracts import SourcePolicy
-from packages.domain.enums import SourceCollectionMode
 
 from .base import Connector, ConnectorDocument
 
@@ -24,33 +25,11 @@ class MissingMoisOrganizationCodeApiKey(MoisOrganizationCodeApiError):
     pass
 
 
-POLICY_ID = UUID("25aa95dd-a30b-5835-bc83-f91d80a54efd")
+POLICY_ID = DATA_GO_KR_POLICY_ID
 
 def mois_organization_code_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 9, 22, tzinfo=UTC)
-    return SourcePolicy(
-        id=POLICY_ID,
-        domain="apis.data.go.kr",
-        source_class="official_open_api",
-        collection_mode=SourceCollectionMode.API,
-        can_fetch=True,
-        can_store_metadata=True,
-        can_store_fulltext=False,
-        can_send_to_ai=False,
-        can_show_excerpt=False,
-        can_commercialize=True,
-        terms_checked_at=reviewed_at,
-        license="이용허락범위 제한 없음",
-        rate_limit=(
-            "Development account 10,000 requests; operation account auto-approved; "
-            "higher traffic may require a registered use case"
-        ),
-        policy_note=(
-            "Reviewed against data.go.kr dataset 15077870 on 2026-09-22. "
-            "Current institutions only; org_cd is a provider Organization key, not a "
-            "canonical Civic Intel Organization ID or automatic Gukgam binding authority."
-        ),
-    )
+    return data_go_kr_policy()
+
 
 @dataclass(frozen=True)
 class MoisOrganizationCodeRecord:
@@ -70,6 +49,7 @@ class MoisOrganizationCodeRecord:
     location_standard_code: str | None
     use_code: str | None
     created_date: date | None
+    created_date_text: str | None
     closed_date: date | None
     stop_selector: str
     changed_date: date | None
@@ -100,14 +80,24 @@ class MoisOrganizationCodeConnector(Connector):
             raise ValueError("page_no must be >= 1")
         if not 1 <= page_size <= 1000:
             raise ValueError("page_size must be between 1 and 1000")
-        if org_code is not None and (len(org_code) != 7 or not org_code.isdigit()):
-            raise ValueError("org_code must be a seven-digit provider code")
+        if org_code is not None and not self._valid_org_code(org_code):
+            raise ValueError("org_code must be seven uppercase alphanumeric characters")
         self._api_key = api_key
         self.page_no = page_no
         self.page_size = page_size
         self.full_name = full_name
         self.org_code = org_code
         self._transport = transport
+
+    def for_page(self, page_no: int) -> MoisOrganizationCodeConnector:
+        return MoisOrganizationCodeConnector(
+            api_key=self._api_key,
+            page_no=page_no,
+            page_size=self.page_size,
+            full_name=self.full_name,
+            org_code=self.org_code,
+            transport=self._transport,
+        )
 
     def _credential(self) -> str:
         value = self._api_key or os.getenv("MOIS_ORG_CODE_API_KEY")
@@ -154,8 +144,8 @@ class MoisOrganizationCodeConnector(Connector):
         if page_no < 1 or not 1 <= page_size <= 1000:
             raise ValueError("invalid MOIS organization-code pagination")
         org_code = query.get("org_cd")
-        if org_code is not None and (len(org_code) != 7 or not org_code.isdigit()):
-            raise ValueError("org_cd must be a seven-digit provider code")
+        if org_code is not None and not cls._valid_org_code(org_code):
+            raise ValueError("org_cd must be seven uppercase alphanumeric characters")
         return query
 
     @staticmethod
@@ -352,10 +342,39 @@ class MoisOrganizationCodeConnector(Connector):
             ) from None
 
     @staticmethod
+    def _valid_org_code(value: str) -> bool:
+        return re.fullmatch(r"[A-Z0-9]{7}", value) is not None
+
+    @classmethod
+    def _created_date_parts(cls, row: dict) -> tuple[date | None, str | None]:
+        value = cls._optional(row, "crt_de")
+        if value is None:
+            return None, None
+        legacy_month = re.fullmatch(r"(\d{4})\.\s*(\d{1,2})\.", value)
+        if legacy_month:
+            month = int(legacy_month.group(2))
+            if not 1 <= month <= 12:
+                raise MoisOrganizationCodeApiError(
+                    "MOIS organization-code row has invalid crt_de"
+                )
+            return None, value
+        if re.fullmatch(r"\d{8}", value):
+            try:
+                parsed = date(int(value[:4]), int(value[4:6]), int(value[6:8]))
+            except ValueError:
+                # Preserve provider legacy/anomalous creation-date text exactly.
+                # Do not invent a day or silently coerce an impossible calendar date.
+                return None, value
+            return parsed, None
+        raise MoisOrganizationCodeApiError(
+            "MOIS organization-code row has invalid crt_de"
+        )
+
+    @staticmethod
     def _validate_code(value: str | None, field: str) -> str | None:
         if value is None:
             return None
-        if len(value) != 7 or not value.isdigit():
+        if not MoisOrganizationCodeConnector._valid_org_code(value):
             raise MoisOrganizationCodeApiError(
                 f"MOIS organization-code row has invalid {field}"
             )
@@ -400,6 +419,7 @@ class MoisOrganizationCodeConnector(Connector):
                 raise MoisOrganizationCodeApiError(
                     "MOIS organization-code connector accepts current rows only"
                 )
+            created_date, created_date_text = cls._created_date_parts(row)
             records.append(
                 MoisOrganizationCodeRecord(
                     org_code=org_code,
@@ -423,7 +443,8 @@ class MoisOrganizationCodeConnector(Connector):
                     type_small=cls._optional(row, "typesml_nm"),
                     location_standard_code=cls._optional(row, "locatstd_cd"),
                     use_code=cls._optional(row, "use_cd"),
-                    created_date=cls._optional_date(row, "crt_de"),
+                    created_date=created_date,
+                    created_date_text=created_date_text,
                     closed_date=cls._optional_date(row, "cls_de"),
                     stop_selector=stop_selector,
                     changed_date=cls._optional_date(row, "chg_de"),

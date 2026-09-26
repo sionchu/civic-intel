@@ -10,6 +10,7 @@ from packages.connectors.mois_organization_codes import (
     MoisOrganizationCodeConnector,
     mois_organization_code_policy,
 )
+from packages.connectors.nec_local_elections import nec_local_election_policy
 from packages.domain.enums import SourceCollectionMode
 
 SECRET = "mois-secret-must-not-persist"
@@ -235,7 +236,7 @@ def test_invalid_lifecycle_date_fails_closed() -> None:
 
 
 def test_constructor_rejects_invalid_org_code_filter() -> None:
-    with pytest.raises(ValueError, match="seven-digit"):
+    with pytest.raises(ValueError, match="seven uppercase alphanumeric characters"):
         MoisOrganizationCodeConnector(org_code="123")
 
 
@@ -303,3 +304,111 @@ def test_encoded_data_go_key_is_decoded_once_before_request() -> None:
     )
     records = connector.parse_organizations(connector.fetch(connector.discover()[0]))
     assert len(records) == 1
+
+def test_mois_and_nec_share_one_host_level_data_go_policy() -> None:
+    mois = mois_organization_code_policy()
+    nec = nec_local_election_policy()
+
+    assert mois == nec
+    assert mois.id == nec.id
+    assert "15077870" in (mois.policy_note or "")
+    assert "15000908" in (mois.policy_note or "")
+
+
+def test_d_prefixed_provider_org_codes_are_valid_source_keys() -> None:
+    connector = MoisOrganizationCodeConnector(
+        api_key=SECRET,
+        org_code="D194185",
+        transport=transport_for(
+            response_payload(
+                [
+                    organization_row(
+                        org_cd="D194185",
+                        high_cd="D194185",
+                        highst_cd="D194185",
+                        rep_cd="D194185",
+                    )
+                ]
+            )
+        ),
+    )
+    document = connector.fetch(connector.discover()[0])
+    records = connector.parse_organizations(document)
+
+    assert records[0].org_code == "D194185"
+    assert records[0].parent_org_code == "D194185"
+    assert records[0].top_org_code == "D194185"
+    assert records[0].representative_org_code == "D194185"
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["1741000", "B555544", "C123456", "D194185", "P123456", "1Z00189"],
+)
+def test_current_provider_org_code_namespace_is_accepted(value: str) -> None:
+    connector = MoisOrganizationCodeConnector(org_code=value)
+    assert httpx.URL(connector.discover()[0]).params["org_cd"] == value
+
+
+@pytest.mark.parametrize("value", ["b555544", "A-12345", "123456", "12345678", "기관코드1"])
+def test_unreviewed_org_code_shapes_fail_closed(value: str) -> None:
+    with pytest.raises(ValueError):
+        MoisOrganizationCodeConnector(org_code=value)
+
+@pytest.mark.parametrize("raw_value", ["1988. 1.", "1988. 12."])
+def test_inexact_legacy_created_date_preserves_raw_text_without_inventing_day(
+    raw_value: str,
+) -> None:
+    connector = MoisOrganizationCodeConnector(
+        api_key=SECRET,
+        transport=transport_for(
+            response_payload([organization_row(crt_de=raw_value)])
+        ),
+    )
+    document = connector.fetch(connector.discover()[0])
+    record = connector.parse_organizations(document)[0]
+
+    assert record.created_date is None
+    assert record.created_date_text == raw_value
+
+@pytest.mark.parametrize("raw_value", ["19660900", "19901131"])
+def test_live_invalid_calendar_created_dates_preserve_raw_text(raw_value: str) -> None:
+    connector = MoisOrganizationCodeConnector(
+        api_key=SECRET,
+        transport=transport_for(
+            response_payload([organization_row(crt_de=raw_value)])
+        ),
+    )
+    document = connector.fetch(connector.discover()[0])
+    record = connector.parse_organizations(document)[0]
+
+    assert record.created_date is None
+    assert record.created_date_text == raw_value
+
+
+@pytest.mark.parametrize("raw_value", ["1988. 13.", "not-a-date"])
+def test_other_invalid_created_dates_fail_closed(raw_value: str) -> None:
+    connector = MoisOrganizationCodeConnector(
+        api_key=SECRET,
+        transport=transport_for(
+            response_payload([organization_row(crt_de=raw_value)])
+        ),
+    )
+    document = connector.fetch(connector.discover()[0])
+
+    with pytest.raises(MoisOrganizationCodeApiError, match="invalid crt_de"):
+        connector.parse_organizations(document)
+
+def test_for_page_preserves_connector_scope_without_mutation() -> None:
+    connector = MoisOrganizationCodeConnector(
+        api_key=SECRET,
+        page_no=1,
+        page_size=1000,
+    )
+    page = connector.for_page(2)
+
+    assert connector.page_no == 1
+    assert page.page_no == 2
+    assert page.page_size == 1000
+    assert page.full_name is None
+    assert page.org_code is None

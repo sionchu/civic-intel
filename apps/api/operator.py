@@ -210,7 +210,7 @@ def create_operator_app() -> Any:
         configure_read_only(repository, allow_writes=writes)
         repository.assert_ready()
         if writes and not repository.admin_schema_ready():
-            raise RuntimeError("Admin writes require the reviewed 0007 migration")
+            raise RuntimeError("Admin writes require a reviewed admin-receipt schema (0007 or 0008)")
     except (SQLAlchemyError, DatabaseNotReady, OSError, ValueError):
         raise RuntimeError(
             "Private operator database is not ready; no migration or write performed"
