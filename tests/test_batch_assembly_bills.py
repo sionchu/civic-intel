@@ -33,7 +33,7 @@ def bill_row(
     age: str = "22",
     process_result: str = "계류",
     lead_codes: str = "M001",
-    co_codes: str = "M002;M003",
+    co_codes: str = "M002,M003",
 ) -> dict[str, str]:
     return {
         "BILL_ID": bill_id,
@@ -355,7 +355,7 @@ def test_duplicate_bill_id_on_nonidentical_page_fails_closed(tmp_path: Path) -> 
             "complete proposer code fields",
         ),
         (
-            bill_row("B1", "코드 구분자 오류", co_codes="M002,M003"),
+            bill_row("B1", "코드 구분자 오류", co_codes="M002;M003"),
             "complete proposer code fields",
         ),
     ],

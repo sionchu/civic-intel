@@ -396,7 +396,7 @@ class OpenAssemblyBillConnector(Connector):
                     representative_proposers=_names(row.get("RST_PROPOSER")),
                     co_proposers=_names(row.get("PUBL_PROPOSER")),
                     representative_proposer_codes=_codes(row, "RST_MONA_CD", delimiter=","),
-                    co_proposer_codes=_codes(row, "PUBL_MONA_CD", delimiter=";"),
+                    co_proposer_codes=_codes(row, "PUBL_MONA_CD", delimiter=","),
                     detail_url=cls._optional(row, "DETAIL_LINK"),
                 )
             )

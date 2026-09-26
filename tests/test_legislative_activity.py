@@ -38,7 +38,7 @@ def bill_rows() -> list[dict]:
             "RST_PROPOSER": "홍길동,공동대표",
             "PUBL_PROPOSER": "김공동,박공동",
             "RST_MONA_CD": "M001,M002",
-            "PUBL_MONA_CD": "M003;M004",
+            "PUBL_MONA_CD": "M003,M004",
             "DETAIL_LINK": "https://open.assembly.go.kr/bill/B1",
         },
         {
@@ -53,7 +53,7 @@ def bill_rows() -> list[dict]:
             "RST_PROPOSER": "다른대표",
             "PUBL_PROPOSER": "홍길동,최공동",
             "RST_MONA_CD": "M005",
-            "PUBL_MONA_CD": "M001;M006",
+            "PUBL_MONA_CD": "M001,M006",
             "DETAIL_LINK": "https://open.assembly.go.kr/bill/B2",
         },
         {
@@ -68,7 +68,7 @@ def bill_rows() -> list[dict]:
             "RST_PROPOSER": "제삼자",
             "PUBL_PROPOSER": "다른공동",
             "RST_MONA_CD": "M007",
-            "PUBL_MONA_CD": "M008;M009",
+            "PUBL_MONA_CD": "M008,M009",
             "DETAIL_LINK": "https://open.assembly.go.kr/bill/B3",
         },
     ]
@@ -152,7 +152,7 @@ def test_complete_multi_page_scan_produces_exact_code_first_counts() -> None:
     }
 
 
-def test_joint_lead_and_semicolon_co_sponsor_codes_are_parsed_conservatively() -> None:
+def test_joint_lead_and_comma_co_sponsor_codes_are_parsed_conservatively() -> None:
     connector = term_connector()
     document = connector.fetch(connector.discover()[0])
     records = connector.parse_bills(document)
@@ -188,7 +188,7 @@ def test_missing_role_code_field_fails_closed_even_on_unrelated_bill() -> None:
 
 def test_malformed_documented_delimiter_fails_closed_without_name_fallback() -> None:
     rows = bill_rows()
-    rows[1] = rows[1] | {"PUBL_MONA_CD": "M001,M006"}
+    rows[1] = rows[1] | {"PUBL_MONA_CD": "M001;M006"}
     summary = LegislativeActivityStager(identity(), term_connector(rows=rows)).stage()
 
     assert summary.coverage_complete
