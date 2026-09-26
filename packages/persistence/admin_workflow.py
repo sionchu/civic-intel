@@ -93,6 +93,10 @@ SAFE_CHANGE_FIELDS = {
 }
 
 
+ADMIN_SCHEMA_COMPATIBLE_REVISIONS = frozenset({"0007", "0008"})
+ADMIN_SCHEMA_REQUIRED = "0007"
+
+
 class AdminError(ValueError):
     def __init__(self, code: str, message: str):
         self.code = code
@@ -142,12 +146,17 @@ def receipt(row: db.AdminOperationRow) -> dict[str, Any]:
 
 def admin_schema_ready(session: Session) -> bool:
     revision = session.scalar(text("SELECT version_num FROM alembic_version"))
-    return revision == "0007"
+    return revision in ADMIN_SCHEMA_COMPATIBLE_REVISIONS
 
 
 def history(session: Session, offset: int = 0, limit: int = 25) -> dict[str, Any]:
     if not admin_schema_ready(session):
-        return {"available": False, "total": 0, "items": [], "schema_required": "0007"}
+        return {
+            "available": False,
+            "total": 0,
+            "items": [],
+            "schema_required": ADMIN_SCHEMA_REQUIRED,
+        }
     rows = session.scalars(
         select(db.AdminOperationRow)
         .order_by(db.AdminOperationRow.created_at.desc(), db.AdminOperationRow.id)
@@ -1167,7 +1176,8 @@ def commit_command(
 ) -> dict[str, Any]:
     if not admin_schema_ready(session):
         raise AdminError(
-            "ADMIN_MIGRATION_REQUIRED", "어드민 변경 이력 migration 0007 적용이 필요합니다."
+            "ADMIN_MIGRATION_REQUIRED",
+            "어드민 변경 이력 migration 0007 이상 호환 스키마가 필요합니다.",
         )
     if session.get_bind().dialect.name == "postgresql":
         session.execute(text("SELECT pg_advisory_xact_lock(187465321)"))

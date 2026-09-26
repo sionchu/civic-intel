@@ -212,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
         type=UUID,
         help="Optional explicit Railway project; opens its existing staging/postgres private tunnel",
     )
-    parser.add_argument("--enable-writes", action="store_true", help="Enable confirmed admin commands; requires schema 0007")
+    parser.add_argument("--enable-writes", action="store_true", help="Enable confirmed admin commands; requires reviewed admin-receipt schema (0007/0008)")
     parser.add_argument("--actor", default=getpass.getuser(), help="Local OS operator identity recorded in receipts")
     parser.add_argument("--api-port", type=int, default=8310)
     parser.add_argument("--web-port", type=int, default=3310)

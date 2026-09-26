@@ -380,6 +380,8 @@ def test_append_only_audit_and_populated_migration_roundtrip(repository):
     repository.assert_ready()  # Additive rollout supports old read schema.
     assert repository.admin_schema_ready() is False
     assert repository.admin_queue()["named_record_total"] == 3
+    alembic_command.upgrade(config, "0007")
+    assert repository.admin_schema_ready() is True
     alembic_command.upgrade(config, "head")
     assert repository.admin_schema_ready() is True
     assert counts(repository)["feeder_observations"] == domain_before["feeder_observations"]

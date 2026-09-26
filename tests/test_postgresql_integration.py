@@ -74,7 +74,7 @@ def test_postgresql_migration_load_and_public_api_contracts() -> None:
         expected_people=10,
         expected_organization_claims=2,
     )
-    assert report["alembic_revision"] == "0007"
+    assert report["alembic_revision"] == "0008"
 
 @pytest.mark.skipif(not POSTGRES_TEST_URL, reason="POSTGRES_TEST_URL is not configured")
 def test_postgresql_safe_alio_person_materialization_is_atomic_and_idempotent() -> None:

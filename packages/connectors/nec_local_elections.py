@@ -3,15 +3,15 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import date
 from typing import ClassVar
 from urllib.parse import parse_qs, unquote, urlencode, urlparse
-from uuid import UUID
 
 import httpx
 
+from packages.connectors.data_go_kr import POLICY_ID as DATA_GO_KR_POLICY_ID
+from packages.connectors.data_go_kr import data_go_kr_policy
 from packages.domain.contracts import SourcePolicy
-from packages.domain.enums import SourceCollectionMode
 
 from .base import Connector, ConnectorDocument
 
@@ -33,33 +33,11 @@ LOCAL_ELECTION_TYPES: dict[int, str] = {
     11: "교육감",
 }
 
-POLICY_ID = UUID("12000000-0000-0000-0000-000000000001")
-
+POLICY_ID = DATA_GO_KR_POLICY_ID
 
 def nec_local_election_policy() -> SourcePolicy:
-    reviewed_at = datetime(2026, 8, 31, tzinfo=UTC)
-    return SourcePolicy(
-        id=POLICY_ID,
-        domain="apis.data.go.kr",
-        source_class="official_open_api",
-        collection_mode=SourceCollectionMode.API,
-        can_fetch=True,
-        can_store_metadata=True,
-        can_store_fulltext=False,
-        can_send_to_ai=False,
-        can_show_excerpt=False,
-        can_commercialize=True,
-        terms_checked_at=reviewed_at,
-        license="이용허락범위 제한 없음",
-        rate_limit=(
-            "Development account 10,000 requests; operational account requires review approval"
-        ),
-        policy_note=(
-            "Reviewed against data.go.kr datasets 15000908 and 15000864 on 2026-08-31 for "
-            "the Central Election Commission candidate and winner APIs. Civic Intel discards "
-            "candidate address and stores only public-interest election metadata."
-        ),
-    )
+    return data_go_kr_policy()
+
 
 
 @dataclass(frozen=True)

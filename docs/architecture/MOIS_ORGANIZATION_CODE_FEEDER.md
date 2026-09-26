@@ -6,9 +6,9 @@ This source contract covers the Ministry of the Interior and Safety public-data 
 `행정안전부_행정표준코드_기관코드` (`data.go.kr` dataset `15077870`). The API exposes current
 organization-code rows from the Administrative Standard Code Management System.
 
-The first Civic Intel slice is contract-only. It may discover and parse current provider
-Organization records, but it does not create canonical Organizations, publish Claims, or bind
-Gukgam audited-target text automatically.
+The current Civic Intel implementation may persist a complete current provider Organization-code
+universe as immutable Source/Snapshot/FeederObservation data, but it does not create canonical
+Organizations, publish Claims, or bind Gukgam audited-target text automatically.
 
 ## Official contract
 
@@ -30,13 +30,15 @@ Optional `full_nm` and `org_cd` filters are permitted for bounded review pulls.
 
 `ServiceKey` is injected only at request time. Discovery URLs, Source URLs, metadata, normalized
 records, errors and fixtures must never contain it. The source-specific runtime variable is
-`MOIS_ORG_CODE_API_KEY`; no such variable is currently configured in staging or on the operator
-host, so live fetch remains `NOT_RUN` until an approved portal key is available.
+`MOIS_ORG_CODE_API_KEY`. A credentialed read-only live audit completed on 2026-09-26 without
+persisting the credential or request secret.
 
 ## Provider identity and hierarchy
 
-The provider Organization key is the seven-digit `org_cd`. It is a source namespace, not a Civic
-Intel canonical Organization UUID and not authority for a cross-source identity merge.
+The provider Organization key is the seven-character uppercase-alphanumeric `org_cd`. A full
+2026-09-26 live audit observed numeric codes, `B/C/D/P`-prefixed codes, and mixed forms such as
+`1Z00189`. It is a source namespace, not a Civic Intel canonical Organization UUID and not
+authority for a cross-source identity merge.
 
 The typed source record preserves:
 
@@ -93,17 +95,20 @@ review returns exactly one canonical-name match.
 
 ## Maturity
 
-Current maturity is `L1 CONTRACT_STAGED`:
+Current maturity is `L2 LIVE_CONTRACT_VERIFIED` with an L3 worker implemented and awaiting the first
+persistent merged-master staging run:
 
 - official current-universe API and fields are documented;
 - unrestricted reuse and automatic development/operation approval are documented;
-- provider Organization key and lifecycle fields are documented;
-- connector contract and deterministic fixture regression are allowed;
-- live fetch is `NOT_RUN` because no approved `MOIS_ORG_CODE_API_KEY` is configured;
-- no SourceRun/Checkpoint/Observation worker or Organization materializer is authorized yet.
+- shared host-level `apis.data.go.kr` SourcePolicy semantics are explicit;
+- provider Organization keys and lifecycle fields are documented;
+- credentialed 2026-09-26 live audit verified `133,907` unique current rows over `134` pages at
+  `1000` rows/page and no duplicate `org_cd`;
+- code/date drift is covered, including uppercase-alphanumeric provider keys and three legacy/anomalous
+  `crt_de` values preserved as raw text without inventing dates;
+- the L3 worker persists only Source/Snapshot/FeederObservation/Checkpoint data with a bounded
+  manifest digest and resume contract;
+- no canonical Organization materializer or Gukgam auto-binding is authorized.
 
-Promotion to L2 requires one credentialed bounded pull with exact request/response QA, secret
-redaction proof and reviewed current-row semantics. Promotion to L3 requires complete deterministic
-pagination for an explicitly declared current Organization universe, stable total/count checks,
-duplicate/conflicting `org_cd` handling, immutable version behavior and a separate reviewed
-Organization materialization contract.
+L3 is reached only after one complete persistent merged-master staging run and post-verification.
+A separate reviewed Organization materialization contract is still required afterward.
