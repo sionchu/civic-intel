@@ -208,7 +208,10 @@ def test_unchanged_rerun_is_idempotent_and_changed_row_creates_version(
     }
 
 
-def test_partial_failure_resumes_from_committed_manifest(tmp_path: Path) -> None:
+def test_partial_failure_resumes_from_committed_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     api = three_org_api()
     api.fail_pages.add(2)
     repository = migrated_repository(tmp_path / "mois-resume.db")
@@ -229,7 +232,17 @@ def test_partial_failure_resumes_from_committed_manifest(tmp_path: Path) -> None
     assert checkpoint is not None
     assert checkpoint.cursor == "1"
     assert checkpoint.metadata["seen_provider_count"] == 2
+    manifest = repository.feeder_observation_hash_manifest(
+        MoisOrganizationEnumerator.FEEDER,
+        SCOPE,
+    )
+    assert len(manifest) == 2
+    assert len({provider_record_key for provider_record_key, _ in manifest}) == 2
 
+    def forbid_full_observation_load(*args, **kwargs):
+        pytest.fail("MOIS resume must not load full observation rows")
+
+    monkeypatch.setattr(repository, "feeder_observations", forbid_full_observation_load)
     api.fail_pages.clear()
     resumed = worker.enumerate(resume=True)
 

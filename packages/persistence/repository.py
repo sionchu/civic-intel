@@ -624,6 +624,26 @@ class SqlAlchemyRepository:
             rows = session.scalars(statement.order_by(FeederObservationRow.recorded_at))
             return [self._observation(row) for row in rows]
 
+    def feeder_observation_hash_manifest(
+        self,
+        feeder: str,
+        scope_key: str,
+    ) -> list[tuple[str, str]]:
+        """Load only provider identity and content hash for a feeder scope."""
+
+        statement = select(
+            FeederObservationRow.provider_record_key,
+            FeederObservationRow.content_hash,
+        ).where(
+            FeederObservationRow.feeder == feeder,
+            FeederObservationRow.scope_key == scope_key,
+        )
+        with self.sessions() as session:
+            return [
+                (provider_record_key, content_hash)
+                for provider_record_key, content_hash in session.execute(statement)
+            ]
+
     def feeder_observation(self, observation_id: UUID) -> FeederObservation | None:
         with self.sessions() as session:
             row = session.get(FeederObservationRow, str(observation_id))

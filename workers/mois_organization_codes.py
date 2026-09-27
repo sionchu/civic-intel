@@ -207,13 +207,13 @@ class MoisOrganizationEnumerator:
                     raise MoisOrganizationCoverageError(
                         "MOIS resume checkpoint already covers the full scope"
                     )
-                prior_observations = self.repository.feeder_observations(
+                prior_manifest = self.repository.feeder_observation_hash_manifest(
                     self.FEEDER,
                     self.SCOPE_KEY,
                 )
-                for observation in prior_observations:
-                    existing = seen_hashes.get(observation.provider_record_key)
-                    if existing is not None and existing != observation.content_hash:
+                for provider_record_key, content_hash in prior_manifest:
+                    existing = seen_hashes.get(provider_record_key)
+                    if existing is not None and existing != content_hash:
                         raise MoisOrganizationCoverageError(
                             "MOIS resume scope contains multiple versions before first success"
                         )
@@ -221,7 +221,7 @@ class MoisOrganizationEnumerator:
                         raise MoisOrganizationCoverageError(
                             "MOIS resume scope contains duplicate provider keys"
                         )
-                    seen_hashes[observation.provider_record_key] = observation.content_hash
+                    seen_hashes[provider_record_key] = content_hash
                 if (
                     len(seen_hashes) != expected_seen_count
                     or _manifest_sha256(seen_hashes) != expected_manifest
