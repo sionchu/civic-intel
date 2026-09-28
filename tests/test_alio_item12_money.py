@@ -896,6 +896,19 @@ def test_item12_claim_builder_and_publication_reuse_canonical_evidence_path(
         assert all(item["stance"] == "SUPPORT" for item in money["evidence"])
         assert money["details"]["absolute_delta_krw"] == -2162000
         assert money["details"]["percent_change"] == "-14.39"
+        trace = money["details"]["change_trace"]
+        assert trace["semantics"] == "SOURCE_NEUTRAL_DERIVED_CHANGE_TRACE_V1"
+        assert trace["subject"] == {
+            "type": "ORGANIZATION",
+            "id": str(organization.id),
+        }
+        assert trace["comparison_dimension"] == "ANNUAL_DISCLOSED_AMOUNT_KRW"
+        assert trace["earlier"]["order_key"] == "2024"
+        assert trace["later"]["order_key"] == "2025"
+        assert trace["earlier"]["value"] == "15023000"
+        assert trace["later"]["value"] == "12861000"
+        assert trace["claim_ids"] == money["claim_ids"]
+        assert trace["evidence_ids"] == money["evidence_ids"]
         assert money["details"]["input_scope"] == {
             "source_contract": "alio_item_12_current_institution_head_business_expense",
             "required_publication": "PUBLISHED_ORGANIZATION_CLAIM_WITH_EXACT_EVIDENCE",

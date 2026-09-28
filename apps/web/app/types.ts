@@ -103,6 +103,28 @@ export type GukgamTargetProjection = {
   limitations: string[];
 };
 
+export type ChangeTracePoint = {
+  claim_id: string;
+  order_key: string;
+  value: string;
+};
+
+export type ChangeTrace = {
+  semantics: "SOURCE_NEUTRAL_DERIVED_CHANGE_TRACE_V1";
+  method_version: string;
+  subject: {
+    type: "PERSON" | "ORGANIZATION";
+    id: string;
+  };
+  comparison_dimension: string;
+  earlier: ChangeTracePoint;
+  later: ChangeTracePoint;
+  claim_ids: string[];
+  evidence_ids: string[];
+  source_ids: string[];
+  trace_key: string;
+};
+
 export type MoneyInput = {
   fiscal_year: number;
   amount_thousand_krw: number;
@@ -131,6 +153,7 @@ export type MoneyProjection = {
   snapshot_ids: string[];
   observation_ids: string[];
   details: {
+    change_trace: ChangeTrace;
     organization: {
       id: string;
       name: string;

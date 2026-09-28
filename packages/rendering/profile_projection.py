@@ -18,6 +18,7 @@ from packages.domain.enums import (
     IdentityStatus,
     PublicationStatus,
 )
+from packages.rendering.change_projection import build_source_neutral_change_trace
 from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_FIELDS,
     ASSEMBLY_BASE_PROFILE_SCOPE,
@@ -664,6 +665,18 @@ def _assembly_role_sequence_changes(
             ).hexdigest()
             earlier_input = _change_input(earlier, earlier_date, earlier_evidence)
             later_input = _change_input(later, later_date, later_evidence)
+            change_trace = build_source_neutral_change_trace(
+                method_version=CHANGE_METHOD_VERSION,
+                comparison_dimension="ROLE_DISPLAY_SEQUENCE",
+                earlier_claim=earlier,
+                later_claim=later,
+                earlier_order_key=earlier_date.isoformat(),
+                later_order_key=later_date.isoformat(),
+                earlier_value=earlier.object_text,
+                later_value=later.object_text,
+                earlier_evidence=earlier_evidence,
+                later_evidence=later_evidence,
+            )
             evidence = [*earlier_evidence, *later_evidence]
             evidence_ids = _ordered_unique([str(item.id) for item in evidence])
             source_ids = _ordered_unique([str(item.source_id) for item in evidence])
@@ -682,6 +695,7 @@ def _assembly_role_sequence_changes(
                     "details": {
                         "presentation_key": presentation_key,
                         "method_version": CHANGE_METHOD_VERSION,
+                        "change_trace": change_trace,
                         "person_id": str(person.id),
                         "derived_type": "ROLE_SEQUENCE_CHANGE",
                         "earlier": earlier_input,

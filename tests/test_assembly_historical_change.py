@@ -295,6 +295,14 @@ def test_bounded_observation_claim_evidence_and_derived_change_vertical_slice(
     assert change["kind"] == "CHANGE"
     assert change["epistemic_status"] is None
     assert change["details"]["method_version"] == CHANGE_METHOD_VERSION
+    trace = change["details"]["change_trace"]
+    assert trace["semantics"] == "SOURCE_NEUTRAL_DERIVED_CHANGE_TRACE_V1"
+    assert trace["subject"] == {"type": "PERSON", "id": str(PERSON_ID)}
+    assert trace["comparison_dimension"] == "ROLE_DISPLAY_SEQUENCE"
+    assert trace["earlier"]["order_key"] == "2012-05-30"
+    assert trace["later"]["order_key"] == "2016-05-30"
+    assert trace["earlier"]["value"] == "새누리당 울산 울주군"
+    assert trace["later"]["value"] == "무소속 울산 울주군"
     assert change["details"]["provider_identity"]["mona_cd"] == "XQ98168F"
     assert change["details"]["input_scope"]["correction_semantics"] == "IMMUTABLE_SNAPSHOT_ONLY"
     assert change["details"]["earlier"]["date"] == "2012-05-30"

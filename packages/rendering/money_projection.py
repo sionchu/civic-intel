@@ -22,6 +22,7 @@ from packages.domain.contracts import (
     SourceSnapshot,
 )
 from packages.domain.enums import EpistemicStatus, EvidenceStance, PublicationStatus
+from packages.rendering.change_projection import build_source_neutral_change_trace
 from packages.verification.claims import validate_claim_publication
 
 MONEY_METHOD_VERSION = "money.alio-head-expense-yoy.v1"
@@ -584,6 +585,18 @@ def build_alio_head_expense_money_from_claims(
     later_evidence: ClaimEvidence = later["evidence"]
     earlier_observation: FeederObservation = earlier["observation"]
     later_observation: FeederObservation = later["observation"]
+    change_trace = build_source_neutral_change_trace(
+        method_version=MONEY_METHOD_VERSION,
+        comparison_dimension="ANNUAL_DISCLOSED_AMOUNT_KRW",
+        earlier_claim=earlier_claim,
+        later_claim=later_claim,
+        earlier_order_key=str(earlier_fiscal_year),
+        later_order_key=str(later_fiscal_year),
+        earlier_value=str(earlier["amount_krw"]),
+        later_value=str(later["amount_krw"]),
+        earlier_evidence=(earlier_evidence,),
+        later_evidence=(later_evidence,),
+    )
     presentation_key = hashlib.sha256(
         (
             f"{MONEY_METHOD_VERSION}|organization:{organization.id}|"
@@ -622,6 +635,7 @@ def build_alio_head_expense_money_from_claims(
         "snapshot_ids": snapshot_ids,
         "observation_ids": observation_ids,
         "details": {
+            "change_trace": change_trace,
             "organization": {
                 "id": str(organization.id),
                 "name": organization.name,
