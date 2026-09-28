@@ -114,8 +114,10 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.match(profile, /policy_summary/);
   assert.match(review, /requireOperator/);
   assert.match(review, /operatorRead/);
-  assert.match(review, /item\.action/);
-  assert.match(review, /item\.status/);
+  assert.match(review, /claim_commit_authorized/);
+  assert.match(review, /materialization_authorized/);
+  assert.match(review, /item\.match_class/);
+  assert.match(review, /CURRENT HUMAN REVIEW/);
   assert.doesNotMatch(review, /method="post"|--commit/);
   assert.doesNotMatch(layout, /admin\/review/);
 });

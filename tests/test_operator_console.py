@@ -289,12 +289,17 @@ def test_bounded_graph_signals_truncation(repository):
     assert len({node["id"] for node in graph["nodes"]}) == len(graph["nodes"])
 
 
-def test_manifest_preflight_is_read_only_and_reports_baseline_conflict(repository):
+def test_manifest_inspection_is_read_only_and_fails_closed_without_current_review_data(repository):
     before = repository.operator_summary()["counts"]
     result = manifest_inspection(repository)
-    assert result["status"] == "BASELINE_OR_IDENTITY_CONFLICT"
-    assert result["item_count"] == 27
+    assert result["status"] == "CURRENT_REVIEW_UNAVAILABLE"
     assert result["write_performed"] is False
+    assert result["gukgam_claim_review"]["status"] == "CURRENT_REVIEW_UNAVAILABLE"
+    assert result["gukgam_claim_review"]["items"] == []
+    assert result["gukgam_claim_review"]["claim_commit_authorized"] is False
+    assert result["mois_organization_review"]["status"] == "CURRENT_REVIEW_UNAVAILABLE"
+    assert result["mois_organization_review"]["items"] == []
+    assert result["mois_organization_review"]["materialization_authorized"] is False
     assert repository.operator_summary()["counts"] == before
 
 

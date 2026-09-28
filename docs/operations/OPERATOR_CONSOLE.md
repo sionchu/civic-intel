@@ -63,9 +63,13 @@ cross-role continuity. Selecting an Evidence ID alone does not make the identity
 No optimistic success is shown. If a response is lost, check the same request ID before creating a
 new request. Retrying the identical operation is idempotent. A changed/expired preview must be rebuilt.
 
-**수집 현황**, **검토 manifest**, **출처 계획·제약** retain the measured DB lane counts, exact org.go
-no-write preflight and clearly separate documented source capabilities. The old 27-item org.go
-Organization commit is still independent; no new admin command executes that import automatically.
+**수집 현황**, **검토 manifest**, **출처 계획·제약** retain measured DB lane counts and
+clearly separate documented source capabilities. The manifest tab no longer treats the completed
+2026-09-22 org.go27 materialization packet as current work. It recomputes the unpublished exact-one
+Gukgam Claim review set from the connected schedule/checkpoints, current Organizations and current
+Claims, and separately revalidates the checked-in MOIS Organization proposal against the current
+MOIS checkpoint/provider observations plus current Gukgam NO_EXACT occurrences. Both lanes are
+human-review / no-write surfaces; neither authorizes Organization creation or Claim publication.
 
 Deletion means public removal/deactivation while preserving source/audit records; there
 is no arbitrary hard-delete button. Claim correction creates a new attributable CLAIM draft, not a
