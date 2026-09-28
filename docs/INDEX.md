@@ -94,4 +94,4 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Completed OpenDART disclosed-executives L3 plan](exec-plans/completed/opendart-private-sector-executives-l3.md)
 
 - [Native admin agent execution prerequisite](exec-plans/blocked/admin-agent-execution.md)
-- [MOIS Current Organization-Code L3](exec-plans/active/mois-current-organization-codes-l3.md)
+- [MOIS Current Organization-Code L3](exec-plans/completed/mois-current-organization-codes-l3.md)

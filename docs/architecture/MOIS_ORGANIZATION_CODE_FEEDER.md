@@ -76,11 +76,24 @@ it never authorizes automatic canonical Organization replacement.
 
 ## Gukgam boundary
 
-Post-coverage audit found `280` current `NO_EXACT_CANONICAL_NAME_OVERLAP` Gukgam mentions across
-`256` distinct labels. Exact-name comparison against the official current top-level institution
-set found `27` distinct labels / `41` occurrences that this source could potentially cover.
+The earlier org.go top-level source is a separate source family. Its reviewed 27-Organization
+materialization reduced the Gukgam unresolved universe to `239` NO_EXACT mentions across `229`
+distinct labels.
 
-Those overlaps are planning evidence only. The permitted sequence is:
+The complete persistent MOIS current-universe observations were then compared read-only against
+only those remaining Gukgam NO_EXACT labels using exact `full_name` equality. The review-only
+projection found:
+
+- `70` distinct exact-one MOIS `full_name` proposals;
+- `74` Gukgam occurrences covered by those proposals;
+- `0` multiple-exact MOIS name cases in this candidate set;
+- `165` mentions / `159` distinct labels still unmatched by exact MOIS `full_name`.
+
+The canonical review artifact is
+`docs/research/gukgam_2026_mois_organization_proposal_2026-09-28.json` with semantic SHA-256
+`e7a208d1236517dd10d0768d1af8e25f5fc088925733b7039cbac794d9d99964`.
+
+These matches are planning/review evidence only. The permitted sequence remains:
 
 ```text
 MOIS source observation
@@ -89,14 +102,13 @@ MOIS source observation
   -> explicit reviewed Claim manifest
 ```
 
-The connector must not consume Gukgam text as an Organization-creation input. Gukgam `NO_EXACT`
-rows stay unpublished until an independently sourced Organization exists and the existing binding
-review returns exactly one canonical-name match.
+The connector and proposal projection must not consume Gukgam text as Organization-creation
+authority. Gukgam NO_EXACT rows stay unpublished until a separately reviewed Organization exists
+and the existing binding review returns exactly one canonical-name match.
 
 ## Maturity
 
-Current maturity is `L2 LIVE_CONTRACT_VERIFIED` with an L3 worker implemented and awaiting the first
-persistent merged-master staging run:
+Current maturity is `L3 PERSISTENT_CURRENT_UNIVERSE_VERIFIED`:
 
 - official current-universe API and fields are documented;
 - unrestricted reuse and automatic development/operation approval are documented;
@@ -104,11 +116,16 @@ persistent merged-master staging run:
 - provider Organization keys and lifecycle fields are documented;
 - credentialed 2026-09-26 live audit verified `133,907` unique current rows over `134` pages at
   `1000` rows/page and no duplicate `org_cd`;
+- the merged-master persistent run on 2026-09-28 observed the then-current provider total
+  `133,930`, committed `133,930` observations, advanced checkpoint `134/134`, and finished
+  `SUCCESS` without canonical Person/Organization/Claim creation;
 - code/date drift is covered, including uppercase-alphanumeric provider keys and three legacy/anomalous
   `crt_de` values preserved as raw text without inventing dates;
 - the L3 worker persists only Source/Snapshot/FeederObservation/Checkpoint data with a bounded
   manifest digest and resume contract;
-- no canonical Organization materializer or Gukgam auto-binding is authorized.
+- no canonical Organization materializer or Gukgam auto-binding is authorized;
+- the first post-L3 MOIS→Gukgam projection is review-only and produces `70` Organization
+  proposals / `74` occurrence references with no writes.
 
-L3 is reached only after one complete persistent merged-master staging run and post-verification.
-A separate reviewed Organization materialization contract is still required afterward.
+A separate reviewed Organization materialization contract is still required before any of the
+MOIS proposals may become canonical Organizations.

@@ -1,0 +1,2156 @@
+{
+  "ambiguous_distinct_target_count": 0,
+  "ambiguous_items": [],
+  "candidate_provider_row_count": 133930,
+  "canonical_name_conflict_count": 0,
+  "current_organization_count": 374,
+  "gukgam_no_exact_distinct_target_count": 229,
+  "gukgam_occurrence_count": 74,
+  "items": [
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-19",
+          "audited_target": "(재)한국장애인문화예술원",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "b801c1e5-e011-4887-a948-e55321a4463b",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:25"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "(재)한국장애인문화예술원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2016-03-07",
+        "changed_date": "2016-03-07",
+        "full_name": "(재)한국장애인문화예술원",
+        "lowest_name": "(재)한국장애인문화예술원",
+        "observation_id": "563d7f7c-cd45-4cc5-a034-9bada7911132",
+        "org_code": "B553630",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B553630",
+        "representative_org_code": "B553630",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "경상북도",
+          "committee_name": "행정안전위원회",
+          "observation_id": "5cd1f38c-2a30-459d-b262-d1aee3a6f248",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:7",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:7:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "경상북도",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2008-10-07",
+        "full_name": "경상북도",
+        "lowest_name": "경상북도",
+        "observation_id": "6666ae74-50f0-4219-9fd8-1062c92d047c",
+        "org_code": "6470000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6470000",
+        "representative_org_code": "6470000",
+        "top_org_code": "6470000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "공군사관학교",
+          "committee_name": "국방위원회",
+          "observation_id": "d92a7ac8-6bfb-4e67-8b4c-46a002213283",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:8",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:8:audited-target:3"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "공군사관학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2008-06-26",
+        "changed_date": "2010-10-07",
+        "full_name": "공군사관학교",
+        "lowest_name": "공군사관학교",
+        "observation_id": "fae91413-dd29-4ba9-8d2e-03b1ed10f739",
+        "org_code": "7007982",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7007982",
+        "representative_org_code": "7007982",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": "4년제 정규대학"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "과학기술연합대학원대학교",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:46"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "과학기술연합대학원대학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2008-09-24",
+        "changed_date": "2010-10-07",
+        "full_name": "과학기술연합대학원대학교",
+        "lowest_name": "과학기술연합대학원대학교",
+        "observation_id": "6a15212f-135a-459d-b6f1-53e20cfeaa24",
+        "org_code": "7008041",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7008041",
+        "representative_org_code": "7008041",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": "대학원대학"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "과학기술인공제회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:47"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "과학기술인공제회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2003-11-27",
+        "changed_date": "2013-10-22",
+        "full_name": "과학기술인공제회",
+        "lowest_name": "과학기술인공제회",
+        "observation_id": "99878e4f-a1c1-4d2b-98b3-e3eae6464907",
+        "org_code": "B551218",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551218",
+        "representative_org_code": "B551218",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "광주과학기술원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:29"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "광주과학기술원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-09-04",
+        "changed_date": "2013-10-22",
+        "full_name": "광주과학기술원",
+        "lowest_name": "광주과학기술원",
+        "observation_id": "b7585466-7ccd-4f4e-8928-43430717db1e",
+        "org_code": "B550935",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550935",
+        "representative_org_code": "B550935",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "국가과학기술연구회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국가과학기술연구회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2015-01-06",
+        "changed_date": "2015-01-06",
+        "full_name": "국가과학기술연구회",
+        "lowest_name": "국가과학기술연구회",
+        "observation_id": "3757ade2-e394-44b3-a59f-83033819c606",
+        "org_code": "B553455",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B553455",
+        "representative_org_code": "B553455",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "국군간호사관학교",
+          "committee_name": "국방위원회",
+          "observation_id": "fc649498-3c45-4c9a-941c-48cd6ad8a7f4",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1:audited-target:22"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국군간호사관학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2008-06-26",
+        "changed_date": "2010-10-07",
+        "full_name": "국군간호사관학교",
+        "lowest_name": "국군간호사관학교",
+        "observation_id": "a26d1722-2062-4d8a-860e-6efbe7a6410a",
+        "org_code": "7007981",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7007981",
+        "representative_org_code": "7007981",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": "4년제 정규대학"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "국립강원전문과학관",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:42"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국립강원전문과학관",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2025-05-29",
+        "changed_date": "2025-05-29",
+        "full_name": "국립강원전문과학관",
+        "lowest_name": "국립강원전문과학관",
+        "observation_id": "8359311f-ebf4-44d3-88af-a045980654f9",
+        "org_code": "B555352",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B555352",
+        "representative_org_code": "B555352",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-08",
+          "audited_target": "국외소재문화유산재단",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "0de1aa78-759b-4809-9363-3e000c823db4",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:2",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:2:audited-target:8"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국외소재문화유산재단",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2024-05-27",
+        "changed_date": "2024-05-27",
+        "full_name": "국외소재문화유산재단",
+        "lowest_name": "국외소재문화유산재단",
+        "observation_id": "047ef7a8-a1e1-43da-a8ac-85430d6b2c58",
+        "org_code": "B555211",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B555211",
+        "representative_org_code": "B555211",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-29",
+          "audited_target": "국회미래연구원",
+          "committee_name": "국회운영위원회",
+          "observation_id": "1f8f8bbd-3d43-47fb-9eda-3e34d94f32bf",
+          "provider_record_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:2",
+          "review_key": "3078706:ed4a7bee86704ed38e9043b3d10f7a9c:2:schedule:2:audited-target:6"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "국회미래연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2019-10-08",
+        "changed_date": "2019-10-08",
+        "full_name": "국회미래연구원",
+        "lowest_name": "국회미래연구원",
+        "observation_id": "44f0f553-4850-4f8f-9494-22d524ce83ad",
+        "org_code": "B554061",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B554061",
+        "representative_org_code": "B554061",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "군인공제회",
+          "committee_name": "국방위원회",
+          "observation_id": "fc649498-3c45-4c9a-941c-48cd6ad8a7f4",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:1:audited-target:29"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "군인공제회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2004-06-06",
+        "changed_date": "2013-10-22",
+        "full_name": "군인공제회",
+        "lowest_name": "군인공제회",
+        "observation_id": "cca3b1d9-2744-4272-8a42-93876d04d920",
+        "org_code": "B551374",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551374",
+        "representative_org_code": "B551374",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-16",
+          "audited_target": "농업협동조합중앙회",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "d2043a2a-e5f1-4641-b536-dbd93036606d",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:4",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:4:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "농업협동조합중앙회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "농업협동조합중앙회",
+        "lowest_name": "농업협동조합중앙회",
+        "observation_id": "df89d6e8-6923-4d2d-a126-085bfd182b4b",
+        "org_code": "B380009",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B380009",
+        "representative_org_code": "B380009",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "대구경북과학기술원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:31"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "대구경북과학기술원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2009-01-22",
+        "changed_date": "2013-10-22",
+        "full_name": "대구경북과학기술원",
+        "lowest_name": "대구경북과학기술원",
+        "observation_id": "8bfdf9e7-4ea0-466f-b2f7-4345ec131b9c",
+        "org_code": "B552467",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B552467",
+        "representative_org_code": "B552467",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "바르게살기운동중앙협의회",
+          "committee_name": "행정안전위원회",
+          "observation_id": "663c9050-e9d4-4c5e-8b89-0dc6c74544a7",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:9"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "바르게살기운동중앙협의회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-06-27",
+        "changed_date": "2013-10-22",
+        "full_name": "바르게살기운동중앙협의회",
+        "lowest_name": "바르게살기운동중앙협의회",
+        "observation_id": "5a894664-e560-4db9-b80e-e8eb703216af",
+        "org_code": "B550428",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550428",
+        "representative_org_code": "B550428",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부보조기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-16",
+          "audited_target": "방송문화진흥회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "731be71a-8413-4df6-bee4-7bb422cc56c4",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:5",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:5:audited-target:3"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "방송문화진흥회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-06-27",
+        "changed_date": "2018-11-28",
+        "full_name": "방송문화진흥회",
+        "lowest_name": "방송문화진흥회",
+        "observation_id": "b0675b3f-f4a4-4481-8cfa-bc0fb2586c78",
+        "org_code": "B550429",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550429",
+        "representative_org_code": "B550429",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-12",
+          "audited_target": "방송미디어통신심의위원회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "cc892561-5182-4933-b207-6f51dd31b8a7",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:2",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:2:audited-target:3"
+        },
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "방송미디어통신심의위원회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "d1a5c235-4082-46d9-b87f-03cd4df42b91",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:7",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:7:audited-target:3"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "방송미디어통신심의위원회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2026-04-20",
+        "changed_date": "2026-04-20",
+        "full_name": "방송미디어통신심의위원회",
+        "lowest_name": "방송미디어통신심의위원회",
+        "observation_id": "4ec8632e-e256-4ac7-bec6-d15644889c44",
+        "org_code": "B555458",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B555458",
+        "representative_org_code": "B555458",
+        "top_org_code": "B000000",
+        "type_big": "정부투자기관 및 기타",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "별정우체국연금관리단",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "60da2bea-e409-4d9c-b5cc-6aa72699da31",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1:audited-target:10"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "별정우체국연금관리단",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2010-07-28",
+        "changed_date": "2013-10-22",
+        "full_name": "별정우체국연금관리단",
+        "lowest_name": "별정우체국연금관리단",
+        "observation_id": "dada218c-b5e1-44a2-8e65-912847c2b30e",
+        "org_code": "B552698",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B552698",
+        "representative_org_code": "B552698",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-21",
+          "audited_target": "부산광역시",
+          "committee_name": "행정안전위원회",
+          "observation_id": "f6183241-60f8-4ff5-822c-454d49b5c1e3",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:9",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:9:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "부산광역시",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2008-10-07",
+        "full_name": "부산광역시",
+        "lowest_name": "부산광역시",
+        "observation_id": "f8b368f1-9077-42e7-a727-b9a4a419f56d",
+        "org_code": "6260000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6260000",
+        "representative_org_code": "6260000",
+        "top_org_code": "6260000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "산림조합중앙회",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "f8bb8742-2e7a-46cc-badb-48a9ec2e2bdf",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:7"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "산림조합중앙회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "산림조합중앙회",
+        "lowest_name": "산림조합중앙회",
+        "observation_id": "a2a37cf2-9e95-4343-a3d1-3b5a0e8e61d9",
+        "org_code": "B400001",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B400001",
+        "representative_org_code": "B400001",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "새마을운동중앙회",
+          "committee_name": "행정안전위원회",
+          "observation_id": "663c9050-e9d4-4c5e-8b89-0dc6c74544a7",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:10"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "새마을운동중앙회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2008-09-25",
+        "changed_date": "2013-10-22",
+        "full_name": "새마을운동중앙회",
+        "lowest_name": "새마을운동중앙회",
+        "observation_id": "db55225b-a1da-4da1-b40d-8f37e0daf76d",
+        "org_code": "B552110",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B552110",
+        "representative_org_code": "B552110",
+        "top_org_code": "B000000",
+        "type_big": "정부투자기관 및 기타",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-19",
+          "audited_target": "서울예술단",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "b801c1e5-e011-4887-a948-e55321a4463b",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:23"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "서울예술단",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-10-23",
+        "changed_date": "2013-10-22",
+        "full_name": "서울예술단",
+        "lowest_name": "서울예술단",
+        "observation_id": "b9b8b236-6516-4cdd-9e32-47406e9a6717",
+        "org_code": "B551006",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551006",
+        "representative_org_code": "B551006",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부보조기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-15",
+          "audited_target": "서울특별시",
+          "committee_name": "행정안전위원회",
+          "observation_id": "44f8b98b-43ed-4776-9973-6e2e135bd2bd",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:5",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:5:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "서울특별시",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2008-10-07",
+        "full_name": "서울특별시",
+        "lowest_name": "서울특별시",
+        "observation_id": "8e76ae01-ad86-4bb7-b80f-acc0f9c01e67",
+        "org_code": "6110000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6110000",
+        "representative_org_code": "6110000",
+        "top_org_code": "6110000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-14",
+          "audited_target": "언론중재위원회",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "772b68ff-5eee-4513-9e4a-83d2e07b5687",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:11"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "언론중재위원회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-06-27",
+        "changed_date": "2018-11-28",
+        "full_name": "언론중재위원회",
+        "lowest_name": "언론중재위원회",
+        "observation_id": "d1531fda-e6a8-4b88-ba62-391f0eb742f5",
+        "org_code": "B550331",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550331",
+        "representative_org_code": "B550331",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "우체국금융개발원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "60da2bea-e409-4d9c-b5cc-6aa72699da31",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1:audited-target:8"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "우체국금융개발원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2012-04-25",
+        "changed_date": "2013-10-22",
+        "full_name": "우체국금융개발원",
+        "lowest_name": "우체국금융개발원",
+        "observation_id": "70314331-986a-471f-bdb4-d661605394eb",
+        "org_code": "B552886",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B552886",
+        "representative_org_code": "B552886",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "우체국물류지원단",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "60da2bea-e409-4d9c-b5cc-6aa72699da31",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1:audited-target:7"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "우체국물류지원단",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2012-06-22",
+        "changed_date": "2013-10-22",
+        "full_name": "우체국물류지원단",
+        "lowest_name": "우체국물류지원단",
+        "observation_id": "821511ed-a150-4699-8c02-e2b763aad42c",
+        "org_code": "B552907",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B552907",
+        "representative_org_code": "B552907",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "울산과학기술원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:30"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "울산과학기술원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2015-10-07",
+        "changed_date": "2015-10-07",
+        "full_name": "울산과학기술원",
+        "lowest_name": "울산과학기술원",
+        "observation_id": "1a3f4a11-bfaf-46c5-b561-2cefd95a82d5",
+        "org_code": "B553562",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B553562",
+        "representative_org_code": "B553562",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-21",
+          "audited_target": "울산광역시",
+          "committee_name": "행정안전위원회",
+          "observation_id": "6ac06add-aefe-443c-9a4c-08c678ccd30c",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:8",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:8:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "울산광역시",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2008-10-07",
+        "full_name": "울산광역시",
+        "lowest_name": "울산광역시",
+        "observation_id": "ca638fc8-902b-43dd-9b5c-e5d797b012db",
+        "org_code": "6310000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6310000",
+        "representative_org_code": "6310000",
+        "top_org_code": "6310000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-19",
+          "audited_target": "육군3사관학교",
+          "committee_name": "국방위원회",
+          "observation_id": "acd17011-baad-49ed-937c-7e2a04313021",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:5",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:5:audited-target:8"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "육군3사관학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2010-03-12",
+        "changed_date": "2010-10-07",
+        "full_name": "육군3사관학교",
+        "lowest_name": "육군3사관학교",
+        "observation_id": "d5253946-dda1-408e-b463-dcf8c27aee39",
+        "org_code": "7008067",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7008067",
+        "representative_org_code": "7008067",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": "특수학교"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "육군사관학교",
+          "committee_name": "국방위원회",
+          "observation_id": "d92a7ac8-6bfb-4e67-8b4c-46a002213283",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:8",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:8:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "육군사관학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2008-06-26",
+        "changed_date": "2010-10-07",
+        "full_name": "육군사관학교",
+        "lowest_name": "육군사관학교",
+        "observation_id": "7b81026a-abbf-4e9e-9e35-2694bf2287b2",
+        "org_code": "7007983",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7007983",
+        "representative_org_code": "7007983",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": "4년제 정규대학"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "일제강제동원피해자지원재단",
+          "committee_name": "행정안전위원회",
+          "observation_id": "663c9050-e9d4-4c5e-8b89-0dc6c74544a7",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:7"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "일제강제동원피해자지원재단",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2014-12-12",
+        "changed_date": "2014-12-12",
+        "full_name": "일제강제동원피해자지원재단",
+        "lowest_name": "일제강제동원피해자지원재단",
+        "observation_id": "e8516efd-d3ef-40c5-a25f-6a7923c3442c",
+        "org_code": "B553448",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B553448",
+        "representative_org_code": "B553448",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "전남광주통합특별시",
+          "committee_name": "행정안전위원회",
+          "observation_id": "3d052291-1020-4f77-ac05-b0a03030e485",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:10",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:10:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "전남광주통합특별시",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2026-05-21",
+        "changed_date": "2026-05-21",
+        "full_name": "전남광주통합특별시",
+        "lowest_name": "전남광주통합특별시",
+        "observation_id": "35bd1497-3f63-44a5-b39f-c9953c1d182e",
+        "org_code": "6130000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6130000",
+        "representative_org_code": "6130000",
+        "top_org_code": "6130000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "제주특별자치도",
+          "committee_name": "행정안전위원회",
+          "observation_id": "e03dbda9-36e2-4fd8-84e7-277c4a9037d4",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:11",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:11:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "제주특별자치도",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2006-06-02",
+        "changed_date": "2007-12-14",
+        "full_name": "제주특별자치도",
+        "lowest_name": "제주특별자치도",
+        "observation_id": "60fbafba-5822-4c81-bc15-4f3a9419df39",
+        "org_code": "6500000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6500000",
+        "representative_org_code": "6500000",
+        "top_org_code": "6500000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-26",
+          "audited_target": "중앙선거관리위원회",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1f0091fd-0acd-48ab-afc8-ba6162e88e68",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:12:audited-target:2"
+        },
+        {
+          "audit_date": "2026-10-07",
+          "audited_target": "중앙선거관리위원회",
+          "committee_name": "행정안전위원회",
+          "observation_id": "1101103d-41b5-463c-b86a-a2b43249ee28",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:2:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "중앙선거관리위원회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2008-10-07",
+        "full_name": "중앙선거관리위원회",
+        "lowest_name": "중앙선거관리위원회",
+        "observation_id": "c678aaaf-a4fe-459d-9647-f8230383cc38",
+        "org_code": "9760000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "9760000",
+        "representative_org_code": "9760000",
+        "top_org_code": "9760000",
+        "type_big": "헌법조직",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "충청북도",
+          "committee_name": "행정안전위원회",
+          "observation_id": "6c2cff07-94c7-4a88-80f3-2989aa28bc13",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:6",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:6:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "충청북도",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2008-10-07",
+        "full_name": "충청북도",
+        "lowest_name": "충청북도",
+        "observation_id": "4d80afd4-ed87-4a77-bb7e-951aa8aa1ac5",
+        "org_code": "6430000",
+        "parent_org_code": "0000000",
+        "provider_record_key": "6430000",
+        "representative_org_code": "6430000",
+        "top_org_code": "6430000",
+        "type_big": "자치행정조직",
+        "type_mid": "광역자치단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국건설기술연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:14"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국건설기술연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국건설기술연구원",
+        "lowest_name": "한국건설기술연구원",
+        "observation_id": "ff8f9cda-764e-418e-be8c-307179533fa9",
+        "org_code": "B090023",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B090023",
+        "representative_org_code": "B090023",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국과학기술단체총연합회",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:48"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국과학기술단체총연합회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-09-04",
+        "changed_date": "2013-10-22",
+        "full_name": "한국과학기술단체총연합회",
+        "lowest_name": "한국과학기술단체총연합회",
+        "observation_id": "0361a323-0347-4a76-b6e6-5087f0a5b8cc",
+        "org_code": "B550937",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550937",
+        "representative_org_code": "B550937",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국과학기술연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:2"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국과학기술연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국과학기술연구원",
+        "lowest_name": "한국과학기술연구원",
+        "observation_id": "43138a54-96cd-49f6-a47d-a0515ff6d9aa",
+        "org_code": "B090032",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B090032",
+        "representative_org_code": "B090032",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국과학기술원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:25"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국과학기술원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국과학기술원",
+        "lowest_name": "한국과학기술원",
+        "observation_id": "420fba2a-d2ae-4f63-bc32-78b175875ea2",
+        "org_code": "B350021",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B350021",
+        "representative_org_code": "B350021",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국과학기술정보연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:8"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국과학기술정보연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2002-08-09",
+        "changed_date": "2013-10-22",
+        "full_name": "한국과학기술정보연구원",
+        "lowest_name": "한국과학기술정보연구원",
+        "observation_id": "9afeba72-3a1c-4b7f-8dcc-1ab6cf1be362",
+        "org_code": "B551186",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551186",
+        "representative_org_code": "B551186",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국과학기술한림원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:49"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국과학기술한림원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-09-04",
+        "changed_date": "2013-10-22",
+        "full_name": "한국과학기술한림원",
+        "lowest_name": "한국과학기술한림원",
+        "observation_id": "8ceba80c-1052-486e-9b9c-9abee0f529ad",
+        "org_code": "B550940",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550940",
+        "representative_org_code": "B550940",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-16",
+          "audited_target": "한국교육방송공사",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "731be71a-8413-4df6-bee4-7bb422cc56c4",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:5",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:5:audited-target:2"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국교육방송공사",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2004-06-06",
+        "changed_date": "2013-10-22",
+        "full_name": "한국교육방송공사",
+        "lowest_name": "한국교육방송공사",
+        "observation_id": "38baca9e-9ff3-42f5-87fd-fbd9cce65a47",
+        "org_code": "B551363",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551363",
+        "representative_org_code": "B551363",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국기계연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:19"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국기계연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국기계연구원",
+        "lowest_name": "한국기계연구원",
+        "observation_id": "34c6e4cc-4b94-4956-ab00-3ce8ea65415b",
+        "org_code": "B350011",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B350011",
+        "representative_org_code": "B350011",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국기초과학지원연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:4"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국기초과학지원연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2004-06-06",
+        "changed_date": "2013-10-22",
+        "full_name": "한국기초과학지원연구원",
+        "lowest_name": "한국기초과학지원연구원",
+        "observation_id": "5f64d6d8-f2ce-49c2-ad6b-1faf160843d9",
+        "org_code": "B551364",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551364",
+        "representative_org_code": "B551364",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국등산트레킹지원센터",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "f8bb8742-2e7a-46cc-badb-48a9ec2e2bdf",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:5"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국등산트레킹지원센터",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2016-06-09",
+        "changed_date": "2016-06-09",
+        "full_name": "한국등산트레킹지원센터",
+        "lowest_name": "한국등산트레킹지원센터",
+        "observation_id": "cbce0ab0-61ca-433a-a2e6-d5a6c80bdd5f",
+        "org_code": "B553662",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B553662",
+        "representative_org_code": "B553662",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-19",
+          "audited_target": "한국문화원연합회",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "b801c1e5-e011-4887-a948-e55321a4463b",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:5:audited-target:26"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국문화원연합회",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2019-03-15",
+        "changed_date": "2019-03-15",
+        "full_name": "한국문화원연합회",
+        "lowest_name": "한국문화원연합회",
+        "observation_id": "abac4b89-07fc-4049-9a58-b18660ba7c07",
+        "org_code": "B554004",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B554004",
+        "representative_org_code": "B554004",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-16",
+          "audited_target": "한국방송공사",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "731be71a-8413-4df6-bee4-7bb422cc56c4",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:5",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:5:audited-target:1"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국방송공사",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국방송공사",
+        "lowest_name": "한국방송공사",
+        "observation_id": "878ca910-74ac-4a43-b65e-4b2080ea7c08",
+        "org_code": "B110053",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B110053",
+        "representative_org_code": "B110053",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국산림재난안전기술공단",
+          "committee_name": "농림축산식품해양수산위원회",
+          "observation_id": "f8bb8742-2e7a-46cc-badb-48a9ec2e2bdf",
+          "provider_record_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6",
+          "review_key": "3078709:462de504d58f47e7a888f3ca286309ba:2:schedule:6:audited-target:6"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국산림재난안전기술공단",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2026-05-04",
+        "changed_date": "2026-05-04",
+        "full_name": "한국산림재난안전기술공단",
+        "lowest_name": "한국산림재난안전기술공단",
+        "observation_id": "3352623e-d1b1-4161-bb14-24583093e7b3",
+        "org_code": "B555464",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B555464",
+        "representative_org_code": "B555464",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국생명공학연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:6"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국생명공학연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2006-10-02",
+        "changed_date": "2013-10-22",
+        "full_name": "한국생명공학연구원",
+        "lowest_name": "한국생명공학연구원",
+        "observation_id": "967ba3b4-7789-4c08-b7ab-f352fc7852fd",
+        "org_code": "B551703",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551703",
+        "representative_org_code": "B551703",
+        "top_org_code": "B000000",
+        "type_big": "정부투자기관 및 기타",
+        "type_mid": "정부출연단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국생산기술연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:11"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국생산기술연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국생산기술연구원",
+        "lowest_name": "한국생산기술연구원",
+        "observation_id": "7a674ad3-93de-4215-898d-ed3833eaf162",
+        "org_code": "B090021",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B090021",
+        "representative_org_code": "B090021",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국식품연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:16"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국식품연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2006-05-16",
+        "changed_date": "2013-10-22",
+        "full_name": "한국식품연구원",
+        "lowest_name": "한국식품연구원",
+        "observation_id": "a0421ea7-3714-482a-8209-60cdfcb0b708",
+        "org_code": "B551553",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551553",
+        "representative_org_code": "B551553",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국에너지기술연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:21"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국에너지기술연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2002-06-26",
+        "changed_date": "2013-10-22",
+        "full_name": "한국에너지기술연구원",
+        "lowest_name": "한국에너지기술연구원",
+        "observation_id": "62f23ad3-fd29-4f49-a410-c6d1ea10c4d2",
+        "org_code": "B551184",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551184",
+        "representative_org_code": "B551184",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-14",
+          "audited_target": "한국예술종합학교",
+          "committee_name": "문화체육관광위원회",
+          "observation_id": "772b68ff-5eee-4513-9e4a-83d2e07b5687",
+          "provider_record_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4",
+          "review_key": "3078704:114e8e5e4cf843db89f0abb4479c79f1:2:schedule:4:audited-target:2"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국예술종합학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2010-10-07",
+        "full_name": "한국예술종합학교",
+        "lowest_name": "한국예술종합학교",
+        "observation_id": "c060e4fd-d9dd-476f-afa4-6531f13f0d3d",
+        "org_code": "7002970",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7002970",
+        "representative_org_code": "7002970",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "한국우편사업진흥원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "60da2bea-e409-4d9c-b5cc-6aa72699da31",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:1:audited-target:9"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국우편사업진흥원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2012-02-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국우편사업진흥원",
+        "lowest_name": "한국우편사업진흥원",
+        "observation_id": "1d6ff021-52c3-46ea-b45a-3b598607968e",
+        "org_code": "B552844",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B552844",
+        "representative_org_code": "B552844",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "기타"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국원자력연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:10"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국원자력연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2007-03-27",
+        "changed_date": "2013-10-22",
+        "full_name": "한국원자력연구원",
+        "lowest_name": "한국원자력연구원",
+        "observation_id": "45e9cfbf-7330-443a-bfbf-139ac853eba9",
+        "org_code": "B551909",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551909",
+        "representative_org_code": "B551909",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-23",
+          "audited_target": "한국은행",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "ecd4fa4c-b2d1-4801-aa32-ebb2458f1da2",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:2"
+        },
+        {
+          "audit_date": "2026-10-12",
+          "audited_target": "한국은행",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "2bed6119-366e-41ff-bbd0-03c5a9c68d99",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:3",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:3:audited-target:1"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "한국은행",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국은행",
+        "lowest_name": "한국은행",
+        "observation_id": "f834b22d-4ede-4157-9705-b3dfbd7ab517",
+        "org_code": "B190033",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B190033",
+        "representative_org_code": "B190033",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-06",
+          "audited_target": "한국자유총연맹",
+          "committee_name": "행정안전위원회",
+          "observation_id": "663c9050-e9d4-4c5e-8b89-0dc6c74544a7",
+          "provider_record_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1",
+          "review_key": "3078707:bf03a64c5e7a432e8c0475efcf15e545:1:schedule:1:audited-target:11"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국자유총연맹",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-06-27",
+        "changed_date": "2018-11-28",
+        "full_name": "한국자유총연맹",
+        "lowest_name": "한국자유총연맹",
+        "observation_id": "3b987f59-a92e-4428-a345-e8b23a392388",
+        "org_code": "B550438",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B550438",
+        "representative_org_code": "B550438",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부보조기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국재료연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:20"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국재료연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2020-11-27",
+        "changed_date": "2020-11-27",
+        "full_name": "한국재료연구원",
+        "lowest_name": "한국재료연구원",
+        "observation_id": "daac4618-c716-4472-a5d7-ac2dbe258fa1",
+        "org_code": "B554384",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B554384",
+        "representative_org_code": "B554384",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국전기연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:52"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국전기연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2007-06-13",
+        "changed_date": "2013-10-22",
+        "full_name": "한국전기연구원",
+        "lowest_name": "한국전기연구원",
+        "observation_id": "e34b5ba2-91e8-463a-8544-3b9730108dae",
+        "org_code": "B551929",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551929",
+        "representative_org_code": "B551929",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국전자통신연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:12"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국전자통신연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2007-11-13",
+        "changed_date": "2013-10-22",
+        "full_name": "한국전자통신연구원",
+        "lowest_name": "한국전자통신연구원",
+        "observation_id": "e81f2628-937b-4b40-bdcf-91a6f95e8881",
+        "org_code": "B551963",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551963",
+        "representative_org_code": "B551963",
+        "top_org_code": "B000000",
+        "type_big": "정부투자기관 및 기타",
+        "type_mid": "정부출연단체"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국지질자원연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:18"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국지질자원연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2002-04-18",
+        "changed_date": "2013-10-22",
+        "full_name": "한국지질자원연구원",
+        "lowest_name": "한국지질자원연구원",
+        "observation_id": "d611b6b5-c9fb-4348-af3e-3c3bfd27a66b",
+        "org_code": "B551176",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551176",
+        "representative_org_code": "B551176",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국천문연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:50"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국천문연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국천문연구원",
+        "lowest_name": "한국천문연구원",
+        "observation_id": "6ee49920-6ab1-4ce2-ac72-428d69c952f5",
+        "org_code": "B090041",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B090041",
+        "representative_org_code": "B090041",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국철도기술연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:15"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국철도기술연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2002-11-13",
+        "changed_date": "2013-10-22",
+        "full_name": "한국철도기술연구원",
+        "lowest_name": "한국철도기술연구원",
+        "observation_id": "52ccc523-7b6d-42ff-bc69-0ec304d2efe6",
+        "org_code": "B551201",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551201",
+        "representative_org_code": "B551201",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국표준과학연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:9"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국표준과학연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2002-08-27",
+        "changed_date": "2013-10-22",
+        "full_name": "한국표준과학연구원",
+        "lowest_name": "한국표준과학연구원",
+        "observation_id": "65665cda-0837-484a-9a52-d9feabf7ceb3",
+        "org_code": "B551189",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551189",
+        "representative_org_code": "B551189",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국한의학연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:7"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국한의학연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2000-05-01",
+        "changed_date": "2013-10-22",
+        "full_name": "한국한의학연구원",
+        "lowest_name": "한국한의학연구원",
+        "observation_id": "82a12def-edda-402f-972f-1ff56e444610",
+        "org_code": "B090018",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B090018",
+        "representative_org_code": "B090018",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": null
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국항공우주연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:51"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국항공우주연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2007-11-05",
+        "changed_date": "2013-10-22",
+        "full_name": "한국항공우주연구원",
+        "lowest_name": "한국항공우주연구원",
+        "observation_id": "01ccec5a-51cb-4a67-b598-054834aa4dd2",
+        "org_code": "B551959",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551959",
+        "representative_org_code": "B551959",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국핵융합에너지연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:5"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국핵융합에너지연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2020-11-27",
+        "changed_date": "2020-11-27",
+        "full_name": "한국핵융합에너지연구원",
+        "lowest_name": "한국핵융합에너지연구원",
+        "observation_id": "1b2c1b65-26c4-42b8-a6e7-49864ddaa818",
+        "org_code": "B554383",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B554383",
+        "representative_org_code": "B554383",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한국화학연구원",
+          "committee_name": "과학기술정보방송통신위원회",
+          "observation_id": "42fe6d0c-8da1-44ad-aaf6-826a24b7eb57",
+          "provider_record_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6",
+          "review_key": "3078699:7938f3a874d5441892124093d19da1df:2:schedule:6:audited-target:53"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "한국화학연구원",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2007-03-06",
+        "changed_date": "2013-10-22",
+        "full_name": "한국화학연구원",
+        "lowest_name": "한국화학연구원",
+        "observation_id": "c9d12327-e68f-4b71-8b3a-ca102dcacc4a",
+        "org_code": "B551890",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B551890",
+        "representative_org_code": "B551890",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출연기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-23",
+          "audited_target": "한미전략투자공사",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "ecd4fa4c-b2d1-4801-aa32-ebb2458f1da2",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:10:audited-target:11"
+        },
+        {
+          "audit_date": "2026-10-20",
+          "audited_target": "한미전략투자공사",
+          "committee_name": "재정경제기획위원회",
+          "observation_id": "532a23d8-be9b-4c8e-bedd-d3f2c34c19dd",
+          "provider_record_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8",
+          "review_key": "3078708:5ed9af3fc7eb418f9e3aa5830d7307ac:2:schedule:8:audited-target:9"
+        }
+      ],
+      "occurrence_count": 2,
+      "organization_name": "한미전략투자공사",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2026-07-02",
+        "changed_date": "2026-07-02",
+        "full_name": "한미전략투자공사",
+        "lowest_name": "한미전략투자공사",
+        "observation_id": "c81ac85c-ecf4-44bb-8dd9-de6acbdd44c9",
+        "org_code": "B555481",
+        "parent_org_code": "B000000",
+        "provider_record_key": "B555481",
+        "representative_org_code": "B555481",
+        "top_org_code": "B000000",
+        "type_big": "산하기관",
+        "type_mid": "정부출자기관"
+      }
+    },
+    {
+      "current_exact_canonical_match_count": 0,
+      "gukgam_occurrences": [
+        {
+          "audit_date": "2026-10-22",
+          "audited_target": "해군사관학교",
+          "committee_name": "국방위원회",
+          "observation_id": "d92a7ac8-6bfb-4e67-8b4c-46a002213283",
+          "provider_record_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:8",
+          "review_key": "3078693:27e3a715445a4620b51cf3d6d9423e74:2:schedule:8:audited-target:2"
+        }
+      ],
+      "occurrence_count": 1,
+      "organization_name": "해군사관학교",
+      "proposal_status": "REVIEW_REQUIRED_NO_WRITE",
+      "provider": {
+        "base_date": "2008-06-24",
+        "changed_date": "2010-10-07",
+        "full_name": "해군사관학교",
+        "lowest_name": "해군사관학교",
+        "observation_id": "11f4be91-4431-4027-a03e-f4658b1b28b6",
+        "org_code": "7007977",
+        "parent_org_code": "1000000",
+        "provider_record_key": "7007977",
+        "representative_org_code": "7007977",
+        "top_org_code": "1000000",
+        "type_big": "고등교육기관",
+        "type_mid": "4년제 정규대학"
+      }
+    }
+  ],
+  "limitations": [
+    "Exact MOIS full_name equality is a review proposal only and does not create an Organization.",
+    "MOIS org_code remains a provider identity and is never treated as a canonical Organization ID.",
+    "Multiple exact provider full_name matches are withheld from proposals and remain review-required.",
+    "No alias expansion, fuzzy similarity, ranking, embeddings, or organizational proximity is used.",
+    "No Gukgam binding, Claim, ClaimEvidence, or public publication is performed."
+  ],
+  "match_rule": "EXACT_MOIS_FULL_NAME_TO_GUKGAM_NO_EXACT_LABEL_ONLY",
+  "proposal_count": 70,
+  "provider_universe_count": 133930,
+  "semantics": "REVIEW_ONLY_MOIS_ORGANIZATION_PROPOSAL_V1",
+  "status": "REVIEW_ONLY",
+  "unmatched_distinct_target_count": 159
+}

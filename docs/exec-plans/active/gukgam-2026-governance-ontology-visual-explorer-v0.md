@@ -1616,3 +1616,35 @@ Require explicit operator review/confirmation of the exact `41` DRAFT
 `civic.gukgam.reviewed_claim_batch_manifest.v1` artifact. Do not infer approval from exact-name
 overlap or from the org.go Organization materialization itself. After explicit confirmation, run
 the normal no-write batch preflight and only then consider a separate Claim/Evidence commit slice.
+
+## Current checkpoint — MOIS L3 closure + review-only Organization proposal (2026-09-28)
+
+- Mac staging/data PostgreSQL at schema `0008` completed the merged-master MOIS current-universe
+  run with `133,930/133,930` observations, checkpoint `134/134` and latest SourceRun `SUCCESS`.
+  The earlier `133,907` value is retained only as the 2026-09-26 audit snapshot.
+- MOIS collection created zero canonical Organizations/People/Claims. The separate reviewed org.go27
+  slice later raised canonical Organizations from `347` to `374` while Claims remained unchanged.
+- The exact post-org.go Gukgam Claim DRAFT has `41` occurrences / `27` Organizations, canonical
+  manifest SHA `9bb202c3de7c219382f69c91b8b0014bba7442428b673b55ac7ebbf766e711a9`, and remains
+  `DRAFT_NOT_OPERATOR_APPROVED`. A fresh no-write batch preflight passed all `41/41` items with
+  `0` persisted/created Claims; preflight file SHA is
+  `5510174eca01a3529d08ed53521ff9dbd0f2d47d8b900f71c327f9e97de981e9`.
+- After org.go27, Gukgam binding review contained `239` NO_EXACT mentions / `229` distinct labels.
+- Added pure projection `REVIEW_ONLY_MOIS_ORGANIZATION_PROPOSAL_V1`. It uses exact persisted MOIS
+  `full_name` equality only, retains provider `org_code` plus FeederObservation provenance, and
+  performs no Organization/Claim write.
+- Live projection over the complete `133,930` observation universe produced `70` review-only
+  Organization proposals covering `74` Gukgam occurrences, `0` ambiguous exact provider names and
+  `159` still-unmatched distinct Gukgam target labels.
+- Canonical review artifact:
+  `docs/research/gukgam_2026_mois_organization_proposal_2026-09-28.json`.
+  Semantic SHA-256:
+  `e7a208d1236517dd10d0768d1af8e25f5fc088925733b7039cbac794d9d99964`.
+- No MOIS proposal is materialized and no new Gukgam Claim is published by this slice.
+
+## Next concrete action
+
+Keep the exact 41-item post-org.go Gukgam Claim DRAFT uncommitted until explicit operator review of
+its manifest hash. Independently review the new 70-item MOIS Organization proposal. Only after
+explicit review should a source-specific reviewed Organization materialization contract be created;
+do not auto-create Organizations from exact names and do not merge these two approval boundaries.
