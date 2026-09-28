@@ -23,13 +23,70 @@ export type Overview = {
   checked_at: string; environment_label: string; schema_expected: string;
   documented_catalog: { name: string; scope: string; source: string; mode: string; maturity: string }[];
 };
-export type Manifest = {
-  status: string; message: string; manifest_sha256?: string; proposal_core_sha256?: string;
-  item_count?: number; organizations_to_create?: number | null; organizations_to_reuse?: number | null;
-  checked_at?: string;
-  items?: { organization_name: string; org_code: string; chart_id: string; category: string;
-    source_locator: string | null; organization_id: string; action: string; review_occurrences: number }[];
+export type GukgamClaimReviewItem = {
+  review_key: string;
+  organization_id: string;
+  organization_name: string;
+  committee_name: string;
+  audit_date: string;
+  audited_target: string;
+  observation_id: string;
+  match_class: string;
+  current_claim_present: boolean;
 };
+
+export type MoisOrganizationReviewItem = {
+  organization_name: string;
+  org_code: string;
+  lowest_name: string | null;
+  type_big: string | null;
+  type_mid: string | null;
+  parent_org_code: string | null;
+  top_org_code: string | null;
+  representative_org_code: string | null;
+  base_date: string | null;
+  changed_date: string | null;
+  observation_id: string;
+  occurrence_count: number;
+  occurrences: {
+    review_key: string;
+    committee_name: string;
+    audit_date: string;
+    audited_target: string;
+    observation_id: string;
+  }[];
+  materialization_authorized: boolean;
+};
+
+export type Manifest = {
+  status: string;
+  message: string;
+  checked_at?: string;
+  write_performed: false;
+  gukgam_claim_review: {
+    status: string;
+    message?: string;
+    manifest_sha256?: string | null;
+    item_count?: number;
+    organization_count?: number;
+    current_organization_count?: number;
+    existing_gukgam_claim_count?: number;
+    claim_commit_authorized: boolean;
+    items: GukgamClaimReviewItem[];
+  };
+  mois_organization_review: {
+    status: string;
+    message?: string;
+    artifact_sha256?: string;
+    proposal_count?: number;
+    occurrence_count?: number;
+    unmatched_distinct_target_count?: number;
+    ambiguous_distinct_target_count?: number;
+    materialization_authorized: boolean;
+    items: MoisOrganizationReviewItem[];
+  };
+};
+
 export const KIND_LABELS: Record<string, string> = {
   organizations: "기관", people: "인물", claims: "Claim · 내용", observations: "수집 기록",
   sources: "출처", runs: "수집 실행", evidence: "Evidence · 근거", snapshots: "수집본",

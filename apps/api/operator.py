@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -14,18 +13,12 @@ from sqlalchemy import event
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 
+from apps.api.operator_review import current_review_inspection
 from packages.persistence import DatabaseNotReady, SqlAlchemyRepository
-from packages.persistence.operator_queries import MODELS, safe_url
+from packages.persistence.operator_queries import MODELS
 from packages.persistence.repository import EXPECTED_SCHEMA_REVISION
-from workers.orggo_reviewed_organization_manifest import (
-    organization_id_for_orggo_code,
-    parse_reviewed_orggo_organization_manifest,
-    prepare_reviewed_orggo_organization_manifest,
-)
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / "docs/research/orggo_reviewed_organization_manifest_2026-09-22.json"
-PROPOSAL = ROOT / "docs/research/gukgam_2026_orggo_organization_proposal_2026-09-22.json"
 
 
 def configure_read_only(repository: SqlAlchemyRepository, *, allow_writes: bool = False) -> None:
@@ -83,59 +76,7 @@ def documented_catalog() -> list[dict[str, str]]:
 
 
 def manifest_inspection(repository: SqlAlchemyRepository) -> dict[str, Any]:
-    try:
-        manifest = parse_reviewed_orggo_organization_manifest(
-            json.loads(MANIFEST.read_text(encoding="utf-8"))
-        )
-        proposal = json.loads(PROPOSAL.read_text(encoding="utf-8"))
-    except (OSError, ValueError, TypeError):
-        return {
-            "status": "ARTIFACT_UNAVAILABLE",
-            "write_performed": False,
-            "message": "검토 artifact를 읽을 수 없습니다. 저장 상태와 다릅니다.",
-        }
-    # Canonical preflight is the only authority for CREATE/REUSE. Nothing here commits.
-    try:
-        preflight = prepare_reviewed_orggo_organization_manifest(repository, manifest, proposal)
-        created = sum(item.action == "CREATE" for item in preflight.prepared_items)
-        reused = sum(item.action == "REUSE" for item in preflight.prepared_items)
-        state = "ALL_PRESENT" if not created else "PARTIAL_BLOCKED" if reused else "READY_NO_WRITE"
-        items: list[dict[str, Any]] = [item.to_dict() for item in preflight.prepared_items]
-        message = "현재 DB에 대한 읽기 전용 재검증입니다. 과거 receipt 또는 commit 증명이 아닙니다."
-    except (ValueError, TypeError):
-        state = "BASELINE_OR_IDENTITY_CONFLICT"
-        items = [
-            {
-                **item.to_dict(),
-                "organization_id": str(organization_id_for_orggo_code(item.org_code)),
-                "action": "BLOCKED",
-            }
-            for item in manifest.items
-        ]
-        created, reused = None, None
-        message = (
-            "검토 당시 기준과 현재 DB가 다르거나 ID/기관명 충돌이 있습니다. 자동 수정하지 않습니다."
-        )
-    occurrences = {
-        item["provider"]["org_code"]: item.get("occurrence_count", 0)
-        for item in proposal.get("items", [])
-    }
-    for item in items:
-        item["source_locator"] = safe_url(item["source_locator"])
-        item["review_occurrences"] = occurrences.get(item["org_code"], 0)
-    return {
-        "status": state,
-        "message": message,
-        "manifest_sha256": manifest.sha256(),
-        "proposal_core_sha256": manifest.proposal_core_sha256,
-        "item_count": len(items),
-        "organizations_to_create": created,
-        "organizations_to_reuse": reused,
-        "items": items,
-        "checked_at": datetime.now(UTC).isoformat(),
-        "write_performed": False,
-        "gukgam_claim_publication": False,
-    }
+    return current_review_inspection(repository)
 
 
 def build_operator_router(repository: SqlAlchemyRepository, label: str) -> APIRouter:

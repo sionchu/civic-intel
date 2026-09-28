@@ -166,17 +166,52 @@ export default async function ReviewPage({ searchParams }: {
           : detailResult?.state === "error" ? <ReadState error={detailResult.error} /> : <p className="operator-empty">목록에서 기록을 선택하면 연결 지도와 내용이 표시됩니다.</p>}</div></div>}
     </section>}
 
-    {tab === "manifest" && <section><div className="operator-section-head"><div><span className="micro-label">EXACT REVIEWED ARTIFACT</span><h2>org.go 기관 반영 사전검증</h2></div><span className="operator-tag">NO WRITE</span></div>
+    {tab === "manifest" && <section>
+      <div className="operator-section-head"><div><span className="micro-label">CURRENT HUMAN REVIEW / CANONICAL DB</span><h2>현재 검토 경계</h2></div><span className="operator-tag">NO WRITE</span></div>
       {manifestResult?.state === "error" && <ReadState error={manifestResult.error} />}
       {manifest && <><div className="operator-scope"><strong>{manifest.status}</strong> · {manifest.message}</div>
-        <p>{manifest.item_count ?? "—"}개 검토 항목 · 생성 예상 {manifest.organizations_to_create ?? "검증 차단"} · 재사용 {manifest.organizations_to_reuse ?? "검증 차단"}</p>
-        <p className="operator-note">기관 존재 여부와 Gukgam Claim 공개는 별도입니다. 반영 실행·과거 commit receipt 증명 기능은 포함하지 않습니다.</p>
-        <details className="operator-hashes"><summary>검토 manifest·proposal 해시</summary><p>Manifest: {manifest.manifest_sha256}</p><p>Proposal: {manifest.proposal_core_sha256}</p></details>
-        {manifest.items && <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>검토 기관</th><th>orgCode / chartId</th><th>사전검증</th><th>국감 검토 occurrence</th><th>기록·출처</th></tr></thead>
-          <tbody>{manifest.items.map((item) => <tr key={item.org_code}><td><strong>{item.organization_name}</strong><small>{item.category}</small></td>
-            <td>{item.org_code} / {item.chart_id}</td><td>{item.action}</td><td>{item.review_occurrences}건 · 공개 관계 아님</td>
-            <td><Link prefetch={false} href={recordLink("organizations", item.organization_id)}>DB 존재 확인 →</Link>
-              {item.source_locator && <small><a href={item.source_locator} target="_blank" rel="noreferrer">공식 출처 ↗</a></small>}</td></tr>)}</tbody></table></div>}</>}
+        <p className="operator-note">과거 완료 artifact를 현재 상태로 재사용하지 않습니다. 현재 schedule/checkpoint, Organization, Claim과 provider observation을 다시 읽어 검증하며 이 화면은 승인·반영을 수행하지 않습니다.</p>
+
+        <article className="operator-detail-card">
+          <div className="operator-section-head"><div><span className="micro-label">GUKGAM CLAIM REVIEW</span><h3>국감 exact-one Claim 후보</h3></div><span className="operator-tag">{manifest.gukgam_claim_review.status}</span></div>
+          <p>{manifest.gukgam_claim_review.item_count ?? 0} occurrence · {manifest.gukgam_claim_review.organization_count ?? 0}개 기관 · 기존 Gukgam Claim {manifest.gukgam_claim_review.existing_gukgam_claim_count ?? 0}건</p>
+          <p className="operator-note">{manifest.gukgam_claim_review.message} exact canonical-name 일치는 discovery candidate이며 사람 승인을 대신하지 않습니다.</p>
+          {manifest.gukgam_claim_review.manifest_sha256 && <details className="operator-hashes"><summary>현재 DRAFT manifest hash</summary><p>{manifest.gukgam_claim_review.manifest_sha256}</p><small>claim_commit_authorized = {String(manifest.gukgam_claim_review.claim_commit_authorized)}</small></details>}
+          {manifest.gukgam_claim_review.items.length > 0 && <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>기관</th><th>위원회 / 감사 예정일</th><th>현재 후보 관계</th><th>DB 확인</th></tr></thead>
+            <tbody>{manifest.gukgam_claim_review.items.map((item) => <tr key={item.review_key}>
+              <td><strong>{item.organization_name}</strong><small>{item.review_key}</small></td>
+              <td>{item.committee_name}<small>{item.audit_date}</small></td>
+              <td><span className="operator-tag">{item.match_class}</span><small>Claim 존재 {item.current_claim_present ? "예" : "아니요"} · 승인되지 않음</small></td>
+              <td><Link prefetch={false} href={recordLink("organizations", item.organization_id)}>Organization →</Link><small><Link prefetch={false} href={recordLink("observations", item.observation_id)}>schedule observation →</Link></small></td>
+            </tr>)}</tbody></table></div>}
+        </article>
+
+        <article className="operator-detail-card">
+          <div className="operator-section-head"><div><span className="micro-label">MOIS ORGANIZATION REVIEW</span><h3>MOIS 기관 생성 제안</h3></div><span className="operator-tag">{manifest.mois_organization_review.status}</span></div>
+          <p>{manifest.mois_organization_review.proposal_count ?? 0}개 proposal · {manifest.mois_organization_review.occurrence_count ?? 0} occurrence · 아직 unmatched {manifest.mois_organization_review.unmatched_distinct_target_count ?? "—"}개</p>
+          <p className="operator-note">{manifest.mois_organization_review.message} 이 검토는 Organization materialization 후보만 다루며 Gukgam Claim 승인을 포함하지 않습니다.</p>
+          {manifest.mois_organization_review.artifact_sha256 && <details className="operator-hashes"><summary>재검증된 proposal artifact hash</summary><p>{manifest.mois_organization_review.artifact_sha256}</p><small>materialization_authorized = {String(manifest.mois_organization_review.materialization_authorized)}</small></details>}
+          {manifest.mois_organization_review.items.length > 0 && <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>제안 기관</th><th>MOIS 분류 / orgCode</th><th>국감 occurrence</th><th>원본 수집 기록</th></tr></thead>
+            <tbody>{manifest.mois_organization_review.items.map((item) => <tr key={item.org_code}>
+              <td><strong>{item.organization_name}</strong><small>승인 전 · canonical Organization 없음</small></td>
+              <td>{item.type_big ?? "분류 없음"} / {item.type_mid ?? "세부분류 없음"}
+                <small>{item.org_code} · lowest {item.lowest_name ?? "—"}</small>
+                <small>parent {item.parent_org_code ?? "—"} · top {item.top_org_code ?? "—"} · representative {item.representative_org_code ?? "—"}</small>
+                <small>기준일 {item.base_date ?? "—"} · 변경일 {item.changed_date ?? "—"}</small>
+              </td>
+              <td>{item.occurrence_count}건
+                <details className="audit-details"><summary>국감 occurrence 근거</summary>
+                  {item.occurrences.map((occurrence) => <small key={occurrence.review_key}>
+                    {occurrence.audit_date} · {occurrence.committee_name} · {occurrence.audited_target}<br />
+                    <Link prefetch={false} href={recordLink("observations", occurrence.observation_id)}>schedule observation →</Link><br />
+                    {occurrence.review_key}<br />
+                  </small>)}
+                </details>
+              </td>
+              <td><Link prefetch={false} href={recordLink("observations", item.observation_id)}>MOIS observation →</Link></td>
+            </tr>)}</tbody></table></div>}
+        </article>
+      </>}
     </section>}
 
     {tab === "catalog" && <section><div className="operator-section-head"><div><span className="micro-label">DOCUMENTED SOURCE STRATEGY</span><h2>수집 출처 계획·제약</h2></div><span>{overview.documented_catalog.length}개 문서 항목</span></div>

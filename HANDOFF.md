@@ -3,7 +3,7 @@
 ## Current authority — 2026-09-28
 
 The canonical repository is `/Users/lee/Projects/civic-intel`. The current merged baseline
-before this CHANGE-proof slice is `master == origin/master == a35678d`; the working tree was
+before this operator-review slice is `master == origin/master == 2463ab3`; the working tree was
 clean when the slice started. `AGENTS.md` governs execution, `ARCHITECTURE.md` governs canonical boundaries,
 `docs/product/CIVIC_INTEL_NORTH_STAR.md` governs long-term direction, and
 `docs/exec-plans/active/` must contain only genuinely unfinished approved work. Older checkpoint
@@ -33,28 +33,31 @@ authorizes Claim publication or MOIS Organization creation.
 
 ## Immediate direction
 
-The control-plane normalization and smallest proven ALIO/NEC persistence seam are merged. The
-follow-on source-neutral CHANGE proof is also complete in the current branch: the existing Assembly
-historical Person CHANGE and ALIO Item 12 Organization MONEY projections now share only an additive
-`SOURCE_NEUTRAL_DERIVED_CHANGE_TRACE_V1` evidence/subject trace. Their source-specific comparison,
-correction and interpretation rules remain separate.
+The control-plane normalization, ALIO/NEC persistence seam and source-neutral CHANGE proof are
+merged. The private operator console's manifest tab is now the next review control plane rather
+than the completed 2026-09-22 org.go27 packet: it recomputes current unpublished exact-one Gukgam
+Claim candidates from canonical DB state and separately fail-closes the checked-in MOIS proposal
+against the current MOIS SUCCESS checkpoint/provider manifest, exact provider observations,
+current Organization universe and current Gukgam NO_EXACT occurrences.
 
-Read-only Mac PostgreSQL validation used the published 정보통신기획평가원 Item 12 pair
-(2024 `15,023천원` -> 2025 `12,861천원`). The branch preserves the existing MONEY ID, delta
-`-2,162,000 KRW`, percent `-14.39` and all prior response fields byte-for-byte after removing only
-the additive change trace. Full repository verification passed with `643 passed / 3 skipped`,
-Golden Set PASS, Web `26/26` and a successful standalone production build. No operational write
-occurred.
+Read-only Mac PostgreSQL verification currently reports Gukgam `41` occurrences / `27`
+Organizations with manifest SHA
+`9bb202c3de7c219382f69c91b8b0014bba7442428b673b55ac7ebbf766e711a9`, and MOIS
+`70` Organization proposals / `74` Gukgam occurrences / `159` unmatched labels / `0`
+ambiguous exact provider names. Both lanes explicitly return authorization=false and perform no
+write. The real private browser rendered `CURRENT_HUMAN_REVIEW_READY`, the exact counts, provider
+classification/lifecycle fields and links to canonical Organization, MOIS observation and Gukgam
+schedule observation records. Full repository verification passed with `646 passed / 3 skipped`,
+Golden Set PASS, Web `26/26` and a successful standalone production build.
 
-The next product/data work remains deliberately split:
+The next data action is therefore human review, not another source expansion:
 
-1. The exact post-org.go 41-item Gukgam Claim manifest still requires explicit human/operator review;
-   do not infer approval from exact-name matching or from either maintenance slice.
-2. Independently review the 70-item MOIS Organization proposal before any reviewed materialization
-   contract is created.
-3. Do not add another feeder or generic analytics framework merely to increase coverage. The
-   source-neutral CHANGE trace now has two concrete domains; future generalization needs another
-   concrete product requirement, not speculative abstraction.
+1. Review the 41 Gukgam exact-one occurrences and explicitly approve/reject/hold each Organization
+   binding. Exact name equality remains discovery evidence only.
+2. Separately review the 70 MOIS Organization proposals using provider type, hierarchy, lifecycle
+   fields and linked Gukgam occurrences. A MOIS decision does not approve a Gukgam Claim.
+3. Only after explicit decisions exist should a new reviewed manifest/materialization or Claim
+   commit receipt be generated. Do not infer approval from this read-only surface.
 
 
 ## Completed
