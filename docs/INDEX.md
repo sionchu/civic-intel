@@ -8,6 +8,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 `exec-plans/blocked/`. Historical plans remain reference evidence, not current instructions.
 
 - [Architecture](../ARCHITECTURE.md)
+- [System overview: purpose, architecture, source gates and current state](architecture/CIVIC_INTEL_SYSTEM_OVERVIEW.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
 - [Governance ontology projection](architecture/GOVERNANCE_ONTOLOGY.md)
 - [Gukgam 2026 source contract](architecture/GUKGAM_2026_SOURCE_CONTRACT.md)
