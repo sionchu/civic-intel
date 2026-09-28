@@ -1,5 +1,10 @@
 # Architecture
 
+For a single end-to-end orientation covering purpose, architecture, source gates, current collection
+coverage and the present review boundary, start with
+[System Overview](docs/architecture/CIVIC_INTEL_SYSTEM_OVERVIEW.md). This file remains the governing
+architecture boundary.
+
 Long-term product direction and the Evidence Core / Derived Intelligence / Product boundary
 are defined in [Civic Intel North Star](docs/product/CIVIC_INTEL_NORTH_STAR.md). Future analysis
 and access layers consume this architecture; they do not alter current canonical contracts or gates.
@@ -11,9 +16,8 @@ and access layers consume this architecture; they do not alter current canonical
 Pydantic contracts define canonical semantics. SQLAlchemy rows persist those contracts;
 Alembic is the only schema creation/change path. API and workers share the single
 `packages.persistence.SqlAlchemyRepository`; FastAPI never reads module-level fixture
-dictionaries. Normal runtime startup
-verifies the declared read-compatible Alembic revisions (0006/0007 during the additive admin rollout). It does not
-call `create_all()` and does not seed Golden Set 001. Golden seeding is an explicit,
+dictionaries. Normal runtime startup verifies the declared read-compatible Alembic revision (currently `0008`).
+It does not call `create_all()` and does not seed Golden Set 001. Golden seeding is an explicit,
 disposable development/test operation against an empty migrated database.
 
 ## Evidence and publication

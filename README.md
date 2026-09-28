@@ -3,12 +3,15 @@
 Evidence-grounded public-official intelligence with policy-first ingestion and fully
 traceable publication.
 
+For the end-to-end project map — purpose, architecture, evidence flow, source-gate maturity,
+current collection coverage, blocked lanes and next decision boundary — start with
+[System Overview](docs/architecture/CIVIC_INTEL_SYSTEM_OVERVIEW.md).
+
 The offline baseline is Golden Set 001: the ten people in the official 2026-08-30
-personnel briefing. Runtime API reads are SQLAlchemy-backed. Opt-in live-capable official
-connectors are available for National Assembly member identity, legislative activity,
-Central Election Commission local-election candidates/winners, NKIS policy-research
-metadata, selected OpenDART corporate disclosures, and the ALIO item 4 current executive
-roster; Golden tests remain fully offline.
+personnel briefing. Runtime API reads are SQLAlchemy-backed. Live-capable acquisition is always
+opt-in and source-specific; connector maturity, current operational coverage and blocked routes are
+tracked in the System Overview and `docs/architecture/FEEDER_SOURCE_COVERAGE.md`. Golden tests
+remain fully offline.
 
 ## Setup
 
