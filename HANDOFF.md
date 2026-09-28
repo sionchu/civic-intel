@@ -3446,6 +3446,35 @@ zero child runtime proof. Do not treat a copied request or role label as actual 
 - Synthetic read-only native probes with default multi-agent, one-shot `multi_agent_v2`, and an explicit GPT-5.5 coordinator each produced zero child agents because the exposed spawn schema had no configured-role selector. Upstream openai/codex #31893/#31814 documents the same custom-role/task_name limitation.
 - No Civic Intel source row, Person, Claim, admin operation, deployment, browser runtime or DB state was changed by these probes. Dashboard execution remains NOT_CONNECTED.
 
+## Current checkpoint — Mac data server + org.go27 operational closure (2026-09-28)
+
+- Mac mini staging/data server now runs PostgreSQL 18 and the Civic Intel API on loopback only.
+  Schema is `0008`; the restored database contains People `9120`, Organizations `347`,
+  Claims/ClaimEvidence `14397/14397`, OpenDART observations `35022`, Assembly bill observations
+  `19651` and completed MOIS observations `133930` with checkpoint `134` / latest run
+  `SUCCESS`.
+- Daily local pg_dump runs at `03:20`, verifies the custom archive with `pg_restore --list`,
+  stores SHA-256 sidecars, prevents concurrent runs and keeps 14 days. A disposable PostgreSQL
+  restore test reproduced schema/data counts before the temporary database was deleted.
+- The reviewed org.go27 Organization-only mutation then re-used the exact manifest
+  `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab`.
+  Its fresh Mac LF preflight maps byte-for-byte to the historical Windows CRLF receipt
+  `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`.
+- The atomic commit created `27` Organizations, no Claims and no network fetch. Receipt SHA:
+  `d60279879d412dc1be2f36b7fd3ffb81423ae1135eead4c91eb5fecb04897982`.
+  Post-commit Organizations are `374`; People and Claims/ClaimEvidence remain
+  `9120` and `14397/14397`; public Gukgam Claim-backed targets remain `110`.
+- Fresh Gukgam binding review moved exactly `41` mentions / `27` distinct labels from NO_EXACT
+  to exact-one discovery candidates: overall `151` exact-one and `239` no-exact mentions.
+- The `41` candidate pairs were read-only preflighted individually: `41/41` pass, existing
+  Claim count `0`, writes `0`. Validated DRAFT SHA:
+  `ea46c6c5e75cc8dc006de2eddcf5a244331c9a2a058e9f99c07c49b3352078a8`.
+  This DRAFT is not a reviewed Claim manifest and remains outside the repository.
+
 ## Next concrete action
 
-Keep the playbook request/export workflow as the operational handoff for MAIN and do not add a generic shell runner or claim that a task label is a subagent. Re-test one synthetic read-only `record_curator` only when the installed stable Codex runtime actually exposes configured role selection. Independent collection/curation/product work may continue under ROLE_MODEL ownership; canonical mutations still go through the existing admin preview/confirm/receipt path. The independent org.go27 Organization-only commit remains pending and unrelated.
+Keep the playbook request/export workflow for MAIN and do not claim custom-role execution until the
+stable Codex runtime exposes configured role selection. Separately, require explicit operator review
+of the exact `41` Gukgam `review_key ↔ Organization` DRAFT pairs before constructing the
+canonical reviewed Claim batch manifest. Exact-name overlap and org.go Organization materialization
+do not themselves authorize Claim publication.
