@@ -54,3 +54,14 @@ Claim publication or political inference is introduced.
 6. Full repository Verify and GitHub CI pass before staging collection.
 7. Staging collection runs only from merged master and may resume after a committed checkpoint.
 8. Final checkpoint must equal the complete 3,994-company filtered universe.
+
+## Closure — 2026-09-28
+
+Implementation merged to master as PR #150 / commit `4e9ff5b`. Read-only verification against the
+current Mac staging/data PostgreSQL confirms scope `listed_corporations:2025:11011` at checkpoint
+cursor `3994`, with the latest run `SUCCESS` and `35022` persisted
+`opendart_disclosed_executives` observations. The bounded listed-company universe is complete and
+this execution plan is no longer active.
+
+Person materialization remains outside this completed collection slice and still requires its own
+reviewed identity/materialization contract.

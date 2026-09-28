@@ -150,9 +150,13 @@ The earlier aggregate count of 40 colliding distinct names is compatible with th
 12 of those names are already classified under the higher-priority repeated-current-name branch.
 All 3624 rows reconcile exactly: 2688 + 908 + 28.
 
-## Next concrete action
+## Closure — 2026-09-28
 
-Finish full regression/PostgreSQL CI and independent diff review, merge the implementation, take a
-fresh staging backup and recompute the receipt from merged master. Only if the fresh receipt and
-baseline remain exact should the 2688-row atomic commit run. Do not human-resolve or publish any
-real Person as a test action.
+Implementation merged to master as PR #147 / commit `abf3d2b`. Read-only verification against the
+current Mac staging/data PostgreSQL confirms `2688` `ALIO_REVIEWED_PERSON_ROLE` Claims, People
+`9120`, Claims/ClaimEvidence `14397/14397` and active PersonObservationLinks `9120`. The
+materialization therefore completed and this execution plan is no longer active.
+
+The source-specific safety boundary remains in force: these rows are REVIEW source-context Persons
+with DRAFT role Claims unless separately resolved/published. This closure does not authorize
+cross-source linking or publication.

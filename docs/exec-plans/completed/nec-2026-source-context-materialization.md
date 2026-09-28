@@ -142,10 +142,13 @@ then changes only identity status to RESOLVED. The candidacy Claim remains DRAFT
 projection requires that exact NEC source-context candidacy Claim to be separately PUBLISHED.
 An unrelated published Claim is insufficient.
 
-## Next concrete action
+## Closure — 2026-09-28
 
-Run the full repository verification and CI for this implementation. After merge, repeat the
-read-only staging dry-run on merged master. If the receipt is unchanged, create a fresh backup and
-commit exactly the 6,133 CREATE rows atomically. Then verify CREATE=0 / NOOP=6,133 on rerun,
-published Claim count unchanged, public Person count unchanged, and source/snapshot/observation
-fingerprints unchanged by materialization.
+Implementation merged to master as PR #149 / commit `7a2a677`. Read-only verification against the
+current Mac staging/data PostgreSQL confirms `6133` `NEC_LOCAL_ELECTION_CANDIDACY` Claims,
+`6756` persisted candidate observations across the approved 2026 scopes, People `9120`,
+Claims/ClaimEvidence `14397/14397` and active PersonObservationLinks `9120`. The materialization
+therefore completed and this execution plan is no longer active.
+
+The source-specific safety boundary remains unchanged: the created Persons are source-context
+REVIEW nodes and candidacy Claims remain DRAFT unless separately reviewed and published.

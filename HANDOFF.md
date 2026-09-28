@@ -1,48 +1,54 @@
 # HANDOFF
 
-## Objective
+## Current authority — 2026-09-28
 
-Maintain the evidence-first Civic Intel foundation and carry the completed Evidence Directory v0,
-site v1 and North Star into the first small Derived Intelligence product slice. The current slice
-is a source-traceable CHANGE experience over an explicitly bounded Assembly historical reviewed
-packet, using existing canonical Claim/Evidence and temporal records. The follow-on ALIO
-organization Claim contract is also bounded to existing canonical rows; keep live historical
-acquisition, OpenWatch and new feeder expansion outside that slice.
+The canonical repository is `/Users/lee/Projects/civic-intel`. At this checkpoint `master` and
+`origin/master` are both `e06cbb3`; the working tree was clean before the current maintenance
+slice. `AGENTS.md` governs execution, `ARCHITECTURE.md` governs canonical boundaries,
+`docs/product/CIVIC_INTEL_NORTH_STAR.md` governs long-term direction, and
+`docs/exec-plans/active/` must contain only genuinely unfinished approved work. Older checkpoint
+sections below are historical evidence, not current instructions.
 
-## Scope
+The current product boundary remains evidence-first Civic Intel rather than a Gukgam-only product:
+preserve `Claim -> ClaimEvidence -> Source -> SourcePolicy`, source-specific acquisition rights,
+identity fail-closed behavior and publication gates. Source-specific parsing and eligibility rules
+stay explicit. Shared execution machinery should be extracted only after two concrete source
+implementations prove the same invariant; do not introduce a generic ingestion/orchestration
+framework merely to remove source names.
 
-The current scope includes the public resolved-person roster, evidence-backed person profile,
-explicit epistemic/stance/conflict rendering, source-policy audit projection, responsive site
-shell, and a separate read-only identity review surface that is unavailable from the public API
-unless an internal/test caller explicitly enables it. The long-term product direction is the
-canonical `docs/product/CIVIC_INTEL_NORTH_STAR.md`; the immediate CHANGE plan must preserve the
-existing `Person -> Claim -> ClaimEvidence -> Source -> SourcePolicy` path and, when present,
-`ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance. The only follow-on
-schema change is the in-place `claims.organization_id` subject extension in migration `0005`;
-no live historical acquisition, live ALIO organization binding, search infrastructure,
-recommendation algorithm or new persistence abstraction is in scope.
+## Current verified operating state
 
-## Acceptance criteria
+Read-only local PostgreSQL verification on the Mac staging/data server reports People `9120`,
+Organizations `374`, Claims/ClaimEvidence `14397/14397` and active PersonObservationLinks
+`9120`. The completed source-context materializations account for exactly `2688`
+`ALIO_REVIEWED_PERSON_ROLE` Claims and `6133` `NEC_LOCAL_ELECTION_CANDIDACY` Claims. OpenDART
+listed-company enumeration has `35022` persisted executive observations and checkpoint cursor
+`3994` for `listed_corporations:2025:11011`. These facts close the stale ALIO, NEC and OpenDART
+execution plans; their historical details belong under `exec-plans/completed/`.
 
-- Public `/people` and person-related public routes expose only current `RESOLVED` identities.
-- Profile sections keep `AVAILABLE`/`PARTIAL`/`UNKNOWN`; claims show existing epistemic status and
-  evidence stance without inventing truth, confidence, or scoring semantics.
-- A claim containing both `SUPPORT` and `REFUTE` is visibly marked `SOURCE CONFLICT` without
-  downgrading or deleting the claim.
-- Profile and source cards expose human-readable provenance/policy summaries while placing UUIDs
-  and snapshot/observation references in audit details.
-- An explicitly enabled internal `/admin/review` surface is read-only and exposes existing review
-  actions, observations, candidates and source/snapshot provenance without normalized payload or
-  fulltext leakage; the public API does not register this route by default.
-- Decision episodes are public only when linked to a published Claim and its ClaimEvidence; legacy
-  or incomplete episode rows fail closed instead of being rendered as FACT.
-- Public claim, relationship and episode reads exclude superseded temporal rows.
-- Existing Golden Set, batch materialization and reviewed-person behavior remains intact.
-- A first CHANGE experience has a source-specific input scope, deterministic comparison rule,
-  visible evidence/provenance trace, explicit coverage/limitations and a bounded reviewed-packet
-  acceptance path.
-- Derived output remains visibly separate from FACT/CLAIM/UNKNOWN and does not add a new
-  `EpistemicStatus` or silently alter publication semantics.
+The remaining immediate Gukgam boundaries are deliberately separate: the post-org.go reviewed
+41-item Claim manifest remains `DRAFT_NOT_OPERATOR_APPROVED`, and the 70-item MOIS Organization
+proposal remains review-only. Neither exact-name overlap nor prior Organization materialization
+authorizes Claim publication or MOIS Organization creation.
+
+## Immediate direction
+
+The control-plane normalization and the smallest proven ALIO/NEC common persistence seam are now
+complete in the current maintenance branch. Full repository verification passed with `639 passed /
+3 skipped`, Golden Set PASS, Web `26/26` and a successful standalone production build. Read-only
+operational dry-runs reproduced the exact pre-change ALIO and NEC receipt SHA values against the
+same Mac PostgreSQL dataset; no operational write occurred.
+
+The next product/data work remains deliberately split:
+
+1. The exact post-org.go 41-item Gukgam Claim manifest still requires explicit operator review; do
+   not infer approval from exact-name matching or from this maintenance work.
+2. Independently review the 70-item MOIS Organization proposal before any reviewed materialization
+   contract is created.
+3. Do not make additional Gukgam coverage the default progress metric. Before another feeder or
+   source-specific workflow, prove one source-neutral North Star primitive over existing canonical
+   data and evidence.
+
 
 ## Completed
 
