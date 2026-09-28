@@ -1,6 +1,6 @@
 # org.go Reviewed Organization Materialization v0
 
-Status: COMPLETE — explicit manifest contract + staging dry-run proof; no staging write in this slice.
+Status: COMPLETE — explicit manifest contract, dry-run proof and Organization-only operational commit; no Gukgam Claim publication.
 
 ## Objective
 
@@ -46,8 +46,32 @@ Post-dry-run counts remained `347 / 5576 / 5576`.
 
 Targeted Ruff/mypy passed and materialization regression passed `8/8`. Full repository verification passed `511` tests with `1` skipped and Golden Set `passed: true`; Web lint/typecheck/test passed `23/23`. GitHub Verify remains the final Linux/deployment artifact merge gate.
 
+## Operational closure — 2026-09-28
+
+- The Mac staging/data PostgreSQL copy was restored at schema `0008` from the verified
+  post-Assembly/OpenDART baseline and then completed the MOIS current Organization-code lane at
+  `133930 / 133930`, checkpoint `134 / 134`, latest run `SUCCESS`.
+- Before the org.go mutation, the exact 27-item manifest
+  `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab` was re-preflighted
+  twice against the Mac database. The LF receipt SHA was
+  `ff3add8f74358418bbd251cd5e35781db33f4b425b83457416a324a259443b91`; converting that
+  single JSON line to the historical Windows CRLF form reproduced the canonical staging receipt
+  `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332` byte-for-byte.
+- One explicit Organization-only atomic commit returned `COMMITTED`, `item_count=27`,
+  `organizations_created=27`, `organizations_reused=0`, `write_performed=true`,
+  `automatic_candidate_enumeration=false`, `gukgam_claim_publication=false` and
+  `network_fetch=false`. The commit receipt SHA is
+  `d60279879d412dc1be2f36b7fd3ffb81423ae1135eead4c91eb5fecb04897982`.
+- Post-commit counts were Organizations `374`, People `9120`, Claims/ClaimEvidence
+  `14397/14397`, Gukgam observations `57` and Gukgam source runs `14`. Public Claim-backed
+  Gukgam targets remained `110`; this slice created no Claim or ClaimEvidence.
+- A fresh read-only binding review now has `151` exact-one mentions and `239` no-exact
+  mentions across the same `390` total mentions. The new org.go materialization accounts for
+  exactly `41` exact-one mentions across `27` Organizations. These are review candidates only.
+
 ## Next boundary
 
-After this contract is merged, a separate staging commit slice may recreate only the exact 27-item
-manifest and proposal, require the same fresh preflight receipt and exact manifest SHA, and execute
-one Organization-only atomic commit. No Gukgam Claim may be published in that slice.
+Do not convert the new `41` exact-one occurrences into a reviewed Claim batch automatically.
+An operator must explicitly review and confirm the exact `review_key ↔ Organization` pairs before
+the canonical reviewed Gukgam batch manifest/preflight/commit path is used. Claim publication remains
+a separate atomic slice.

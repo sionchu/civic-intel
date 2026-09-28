@@ -1587,6 +1587,32 @@ Staging must stay noindex.
 - Runbook and exact scope: `docs/operations/OPERATOR_CONSOLE.md`. The org.go atomic commit below
   remains a separate pending operational action; implementing the console did not execute it.
 
+## Current checkpoint — org.go27 Organization-only commit + post-binding audit (2026-09-28)
+
+- The exact reviewed 27-item org.go manifest was re-preflighted against the Mac staging/data
+  PostgreSQL copy before mutation. Its LF receipt SHA was
+  `ff3add8f74358418bbd251cd5e35781db33f4b425b83457416a324a259443b91`; CRLF normalization
+  reproduced the historical canonical receipt
+  `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`.
+- One Organization-only atomic commit created exactly `27` Organizations and no Claims. The
+  receipt SHA is `d60279879d412dc1be2f36b7fd3ffb81423ae1135eead4c91eb5fecb04897982`.
+- Post-commit Organizations are `374`; People remain `9120`; Claims/ClaimEvidence remain
+  `14397/14397`; Gukgam observations/runs remain `57/14`; public Claim-backed targets remain
+  `110`.
+- Fresh read-only binding review over the unchanged `390` audited-target mentions now reports
+  `151` exact-one and `239` no-exact mentions, with `130` distinct exact-one labels and
+  `229` distinct no-exact labels. The org.go27 slice accounts for exactly `41` newly exact-one
+  mentions across `27` Organizations.
+- A local review DRAFT was generated for those `41` pairs and then validated through the
+  existing single-item Claim preflight seam: `41/41` passed, existing Claim count `0`, and
+  Claim write count `0`. The validated DRAFT SHA is
+  `ea46c6c5e75cc8dc006de2eddcf5a244331c9a2a058e9f99c07c49b3352078a8`.
+  It is not a canonical reviewed Claim batch manifest and remains outside the repository.
+
 ## Next concrete action
 
-After this contract is merged, run one separate staging commit slice using only the exact 27-item manifest SHA `f2a455a7b4f2271d73a5fb329af5dbc608aa5ebbe7938f46b55d05d84e64b6ab` and the reviewed proposal artifact. Re-check canonical master/concurrency/staging counts, require a fresh no-write preflight byte-identical to receipt SHA `0d97de2dfc03676acee83a855facbdbff32704a9e6486e2aeb5a60fbd043e332`, then execute one Organization-only atomic commit. Do not publish any Gukgam Claim in the same slice.
+Require explicit operator review/confirmation of the exact `41` DRAFT
+`review_key ↔ Organization` pairs before creating a canonical
+`civic.gukgam.reviewed_claim_batch_manifest.v1` artifact. Do not infer approval from exact-name
+overlap or from the org.go Organization materialization itself. After explicit confirmation, run
+the normal no-write batch preflight and only then consider a separate Claim/Evidence commit slice.
