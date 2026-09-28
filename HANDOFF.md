@@ -2,9 +2,9 @@
 
 ## Current authority — 2026-09-28
 
-The canonical repository is `/Users/lee/Projects/civic-intel`. At this checkpoint `master` and
-`origin/master` are both `e06cbb3`; the working tree was clean before the current maintenance
-slice. `AGENTS.md` governs execution, `ARCHITECTURE.md` governs canonical boundaries,
+The canonical repository is `/Users/lee/Projects/civic-intel`. The current merged baseline
+before this CHANGE-proof slice is `master == origin/master == a35678d`; the working tree was
+clean when the slice started. `AGENTS.md` governs execution, `ARCHITECTURE.md` governs canonical boundaries,
 `docs/product/CIVIC_INTEL_NORTH_STAR.md` governs long-term direction, and
 `docs/exec-plans/active/` must contain only genuinely unfinished approved work. Older checkpoint
 sections below are historical evidence, not current instructions.
@@ -33,21 +33,28 @@ authorizes Claim publication or MOIS Organization creation.
 
 ## Immediate direction
 
-The control-plane normalization and the smallest proven ALIO/NEC common persistence seam are now
-complete in the current maintenance branch. Full repository verification passed with `639 passed /
-3 skipped`, Golden Set PASS, Web `26/26` and a successful standalone production build. Read-only
-operational dry-runs reproduced the exact pre-change ALIO and NEC receipt SHA values against the
-same Mac PostgreSQL dataset; no operational write occurred.
+The control-plane normalization and smallest proven ALIO/NEC persistence seam are merged. The
+follow-on source-neutral CHANGE proof is also complete in the current branch: the existing Assembly
+historical Person CHANGE and ALIO Item 12 Organization MONEY projections now share only an additive
+`SOURCE_NEUTRAL_DERIVED_CHANGE_TRACE_V1` evidence/subject trace. Their source-specific comparison,
+correction and interpretation rules remain separate.
+
+Read-only Mac PostgreSQL validation used the published 정보통신기획평가원 Item 12 pair
+(2024 `15,023천원` -> 2025 `12,861천원`). The branch preserves the existing MONEY ID, delta
+`-2,162,000 KRW`, percent `-14.39` and all prior response fields byte-for-byte after removing only
+the additive change trace. Full repository verification passed with `643 passed / 3 skipped`,
+Golden Set PASS, Web `26/26` and a successful standalone production build. No operational write
+occurred.
 
 The next product/data work remains deliberately split:
 
-1. The exact post-org.go 41-item Gukgam Claim manifest still requires explicit operator review; do
-   not infer approval from exact-name matching or from this maintenance work.
+1. The exact post-org.go 41-item Gukgam Claim manifest still requires explicit human/operator review;
+   do not infer approval from exact-name matching or from either maintenance slice.
 2. Independently review the 70-item MOIS Organization proposal before any reviewed materialization
    contract is created.
-3. Do not make additional Gukgam coverage the default progress metric. Before another feeder or
-   source-specific workflow, prove one source-neutral North Star primitive over existing canonical
-   data and evidence.
+3. Do not add another feeder or generic analytics framework merely to increase coverage. The
+   source-neutral CHANGE trace now has two concrete domains; future generalization needs another
+   concrete product requirement, not speculative abstraction.
 
 
 ## Completed
