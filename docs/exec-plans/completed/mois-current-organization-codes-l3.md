@@ -1,6 +1,6 @@
 # MOIS Current Organization-Code L3
 
-Status: ACTIVE — live contract verified; persistent full-enumeration pending merge/CI.
+Status: COMPLETE — merged-master persistent L3 run verified on the Mac staging/data server.
 
 ## Objective
 
@@ -89,8 +89,8 @@ No fuzzy/name-only/embedding automatic merge is authorized.
 
 ## Stop condition
 
-Stop after one complete persistent `133,907`-row current universe is verified. Do not create
-Organizations or Gukgam Claims in the same operation.
+Stop after one complete persistent current-universe run is verified against that run's provider
+total. Do not create Organizations or Gukgam Claims in the same operation.
 
 ## Disposable live L3 proof — 2026-09-27
 
@@ -107,6 +107,30 @@ MOIS API with a disposable SQLite database migrated through schema 0008:
 - canonical Organization rows created: 0;
 - Claim rows created: 0.
 
-This proves the persistent L3 worker path without mutating staging. The remaining L3 promotion gate
-is merged-master GitHub Verify followed by fresh staging backup, exact 0007->0008 host-policy
-reconciliation, one complete staging enumeration and post-verification.
+This proved the persistent L3 worker path without mutating staging at the 2026-09-27 audit snapshot.
+
+## Persistent L3 closure — 2026-09-28
+
+The merged-master worker at `107c0f0f75e9d120954c4b846b31adbdc955a248` completed the
+current `stop_selt=0` universe on the Mac staging/data PostgreSQL server at schema `0008`:
+
+- provider total / committed observations: `133,930 / 133,930`;
+- pages: `134 / 134`;
+- checkpoint cursor: `134`;
+- checkpoint total / seen count: `133,930 / 133,930`;
+- latest SourceRun: `SUCCESS`;
+- unique provider record keys: `133,930`;
+- People remained `9,120`;
+- Organizations remained `347` during the MOIS collection slice;
+- Claims/ClaimEvidence remained `14,397 / 14,397`.
+
+The earlier `133,907` value above remains valid as the 2026-09-26 audit snapshot. The provider
+current-universe total changed by `23` before the persistent run; Civic Intel preserved the live
+provider total rather than hard-coding the earlier audit count.
+
+A post-run pg_dump was created and later backup/restore verification reproduced the database
+counts on disposable PostgreSQL. The L3 milestone is therefore complete.
+
+The next permitted boundary is a separate review-only Organization proposal from persisted MOIS
+observations. Provider `org_code` remains source identity only and cannot authorize automatic
+canonical Organization creation or Gukgam Claim publication.
