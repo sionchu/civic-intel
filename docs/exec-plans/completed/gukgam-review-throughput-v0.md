@@ -1,6 +1,6 @@
 # Gukgam review throughput receipt v0
 
-Status: IN PROGRESS.
+Status: COMPLETED 2026-09-30.
 
 Base: `77e2767`.
 
@@ -52,3 +52,30 @@ no source bodies, excerpts, URLs, credentials or free-text notes.
 - Organization materialization;
 - L4 scheduling;
 - public analytics or telemetry.
+
+## Closure evidence
+
+- The 41-item existing-Organization lane now records private append-only review receipts outside
+  Git, the canonical database and AdminOperationRow. No migration or canonical write path was added.
+- Every write revalidates the current DB-derived Gukgam lane, exact manifest SHA and review key;
+  stale state fails closed. V0 accepts only one item per decision and retries are idempotent by
+  request ID.
+- Receipts contain IDs, timestamps, APPROVE/REJECT/HOLD disposition, bounded HOLD reason, active-time
+  proxy, evidence-open counters and Organization occurrence position. They omit names, source
+  bodies, excerpts, URLs, credentials and free-text notes.
+- Read-only Mac PostgreSQL verification returned the exact manifest SHA
+  `9bb202c3de7c219382f69c91b8b0014bba7442428b673b55ac7ebbf766e711a9`, 41 items / 27
+  Organizations, decided 0 / remaining 41, and did not create a receipt file.
+- Real private Mac browser QA started one review, opened the canonical Organization and Gukgam
+  schedule observation in separate tabs, kept HOLD disabled until a reason was selected, disabled
+  other starts while one review was active, then canceled. The temporary receipt file remained
+  absent; no real decision was recorded.
+- After the Mac remote tunnel went offline, the exact base `77e2767` branch was reconstructed in a
+  clean Windows worktree. Focused Ruff/mypy, six receipt tests, Web typecheck/lint and UI 26/26
+  passed there.
+- GitHub Verify run `36599415626` passed canonical verification with `652 passed / 3 skipped`,
+  mypy over 106 source files, Golden Set PASS, Web 26/26 and standalone production build PASS.
+  Alembic round-trip, PostgreSQL migration/load/API, backup/restore, deployment artifacts and the
+  installed sync entrypoint also passed.
+- No Gukgam Claim commit, reviewed manifest generation, Organization materialization, publication,
+  source fetch or operational canonical DB write occurred.

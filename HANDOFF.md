@@ -1,10 +1,13 @@
 # HANDOFF
 
-## Current authority — 2026-09-28
+## Current authority — 2026-09-30
 
 The canonical repository is `/Users/lee/Projects/civic-intel`. The current merged baseline
-before this operator-review slice is `master == origin/master == 2463ab3`; the working tree was
-clean when the slice started. `AGENTS.md` governs execution, `ARCHITECTURE.md` governs canonical boundaries,
+before this Gukgam review-throughput slice is `master == origin/master == 77e2767`; the Mac
+working tree was clean when the slice started. The Mac later lost its remote tunnel, so the exact
+`77e2767` base was reconstructed in a clean Windows worktree only to finish verification and PR
+delivery; that fallback path is not a second SSOT. `AGENTS.md` governs execution,
+`ARCHITECTURE.md` governs canonical boundaries,
 `docs/product/CIVIC_INTEL_NORTH_STAR.md` governs long-term direction, and
 `docs/exec-plans/active/` must contain only genuinely unfinished approved work. Older checkpoint
 sections below are historical evidence, not current instructions.
@@ -33,31 +36,46 @@ authorizes Claim publication or MOIS Organization creation.
 
 ## Immediate direction
 
-The control-plane normalization, ALIO/NEC persistence seam and source-neutral CHANGE proof are
-merged. The private operator console's manifest tab is now the next review control plane rather
-than the completed 2026-09-22 org.go27 packet: it recomputes current unpublished exact-one Gukgam
-Claim candidates from canonical DB state and separately fail-closes the checked-in MOIS proposal
-against the current MOIS SUCCESS checkpoint/provider manifest, exact provider observations,
-current Organization universe and current Gukgam NO_EXACT occurrences.
+The control-plane normalization, ALIO/NEC persistence seam, source-neutral CHANGE proof and current
+operator-review SSOT are merged. The Gukgam review-throughput slice is now implementation-complete
+and verified in PR #161. It adds a private append-only receipt for the existing 41-item
+existing-Organization review lane only; the receipt is outside Git, the canonical DB and
+`AdminOperationRow`, is bound to the exact current manifest SHA/review key, and never authorizes
+Claim publication or commit.
 
-Read-only Mac PostgreSQL verification currently reports Gukgam `41` occurrences / `27`
+The last read-only Mac PostgreSQL verification still reports Gukgam `41` occurrences / `27`
 Organizations with manifest SHA
 `9bb202c3de7c219382f69c91b8b0014bba7442428b673b55ac7ebbf766e711a9`, and MOIS
 `70` Organization proposals / `74` Gukgam occurrences / `159` unmatched labels / `0`
-ambiguous exact provider names. Both lanes explicitly return authorization=false and perform no
-write. The real private browser rendered `CURRENT_HUMAN_REVIEW_READY`, the exact counts, provider
-classification/lifecycle fields and links to canonical Organization, MOIS observation and Gukgam
-schedule observation records. Full repository verification passed with `646 passed / 3 skipped`,
-Golden Set PASS, Web `26/26` and a successful standalone production build.
+ambiguous exact provider names. Before any real review decision, the throughput summary reported
+`decided=0 / remaining=41` and merely reading it did not create a receipt file.
 
-The next data action is therefore human review, not another source expansion:
+Real private Mac browser QA exercised only the safe path: start one review, open canonical
+Organization and Gukgam schedule-observation evidence in separate tabs, verify HOLD is disabled
+without a bounded reason and other starts are disabled while one item is active, then cancel. The
+temporary receipt stayed absent, so no real approval/rejection/hold was recorded. After the Mac
+tunnel went offline, the exact `77e2767` base was reconstructed in a clean Windows worktree for
+delivery. Focused Ruff/mypy, six throughput tests and Web typecheck/lint/UI 26/26 passed there.
+GitHub Verify run `36599415626` then passed canonical verification with `652 passed / 3 skipped`,
+mypy over 106 source files, Golden Set PASS, Web 26/26 and standalone build PASS; Alembic,
+PostgreSQL load/API, backup/restore, deployment-artifact and installed-sync checks also passed.
 
-1. Review the 41 Gukgam exact-one occurrences and explicitly approve/reject/hold each Organization
-   binding. Exact name equality remains discovery evidence only.
-2. Separately review the 70 MOIS Organization proposals using provider type, hierarchy, lifecycle
-   fields and linked Gukgam occurrences. A MOIS decision does not approve a Gukgam Claim.
-3. Only after explicit decisions exist should a new reviewed manifest/materialization or Claim
-   commit receipt be generated. Do not infer approval from this read-only surface.
+The next data action is therefore measured human review, not another source expansion:
+
+1. Review the 41 Gukgam exact-one occurrences in the instrumented lane and explicitly
+   APPROVE/REJECT/HOLD each item. Treat the timing/click metrics as review-cost evidence only;
+   exact name equality still remains discovery evidence, not approval.
+2. After explicit 41-item decisions exist, generate a reviewed Claim manifest from those decisions,
+   run a fresh no-write preflight/revalidation, and only then perform any separately authorized
+   bounded Claim commit.
+3. Independently review the 70 MOIS Organization proposals. Do not reuse the 41-item timing numbers
+   because Organization creation is a different human decision; a MOIS decision still does not
+   approve a Gukgam Claim.
+4. Reassess the remaining 159 unmatched labels by source family before opening another collection
+   lane. Only after that review work should the next acquisition/L4 step be selected.
+5. The first L4 proof remains a follow-on engineering goal, with the National Assembly current
+   member roster the cleanest candidate for reconciliation/freshness semantics; it is not part of
+   this throughput slice.
 
 
 ## Completed

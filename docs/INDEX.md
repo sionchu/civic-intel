@@ -85,7 +85,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Reviewed cross-lane Kim Dong-cheol packet v1](exec-plans/completed/alio-assembly-cross-lane-kim-dongcheol-v1.md)
 - [Cross-lane identity candidate pipeline v0](exec-plans/completed/cross-lane-identity-candidate-pipeline-v0.md)
 - [Gukgam 2026 Governance Ontology + Visual Explorer v0](exec-plans/active/gukgam-2026-governance-ontology-visual-explorer-v0.md)
-- [Gukgam review throughput receipt v0](exec-plans/active/gukgam-review-throughput-v0.md)
+- [Gukgam review throughput receipt v0](exec-plans/completed/gukgam-review-throughput-v0.md)
 - [Operator current review SSOT v0](exec-plans/completed/operator-current-review-ssot-v0.md)
 - [Source-neutral derived CHANGE trace v0](exec-plans/completed/source-neutral-change-trace-v0.md)
 - [Source-context Person materialization common seam v0](exec-plans/completed/source-context-person-materialization-common-seam-v0.md)
