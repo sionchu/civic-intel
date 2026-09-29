@@ -88,8 +88,10 @@ def create_app(
     operator_actor: str = "local-operator",
 ) -> FastAPI:
     target = target_repository or repository
-    if operator_writes and (not operator_token or not re.fullmatch(r"[A-Za-z0-9_.@-]{1,100}", operator_actor)):
+    if operator_writes and not operator_token:
         raise ValueError("Admin writes require an explicit private actor and token")
+    if operator_token is not None and not re.fullmatch(r"[A-Za-z0-9_.@-]{1,100}", operator_actor):
+        raise ValueError("Private operator mode requires a safe actor identifier")
     if operator_token is not None and (
         not enable_review_surface or not re.fullmatch(r"[A-Za-z0-9_-]{32,128}", operator_token)
     ):
@@ -827,7 +829,9 @@ def create_app(
 
         from apps.api.operator import build_operator_router
 
-        app.include_router(build_operator_router(target, operator_label))
+        app.include_router(
+            build_operator_router(target, operator_label, actor=operator_actor)
+        )
         from apps.api.playbook import build_playbook_router
 
         app.include_router(build_playbook_router(target, actor=operator_actor, label=operator_label))
