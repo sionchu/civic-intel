@@ -3,8 +3,10 @@
 ## Purpose and authority
 
 The approved admin-review workflow changes the internal operator boundary, not the public
-read-only product. The shared SQLAlchemy repository remains the only write implementation.
-Raw SourceSnapshots and FeederObservations remain immutable. No generic SQL or table editor exists.
+read-only product. API preview/commit use the Administration application service and the same
+canonical UoW/session adapters used by workers; the `AdministrationRepository` delegates the
+database plan to `admin_workflow.py` inside that session. Raw SourceSnapshots and FeederObservations
+remain immutable. No generic SQL or table editor exists.
 
 ## Workload is not a Person count
 

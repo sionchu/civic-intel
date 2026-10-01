@@ -480,10 +480,10 @@ deterministically sorted company ordinal as its checkpoint cursor and treats off
 `REVIEW_REQUIRED`; gender, raw response bodies, compensation and employee-status rows are
 excluded.
 
-The concrete feeders now demonstrate the shared repository transaction while retaining distinct
-source contracts, coverage rules and semantic boundaries. Any future helper must remain small and
-must be earned by verified duplication; a generic crawler or universal page runner is still not
-justified.
+The concrete feeders demonstrate the shared application UoW transaction while retaining distinct
+session-bound source persistence, source contracts, coverage rules and semantic boundaries. Any
+future helper must remain small and be earned by verified duplication; a generic crawler or
+universal page runner is still not justified.
 
 National Assembly asset disclosure remains `L0 RESEARCHED; BLOCKED`. See
 `NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md` for the source-contract and actual-model audit.

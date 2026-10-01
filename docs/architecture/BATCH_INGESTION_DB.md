@@ -629,11 +629,12 @@ canonical `Organization` row and must pass the same `ClaimEvidence → Source �
 checks, plus exact optional `SourceSnapshot → FeederObservation` provenance when an observation
 is referenced.
 
-The shared repository importer accepts an explicitly supplied canonical Organization and refuses
-to upsert one from an ALIO `apbaId`, provider name or row key. A provider identifier remains a
-source-scoped crosswalk value. If more than one immutable observation content hash exists for
-the same source-specific record key, organization Claim import fails closed; the provider's
-change is not relabeled as a correction.
+The application `OrganizationsService` delegates through its UoW to the session-bound
+`OrganizationsRepository`, which accepts an explicitly supplied canonical Organization and
+refuses to upsert one from an ALIO `apbaId`, provider name or row key. A provider identifier
+remains a source-scoped crosswalk value. If more than one immutable observation content hash
+exists for the same source-specific record key, organization Claim import fails closed; the
+provider's change is not relabeled as a correction.
 
 This is a narrow subject extension only. It does not authorize organization enumeration, a
 generic financial schema, automatic Person creation, raw attachment storage or a public MONEY
@@ -699,26 +700,24 @@ No orphan Person.
 
 ---
 
-# 9. Repository boundary
+# 9. Application UoW and persistence boundary
 
-Canonical implementation:
+`packages/application/ports.py` defines use-case-facing repository ports and the `UnitOfWork` /
+`UnitOfWorkFactory` contracts. `packages/persistence/database.py` supplies the shared `Database`
+and `SqlAlchemyUnitOfWork`; it binds session-bound adapters for acquisition, identity, profiles,
+review, onboarding, Organizations, public reads and administration. `packages/persistence/models.py`
+and `mapping.py` own SQLAlchemy rows and row/contract conversion. API and workers share this
+session/UoW implementation; no second worker persistence stack or GodRepository facade is used.
 
-```text
-packages/persistence/repository.py
-```
+Application services own transaction decisions through these ports. A page commit persists the
+Source/Snapshot/Observation set and advances its checkpoint in one transaction. Workers compose
+their source-specific coverage/parser rules with the acquisition use case rather than managing a
+second engine or session. Admin preview and commit retain their separate confirmation, locking,
+revalidation and receipt contract.
 
-contains shared SQLAlchemy repository behavior used by both API and workers.
-
-Batch worker DB writes must not result in a second independent session/repository implementation.
-
-The previous API-local repository module was removed.
-
-- all internal imports use the shared package;
-- `ARCHITECTURE.md` records the dependency direction;
-- only one repository implementation remains;
-- API and worker tests use the same repository;
-- there is no module-level schema creation;
-- runtime still requires the Alembic head.
+Runtime startup checks the declared read-compatible schema revisions `0006`, `0007` and `0008`
+(expected head `0008`). It does not call `create_all()`, silently create missing tables or
+auto-migrate. Alembic remains the only schema change path.
 
 ---
 

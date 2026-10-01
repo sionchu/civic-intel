@@ -246,7 +246,8 @@ It does not restore ReviewedPersonBundle as the main ingestion path.
    If a composed representation is needed, require exact per-field source/snapshot/locator
    references and transformation provenance; no generic metadata “official” stamp.
 4. Future implementation must validate all references, rights, duplicate keys and provenance
-   before using the shared repository; record only policy-permitted normalized observations.
+   before using the shared application UoW and session-bound persistence adapters; record only
+   policy-permitted normalized observations.
    Packet SUCCESS means that manifest was processed, not that all public records were acquired.
    Commit observations before/with the packet checkpoint and prove unchanged-rerun idempotency.
 5. Separate byte identity from semantic changes and corrections. An unchanged semantic value

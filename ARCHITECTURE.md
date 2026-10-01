@@ -11,14 +11,40 @@ and access layers consume this architecture; they do not alter current canonical
 
 ## Authority and dependency direction
 
-`packages/domain → packages/verification + packages/connectors → packages/persistence + workers → apps/api → apps/web`
+`packages.domain` owns framework-independent contracts and enums. `packages.application`
+defines repository/UoW ports and use-case orchestration; its current services cover acquisition,
+administration, identity, onboarding, Organizations, profiles, public reads and review. Verification
+and rendering remain explicit collaborators rather than ORM concerns.
 
-Pydantic contracts define canonical semantics. SQLAlchemy rows persist those contracts;
-Alembic is the only schema creation/change path. API and workers share the single
-`packages.persistence.SqlAlchemyRepository`; FastAPI never reads module-level fixture
-dictionaries. Normal runtime startup verifies the declared read-compatible Alembic revision (currently `0008`).
-It does not call `create_all()` and does not seed Golden Set 001. Golden seeding is an explicit,
-disposable development/test operation against an empty migrated database.
+`packages.persistence.models` owns SQLAlchemy rows and `mapping.py` translates rows to/from domain
+contracts. Session-bound adapters are grouped by capability in `acquisition.py`, `administration.py`,
+`identity.py`, `onboarding.py`, `organizations.py`, `profiles.py`, `public.py` and `review.py`.
+`Database` and `SqlAlchemyUnitOfWork` in `packages/persistence/database.py` own the engine/session
+factory and compose those adapters on one session. They implement the ports defined by
+`packages/application/ports.py`; this adapter-to-port dependency is the boundary inversion, not a
+second session/repository implementation.
+
+The runtime call path is API or worker composition → application service/use case → UoW port →
+session-bound persistence adapter. The API opens one read UoW per public request and gives that
+snapshot to `DirectoryView`; operator commands use the Administration service. Workers compose
+their source-specific connector/enumerator with `IngestionPipeline`, `SourceLifecycle` and the
+shared acquisition service. They keep coverage, cursor and parser rules source-specific. See
+[`Application`](packages/application/context.py), [UoW ports](packages/application/ports.py) and
+[`Database` / `SqlAlchemyUnitOfWork`](packages/persistence/database.py).
+
+Application use cases own transaction boundaries and call `commit()` only after validation and
+all related writes succeed. A UoW context closes the session and rolls back any uncommitted work.
+Read UoWs enforce no-write behavior and use a coherent read transaction; SQLite writes begin with
+`BEGIN IMMEDIATE`, while admin operations retain their database-specific locking and state
+revalidation. Source-page records and checkpoint advancement commit atomically. Admin mutations,
+append-only receipts, replay detection and signed-preview revalidation remain one transaction.
+
+Pydantic contracts define canonical semantics; SQLAlchemy rows persist them; Alembic is the only
+schema creation/change path. Runtime readiness accepts declared reader-compatible revisions
+`0006`, `0007` and `0008` (expected head `0008`); startup does not call `create_all()` or seed
+Golden Set 001. Golden seeding remains an explicit disposable development/test operation against
+an empty migrated database. API and workers use the same UoW/session implementation; FastAPI never
+reads module-level fixture dictionaries.
 
 ## Evidence and publication
 
@@ -47,6 +73,17 @@ transport failure is not an `UNKNOWN` Claim.
 The web production artifact is the Next standalone server plus its generated `.next/static` tree
 and optional `public` directory. Artifact verification fails closed when any required runtime part
 is absent; a successful compile alone is not standalone readiness.
+
+## Deployment, public access and cost gates
+
+Runtime architecture, deployment topology, public exposure and search indexing are separate
+decisions. Creating production services or domains may create billable resources and requires
+explicit owner approval after a read-only plan review. Public Web exposure and indexing are also
+separate approval steps; API and PostgreSQL remain private. A provider API marked free or reusable
+does not authorize a request, credential acquisition, infrastructure spend, retention or
+redistribution. See [Evidence Preview deployment preparation](docs/operations/EVIDENCE_PREVIEW_DEPLOYMENT.md)
+and the current
+[Gukgam research and public-gate plan](docs/exec-plans/active/gukgam-2026-ontology-research.md).
 
 ## Temporal and analysis model
 

@@ -152,8 +152,9 @@ canonical Claim/Evidence/Source records before anything becomes publishable.
 ### Reviewed research/profile onboarding
 
 A `ProfileResearchTarget` does not write to the canonical database by itself. A new Person may
-enter the canonical SQLAlchemy store only through an explicit `ReviewedPersonBundle` and
-`SqlAlchemyRepository.import_reviewed_person()` transaction.
+enter the canonical SQLAlchemy store only through an explicit `ReviewedPersonBundle` handled by
+`OnboardingService.import_reviewed_person()` and its UoW-bound
+`OnboardingRepository.import_reviewed_person()` transaction.
 
 This rule governs reviewed research/profile onboarding. It is distinct from authoritative,
 source-bounded batch roster materialization: a reviewed feeder with an explicit provider identity

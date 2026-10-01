@@ -2,7 +2,9 @@
 
 Status: repository orientation document; non-governing summary.
 
-Current-state snapshot: 2026-09-28, repository baseline `6f1b512`.
+Operational snapshot: 2026-09-28, repository baseline `6f1b512`. The application/persistence
+topology below reflects source inspected at architecture-refactor base `0c52cd4`; it is not a
+runtime, staging or deployment verification claim.
 
 This document explains the project as one system: why it exists, how data moves, what the
 architecture protects, how source gates work, which source scopes are actually collected, what
@@ -62,19 +64,29 @@ The project deliberately keeps **acquisition, identity, truth posture, publicati
 different decisions**.
 ## 3. System architecture
 
-The canonical dependency direction is:
+Keep code dependencies distinct from runtime call flow. The domain is framework-independent;
+application owns use-case orchestration and repository/UoW ports; SQLAlchemy persistence
+adapters implement those ports. The adapter imports inward-facing port/result types, while runtime
+calls flow from composition roots through use cases into the UoW.
+
+The current code dependency boundaries are:
 
 ```text
-packages/domain
-    ↓
-packages/verification + packages/connectors
-    ↓
-packages/persistence + workers
-    ↓
-apps/api
-    ↓
-apps/web
+packages/domain: independent contracts and enums
+packages/verification, packages/connectors → packages/domain
+packages/application → packages/domain + verification/rendering; defines ports
+packages/persistence → implements application ports with SQLAlchemy adapters
+apps/api, workers: composition roots; apps/web → apps/api
 ```
+
+Runtime calls flow API/workers → application use case → UoW port → session-bound adapter →
+SQLAlchemy session.
+
+`packages/application` may also call project verification/rendering collaborators. It must not
+own SQLAlchemy sessions or import persistence. `packages/persistence` contains session-bound
+repositories and row mappers; `Database` / `SqlAlchemyUnitOfWork` are the single canonical engine,
+session and transaction boundary. See [Architecture](../../ARCHITECTURE.md) for the precise layer
+contract.
 
 The evidence/data path is:
 
@@ -132,14 +144,24 @@ ClaimEvidence → FeederObservation → SourceSnapshot → Source
 Visibility and truth are separate. A `PUBLISHED` record is not automatically `FACT`; an explicit
 `UNKNOWN` may be published as unresolved, and conflicting SUPPORT/REFUTE evidence remains visible.
 
-### 3.2 Persistence and schema
+### 3.2 Application, persistence and schema
 
-Pydantic contracts own semantics. SQLAlchemy persists those contracts. Alembic is the only schema
-creation/change path. API and workers share one `SqlAlchemyRepository`; runtime startup verifies
-schema compatibility and never silently creates or seeds the database.
+Named application services own use-case transactions through `UnitOfWorkFactory` and `UnitOfWork`
+ports. The UoW composes session-bound acquisition, identity, profile, review, onboarding,
+organization, public and administration repositories on one SQLAlchemy session. Application
+services validate then explicitly commit; the UoW context rolls back remaining work on exit.
+Public API routes construct `DirectoryView` with one read UoW per request, so that projection reads
+share a coherent database snapshot. API and workers use the same Database/UoW implementation;
+there is no `SqlAlchemyRepository` facade or parallel worker persistence stack.
+
+Pydantic contracts own semantics; SQLAlchemy rows persist them; `packages/persistence/mapping.py`
+maps row/contract representations. Alembic is the only schema creation/change path. Runtime
+startup checks declared reader-compatible revisions `0006`, `0007` and `0008` (expected head
+`0008`); it never silently creates or seeds the database.
 ### 3.3 Acquisition and workers
 
-Workers may:
+Workers compose their source-specific connector/enumerator and `IngestionPipeline` with
+`SourceLifecycle` and the shared `AcquisitionService`. They may:
 
 - fetch only a reviewed, source-bounded scope;
 - normalize policy-permitted fields;
@@ -386,7 +408,8 @@ See [Operator Console](../operations/OPERATOR_CONSOLE.md) and
 | `packages/domain/` | Canonical Pydantic contracts and enums; semantic authority. |
 | `packages/connectors/` | Source-specific acquisition/parsing adapters. |
 | `packages/verification/` | Deterministic source/domain validation and publication checks. |
-| `packages/persistence/` | SQLAlchemy repository, DB mappings and reviewed persistence paths. |
+| `packages/application/` | Use-case services, repository/UoW ports and API read projections. |
+| `packages/persistence/` | Canonical engine/UoW, session-bound SQLAlchemy adapters, row mappings and reviewed persistence paths. |
 | `workers/` | Bounded collection, enumeration, review preparation and materialization entry points. |
 | `packages/rendering/` | Evidence-backed public and derived read-model construction. |
 | `apps/api/` | FastAPI public/private read boundaries and operator endpoints. |

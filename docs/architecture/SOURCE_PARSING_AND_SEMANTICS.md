@@ -80,7 +80,8 @@ The current contracts and rows are sufficient for the existing source-specific p
 - `PersonObservationLink`, `IdentityReviewItem` and `MaterializationDecision` keep identity and
   review decisions downstream from collection.
 - `Person`, organization/office contracts, temporal episodes, `Claim` and `ClaimEvidence` are
-  the canonical downstream objects. The existing repository is shared by API and workers.
+  the canonical downstream objects. API and workers share the canonical `Database` / UoW and
+  its session-bound persistence adapters.
 - `AssetDisclosure` and `AssetItem` exist as small domain/persistence contracts, but they are
   not a completed asset acquisition product or a generic financial framework.
 
@@ -193,7 +194,7 @@ orchestration framework:
 | Parse | Connector parser such as `parse_members`, `parse_executives`, `parse_candidates` or a document/table parser | Typed provider record with source fields, source key and explicit missingness |
 | Normalize | Worker-specific `normalized_*` mapping and deterministic hash | Policy-minimized normalized candidate; preserve source semantics and units |
 | Validate contract | Source-specific page totals, complete scope, duplicate/key checks, rights preflight and allowed-field checks | Accept, reject or fail closed; no implicit coverage promotion |
-| Persist immutable observation | Shared `SqlAlchemyRepository.commit_source_page` | `FeederObservation` attached to the exact `SourceSnapshot`/`SourceRun`; checkpoint advances only in the same committed transaction |
+| Persist immutable observation | `AcquisitionService.commit_source_page` through the UoW's session-bound `AcquisitionRepository` | `FeederObservation` attached to the exact `SourceSnapshot`/`SourceRun`; checkpoint advances only in the same committed transaction |
 | Identity / materialization | Existing provider-specific materialization or review gate | Only accepted identity rules can create/link a Person; ambiguous lanes remain review-only |
 | Claim / publication | Existing verification claim and publication gates | `ClaimEvidence` preserves source trace; workers cannot publish through a side path |
 | Derived / product | Future read-time or separately approved projection | Inputs, method, coverage and corrections remain explicit; never mutate Evidence Core |
@@ -250,6 +251,38 @@ The current contracts carry these details in `Source.url`, `SourceSnapshot.metad
 needed. They do not validate locator JSON as foreign keys. Do not fabricate a public HTTP URL for
 a private/local attachment merely to satisfy `Source.url`; a real rights-approved origin or a
 narrow future packet design is required.
+
+## Statements, quotations and curated compilations
+
+Partisan, advocacy, media, research and other curated compilations are discovery sources unless
+their reviewed `SourcePolicy` and field authority explicitly permit stronger use. They may
+nominate statement candidates; they do not by themselves establish a canonical position,
+contradiction, wrongdoing or truth claim.
+
+Prefer deterministic extraction from structured/native text and layout-aware parsing before OCR
+or model-assisted extraction. For PDFs preserve the exact document, page, section/table and
+column/side locators. OCR is a candidate transcription when no reliable text layer exists, not
+source truth.
+
+Separate seed extraction from source verification:
+
+```text
+discovery candidate → locate primary/original source → capture SourceSnapshot
+→ persist policy-minimized FeederObservation → resolve identity
+→ normal Claim/ClaimEvidence publication gate
+```
+
+If the primary source cannot be verified, keep the item discovery/review-only. Preserve exact
+quote boundaries, source-reported date, role/context, source URL or attachment locator, and
+parser/normalization revision. Never guess or synthesize missing quotation text, dates, sources,
+identities or provenance.
+
+Model assistance is advisory only for context summaries, topic suggestions, quote-boundary
+proposals and related-statement retrieval/reranking. It cannot generate quotation text, repair
+missing provenance, authorize a Person merge, or label a statement a lie, flip-flop or
+contradiction. A source-provided taxonomy remains source-scoped metadata; it is not automatically a
+canonical Civic Intel taxonomy. Relations such as clarifies, qualifies, supersedes or potentially
+contrasts are derived and reviewable, and fail closed to UNKNOWN when evidence is insufficient.
 
 ## Version, correction and republication semantics
 
@@ -343,7 +376,7 @@ locators only; attachment bytes and report staff contacts are not stored.
 
 | Classification | Current decision |
 |---|---|
-| KEEP | `SourcePolicy`, `Source`, `SourceSnapshot`, `SourceOriginCluster`, `SourceRun`, `SourceCheckpoint`, `FeederObservation`, identity review/materialization links, canonical domain contracts, `Claim`, `ClaimEvidence`, shared repository and Alembic discipline |
+| KEEP | `SourcePolicy`, `Source`, `SourceSnapshot`, `SourceOriginCluster`, `SourceRun`, `SourceCheckpoint`, `FeederObservation`, identity review/materialization links, canonical domain contracts, `Claim`, `ClaimEvidence`, shared UoW/session and session-bound adapters, and Alembic discipline |
 | REVISE LATER | Metadata vocabulary for locators/revisions; source-lane granularity where one host has materially different rights; field-level lineage only when a real composition cannot be expressed safely in existing metadata; lineage-sensitive observation identity only when a real source requires it |
 | MISSING ONLY WHEN A REAL SOURCE REQUIRES IT | First-class release/document/disclosure or locator records, or a narrowly scoped source-level reviewed-packet importer, only if existing Source/Snapshot/Observation metadata cannot preserve the source contract, rights, correction relation and exact locator |
 | REJECT | `RawRecord`, `GenericDocument`, universal financial/event schemas, parser registry, shadow raw store, graph/RDF/OWL model, generic crawler rewrite and a `ReviewedPersonBundle` batch replacement |

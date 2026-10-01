@@ -6,7 +6,8 @@
 
 This document records the official-source shape observed during the first Gukgam 2026 release
 slice. It does **not** authorize a live committee-site feeder, attachment full-text storage,
-AI processing or public witness identity materialization.
+AI processing or public witness identity materialization. The current human/source/public-access
+decision packet is the [active Gukgam research plan](../exec-plans/active/gukgam-2026-ontology-research.md).
 
 ## Source family
 
@@ -118,6 +119,11 @@ CONF_DGR
 The code/field contract is staged at L1 from the official dataset plus an independently maintained
 Open Assembly client/catalog. A live provider sample is still required before L2 promotion because
 the current execution boundary could not complete the external API probe.
+
+The catalog's `free` value describes the provider endpoint's listed access cost. It does not
+authorize a live request, credential provisioning, retention/redistribution or separately billable
+infrastructure. Operation review and any deployment/resource-cost decision remain distinct human
+gates; see the active research plan and [deployment preparation](../operations/EVIDENCE_PREVIEW_DEPLOYMENT.md).
 
 This lane may classify a row as a **Gukgam schedule candidate** only when the provider's schedule
 kind/content explicitly contains `국정감사`. That classification is discovery metadata, not a

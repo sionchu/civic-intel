@@ -125,7 +125,11 @@ Audited target names remain normalized strings in the reviewed observation. Late
 canonical Organization requires an exact reviewed Organization identity contract; name equality is
 not enough.
 
-Dry-run is the default. A commit requires an explicit `--commit` and database URL.
+The reviewed-packet import implementation defaults to no-write. Its historical direct
+`--commit` switch is not part of the canonical `civic` CLI; the installed CLI exposes only
+reviewed commands listed in [Canonical operator commands](../operations/COMMANDS.md). Until a
+packet-specific source-ingestion command is explicitly exposed and reviewed, this contract is not
+a runnable persistence authorization.
 
 ## Version and rerun semantics
 
@@ -212,9 +216,10 @@ closed. The route remains internal-only and performs no persistence write.
 
 ## Reviewed Organization Claim lane
 
-The source-specific operator command
-`civic-import-gukgam-reviewed-claim` may build exactly one Organization-scoped Claim from one
-preflighted audited-target occurrence and one existing current canonical Organization.
+The canonical CLI separates no-write inspection (`civic inspect gukgam-claim`) from explicit
+Claim publication (`civic publish gukgam-claim --allow-effect CLAIM_PUBLICATION`). The underlying
+application use case may build exactly one Organization-scoped Claim from one preflighted
+audited-target occurrence and one existing current canonical Organization.
 
 The Claim predicate is:
 
@@ -235,7 +240,7 @@ The command:
 - creates deterministic Claim/Evidence IDs and exact
   `ClaimEvidence -> FeederObservation -> SourceSnapshot -> Source` provenance;
 - is `DRY_RUN` by default and performs no network fetch;
-- requires `--commit` for one Claim/Evidence write;
+- writes only through the explicit publication boundary, never during inspection;
 - returns `REUSED` only when an existing Claim/Evidence pair has exactly the same source key and
   semantics; conflicting state or multiple immutable observation versions fails closed.
 
@@ -243,8 +248,8 @@ The command never creates or updates an Organization and provides no bulk-approv
 
 ## Reviewed batch manifest dry-run lane
 
-The operator command `civic-preflight-gukgam-reviewed-claim-batch` accepts one explicit JSON
-manifest using schema `civic.gukgam.reviewed_claim_batch_manifest.v1`.
+The no-write command `civic inspect gukgam-batch` accepts one explicit JSON manifest using schema
+`civic.gukgam.reviewed_claim_batch_manifest.v1`.
 
 Each manifest item contains exactly:
 
@@ -256,10 +261,11 @@ re-runs the existing single-occurrence reviewed Claim preflight for every item. 
 `review_key` values, invalid/stale Organization bindings and already-published reviewed Gukgam
 Claims fail closed. One failing item invalidates the entire dry-run receipt.
 
-This lane does **not** enumerate candidates, infer Organization bindings, perform network fetches or
-persist any Claim/Evidence rows. It has no batch `--commit` option. A future commit lane, if
-approved separately, must reuse a canonical atomic persistence seam rather than weakening this
-review contract.
+Inspection does **not** enumerate candidates, infer Organization bindings, perform network fetches
+or persist any Claim/Evidence rows. The separate `civic publish gukgam-batch` command requires the
+explicit `CLAIM_PUBLICATION` effect and the exact manifest SHA-256 from the no-write preflight.
+Publication revalidates every item and uses the canonical atomic persistence seam; it does not
+weaken this review contract.
 
 ## Next source step
 

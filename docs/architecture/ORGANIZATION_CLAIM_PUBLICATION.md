@@ -78,22 +78,26 @@ audit schedule. It does **not** assert that an audit occurred or completed, nor 
 responsibility, performance judgment or outcome. The plan publication date anchors valid time;
 the planned audit date/time/venue are qualifiers.
 
-The operator command is dry-run by default. `--commit` may persist one deterministic
-Claim/Evidence pair through `SqlAlchemyRepository.import_organization_claim()`; it never creates
-or updates an Organization. The target-level `review_key` is retained as
+The canonical CLI separates no-write inspection (`civic inspect gukgam-claim`) from an explicitly
+authorized `civic publish gukgam-claim --allow-effect CLAIM_PUBLICATION` operation; see the
+[operator command contract](../operations/COMMANDS.md) for its exact inputs. The application
+`OrganizationsService` delegates to the session-bound `OrganizationsRepository` transaction. The
+path may persist one deterministic Claim/Evidence pair, never creates or updates an Organization.
+The target-level `review_key` is retained as
 `qualifiers.provider_record_key`, while the original schedule-row key remains separately recorded.
 Exact retries may reuse only semantically identical stored Claim/Evidence. Multiple immutable
 observation versions, a changed Organization binding or conflicting stored semantics fail closed.
 
 For an explicitly reviewed multi-item batch, the no-write manifest preflight and the write command
-remain separate operator boundaries. The commit path accepts only the same canonical manifest
-schema, requires the operator to supply the exact canonical manifest SHA-256 from the prior
-preflight, and additionally requires an explicit `--commit` flag. It does not enumerate candidate
+remain separate operator boundaries. `civic inspect gukgam-batch` precedes the explicit
+`civic publish gukgam-batch` effect; publication requires the same canonical manifest schema and
+exact canonical manifest SHA-256 from the prior preflight. It does not enumerate candidate
 Organizations or discover manifest items. Every item is re-preflighted against current schedule,
 Organization and provenance state immediately before persistence.
 
 A batch with no existing Claims may reuse the canonical atomic
-`import_organization_claim_batch()` seam. A fresh exact retry in which every item is already
+`OrganizationsRepository.import_organization_claim_batch()` seam through its application service.
+A fresh exact retry in which every item is already
 published returns `REUSED` without a write. A manifest in which only some items are already
 published fails closed before persistence rather than filling a partial state. The batch path must
 reuse existing Organizations and must never treat name equality as authority to create one.
@@ -116,11 +120,12 @@ match the evidence source. The policy must permit metadata storage. Excerpts rem
 the policy denies excerpt display; ALIO Item 12 report HTML, attachments and disclosure staff
 contacts are not copied into the claim path.
 
-`SqlAlchemyRepository.import_organization_claim()` accepts only a Claim targeting the supplied
-Organization and an existing Organization row. It does not upsert an organization or source.
-It validates the evidence chain and the normal Claim publication gate in one transaction. The
-reviewed two-year ALIO command uses `import_organization_claim_pair()` so both annual Claims share
-one transaction. Exact retries return the stored rows, an exact legacy one-row partial may add only
+`OrganizationsRepository.import_organization_claim()` accepts only a Claim targeting the supplied
+Organization and an existing Organization row. It does not upsert an organization or source. The
+application service owns the transaction; the adapter validates the evidence chain and normal
+Claim publication gate within the same UoW. The reviewed two-year ALIO command uses
+`import_organization_claim_pair()` so both annual Claims share one transaction. Exact retries
+return the stored rows, an exact legacy one-row partial may add only
 the missing row, and divergent partial state fails closed. Source-specific deterministic Claim and
 Evidence primary keys provide the database uniqueness guard for concurrent equivalent operations.
 

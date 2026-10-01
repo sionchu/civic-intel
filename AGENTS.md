@@ -16,6 +16,9 @@ For batch/full-enumeration work also read:
 - `docs/architecture/IDENTITY_RESOLUTION.md`
 - `.agents/skills/batch-ingestion-foundation/SKILL.md`
 
+The skill entrypoint links to the complete batch invariants reference. Use it together with the
+source-specific contract; this file stays the concise execution entrypoint.
+
 ## Multi-agent coordination
 
 Before delegation read `docs/roles/ROLE_MODEL.md`, the canonical role/ownership contract.
@@ -55,29 +58,11 @@ Keep required unresolved domain states visible. Custom role adapters are in `.co
 
 ## Statement and curated-source ingestion
 
-- Treat partisan, advocacy, media, research and other curated compilations as discovery sources
-  unless their reviewed `SourcePolicy` and field authority explicitly permit stronger use. They may
-  nominate statement candidates; they do not by themselves establish a canonical position,
-  contradiction, wrongdoing or truth claim.
-- Prefer deterministic extraction from structured/native text and layout-aware parsing before OCR
-  or model-assisted extraction. For PDFs preserve exact document, page, section/table and column or
-  side locators. OCR is a candidate transcription when no reliable text layer exists, not source
-  truth.
-- Separate seed extraction from source verification: discovery candidate -> locate the primary or
-  original source -> capture `SourceSnapshot` -> persist a policy-minimized `FeederObservation` ->
-  resolve identity -> pass the normal Claim/ClaimEvidence publication gate. If the primary source
-  cannot be verified, keep the item discovery/review-only.
-- Preserve exact quote boundaries, source-reported date, role/context, source URL or attachment
-  locator, and parser/normalization revision. Never guess or synthesize missing quote text, dates,
-  sources, identities or provenance.
-- Model assistance is advisory only for context summaries, topic suggestions, quote-boundary
-  proposals and related-statement retrieval/reranking. It cannot generate quotation text, repair
-  missing provenance, authorize a Person merge, or label a statement as a lie, flip-flop or
-  contradiction.
-- A source-provided taxonomy may be retained as source-scoped metadata, but it is not automatically
-  a canonical Civic Intel taxonomy. Related statements may be grouped by explicit topic/evidence;
-  relations such as clarifies, qualifies, supersedes or potentially contrasts remain derived and
-  reviewable, and fail closed to UNKNOWN when evidence is insufficient.
+The detailed extraction and interpretation contract is maintained in [Source parsing and
+semantics](docs/architecture/SOURCE_PARSING_AND_SEMANTICS.md). Curated compilations remain
+discovery-only without field-specific policy authority; source verification, exact quotation
+provenance, human review and the existing publication gates remain required. Do not infer a
+canonical position, wrongdoing, contradiction or identity from a compilation or model output.
 
 ## Canonical persistence rules
 
@@ -85,8 +70,9 @@ Keep required unresolved domain states visible. Custom role adapters are in `.co
   creation/change path.
 - Reuse `SourcePolicy`, `Source` and `SourceSnapshot` for batch ingestion.
 - Before adding a table, class or repository, search for a semantic equivalent.
-- Keep one canonical SQLAlchemy repository/session implementation shared by API and workers;
-  do not create parallel persistence logic.
+- Keep one canonical `Database` / `SqlAlchemyUnitOfWork` session implementation shared by API
+  and workers; use the session-bound persistence adapters implementing application ports rather
+  than parallel session or persistence stacks. See [Architecture](ARCHITECTURE.md).
 - Every persistence change requires a forward and reversible Alembic migration plus
   deterministic regression coverage.
 - Runtime startup verifies declared read-compatible schema revisions; it does not create tables or auto-migrate.
