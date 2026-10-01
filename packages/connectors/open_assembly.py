@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from math import isfinite
 from typing import ClassVar
 from urllib.parse import urlencode
 
@@ -29,6 +32,38 @@ class AssemblyApiError(RuntimeError):
 
 class MissingAssemblyApiKey(AssemblyApiError):
     pass
+
+
+class AssemblyRequestBudgetExceeded(AssemblyApiError):
+    def __init__(self) -> None:
+        super().__init__("National Assembly member API request budget exceeded")
+
+
+@dataclass(frozen=True)
+class AssemblyRequestLimits:
+    """Optional connector-lifetime limits; elapsed time starts at the first fetch.
+
+    Deadline checks are cooperative HTTP boundaries, not a process or database watchdog.
+    """
+
+    max_requests: int
+    min_interval_seconds: float
+    deadline_seconds: float
+
+    def __post_init__(self) -> None:
+        if type(self.max_requests) is not int or self.max_requests <= 0:
+            raise ValueError("max_requests must be a positive integer")
+        for name, value, positive in (
+            ("min_interval_seconds", self.min_interval_seconds, False),
+            ("deadline_seconds", self.deadline_seconds, True),
+        ):
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not isfinite(value)
+                or (value <= 0 if positive else value < 0)
+            ):
+                raise ValueError(f"{name} must be finite and {'positive' if positive else '>= 0'}")
 
 
 @dataclass(frozen=True)
@@ -95,6 +130,9 @@ class OpenAssemblyMemberConnector(Connector):
         party: str | None = None,
         district: str | None = None,
         transport: httpx.BaseTransport | None = None,
+        request_limits: AssemblyRequestLimits | None = None,
+        clock: Callable[[], float] = time.monotonic,
+        sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         if page_index < 1:
             raise ValueError("page_index must be >= 1")
@@ -107,6 +145,41 @@ class OpenAssemblyMemberConnector(Connector):
         self.party = party
         self.district = district
         self._transport = transport
+        self._request_limits = request_limits
+        self._clock = clock
+        self._sleeper = sleeper
+        self._budget_started_at: float | None = None
+        self._last_request_at: float | None = None
+        self._requests_attempted = 0
+
+    def _remaining_budget(self) -> float:
+        limits = self._request_limits
+        if limits is None:
+            return 15.0
+        now = self._clock()
+        if self._budget_started_at is None:
+            self._budget_started_at = now
+        remaining = limits.deadline_seconds - (now - self._budget_started_at)
+        if remaining <= 0:
+            raise AssemblyRequestBudgetExceeded() from None
+        return remaining
+
+    def _before_request(self) -> float:
+        limits = self._request_limits
+        remaining = self._remaining_budget()
+        if limits is not None:
+            if self._requests_attempted >= limits.max_requests:
+                raise AssemblyRequestBudgetExceeded() from None
+            if self._last_request_at is not None:
+                wait = limits.min_interval_seconds - (self._clock() - self._last_request_at)
+                if wait > 0:
+                    if wait >= remaining:
+                        raise AssemblyRequestBudgetExceeded() from None
+                    self._sleeper(wait)
+                    remaining = self._remaining_budget()
+            self._last_request_at = self._clock()
+            self._requests_attempted += 1
+        return min(15.0, remaining)
 
     def _credential(self) -> str:
         value = self._api_key or os.getenv("ASSEMBLY_API_KEY")
@@ -185,14 +258,18 @@ class OpenAssemblyMemberConnector(Connector):
                 "CIVIC_HTTP_USER_AGENT", "CivicIntel/0.1 (+contact@example.invalid)"
             )
         }
+        self._remaining_budget()
         try:
             with httpx.Client(transport=self._transport, timeout=15, headers=headers) as client:
-                response = client.get(self.BASE_URL, params=request_params)
+                timeout = self._before_request()
+                response = client.get(self.BASE_URL, params=request_params, timeout=timeout)
                 response.raise_for_status()
                 payload = response.json()
         except (httpx.HTTPError, ValueError, json.JSONDecodeError):
+            self._remaining_budget()
             raise AssemblyApiError("National Assembly member API request failed") from None
 
+        self._remaining_budget()
         if not isinstance(payload, dict):
             raise AssemblyApiError("National Assembly member API returned a malformed response")
         payload = self._redact_credentials(payload)
@@ -207,7 +284,7 @@ class OpenAssemblyMemberConnector(Connector):
         for key in ("HG_NM", "POLY_NM", "ORIG_NM"):
             if key in query:
                 metadata[key] = query[key]
-        return ConnectorDocument(
+        document = ConnectorDocument(
             url=url,
             title="국회 국회사무처_국회의원 정보 통합 API",
             publisher="국회 국회사무처",
@@ -215,6 +292,8 @@ class OpenAssemblyMemberConnector(Connector):
             body=json.dumps(payload, ensure_ascii=False, sort_keys=True),
             metadata=metadata,
         )
+        self._remaining_budget()
+        return document
 
     @staticmethod
     def _optional(row: dict, key: str) -> str | None:
