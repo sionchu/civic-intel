@@ -46,6 +46,17 @@ separate source-specific operation. `civic inspect commands` inventories all 37 
 It checks SourcePolicy before fetching. It remains an L1 discovery path awaiting approved live
 validation; its effect is source acquisition even though it writes no database rows.
 
+`civic observe assembly` accepts optional `--max-requests`, `--min-request-interval` (seconds)
+and `--fetch-deadline-seconds`. Supply all three together: a positive integer request cap,
+a finite nonnegative interval and a finite positive deadline. Invalid combinations fail before
+worker/DB dispatch. Omission preserves existing behavior. Limits cover one connector lifetime;
+the elapsed budget begins at first fetch, spaces attempted request starts and rejects expired
+responses before page ingestion. The per-operation HTTP timeout is at most 15 seconds and
+shrinks to remaining fetch time. This cooperative deadline does not bound worker parsing/DB
+commit or guarantee process recovery. A budget stop records FAILED before any committed page
+or PARTIAL after prior committed pages, retaining the last committed checkpoint. Numeric limits
+do not grant source rights or permission to resume, materialize or publish.
+
 ## Complete legacy console-script map
 
 The pinned `77e2767ab043738f00b8dd38be8d99803e5ad7bc` manifest contains **19** installed

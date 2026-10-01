@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 from dataclasses import asdict, is_dataclass
 from datetime import date
@@ -134,6 +135,10 @@ def build_parser() -> argparse.ArgumentParser:
                     "--confirm-exact-attachment-rights", action="store_true", required=True
                 )
             if verb == "observe":
+                if lane == "assembly":
+                    p.add_argument("--max-requests", type=int)
+                    p.add_argument("--min-request-interval", type=float)
+                    p.add_argument("--fetch-deadline-seconds", type=float)
                 if lane not in (
                     "policy-research",
                     "assembly-page",
@@ -257,6 +262,17 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
     for flag in ("page_size", "page_no", "page_index", "max_pages", "row_count"):
         if getattr(args, flag, 1) < 1:
             parser.error(f"{flag.replace('_', '-')} must be positive")
+    if args.verb == "observe" and args.lane == "assembly":
+        limits = (args.max_requests, args.min_request_interval, args.fetch_deadline_seconds)
+        if any(value is not None for value in limits):
+            if any(value is None for value in limits):
+                parser.error("Assembly request-count, interval and fetch deadline are required together")
+            if args.max_requests < 1:
+                parser.error("max-requests must be positive")
+            if not math.isfinite(args.min_request_interval) or args.min_request_interval < 0:
+                parser.error("min-request-interval must be finite and nonnegative")
+            if not math.isfinite(args.fetch_deadline_seconds) or args.fetch_deadline_seconds <= 0:
+                parser.error("fetch-deadline-seconds must be finite and positive")
     if args.lane == "gwanbo" and args.from_date > args.to_date:
         parser.error("from-date must precede to-date")
     if args.lane == "gukgam-schedule-probe" and (

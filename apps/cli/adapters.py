@@ -38,12 +38,22 @@ def observe(a: argparse.Namespace) -> Any:
         return w.build_probe_report(connector=connector)
     if a.lane in ("assembly", "assembly-page"):
         w = worker("assembly_roster")
+        request_kwargs = {}
+        if a.lane == "assembly" and a.max_requests is not None:
+            from packages.connectors.open_assembly import AssemblyRequestLimits
+
+            request_kwargs["request_limits"] = AssemblyRequestLimits(
+                max_requests=a.max_requests,
+                min_interval_seconds=a.min_request_interval,
+                deadline_seconds=a.fetch_deadline_seconds,
+            )
         c = w.OpenAssemblyMemberConnector(
             page_index=getattr(a, "page_index", 1),
             page_size=a.page_size,
             name=getattr(a, "name", None),
             party=getattr(a, "party", None),
             district=getattr(a, "district", None),
+            **request_kwargs,
         )
         if a.lane == "assembly-page":
             return w.AssemblyRosterStager(c).stage()

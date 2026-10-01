@@ -78,6 +78,52 @@ def test_assembly_observation_calls_only_enumeration(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out)["effect"] == "SOURCE_INGESTION"
 
 
+@pytest.mark.parametrize(
+    "limits",
+    [
+        ["--max-requests", "2"],
+        ["--max-requests", "0", "--min-request-interval", "1", "--fetch-deadline-seconds", "120"],
+        ["--max-requests", "2", "--min-request-interval", "nan", "--fetch-deadline-seconds", "120"],
+        ["--max-requests", "2", "--min-request-interval", "-1", "--fetch-deadline-seconds", "120"],
+        ["--max-requests", "2", "--min-request-interval", "1", "--fetch-deadline-seconds", "inf"],
+        ["--max-requests", "2", "--min-request-interval", "1", "--fetch-deadline-seconds", "0"],
+    ],
+)
+def test_invalid_assembly_request_limits_precede_dispatch(monkeypatch, limits):
+    def forbidden(_):
+        pytest.fail("worker or DB dispatched for invalid Assembly request limits")
+
+    monkeypatch.setattr(adapters, "dispatch", forbidden)
+    with pytest.raises(SystemExit) as exc:
+        main(["observe", "assembly", "--allow-effect", "SOURCE_INGESTION", *limits])
+    assert exc.value.code == 2
+
+
+def test_assembly_request_limits_reach_canonical_enumerator(monkeypatch, capsys):
+    calls = []
+
+    class Enumerator:
+        def __init__(self, connector, repo):
+            calls.append((connector, repo))
+
+        def enumerate(self, *, resume):
+            assert resume is False
+            return {"status": "SUCCESS"}
+
+    w = SimpleNamespace(
+        OpenAssemblyMemberConnector=lambda **kw: kw, AssemblyRosterEnumerator=Enumerator
+    )
+    monkeypatch.setattr(adapters, "worker", lambda name: w)
+    monkeypatch.setattr(adapters, "repository", lambda args: "isolated fake repo")
+    assert main([
+        "observe", "assembly", "--allow-effect", "SOURCE_INGESTION", "--max-requests", "8",
+        "--min-request-interval", "1", "--fetch-deadline-seconds", "120",
+    ]) == 0
+    limits = calls[0][0]["request_limits"]
+    assert (limits.max_requests, limits.min_interval_seconds, limits.deadline_seconds) == (8, 1, 120)
+    assert json.loads(capsys.readouterr().out)["effect"] == "SOURCE_INGESTION"
+
+
 def test_materialization_does_not_fetch(monkeypatch):
     called = []
     monkeypatch.setattr(adapters, "repository", lambda args: "fake")
