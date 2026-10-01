@@ -81,21 +81,29 @@ jobs:
           POSTGRES_TEST_URL: postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel
         run: python -m pytest tests/test_postgresql_integration.py
 
+      - name: Capture PostgreSQL backup expectations
+        id: backup-counts
+        env:
+          DATABASE_URL: postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel
+        run: >-
+          python -m packages.verification.postgresql_ci_counts
+          --database-url "$DATABASE_URL"
+          --github-output "$GITHUB_OUTPUT"
+
       - name: Verify PostgreSQL backup and restore
         env:
           PGPASSWORD: civic
         run: |
-          expected_people="$(psql --host 127.0.0.1 --username civic --dbname civic_intel --tuples-only --no-align --command "select count(*) from people")"
-          expected_organization_claims="$(psql --host 127.0.0.1 --username civic --dbname civic_intel --tuples-only --no-align --command "select count(*) from claims where organization_id is not null and publication_status='PUBLISHED' and superseded_at is null")"
-          expected_public_people="$(python -c "from packages.persistence import SqlAlchemyRepository; print(len(SqlAlchemyRepository('postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel').public_people()))")"
-          pg_dump --host 127.0.0.1 --username civic --dbname civic_intel --format custom --file /tmp/civic-intel.dump
+          pg_dump --host 127.0.0.1 --username civic --dbname civic_intel \
+            --format custom --file /tmp/civic-intel.dump
           createdb --host 127.0.0.1 --username civic civic_intel_restore
-          pg_restore --host 127.0.0.1 --username civic --dbname civic_intel_restore --exit-on-error /tmp/civic-intel.dump
+          pg_restore --host 127.0.0.1 --username civic \
+            --dbname civic_intel_restore --exit-on-error /tmp/civic-intel.dump
           python -m packages.verification.postgresql \
             --database-url postgresql+psycopg://civic:civic@127.0.0.1:5432/civic_intel_restore \
-            --expected-people "$expected_people" \
-            --expected-public-people "$expected_public_people" \
-            --expected-organization-claims "$expected_organization_claims"
+            --expected-people "${{ steps.backup-counts.outputs.people }}" \
+            --expected-public-people "${{ steps.backup-counts.outputs.public_people }}" \
+            --expected-organization-claims "${{ steps.backup-counts.outputs.organization_claims }}"
 
       - name: Verify deployment artifacts
         env:
@@ -107,19 +115,23 @@ jobs:
           docker compose --file compose.deploy.yml config --quiet
           npm run check --prefix .railway
 
-      - name: Verify installed sync entrypoint outside source tree
+      - name: Verify installed CLI outside the source tree
         run: |
-          docker run --rm --entrypoint /bin/sh civic-intel-api:verify -lc '
-            set -eu
-            cd /tmp
-            test "$(command -v civic-sync)" = "/usr/local/bin/civic-sync"
-            python -c "import importlib; module=importlib.import_module(\"packages.persistence.repository\"); assert \"site-packages\" in module.__file__; assert module._expected_schema_revision() == \"0008\""
-            python -c "from alembic import command; from alembic.config import Config; config=Config(\"/app/alembic.ini\"); config.set_main_option(\"script_location\", \"/app/migrations\"); config.set_main_option(\"sqlalchemy.url\", \"sqlite:////tmp/runtime.db\"); command.upgrade(config, \"head\")"
-            unset ASSEMBLY_API_KEY
-            set +e
-            civic-sync assembly-roster --database-url sqlite:////tmp/runtime.db >/tmp/civic-sync-receipt.json
-            status=$?
-            set -e
-            test "$status" -eq 1
-            python -c "import json; payload=json.load(open(\"/tmp/civic-sync-receipt.json\")); assert payload[\"error_reason\"][\"code\"] == \"MissingAssemblyApiKey\"; assert payload[\"error_reason\"][\"phase\"] == \"source_fetch_parse_or_coverage\"; assert payload[\"run_id\"] is not None; assert payload[\"committed_count\"] == 0; print(\"container-sync-entrypoint-regression=pass\")"
-          '
+          docker run --rm --entrypoint /bin/sh \
+            --env DATABASE_URL=sqlite:////tmp/civic-intel-runtime.db \
+            civic-intel-api:verify -lc '
+              set -eu
+              cd /tmp
+              test "$(command -v civic)" = "/usr/local/bin/civic"
+              python -c "import packages.persistence.database as module; from packages.persistence.database import expected_schema_revision; assert \"site-packages\" in module.__file__; assert expected_schema_revision() == \"0008\""
+              python -c "from alembic import command; from alembic.config import Config; config=Config(\"/app/alembic.ini\"); config.set_main_option(\"script_location\", \"/app/migrations\"); command.upgrade(config, \"head\")"
+              unset ASSEMBLY_API_KEY
+              set +e
+              civic observe assembly --database-url "$DATABASE_URL" --allow-effect SOURCE_INGESTION >/tmp/assembly-failure.json
+              status=$?
+              set -e
+              python -m packages.verification.assembly_roster_failure_smoke \
+                --database-url "$DATABASE_URL" \
+                --receipt /tmp/assembly-failure.json \
+                --exit-code "$status"
+            '
