@@ -6,8 +6,6 @@ from uuid import UUID, uuid5
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from packages.connectors.open_assembly import POLICY_ID as ASSEMBLY_MEMBER_POLICY_ID
-from packages.connectors.open_assembly import OpenAssemblyMemberConnector
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -37,6 +35,7 @@ from packages.persistence.mapping import (
     _observation,
     _person,
     _policy,
+    _snapshot,
     _source,
     _temporal,
 )
@@ -59,9 +58,9 @@ from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_provenance import validate_assembly_member_provenance
 from packages.verification.claims import validate_claim_publication
 from packages.verification.materialization import MaterializationError, MaterializationResult
-from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
 _ASSEMBLY_REVIEWED_ROLE_CLAIM_NAMESPACE = UUID("a1e9f24f-4c9b-4f8a-9c7b-2d6c2a8de5f1")
 
@@ -154,36 +153,7 @@ class ReviewRepository:
             raise MaterializationError("Assembly review observation SourcePolicy does not exist")
         source = _source(source_row)
         policy = _policy(policy_row)
-        if (
-            policy.id != ASSEMBLY_MEMBER_POLICY_ID
-            or policy.domain != OpenAssemblyMemberConnector.HOST
-            or policy.source_class != "official_open_api"
-            or (policy.collection_mode.value != "API")
-        ):
-            raise MaterializationError(
-                "Assembly review requires the official member API SourcePolicy"
-            )
-        try:
-            OpenAssemblyMemberConnector._validated_query(str(source.url))
-        except ValueError as exc:
-            raise MaterializationError(
-                "Assembly review Source URL is outside the member API contract"
-            ) from exc
-        if (
-            not isinstance(snapshot_row.metadata_json, dict)
-            or snapshot_row.metadata_json.get("api_code") != OpenAssemblyMemberConnector.API_CODE
-        ):
-            raise MaterializationError(
-                "Assembly review snapshot is outside the member API contract"
-            )
-        if snapshot_row.fulltext is not None:
-            raise MaterializationError("Assembly review cannot use a fulltext snapshot")
-        try:
-            require_policy(policy, PolicyAction.STORE_METADATA)
-        except PolicyDenied as exc:
-            raise MaterializationError(
-                "Assembly review SourcePolicy does not permit metadata storage"
-            ) from exc
+        validate_assembly_member_provenance(observation, _snapshot(snapshot_row), source, policy)
         return (source, policy)
 
     @staticmethod

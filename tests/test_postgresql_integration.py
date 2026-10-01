@@ -8,9 +8,11 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 
 from apps.api.main import create_app
 from apps.cli.main import main as reviewed_claim_import_main
+from packages.persistence.database import Database
 from packages.verification.postgresql import verify_restored_database
 from tests.support import ScenarioDatabase
 from tests.test_alio_item12_money import (
@@ -97,6 +99,7 @@ def test_postgresql_safe_alio_person_materialization_is_atomic_and_idempotent() 
     assert receipt["created_claims"] == 3
     assert receipt["claim_publication"] is False
     assert len(repository.people()) == before_people + 3
+
     with TestClient(create_app(repository)) as client:
         assert len(client.get("/people").json()) == before_people
     created_ids = [
@@ -159,3 +162,32 @@ def test_postgresql_safe_nec_person_materialization_is_atomic_and_idempotent() -
     assert noop["status"] == "NOOP"
     assert noop["write_performed"] is False
     assert len(repository.people()) == before_people + 3
+
+
+@pytest.mark.skipif(not POSTGRES_TEST_URL, reason="POSTGRES_TEST_URL is not configured")
+def test_postgresql_read_snapshot_is_coherent_across_concurrent_commit() -> None:
+    assert POSTGRES_TEST_URL is not None
+    database = Database(POSTGRES_TEST_URL)
+    database.assert_ready()
+    source = None
+    try:
+        with database(read_only=True) as uow:
+            source = next(iter(uow.public.sources().values()))
+            with database.engine.begin() as writer:
+                writer.execute(
+                    text("UPDATE sources SET title = :title WHERE id = :id"),
+                    {"title": "concurrent fixture title", "id": str(source.id)},
+                )
+            assert uow.public.source(source.id).title == source.title
+            with pytest.raises(RuntimeError, match="cannot write"):
+                uow.public._session.execute(text("DELETE FROM sources"))
+        with database(read_only=True) as fresh:
+            assert fresh.public.source(source.id).title == "concurrent fixture title"
+    finally:
+        if source is not None:
+            with database.engine.begin() as writer:
+                writer.execute(
+                    text("UPDATE sources SET title = :title WHERE id = :id"),
+                    {"title": source.title, "id": str(source.id)},
+                )
+        database.close()

@@ -340,5 +340,3 @@ class MoisOrganizationEnumerator:
         except Exception as exc:
             lifecycle.fail(exc)
             raise
-
-

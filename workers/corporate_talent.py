@@ -559,5 +559,3 @@ class OpenDartCorporateStager:
 
 def render_corporate_json(payload: dict[str, object]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
-
-

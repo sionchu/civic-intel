@@ -569,5 +569,3 @@ class LegislativeActivityStager:
 
 def render_legislative_json(summary: LegislativeActivitySummary) -> str:
     return json.dumps(summary.to_dict(), ensure_ascii=False, indent=2, sort_keys=True)
-
-

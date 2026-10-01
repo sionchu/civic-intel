@@ -81,6 +81,7 @@ def test_roster_audit_exports_only_allowlisted_normalized_fields():
     }
 
     report = build_report(receipt, checkpoint=checkpoint, run=run, observations=[observation])
+    assert report["materialization_performed"] is False
     assert report["current_observation_count"] == 1
     assert set(report["rows"][0]) == {
         "provider_record_key",

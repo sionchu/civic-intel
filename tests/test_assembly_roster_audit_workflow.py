@@ -10,12 +10,13 @@ def test_assembly_roster_audit_workflow_is_manual_and_observation_only() -> None
     assert "pull_request:" not in body
     assert "\n  push:" not in body
     assert "secrets.ASSEMBLY_API_KEY" in body
-    assert "--enumerate" in body
+    assert "civic observe assembly" in body
+    assert "--allow-effect SOURCE_INGESTION" in body
     assert "--materialize" not in body
     assert "--name" not in body
     assert "--party" not in body
     assert "--district" not in body
-    assert '"materialization_performed": False' in body
+    assert "packages.verification.assembly_roster_observation_audit" in body
 
 
 def test_assembly_roster_audit_artifact_excludes_raw_database_and_credentials() -> None:

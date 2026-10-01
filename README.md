@@ -25,10 +25,11 @@ python -m alembic upgrade head
 
 Copy `.env.example` to `.env` for local overrides. It contains placeholders only.
 
-`CIVIC_BOOTSTRAP_MODE=runtime` is the normal mode. Runtime startup checks that Alembic is
-at the current schema head and fails clearly if the database is missing or stale; it never
-creates tables or seeds Golden Set 001. `CIVIC_BOOTSTRAP_MODE=golden` is reserved for an
-explicit disposable development/test database and seeds only an empty migrated database.
+Runtime startup checks the supported Alembic revision and fails clearly if the database is
+missing or incompatible; it never creates tables or seeds Golden Set 001. Environment variables
+cannot enable seeding. In an explicitly allocated empty, migrated development/test database,
+seed with `Application(Database("sqlite:///fixture.db")).onboarding.seed_golden()` using the
+classes from `packages.application.context` and `packages.persistence.database`.
 
 ## Commands
 

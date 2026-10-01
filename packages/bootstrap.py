@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 from packages.application.context import Application
 from packages.persistence.database import Database
 from packages.persistence.errors import DatabaseNotReady
@@ -12,7 +10,7 @@ def application(database_url: str | None = None) -> Application:
 
 
 def bootstrap_database(target: Database, mode: str | None = None) -> Database:
-    selected = (mode or os.getenv("CIVIC_BOOTSTRAP_MODE") or "runtime").strip().casefold()
+    selected = (mode or "runtime").strip().casefold()
     if selected == "runtime":
         target.assert_ready()
     elif selected == "golden":

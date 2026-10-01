@@ -5,13 +5,20 @@ import os
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import ClassVar
-from urllib.parse import parse_qs, urlencode, urlparse
-from uuid import UUID
+from urllib.parse import urlencode
 
 import httpx
 
 from packages.domain.contracts import SourcePolicy
 from packages.domain.enums import SourceCollectionMode
+from packages.domain.source_contracts import (
+    ASSEMBLY_MEMBER_API_CODE,
+    ASSEMBLY_MEMBER_HOST,
+    ASSEMBLY_MEMBER_PATH,
+    ASSEMBLY_MEMBER_POLICY_ID,
+    ASSEMBLY_MEMBER_QUERY_FIELDS,
+    assembly_member_query,
+)
 
 from .base import Connector, ConnectorDocument
 
@@ -38,7 +45,7 @@ class AssemblyMemberRecord:
     committees: str | None = None
 
 
-POLICY_ID = UUID("11000000-0000-0000-0000-000000000001")
+POLICY_ID = ASSEMBLY_MEMBER_POLICY_ID
 
 
 def national_assembly_member_policy() -> SourcePolicy:
@@ -72,13 +79,11 @@ def national_assembly_member_policy() -> SourcePolicy:
 
 
 class OpenAssemblyMemberConnector(Connector):
-    API_CODE = "nwvrqwxyaytdsfvhu"
+    API_CODE = ASSEMBLY_MEMBER_API_CODE
     BASE_URL = f"https://open.assembly.go.kr/portal/openapi/{API_CODE}"
-    HOST = "open.assembly.go.kr"
-    PATH = f"/portal/openapi/{API_CODE}"
-    ALLOWED_QUERY: ClassVar[frozenset[str]] = frozenset(
-        {"Type", "pIndex", "pSize", "HG_NM", "POLY_NM", "ORIG_NM"}
-    )
+    HOST = ASSEMBLY_MEMBER_HOST
+    PATH = ASSEMBLY_MEMBER_PATH
+    ALLOWED_QUERY: ClassVar[frozenset[str]] = frozenset(ASSEMBLY_MEMBER_QUERY_FIELDS)
 
     def __init__(
         self,
@@ -125,19 +130,7 @@ class OpenAssemblyMemberConnector(Connector):
 
     @classmethod
     def _validated_query(cls, url: str) -> dict[str, str]:
-        parsed = urlparse(url)
-        if parsed.scheme != "https" or parsed.netloc != cls.HOST or parsed.path != cls.PATH:
-            raise ValueError("unsupported National Assembly API URL")
-        raw = parse_qs(parsed.query, keep_blank_values=True)
-        if "KEY" in raw or "authKey" in raw:
-            raise ValueError("credentials must not be embedded in connector URLs")
-        unknown = set(raw) - cls.ALLOWED_QUERY
-        if unknown:
-            raise ValueError("unsupported National Assembly API query parameter")
-        query = {key: values[-1] for key, values in raw.items()}
-        if query.get("Type", "json").lower() != "json":
-            raise ValueError("connector requires JSON responses")
-        return query
+        return assembly_member_query(url)
 
     @staticmethod
     def _redact_credentials(value):

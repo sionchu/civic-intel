@@ -43,12 +43,15 @@ class IdentityService:
 
 from datetime import date
 
+from packages.verification.assembly_base_profile import ASSEMBLY_BASE_PROFILE_FEEDER
+from packages.verification.assembly_provenance import validate_assembly_member_provenance
 from packages.verification.claims import validate_claim_publication
 from packages.verification.materialization import (
     MaterializationError,
     MaterializationResult,
     decide_materialization,
 )
+from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
 
 def materialize_identity(factory: UnitOfWorkFactory, observation_id: UUID) -> MaterializationResult:
@@ -58,6 +61,23 @@ def materialize_identity(factory: UnitOfWorkFactory, observation_id: UUID) -> Ma
         observation = uow.acquisition.feeder_observation(observation_id)
         if observation is None:
             raise MaterializationError("feeder observation does not exist")
+        snapshot = uow.public.source_snapshot(observation.snapshot_id)
+        if snapshot is None:
+            raise MaterializationError("observation snapshot does not exist")
+        source = uow.public.source(snapshot.source_id)
+        if source is None:
+            raise MaterializationError("observation source does not exist")
+        policy = uow.public.policies([source.policy_id]).get(source.policy_id)
+        if policy is None:
+            raise MaterializationError("observation SourcePolicy does not exist")
+        try:
+            require_policy(policy, PolicyAction.STORE_METADATA)
+        except PolicyDenied:
+            raise MaterializationError(
+                "observation SourcePolicy does not permit metadata storage"
+            ) from None
+        if observation.feeder == ASSEMBLY_BASE_PROFILE_FEEDER:
+            validate_assembly_member_provenance(observation, snapshot, source, policy)
         canonical_name = observation.normalized.get("canonical_name")
         if not isinstance(canonical_name, str) or not canonical_name.strip():
             raise MaterializationError("feeder observation lacks canonical_name")
@@ -103,15 +123,6 @@ def materialize_identity(factory: UnitOfWorkFactory, observation_id: UUID) -> Ma
             birth_date=birth_date,
             identity_status=IdentityStatus.RESOLVED,
         )
-        snapshot = uow.public.source_snapshot(observation.snapshot_id)
-        if snapshot is None:
-            raise MaterializationError("observation snapshot does not exist")
-        source = uow.public.source(snapshot.source_id)
-        if source is None:
-            raise MaterializationError("observation source does not exist")
-        policy = uow.public.policies([source.policy_id]).get(source.policy_id)
-        if policy is None:
-            raise MaterializationError("observation SourcePolicy does not exist")
         draft = Claim(
             person_id=person.id,
             proposition=f"{canonical_name}는 국회의원 명부에 등재되어 있다.",

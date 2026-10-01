@@ -28,7 +28,7 @@ def check(root: Path) -> list[str]:
         ),
     }
     for folder, forbidden in rules.items():
-        for path in (root / folder).glob("*.py"):
+        for path in (root / folder).rglob("*.py"):
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 if not isinstance(node, (ast.Import, ast.ImportFrom)):
                     continue
@@ -80,6 +80,17 @@ def check(root: Path) -> list[str]:
             )
             if effect != operational_modules.get(path.stem) or effect is None:
                 failures.append(f"unclassified standalone operation: {path.name}")
+    # Current continuation headings are unique; history belongs in linked archives.
+    for name in ("HANDOFF.md", "docs/exec-plans/active/architecture-current-master.md"):
+        path = root / name
+        if path.exists():
+            headings = [
+                line
+                for line in path.read_text(encoding="utf-8").splitlines()
+                if line.startswith("## ")
+            ]
+            if len(headings) != len(set(headings)):
+                failures.append(f"duplicate current continuation section: {name}")
     return failures
 
 

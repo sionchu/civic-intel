@@ -136,7 +136,7 @@ backup/restore and any staging→production data copy require their own explicit
 | Role | Variable | Rule |
 | --- | --- | --- |
 | API/migration | `DATABASE_URL` | Railway PostgreSQL output; normalize provider `postgresql://` URLs at the process boundary to the project's `postgresql+psycopg://` dialect. |
-| API | `CIVIC_BOOTSTRAP_MODE` | Must be `runtime`; production must never use Golden bootstrap. |
+| API | Bootstrap | Startup only checks readiness. Golden fixtures require an explicit onboarding call against a disposable empty migrated DB; environment variables cannot enable seeding. |
 | web | `CIVIC_API_URL` | Server-only routable API origin; do not expose credentials or private endpoints. |
 | connector jobs | provider API keys | Add only to the one bounded job that needs them; never to web runtime. |
 

@@ -93,8 +93,10 @@ Reuse permitted snapshots/observations instead of recollecting the same source f
 
 Classify a command by actual call-path effects, not its name:
 `READ_ONLY`, `SOURCE_INGESTION`, `IDENTITY_MATERIALIZATION`, `CLAIM_PUBLICATION`, `SCHEMA_OR_DEPLOY`.
-In particular, `workers/sync.py` calls `enumerate_and_materialize()` for the Assembly roster;
-`civic-sync` is not an acquisition-only permission. Inspect `--enumerate` and other CLI paths too.
+The retired `civic-sync` path combined Assembly acquisition and materialization. The canonical
+`civic observe`, `materialize`, `publish`, `review` and `inspect` commands now declare their
+effects before dispatch; consult `docs/operations/COMMANDS.md`. A matching `--allow-effect`
+does not grant source rights, identity approval or operational database permission.
 
 source_worker normally returns a tested live-run request to MAIN. The assigned execution owner
 runs the existing canonical worker with only the approved scope. Child credentials never include

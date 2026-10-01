@@ -35,9 +35,11 @@ the Person, so its current effect is CLAIM_PUBLICATION. An identity-only service
 must make the role Claim DRAFT before this route can be reclassified.
 
 The separate Assembly materialization adapter consumes already persisted successful
-coverage. It must never fetch or fall back to the mixed enumeration/materialization
-runner. At the pinned baseline, its `materialize_latest_successful(repository)` worker
-seam is an integration dependency owned by MAIN; until supplied it fails closed.
+coverage through `materialize_latest_successful(application)`. It never fetches and creates
+DRAFT Claims. Claim publication is a separate explicit operation. For a reviewed draft use
+`civic publish claim --allow-effect CLAIM_PUBLICATION --claim-id <draft-claim-id>`; the publication
+gate is revalidated in the transaction that changes its status. Base-profile publication is a
+separate source-specific operation. `civic inspect commands` inventories all 36 current routes.
 
 ## Complete legacy console-script map
 

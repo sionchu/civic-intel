@@ -110,3 +110,16 @@ def test_identity_materialization_requires_separate_publication(tmp_path):
 
 def test_installed_schema_contract_is_not_source_tree_dependent():
     assert expected_schema_revision() == "0008"
+
+
+def test_api_startup_never_seeds_from_environment(tmp_path, monkeypatch):
+    db = migrated(tmp_path)
+    monkeypatch.setenv("CIVIC_BOOTSTRAP_MODE", "golden")
+    with TestClient(create_app(db)) as client:
+        assert client.get("/people").json() == []
+    with db(read_only=True) as uow:
+        assert uow.public.people() == []
+        assert uow.public.claims() == []
+    Application(db).onboarding.seed_golden()
+    with TestClient(create_app(db)) as client:
+        assert len(client.get("/people").json()) == 10

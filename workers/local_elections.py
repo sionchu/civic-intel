@@ -684,5 +684,3 @@ def render_local_election_json(items: list[StagedLocalElectionCandidate]) -> str
     return json.dumps(
         [item.to_dict() for item in items], ensure_ascii=False, indent=2, sort_keys=True
     )
-
-

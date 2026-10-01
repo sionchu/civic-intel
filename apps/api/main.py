@@ -14,7 +14,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from packages.application.context import Application
 from packages.application.queries import DirectoryView, PublicApiError
-from packages.bootstrap import bootstrap_database
 from packages.persistence.database import Database
 
 
@@ -51,7 +50,7 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        bootstrap_database(target)
+        target.assert_ready()
         yield
 
     app = FastAPI(
