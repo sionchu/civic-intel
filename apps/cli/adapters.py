@@ -1,8 +1,4 @@
-"""Thin effect-specific adapters; collection and parsing remain in source workers.
-
-MAIN integration points are repository() and materialize_assembly(). No adapter calls
-worker.main(), enumerate_and_materialize(), or the legacy mixed sync runner.
-"""
+"""Effect-specific composition; collection and parsing remain in source workers."""
 
 from __future__ import annotations
 
@@ -20,14 +16,12 @@ def worker(name: str) -> Any:
 
 
 def repository(args: argparse.Namespace) -> Any:
-    from packages.persistence import SqlAlchemyRepository
+    from packages.bootstrap import application
 
-    return SqlAlchemyRepository(args.database_url)
+    return application(args.database_url)
 
 
 def materialize_assembly(repo: Any) -> Any:
-    # A persisted-only worker seam is supplied by MAIN's architecture cutover.
-    # Never fall back to enumeration or the mixed sync runner.
     return worker("assembly_roster").materialize_latest_successful(repo)
 
 
@@ -141,6 +135,12 @@ def observe(a: argparse.Namespace) -> Any:
 
 
 def dispatch(a: argparse.Namespace) -> Any:
+    if a.lane == "gukgam-plan":
+        w = worker("gukgam_reviewed_plan_import")
+        capture = w._load_capture(a)
+        if a.verb == "inspect":
+            return {"status": "DRY_RUN"} | w._safe_report(capture)
+        return w.persist_capture(repository(a), capture)
     if a.verb == "observe":
         return observe(a)
     if a.lane == "commands":
@@ -151,33 +151,61 @@ def dispatch(a: argparse.Namespace) -> Any:
         ]
     r = repository(a)
     write = a.verb != "inspect"
+    if a.lane == "claim":
+        from packages.application.publication import publish_claim
+
+        return publish_claim(r.uows, a.claim_id)
+    if a.lane == "alio-item4":
+        w = worker("alio_current_executive_claim_import")
+        prepared = w.prepare_import(r)
+        result = None
+        if write:
+            organizations = [item.organization for item in prepared.items]
+            claim_items = [
+                (item.organization, claim, [evidence])
+                for item in prepared.items
+                for claim, evidence in item.claims
+            ]
+            result = r.organizations.import_organization_claim_batch(organizations, claim_items)
+        return w._receipt(prepared, status="COMMITTED" if write else "DRY_RUN", result=result)
     if a.lane == "assembly":
         return materialize_assembly(r)
     if a.lane == "assembly-distinct-person":
-        return r.resolve_assembly_distinct_person_review(
+        result = r.review.resolve_assembly_distinct_person_review(
             a.review_item_id, resolution_note=a.resolution_note
         )
+        return {
+            "status": "SUCCESS",
+            "action": result.decision.action.value,
+            "decision_class": result.decision.decision_class.value,
+            "person_id": str(result.person_id) if result.person_id else None,
+            "claim_id": str(result.claim_id) if result.claim_id else None,
+            "review_item_id": str(result.review_item_id) if result.review_item_id else None,
+            "created": result.created,
+        }
     if a.lane == "assembly-profile":
-        return worker("assembly_roster").AssemblyBaseProfilePublisher(r).publish_latest_successful()
+        from packages.application.assembly_base_profile import AssemblyBaseProfilePublisher
+
+        return AssemblyBaseProfilePublisher(r.uows).publish_latest_successful()
     if a.lane == "legislative":
-        return (
-            worker("legislative_activity")
-            .AssemblyLegislativeActivityPublisher(r)
-            .publish_latest_successful()
+        from packages.application.assembly_legislative_activity import (
+            AssemblyLegislativeActivityPublisher,
         )
+
+        return AssemblyLegislativeActivityPublisher(r.uows).publish_latest_successful()
     if a.lane == "alio-safe-people":
         if write:
-            return r.commit_alio_person_materialization(
+            return r.administration.commit_alio_person_materialization(
                 expected_receipt_sha256=a.expected_receipt_sha256
             )
-        return r.prepare_alio_person_materialization().to_dict()
+        return r.administration.prepare_alio_person_materialization().to_dict()
     if a.lane == "nec-safe-people":
         kwargs = {"election_id": a.election_id, "election_types": a.types}
         if write:
-            return r.commit_nec_person_materialization(
+            return r.administration.commit_nec_person_materialization(
                 expected_receipt_sha256=a.expected_receipt_sha256, **kwargs
             )
-        return r.prepare_nec_person_materialization(**kwargs).to_dict()
+        return r.administration.prepare_nec_person_materialization(**kwargs).to_dict()
     if a.lane == "orggo-organizations":
         w = worker("orggo_reviewed_organization_manifest")
         manifest = w.parse_reviewed_orggo_organization_manifest(_read(a.manifest))
@@ -209,11 +237,11 @@ def dispatch(a: argparse.Namespace) -> Any:
             later_fiscal_year=a.later_fiscal_year,
         )
         claims = (
-            r.import_organization_claim_pair(
+            r.organizations.import_organization_claim_pair(
                 prepared.organization, [(claim, [evidence]) for claim, evidence in prepared.claims]
             )
             if write
-            else tuple(claim for claim, _ in prepared.claims)
+            else tuple((claim for claim, _ in prepared.claims))
         )
         return {
             "status": "COMMITTED" if write else "DRY_RUN",
@@ -232,9 +260,15 @@ def dispatch(a: argparse.Namespace) -> Any:
             if prepared.existing_claim is not None:
                 status = "REUSED"
             else:
-                claim = r.import_organization_claim(
-                    prepared.organization, prepared.claim, [prepared.evidence]
-                )
-                status = "COMMITTED"
-        return {"status": status, "claim_id": str(claim.id), "network_fetch": False}
+                try:
+                    claim = r.organizations.import_organization_claim(
+                        prepared.organization, prepared.claim, [prepared.evidence]
+                    )
+                    status = "COMMITTED"
+                except w.OrganizationClaimImportError:
+                    stored = w._existing_exact_claim(r, prepared.claim, prepared.evidence)
+                    if stored is None:
+                        raise
+                    claim, status = stored, "REUSED"
+        return w._receipt(prepared, status=status, stored_claim=claim)
     raise ValueError("unsupported effect-specific command")

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 
+from packages.application.context import Application
+from packages.application.ingestion import SourceLifecycle
 from packages.connectors.alio_disclosures import (
     ALIO_ITEM12_MACHINE_READABLE_ATTACHMENT_SUFFIXES,
     ALIO_ITEM12_SOURCE_CONTRACT,
@@ -17,8 +18,6 @@ from packages.connectors.alio_disclosures import (
     alio_public_institution_policy,
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
-from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
 
@@ -28,9 +27,7 @@ SEMANTIC_SCOPE = "institutional_head_business_expense_annual_disclosure"
 
 
 def alio_business_expense_scope_key(institution_codes: Sequence[str]) -> str:
-    return "item_12_current_known_positive:" + ",".join(
-        sorted(set(institution_codes))
-    )
+    return "item_12_current_known_positive:" + ",".join(sorted(set(institution_codes)))
 
 
 def _directory_fingerprint(rows: Sequence[AlioBusinessExpenseDirectoryRow]) -> str:
@@ -86,12 +83,7 @@ def normalized_alio_business_expense(
 
 
 def alio_business_expense_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -112,7 +104,7 @@ class AlioBusinessExpenseEnumerator:
     def __init__(
         self,
         connector: AlioInstitutionHeadBusinessExpenseConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         policy: SourcePolicy | None = None,
         institution_codes: Sequence[str] = KNOWN_POSITIVE_INSTITUTION_CODES,
     ) -> None:
@@ -155,16 +147,19 @@ class AlioBusinessExpenseEnumerator:
         }
 
     def enumerate(self, *, resume: bool = False) -> AlioBusinessExpenseEnumerationResult:
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="ALIO item 12 bounded business-expense enumeration did not complete",
+        )
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the ALIO connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
         if resume and prior_checkpoint is None:
             raise AlioRecordError("ALIO item 12 resume requires a committed checkpoint")
-        run = self.repository.start_source_run(
+        run = lifecycle.start(
             self.FEEDER,
             self.scope_key,
             {
@@ -197,12 +192,10 @@ class AlioBusinessExpenseEnumerator:
                     for name in row.detail_attachment_names
                 ):
                     raise AlioRecordError(
-                        "ALIO item 12 selected institution has unsupported attachment format: "
-                        f"{row.institution_code}"
+                        f"ALIO item 12 selected institution has unsupported attachment format: {row.institution_code}"
                     )
             if any(row.disclosure_no is None for row in selected):
                 raise AlioRecordError("ALIO item 12 selected institution has no current disclosure")
-
             start_index = 0
             seen_provider_hashes: dict[str, str] = {}
             seen_disclosures: dict[str, str] = {}
@@ -236,7 +229,7 @@ class AlioBusinessExpenseEnumerator:
                 ingestion = IngestionPipeline(self.connector).ingest_document(
                     directory_document, self.policy
                 )
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -253,7 +246,6 @@ class AlioBusinessExpenseEnumerator:
                     ),
                 )
                 chunks_committed += 1
-
             for index, directory_row in enumerate(selected, start=1):
                 if index <= start_index:
                     continue
@@ -266,7 +258,6 @@ class AlioBusinessExpenseEnumerator:
                     raise AlioRecordError("ALIO item 12 disclosure is reused across institutions")
                 if prior_institution is not None:
                     raise AlioRecordError("ALIO item 12 disclosure is duplicated")
-
                 report_document = self.connector.fetch(self.connector.report_url(directory_row))
                 report_document = replace(
                     report_document,
@@ -280,8 +271,7 @@ class AlioBusinessExpenseEnumerator:
                     },
                 )
                 records = self.connector.parse_business_expense_rows(
-                    report_document,
-                    directory_row=directory_row,
+                    report_document, directory_row=directory_row
                 )
                 page_hashes: dict[str, str] = {}
                 normalized_by_key: dict[str, dict[str, object]] = {}
@@ -293,7 +283,6 @@ class AlioBusinessExpenseEnumerator:
                         raise AlioRecordError("ALIO item 12 provider record key is duplicated")
                     page_hashes[provider_key] = content_hash
                     normalized_by_key[provider_key] = normalized
-
                 ingestion = IngestionPipeline(self.connector).ingest_document(
                     report_document, self.policy
                 )
@@ -321,7 +310,7 @@ class AlioBusinessExpenseEnumerator:
                     directory_row.disclosure_no: directory_row.institution_code,
                 }
                 next_processed = processed_institutions | {directory_row.institution_code}
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -342,69 +331,19 @@ class AlioBusinessExpenseEnumerator:
                 seen_provider_hashes = next_seen_hashes
                 seen_disclosures = next_seen_disclosures
                 processed_institutions = next_processed
-
-            checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
+            checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
             if (
                 checkpoint is None
                 or checkpoint.cursor != str(len(selected))
                 or processed_institutions != set(self.institution_codes)
             ):
                 raise AlioRecordError("ALIO item 12 bounded coverage is incomplete")
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
+            completed = lifecycle.succeed()
             return AlioBusinessExpenseEnumerationResult(
-                completed,
-                institutions_committed,
-                len(seen_provider_hashes),
+                completed, institutions_committed, len(seen_provider_hashes)
             )
         except Exception as exc:
-            status = SourceRunStatus.PARTIAL if chunks_committed else SourceRunStatus.FAILED
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="ALIO item 12 bounded business-expense enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Enumerate the reviewed known-positive ALIO item 12 institutions."
-    )
-    parser.add_argument("--institution-code", action="append", dest="institution_codes")
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    institution_codes = tuple(args.institution_codes or KNOWN_POSITIVE_INSTITUTION_CODES)
-    try:
-        result = AlioBusinessExpenseEnumerator(
-            AlioInstitutionHeadBusinessExpenseConnector(),
-            SqlAlchemyRepository(args.database_url),
-            institution_codes=institution_codes,
-        ).enumerate(resume=args.resume)
-    except (AlioRecordError, PolicyDenied, ValueError) as exc:
-        parser.error(str(exc))
-    print(
-        json.dumps(
-            {
-                "run_id": str(result.run.id),
-                "status": result.run.status.value,
-                "scope_key": result.run.scope_key,
-                "institutions_committed": result.institutions_committed,
-                "unique_records": result.unique_records,
-            },
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

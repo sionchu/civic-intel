@@ -10,16 +10,16 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from sqlalchemy import event
-from test_operator_console import insert_lane
-from test_operator_console import repository as base_repository
 
 from apps.api.main import create_app
 from apps.api.operator import configure_read_only
 from apps.api.playbook import RECIPES, catalog, configuration, draft
-from packages.domain import db
 from packages.domain.work_orders import WorkOrderRequest
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence import models as db
 from packages.persistence.admin_workflow import AdminError, digest, receipt
+from tests.support import ScenarioDatabase
+from tests.test_operator_console import insert_lane
+from tests.test_operator_console import repository as base_repository
 
 TOKEN = "playbook-test-token-" + "a" * 32
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,7 +47,6 @@ def prepare(repo, request):
     return draft(repo, request, actor="qa-operator", label="TEST", config=configuration())
 
 
-
 def test_project_config_declares_playbook_roles_with_canonical_layers():
     project = tomllib.loads((ROOT / ".codex/config.toml").read_text(encoding="utf-8"))
     agents = project["agents"]
@@ -59,7 +58,9 @@ def test_project_config_declares_playbook_roles_with_canonical_layers():
         declaration = agents[role]
         assert declaration["description"]
         assert declaration["config_file"] == f"agents/{role}.toml"
-        layer = tomllib.loads((ROOT / ".codex" / declaration["config_file"]).read_text(encoding="utf-8"))
+        layer = tomllib.loads(
+            (ROOT / ".codex" / declaration["config_file"]).read_text(encoding="utf-8")
+        )
         assert layer["sandbox_mode"] in {"read-only", "workspace-write"}
         assert layer["developer_instructions"]
         assert "name" not in layer and "description" not in layer
@@ -67,6 +68,7 @@ def test_project_config_declares_playbook_roles_with_canonical_layers():
 
 def test_configuration_fails_closed_when_role_declaration_is_missing(tmp_path):
     import shutil
+
     shutil.copytree(ROOT / ".codex", tmp_path / ".codex")
     (tmp_path / "AGENTS.md").write_text("test", encoding="utf-8")
     (tmp_path / "docs/roles").mkdir(parents=True)
@@ -75,9 +77,12 @@ def test_configuration_fails_closed_when_role_declaration_is_missing(tmp_path):
     lines = config_path.read_text(encoding="utf-8").splitlines()
     marker = "[agents.record_curator]"
     start = lines.index(marker)
-    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[agents.")), len(lines))
+    end = next(
+        (i for i in range(start + 1, len(lines)) if lines[i].startswith("[agents.")), len(lines)
+    )
     config_path.write_text("\n".join(lines[:start] + lines[end:]) + "\n", encoding="utf-8")
     assert configuration(tmp_path)["available"] is False
+
 
 def test_six_recipes_read_canonical_roles_and_no_fake_runtime():
     config = configuration()
@@ -136,8 +141,8 @@ def test_generation_is_database_read_only_even_when_admin_mode_exists(repository
         lambda c, cur, sql, *rest: query_types.append(sql.lstrip().split()[0].upper()),
     )
     prepare(repository, request_for(repository))
-    assert set(query_types) <= {"SELECT"}
-    readonly = SqlAlchemyRepository(str(repository.engine.url))
+    assert set(query_types) <= {"BEGIN", "SELECT"}
+    readonly = ScenarioDatabase(str(repository.engine.url))
     configure_read_only(readonly)
     try:
         assert prepare(readonly, request_for(readonly))["work_order"]["write_performed"] is False

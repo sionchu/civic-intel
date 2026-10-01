@@ -1,21 +1,14 @@
 from __future__ import annotations
 
-import argparse
-import json
 import re
 from dataclasses import dataclass
-from pathlib import Path
 
-from packages.persistence import OrganizationClaimImportError, SqlAlchemyRepository
-from packages.rendering.gukgam_organization_binding_review import (
-    GukgamOrganizationBindingPreflightError,
-)
-from packages.rendering.gukgam_organization_claim import GukgamOrganizationClaimError
+from packages.application.context import Application
+from packages.persistence import OrganizationClaimImportError
 from workers.gukgam_reviewed_claim_batch_manifest import (
     GUKGAM_REVIEWED_CLAIM_BATCH_MANIFEST_SCHEMA,
     ReviewedGukgamClaimBatchDryRun,
     ReviewedGukgamClaimBatchManifest,
-    parse_reviewed_gukgam_claim_batch_manifest,
     persist_prepared_reviewed_gukgam_claim_batch,
 )
 from workers.gukgam_reviewed_claim_import import (
@@ -23,10 +16,8 @@ from workers.gukgam_reviewed_claim_import import (
     prepare_reviewed_gukgam_claim_import,
 )
 
-GUKGAM_REVIEWED_CLAIM_BATCH_COMMIT_SEMANTICS = (
-    "REVIEWED_GUKGAM_CLAIM_BATCH_COMMIT_V1"
-)
-_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+GUKGAM_REVIEWED_CLAIM_BATCH_COMMIT_SEMANTICS = "REVIEWED_GUKGAM_CLAIM_BATCH_COMMIT_V1"
+_SHA256 = re.compile("^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -51,7 +42,7 @@ def _expected_manifest_sha256(value: str) -> str:
 
 
 def prepare_reviewed_gukgam_claim_batch_commit(
-    repository: SqlAlchemyRepository,
+    repository: Application,
     manifest: ReviewedGukgamClaimBatchManifest,
     *,
     expected_manifest_sha256: str,
@@ -60,29 +51,19 @@ def prepare_reviewed_gukgam_claim_batch_commit(
     actual = manifest.sha256()
     if actual != expected:
         raise ValueError("Gukgam batch manifest SHA-256 does not match operator confirmation")
-
     prepared = tuple(
         prepare_reviewed_gukgam_claim_import(
-            repository,
-            organization_id=item.organization_id,
-            review_key=item.review_key,
+            repository, organization_id=item.organization_id, review_key=item.review_key
         )
         for item in manifest.items
     )
     published = tuple(item.existing_claim is not None for item in prepared)
-    if any(published) and not all(published):
-        raise ValueError(
-            "Gukgam batch commit refuses partially published manifest state"
-        )
-    return ReviewedGukgamClaimBatchCommit(
-        manifest=manifest,
-        prepared_items=prepared,
-    )
+    if any(published) and (not all(published)):
+        raise ValueError("Gukgam batch commit refuses partially published manifest state")
+    return ReviewedGukgamClaimBatchCommit(manifest=manifest, prepared_items=prepared)
 
 
-def _item_receipt(
-    prepared: ReviewedGukgamClaimImport,
-) -> dict[str, object]:
+def _item_receipt(prepared: ReviewedGukgamClaimImport) -> dict[str, object]:
     stored_claim = prepared.existing_claim or prepared.claim
     return {
         "organization_id": str(prepared.organization.id),
@@ -104,13 +85,10 @@ def _item_receipt(
 
 
 def commit_reviewed_gukgam_claim_batch(
-    repository: SqlAlchemyRepository,
-    prepared: ReviewedGukgamClaimBatchCommit,
+    repository: Application, prepared: ReviewedGukgamClaimBatchCommit
 ) -> dict[str, object]:
     item_count = len(prepared.prepared_items)
-    organization_count = len(
-        {item.organization.id for item in prepared.prepared_items}
-    )
+    organization_count = len({item.organization.id for item in prepared.prepared_items})
     if prepared.all_reused:
         status = "REUSED"
         organizations_created = 0
@@ -121,8 +99,7 @@ def commit_reviewed_gukgam_claim_batch(
         result = persist_prepared_reviewed_gukgam_claim_batch(
             repository,
             ReviewedGukgamClaimBatchDryRun(
-                manifest=prepared.manifest,
-                prepared_items=prepared.prepared_items,
+                manifest=prepared.manifest, prepared_items=prepared.prepared_items
             ),
         )
         if result.organizations_created != 0:
@@ -134,7 +111,6 @@ def commit_reviewed_gukgam_claim_batch(
         organizations_reused = result.organizations_reused
         claims_created = result.claims_created
         claims_reused = result.claims_reused
-
     return {
         "status": status,
         "semantics": GUKGAM_REVIEWED_CLAIM_BATCH_COMMIT_SEMANTICS,
@@ -148,61 +124,5 @@ def commit_reviewed_gukgam_claim_batch(
         "write_performed": claims_created > 0,
         "automatic_candidate_enumeration": False,
         "network_fetch": False,
-        "items": [
-            _item_receipt(item)
-            for item in prepared.prepared_items
-        ],
+        "items": [_item_receipt(item) for item in prepared.prepared_items],
     }
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Commit one explicitly reviewed Gukgam Claim batch after confirming the exact manifest SHA."
-        )
-    )
-    parser.add_argument("--manifest", required=True, type=Path)
-    parser.add_argument("--expected-manifest-sha256", required=True)
-    parser.add_argument("--database-url")
-    parser.add_argument(
-        "--commit",
-        action="store_true",
-        help="Required explicit write confirmation for the reviewed manifest.",
-    )
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    if not args.commit:
-        parser.error("Gukgam batch commit requires explicit --commit")
-
-    try:
-        raw = json.loads(args.manifest.read_text(encoding="utf-8"))
-        manifest = parse_reviewed_gukgam_claim_batch_manifest(raw)
-        repository = SqlAlchemyRepository(args.database_url)
-        prepared = prepare_reviewed_gukgam_claim_batch_commit(
-            repository,
-            manifest,
-            expected_manifest_sha256=args.expected_manifest_sha256,
-        )
-        receipt = commit_reviewed_gukgam_claim_batch(repository, prepared)
-    except (
-        GukgamOrganizationBindingPreflightError,
-        GukgamOrganizationClaimError,
-        OrganizationClaimImportError,
-        OSError,
-        RuntimeError,
-        TypeError,
-        ValueError,
-        json.JSONDecodeError,
-    ) as exc:
-        parser.error(str(exc))
-
-    print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

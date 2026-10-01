@@ -13,10 +13,10 @@ from packages.connectors.nec_local_elections import (
     NecWinnerConnector,
     nec_local_election_policy,
 )
-from packages.domain.db import SourceRow, SourceSnapshotRow
 from packages.domain.enums import SourceCollectionMode, SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourceRow, SourceSnapshotRow
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers.local_elections import LocalElectionWinnerEnumerator, NecWinnerCoverageError
 
 SECRET = "nec-batch-secret-must-not-persist"
@@ -24,11 +24,7 @@ SCOPE = "20260603:4"
 
 
 def winner_row(
-    candidate_id: str,
-    name: str,
-    *,
-    party: str = "테스트당",
-    votes: str = "12,345",
+    candidate_id: str, name: str, *, party: str = "테스트당", votes: str = "12,345"
 ) -> dict[str, str]:
     return {
         "sgId": "20260603",
@@ -111,12 +107,12 @@ class WinnerApi:
         )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def three_winner_api() -> WinnerApi:
@@ -128,14 +124,10 @@ def three_winner_api() -> WinnerApi:
     )
 
 
-def test_full_winner_enumeration_is_complete_private_field_free_and_exact(
-    tmp_path: Path,
-) -> None:
+def test_full_winner_enumeration_is_complete_private_field_free_and_exact(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-winners.db")
     api = three_winner_api()
-
     result = LocalElectionWinnerEnumerator(api.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.pages_committed == 2
     assert result.unique_records == 3
@@ -147,10 +139,7 @@ def test_full_winner_enumeration_is_complete_private_field_free_and_exact(
     assert checkpoint.cursor == "2"
     assert checkpoint.metadata["expected_pages"] == 2
     assert checkpoint.metadata["total_count"] == 3
-
-    observations = repository.feeder_observations(
-        LocalElectionWinnerEnumerator.FEEDER, SCOPE
-    )
+    observations = repository.feeder_observations(LocalElectionWinnerEnumerator.FEEDER, SCOPE)
     assert len(observations) == 3
     assert observations[0].identity_hints["external_ids"] == {"nec_huboid": "C-001"}
     assert observations[0].identity_hints["canonical_name"] == "가당선"
@@ -164,7 +153,6 @@ def test_full_winner_enumeration_is_complete_private_field_free_and_exact(
     assert "age" not in persisted
     assert "serviceKey" not in persisted
     assert SECRET not in persisted
-
     with repository.sessions() as session:
         sources = list(session.scalars(select(SourceRow)))
         snapshots = list(session.scalars(select(SourceSnapshotRow)))
@@ -183,15 +171,12 @@ def test_unchanged_rerun_is_noop_and_changed_result_creates_version(tmp_path: Pa
     second = enumerator.enumerate()
     api.pages[1][0] = winner_row("C-001", "가당선", votes="12,999")
     changed = enumerator.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
     assert changed.run.observations_created == 1
     assert changed.run.observations_unchanged == 2
-    versions = repository.feeder_observations(
-        LocalElectionWinnerEnumerator.FEEDER, SCOPE, "C-001"
-    )
+    versions = repository.feeder_observations(LocalElectionWinnerEnumerator.FEEDER, SCOPE, "C-001")
     assert len(versions) == 2
     assert {item.normalized["votes"] for item in versions} == {12345, 12999}
     assert len({item.content_hash for item in versions}) == 2
@@ -202,10 +187,8 @@ def test_partial_failure_retains_checkpoint_and_resume_completes(tmp_path: Path)
     api = three_winner_api()
     api.fail_pages.add(2)
     enumerator = LocalElectionWinnerEnumerator(api.connector(), repository)
-
     with pytest.raises(NecApiError):
         enumerator.enumerate()
-
     partial = repository.source_runs(LocalElectionWinnerEnumerator.FEEDER, SCOPE)[-1]
     checkpoint = repository.source_checkpoint(LocalElectionWinnerEnumerator.FEEDER, SCOPE)
     assert partial.status == SourceRunStatus.PARTIAL
@@ -213,7 +196,6 @@ def test_partial_failure_retains_checkpoint_and_resume_completes(tmp_path: Path)
     assert partial.error_summary == "NEC winner enumeration did not complete"
     assert SECRET not in repr(partial.model_dump(mode="json"))
     assert checkpoint is not None and checkpoint.cursor == "1"
-
     api.fail_pages.clear()
     resumed = enumerator.enumerate(resume=True)
     assert resumed.run.status == SourceRunStatus.SUCCESS
@@ -241,12 +223,9 @@ def test_checkpoint_does_not_advance_when_page_commit_fails(
     monkeypatch.setattr(repository, "commit_source_page", fail_second_page)
     with pytest.raises(RuntimeError, match="synthetic NEC"):
         enumerator.enumerate()
-
     checkpoint = repository.source_checkpoint(LocalElectionWinnerEnumerator.FEEDER, SCOPE)
     assert checkpoint is not None and checkpoint.cursor == "1"
-    assert len(
-        repository.feeder_observations(LocalElectionWinnerEnumerator.FEEDER, SCOPE)
-    ) == 2
+    assert len(repository.feeder_observations(LocalElectionWinnerEnumerator.FEEDER, SCOPE)) == 2
 
 
 @pytest.mark.parametrize(
@@ -269,7 +248,6 @@ def test_coverage_metadata_change_fails_closed(
     api.totals = totals
     api.provider_pages = provider_pages
     api.provider_sizes = provider_sizes
-
     with pytest.raises(NecWinnerCoverageError, match=message):
         LocalElectionWinnerEnumerator(api.connector(), repository).enumerate()
 
@@ -278,23 +256,16 @@ def test_coverage_metadata_change_fails_closed(
     ("second_row", "message"),
     [
         (winner_row("C-001", "가당선"), "duplicate NEC huboid"),
-        (
-            winner_row("C-001", "가당선", party="충돌정당"),
-            "conflicting NEC huboid",
-        ),
+        (winner_row("C-001", "가당선", party="충돌정당"), "conflicting NEC huboid"),
     ],
 )
 def test_duplicate_or_conflicting_huboid_fails_closed(
     tmp_path: Path, second_row: dict[str, str], message: str
 ) -> None:
     repository = migrated_repository(tmp_path / f"nec-{message[:4]}.db")
-    api = WinnerApi(
-        {1: [winner_row("C-001", "가당선")], 2: [second_row]}
-    )
-
+    api = WinnerApi({1: [winner_row("C-001", "가당선")], 2: [second_row]})
     with pytest.raises(NecWinnerCoverageError, match=message):
         LocalElectionWinnerEnumerator(api.connector(page_size=1), repository).enumerate()
-
     assert repository.source_runs()[-1].status == SourceRunStatus.PARTIAL
 
 
@@ -308,7 +279,6 @@ def test_policy_and_filter_denial_happen_before_network_or_run(tmp_path: Path) -
         LocalElectionWinnerEnumerator(api.connector(), repository, policy).enumerate()
     assert api.calls == []
     assert repository.source_runs() == []
-
     filtered = NecWinnerConnector(
         election_id="20260603",
         election_type=4,
@@ -325,9 +295,7 @@ def test_policy_and_filter_denial_happen_before_network_or_run(tmp_path: Path) -
 def test_zero_result_scope_is_committed_as_complete_audit(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-empty.db")
     api = WinnerApi({})
-
     result = LocalElectionWinnerEnumerator(api.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.pages_committed == 1
     assert result.unique_records == 0

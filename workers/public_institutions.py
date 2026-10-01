@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 
+from packages.application.context import Application
+from packages.application.ingestion import SourceLifecycle
 from packages.connectors.alio_disclosures import (
     AlioCompensationRecord,
     AlioExecutiveDisclosureConnector,
@@ -20,8 +21,6 @@ from packages.connectors.alio_disclosures import (
     parse_reemployment_rows,
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
-from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
@@ -47,21 +46,15 @@ class StagedPublicInstitutionExecutive:
                 "kind": self.record.executive_kind.value,
                 "position_text": self.record.position_text,
                 "title": self.record.title,
-                "term_start": (
-                    self.record.term_start.isoformat() if self.record.term_start else None
-                ),
+                "term_start": self.record.term_start.isoformat()
+                if self.record.term_start
+                else None,
                 "term_end": self.record.term_end.isoformat() if self.record.term_end else None,
                 "reported_careers": list(self.record.reported_careers),
-                "reported_careers_semantics": (
-                    "ALIO 임원현황에 주요경력으로 공시된 내용이며, 각 과거 경력을 독립적으로 "
-                    "검증한 사실과는 구분한다."
-                ),
+                "reported_careers_semantics": "ALIO 임원현황에 주요경력으로 공시된 내용이며, 각 과거 경력을 독립적으로 검증한 사실과는 구분한다.",
                 "selection_procedure": self.record.selection_procedure,
                 "selection_rule": self.record.selection_rule,
-                "selection_semantics": (
-                    "공시된 공식 선임절차를 보존하며, 별도 근거 없이 정치적 임명 또는 "
-                    "정부의 실질 통제로 재해석하지 않는다."
-                ),
+                "selection_semantics": "공시된 공식 선임절차를 보존하며, 별도 근거 없이 정치적 임명 또는 정부의 실질 통제로 재해석하지 않는다.",
                 "as_of": self.record.as_of.isoformat(),
                 "source_ref": self.record.source_ref,
             },
@@ -77,11 +70,9 @@ class StagedPublicInstitutionReemployment:
         return {
             "canonical_name": self.candidate.canonical_name if self.candidate else None,
             "identity_anchors": list(self.candidate.career_anchors) if self.candidate else [],
-            "identity_semantics": (
-                "PUBLIC_EXECUTIVE_NAME_AVAILABLE"
-                if self.candidate
-                else "NON_EXECUTIVE_OR_NAME_NOT_STAGED"
-            ),
+            "identity_semantics": "PUBLIC_EXECUTIVE_NAME_AVAILABLE"
+            if self.candidate
+            else "NON_EXECUTIVE_OR_NAME_NOT_STAGED",
             "reemployment": {
                 "record_id": self.record.record_id,
                 "institution_code": self.record.institution_code,
@@ -94,10 +85,7 @@ class StagedPublicInstitutionReemployment:
                 "relationship": self.record.relationship,
                 "as_of": self.record.as_of.isoformat(),
                 "source_ref": self.record.source_ref,
-                "semantics": (
-                    "ALIO가 공시한 실제 재취업 현황이다. 정부공직자윤리위원회의 취업심사 "
-                    "결정과는 별도 사건이며, 위반·특혜 여부를 자동 판정하지 않는다."
-                ),
+                "semantics": "ALIO가 공시한 실제 재취업 현황이다. 정부공직자윤리위원회의 취업심사 결정과는 별도 사건이며, 위반·특혜 여부를 자동 판정하지 않는다.",
             },
         }
 
@@ -231,12 +219,7 @@ def normalized_alio_executive(record: AlioExecutiveRecord) -> dict[str, object]:
 
 
 def alio_executive_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -264,7 +247,7 @@ class AlioExecutiveEnumerator:
     def __init__(
         self,
         connector: AlioExecutiveDisclosureConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         policy: SourcePolicy | None = None,
     ) -> None:
         self.connector = connector
@@ -272,19 +255,20 @@ class AlioExecutiveEnumerator:
         self.policy = policy or alio_public_institution_policy()
 
     def enumerate(self, *, resume: bool = False) -> AlioExecutiveEnumerationResult:
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="ALIO item 4 current-roster enumeration did not complete",
+        )
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the ALIO connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.SCOPE_KEY)
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.SCOPE_KEY)
         if resume and prior_checkpoint is None:
             raise AlioRecordError("ALIO resume requires a committed checkpoint")
-        run = self.repository.start_source_run(
-            self.FEEDER,
-            self.SCOPE_KEY,
-            {"source_contract": self.SOURCE_CONTRACT, "resume": resume},
+        run = lifecycle.start(
+            self.FEEDER, self.SCOPE_KEY, {"source_contract": self.SOURCE_CONTRACT, "resume": resume}
         )
         institutions_committed = 0
         chunks_committed = 0
@@ -299,7 +283,6 @@ class AlioExecutiveEnumerator:
             seen_hashes: dict[str, str] = {}
             seen_disclosures: dict[str, str] = {}
             no_current_disclosures: set[str] = set()
-
             if resume:
                 assert prior_checkpoint is not None
                 if prior_checkpoint.cursor is None:
@@ -328,7 +311,7 @@ class AlioExecutiveEnumerator:
                 ingestion = IngestionPipeline(self.connector).ingest_document(
                     directory_document, self.policy
                 )
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -346,7 +329,6 @@ class AlioExecutiveEnumerator:
                     },
                 )
                 chunks_committed += 1
-
             for index, institution in enumerate(directory.institutions, start=1):
                 if index <= start_index:
                     continue
@@ -368,7 +350,7 @@ class AlioExecutiveEnumerator:
                     next_no_current_disclosures = no_current_disclosures | {
                         institution.institution_code
                     }
-                    self.repository.commit_source_page(
+                    lifecycle.commit_page(
                         run_id=run.id,
                         policy=self.policy,
                         source=ingestion.source,
@@ -399,7 +381,6 @@ class AlioExecutiveEnumerator:
                             "ALIO current disclosure is reused across institutions"
                         )
                     raise AlioRecordError("duplicate ALIO current disclosure")
-
                 report_document = self.connector.fetch(self.connector.report_url(disclosure))
                 report_metadata = {
                     **report_document.metadata,
@@ -420,9 +401,7 @@ class AlioExecutiveEnumerator:
                     metadata=report_metadata,
                 )
                 records = self.connector.parse_executives(
-                    report_document,
-                    institution=institution,
-                    disclosure=disclosure,
+                    report_document, institution=institution, disclosure=disclosure
                 )
                 if not records:
                     correction_normalized: dict[str, object] = {
@@ -470,7 +449,7 @@ class AlioExecutiveEnumerator:
                         normalized=correction_normalized,
                         content_hash=correction_content_hash,
                     )
-                    self.repository.commit_source_page(
+                    lifecycle.commit_page(
                         run_id=run.id,
                         policy=self.policy,
                         source=ingestion.source,
@@ -507,7 +486,6 @@ class AlioExecutiveEnumerator:
                         raise AlioRecordError("duplicate ALIO executive row key")
                     page_hashes[record.record_id] = content_hash
                     normalized_by_key[record.record_id] = normalized
-
                 ingestion = IngestionPipeline(self.connector).ingest_document(
                     report_document, self.policy
                 )
@@ -524,16 +502,16 @@ class AlioExecutiveEnumerator:
                         semantic_scope=self.SEMANTIC_SCOPE,
                         identity_hints={
                             "canonical_name": record.person_name,
-                            "name_status": (
-                                "PUBLIC" if record.person_name is not None else "MASKED_OR_VACANT"
-                            ),
+                            "name_status": "PUBLIC"
+                            if record.person_name is not None
+                            else "MASKED_OR_VACANT",
                             "institution_code": record.institution_code,
                             "organization": record.institution_name,
                             "office": record.title,
                             "position_text": record.position_text,
-                            "term_start": (
-                                record.term_start.isoformat() if record.term_start else None
-                            ),
+                            "term_start": record.term_start.isoformat()
+                            if record.term_start
+                            else None,
                             "disclosure_no": disclosure.disclosure_no,
                             "provider_person_id": None,
                         },
@@ -542,13 +520,12 @@ class AlioExecutiveEnumerator:
                     )
                     for record in records
                 ]
-
                 next_seen_hashes = seen_hashes | page_hashes
                 next_seen_disclosures = {
                     **seen_disclosures,
                     disclosure.disclosure_no: institution.institution_code,
                 }
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -571,66 +548,20 @@ class AlioExecutiveEnumerator:
                 chunks_committed += 1
                 seen_hashes = next_seen_hashes
                 seen_disclosures = next_seen_disclosures
-
-            checkpoint = self.repository.source_checkpoint(self.FEEDER, self.SCOPE_KEY)
+            checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.SCOPE_KEY)
             if (
                 checkpoint is None
                 or checkpoint.cursor != str(directory.total_count)
-                or (set(seen_disclosures.values()) | no_current_disclosures)
-                != set(institution_codes)
+                or set(seen_disclosures.values()) | no_current_disclosures != set(institution_codes)
                 or set(seen_disclosures.values()) & no_current_disclosures
             ):
                 raise AlioRecordError("ALIO current executive roster coverage is incomplete")
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
+            completed = lifecycle.succeed()
             return AlioExecutiveEnumerationResult(
                 completed, institutions_committed, len(seen_hashes)
             )
         except Exception as exc:
-            status = SourceRunStatus.PARTIAL if chunks_committed else SourceRunStatus.FAILED
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="ALIO item 4 current-roster enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Enumerate the unfiltered ALIO item 4 current executive roster."
-    )
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    try:
-        result = AlioExecutiveEnumerator(
-            AlioExecutiveDisclosureConnector(),
-            SqlAlchemyRepository(args.database_url),
-        ).enumerate(resume=args.resume)
-    except (AlioRecordError, PolicyDenied, ValueError) as exc:
-        parser.error(str(exc))
-    print(
-        json.dumps(
-            {
-                "run_id": str(result.run.id),
-                "status": result.run.status.value,
-                "scope_key": result.run.scope_key,
-                "institutions_committed": result.institutions_committed,
-                "unique_records": result.unique_records,
-            },
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

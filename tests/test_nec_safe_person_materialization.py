@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -13,17 +12,18 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
 from apps.api.main import create_app
+from apps.cli.main import main
 from packages.connectors.nec_local_elections import NecApiError, NecCandidateConnector
-from packages.domain import db
 from packages.domain.admin import AdminCommand
 from packages.domain.enums import IdentityStatus, PublicationStatus
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence import models as db
 from packages.verification.nec_person_materialization import (
     NEC_CANDIDACY_PREDICATE,
     NecPersonMaterializationError,
 )
+from tests.cli_support import cli_payload
+from tests.support import ScenarioDatabase
 from workers.local_elections import LocalElectionCandidateEnumerator
-from workers.nec_safe_person_materialization import main
 
 SECRET = "nec-materialization-secret"
 SCOPE = "20260603:4"
@@ -60,10 +60,7 @@ def candidate_row(
 
 class CandidateApi:
     def __init__(
-        self,
-        pages: dict[int, list[dict[str, str]]],
-        *,
-        fail_once_page: int | None = None,
+        self, pages: dict[int, list[dict[str, str]]], *, fail_once_page: int | None = None
     ) -> None:
         self.pages = pages
         self.fail_once_page = fail_once_page
@@ -73,7 +70,7 @@ class CandidateApi:
         assert request.url.params["serviceKey"] == SECRET
         page = int(request.url.params["pageNo"])
         page_size = int(request.url.params["numOfRows"])
-        if page == self.fail_once_page and not self.failed:
+        if page == self.fail_once_page and (not self.failed):
             self.failed = True
             raise httpx.ReadError("synthetic provider interruption", request=request)
         rows = self.pages.get(page, [])
@@ -103,15 +100,15 @@ class CandidateApi:
         )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(url)
+    return ScenarioDatabase(url)
 
 
-def ready_repository(tmp_path: Path) -> tuple[SqlAlchemyRepository, CandidateApi]:
+def ready_repository(tmp_path: Path) -> tuple[ScenarioDatabase, CandidateApi]:
     repository = migrated_repository(tmp_path / "nec-materialization.db")
     api = CandidateApi(
         {
@@ -123,23 +120,16 @@ def ready_repository(tmp_path: Path) -> tuple[SqlAlchemyRepository, CandidateApi
         }
     )
     LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
-    return repository, api
+    return (repository, api)
 
 
 def test_preflight_creates_private_source_context_packets(tmp_path: Path) -> None:
     repository, _ = ready_repository(tmp_path)
-
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
     payload = preflight.to_dict()
-
     assert payload["current_candidate_rows"] == 3
     assert payload["scope_totals"] == {SCOPE: 3}
-    assert payload["action_counts"] == {
-        "CREATE": 3,
-        "REVIEW": 0,
-        "CONFLICT": 0,
-        "NOOP": 0,
-    }
+    assert payload["action_counts"] == {"CREATE": 3, "REVIEW": 0, "CONFLICT": 0, "NOOP": 0}
     assert payload["source_fetch"] is False
     assert payload["claim_publication"] is False
     assert payload["cross_source_link"] is False
@@ -152,7 +142,7 @@ def test_preflight_creates_private_source_context_packets(tmp_path: Path) -> Non
     assert all(
         item["claim_predicate"] == NEC_CANDIDACY_PREDICATE
         and item["claim_publication_status"] == PublicationStatus.DRAFT.value
-        and item["claim_asserted_as_true"] is False
+        and (item["claim_asserted_as_true"] is False)
         for item in payload["selected"]
     )
 
@@ -160,12 +150,9 @@ def test_preflight_creates_private_source_context_packets(tmp_path: Path) -> Non
 def test_commit_is_atomic_idempotent_and_keeps_publication_closed(tmp_path: Path) -> None:
     repository, _ = ready_repository(tmp_path)
     before = repository.prepare_nec_person_materialization(election_types=(4,))
-
     committed = repository.commit_nec_person_materialization(
-        expected_receipt_sha256=before.sha256(),
-        election_types=(4,),
+        expected_receipt_sha256=before.sha256(), election_types=(4,)
     )
-
     assert committed["status"] == "COMMITTED"
     assert committed["created_people"] == 3
     assert committed["created_claims"] == 3
@@ -173,7 +160,6 @@ def test_commit_is_atomic_idempotent_and_keeps_publication_closed(tmp_path: Path
     assert committed["created_links"] == 3
     assert committed["claim_publication"] is False
     assert repository.public_people() == []
-
     with repository.sessions() as session:
         people = list(session.scalars(select(db.PersonRow)))
         claims = list(
@@ -190,18 +176,11 @@ def test_commit_is_atomic_idempotent_and_keeps_publication_closed(tmp_path: Path
     assert evidence_count == 3
     assert len(links) == 3
     assert all(row.decision_class == "DETERMINISTIC_SOURCE_CONTEXT" for row in links)
-
     rerun = repository.prepare_nec_person_materialization(election_types=(4,))
-    assert rerun.action_counts() == {
-        "CREATE": 0,
-        "REVIEW": 0,
-        "CONFLICT": 0,
-        "NOOP": 3,
-    }
+    assert rerun.action_counts() == {"CREATE": 0, "REVIEW": 0, "CONFLICT": 0, "NOOP": 3}
     assert rerun.reason_counts() == {"ALREADY_MATERIALIZED": 3}
     noop = repository.commit_nec_person_materialization(
-        expected_receipt_sha256=rerun.sha256(),
-        election_types=(4,),
+        expected_receipt_sha256=rerun.sha256(), election_types=(4,)
     )
     assert noop["status"] == "NOOP"
     assert noop["write_performed"] is False
@@ -224,10 +203,8 @@ def test_existing_name_collision_never_auto_links(tmp_path: Path) -> None:
             )
         )
         session.commit()
-
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
     row = next(item for item in preflight.items if item.canonical_name == "가후보")
-
     assert row.action == "REVIEW"
     assert row.reason == "CURRENT_PERSON_OR_ALIAS_COLLISION"
     assert preflight.action_counts()["CREATE"] == 2
@@ -237,10 +214,8 @@ def test_historical_candidate_drift_is_review_not_second_person(tmp_path: Path) 
     repository, api = ready_repository(tmp_path)
     api.pages[1][0] = candidate_row("C-001", "가후보", status="사퇴")
     LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
-
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
     row = next(item for item in preflight.items if item.provider_record_key == "C-001")
-
     assert row.action == "REVIEW"
     assert row.reason == "HISTORICAL_VERSION_DRIFT"
 
@@ -250,11 +225,9 @@ def test_stale_receipt_fails_before_write(tmp_path: Path) -> None:
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
     api.pages[1][0] = candidate_row("C-001", "가후보", status="사퇴")
     LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
-
     with pytest.raises(NecPersonMaterializationError, match="preflight changed"):
         repository.commit_nec_person_materialization(
-            expected_receipt_sha256=preflight.sha256(),
-            election_types=(4,),
+            expected_receipt_sha256=preflight.sha256(), election_types=(4,)
         )
     with repository.sessions() as session:
         assert session.scalar(select(func.count()).select_from(db.PersonRow)) == 0
@@ -263,10 +236,13 @@ def test_stale_receipt_fails_before_write(tmp_path: Path) -> None:
 def test_cli_dry_run_and_exact_commit(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     repository, _ = ready_repository(tmp_path)
     database_url = str(repository.engine.url)
-
     assert (
         main(
             [
+                "inspect",
+                "nec-safe-people",
+                "--allow-effect",
+                "READ_ONLY",
                 "--database-url",
                 database_url,
                 "--types",
@@ -275,27 +251,30 @@ def test_cli_dry_run_and_exact_commit(tmp_path: Path, capsys: pytest.CaptureFixt
         )
         == 0
     )
-    dry_run = json.loads(capsys.readouterr().out)
+    dry_run = cli_payload(capsys.readouterr().out)
     assert dry_run["selected_count"] == 3
     assert dry_run["write_performed"] is False
-
     assert (
         main(
             [
+                "materialize",
+                "nec-safe-people",
+                "--allow-effect",
+                "IDENTITY_MATERIALIZATION",
                 "--database-url",
                 database_url,
                 "--types",
                 "4",
-                "--commit",
                 "--expected-receipt-sha256",
                 dry_run["receipt_sha256"],
             ]
         )
         == 0
     )
-    committed = json.loads(capsys.readouterr().out)
+    committed = cli_payload(capsys.readouterr().out)
     assert committed["status"] == "COMMITTED"
     assert committed["created_people"] == 3
+
 
 def test_preflight_accepts_successful_resumed_full_checkpoint(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-resume.db")
@@ -310,41 +289,25 @@ def test_preflight_accepts_successful_resumed_full_checkpoint(tmp_path: Path) ->
         fail_once_page=2,
     )
     enumerator = LocalElectionCandidateEnumerator(api.connector(), repository)
-
     with pytest.raises(NecApiError):
         enumerator.enumerate()
-
     resumed = LocalElectionCandidateEnumerator(api.connector(), repository).enumerate(resume=True)
     assert resumed.run.status.value == "SUCCESS"
     assert resumed.run.checkpoint_before == "1"
     assert resumed.run.records_seen == 1
-
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
-    assert preflight.action_counts() == {
-        "CREATE": 3,
-        "REVIEW": 0,
-        "CONFLICT": 0,
-        "NOOP": 0,
-    }
+    assert preflight.action_counts() == {"CREATE": 3, "REVIEW": 0, "CONFLICT": 0, "NOOP": 0}
     assert preflight.scope_totals == {SCOPE: 3}
+
 
 def test_missing_birth_date_stays_review(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-missing-birth.db")
-    api = CandidateApi(
-        {
-            1: [candidate_row("C-001", "생년월일없음", birthday="")],
-        }
-    )
+    api = CandidateApi({1: [candidate_row("C-001", "생년월일없음", birthday="")]})
     LocalElectionCandidateEnumerator(api.connector(page_size=1), repository).enumerate()
-
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
-    assert preflight.action_counts() == {
-        "CREATE": 0,
-        "REVIEW": 1,
-        "CONFLICT": 0,
-        "NOOP": 0,
-    }
+    assert preflight.action_counts() == {"CREATE": 0, "REVIEW": 1, "CONFLICT": 0, "NOOP": 0}
     assert preflight.reason_counts() == {"IDENTITY_ANCHOR_MISSING": 1}
+
 
 def test_nec_source_context_requires_human_resolution_then_separate_publication(
     tmp_path: Path,
@@ -352,18 +315,15 @@ def test_nec_source_context_requires_human_resolution_then_separate_publication(
     repository, _ = ready_repository(tmp_path)
     preflight = repository.prepare_nec_person_materialization(election_types=(4,))
     repository.commit_nec_person_materialization(
-        expected_receipt_sha256=preflight.sha256(),
-        election_types=(4,),
+        expected_receipt_sha256=preflight.sha256(), election_types=(4,)
     )
     item = preflight.create_items[0]
     assert item.packet is not None
     person_id = item.packet.person.id
     claim_id = item.packet.claim.id
-
     with TestClient(create_app(repository)) as client:
         assert client.get(f"/people/{person_id}").status_code == 404
         assert all(row["id"] != str(person_id) for row in client.get("/people").json())
-
     resolve = AdminCommand(
         request_id=uuid4(),
         action="RESOLVE_PERSON",
@@ -376,7 +336,6 @@ def test_nec_source_context_requires_human_resolution_then_separate_publication(
     assert receipt["result"]["outcomes"][0]["source_context_type"] == "NEC_CANDIDACY"
     assert receipt["result"]["outcomes"][0]["cross_source_merge"] is False
     assert repository.person(person_id).identity_status == IdentityStatus.RESOLVED
-
     with repository.sessions() as session:
         session.add(
             db.ClaimRow(
@@ -399,10 +358,8 @@ def test_nec_source_context_requires_human_resolution_then_separate_publication(
             )
         )
         session.commit()
-
     with TestClient(create_app(repository)) as client:
         assert client.get(f"/people/{person_id}").status_code == 404
-
     publish = AdminCommand(
         request_id=uuid4(),
         action="PUBLISH",
@@ -411,11 +368,9 @@ def test_nec_source_context_requires_human_resolution_then_separate_publication(
     )
     publish_preview = repository.admin_preview(publish)
     repository.admin_commit(publish, "test-reviewer", publish_preview["state_hash"])
-
     with TestClient(create_app(repository)) as client:
         assert client.get(f"/people/{person_id}").status_code == 200
         assert any(row["id"] == str(person_id) for row in client.get("/people").json())
-
     rerun = repository.prepare_nec_person_materialization(election_types=(4,))
     selected = next(row for row in rerun.items if row.observation_id == item.observation_id)
     assert selected.action == "NOOP"

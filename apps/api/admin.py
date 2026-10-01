@@ -12,8 +12,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import ValidationError
 
+from packages.application.administration import AdministrationService
 from packages.domain.admin import AdminAction, AdminCommand, AdminCommit
-from packages.persistence import SqlAlchemyRepository
 from packages.persistence.admin_workflow import AdminError, digest
 from packages.verification.policy import PolicyDenied
 
@@ -57,7 +57,7 @@ def verify_preview(token: str, command: AdminCommand, actor: str, secret: str) -
 
 
 def build_admin_router(
-    repository: SqlAlchemyRepository, secret: str, *, writes: bool, actor: str
+    repository: AdministrationService, secret: str, *, writes: bool, actor: str
 ) -> APIRouter:
     router = APIRouter(prefix="/admin/operations", include_in_schema=False)
 

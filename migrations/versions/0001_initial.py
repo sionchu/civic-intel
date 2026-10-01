@@ -2,7 +2,7 @@
 
 from alembic import op
 
-from packages.domain.db import Base
+from packages.persistence.models import Base
 
 revision = "0001"
 down_revision = None

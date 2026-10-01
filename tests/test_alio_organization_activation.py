@@ -9,49 +9,47 @@ from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import event
-from test_batch_alio_executives import (
-    FakeAlioProvider,
-    executive_table,
-    report_html,
-    vacant_executive_table,
-)
 
 from apps.api.main import create_app
 from packages.domain.contracts import ClaimEvidence, Organization
-from packages.domain.db import SourcePolicyRow
 from packages.domain.enums import EvidenceStance, SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourcePolicyRow
 from packages.rendering.alio_organization_content import (
     ALIO_CLASSIFICATION_PREDICATE,
     ALIO_EXECUTIVE_PREDICATE,
     build_alio_classification_claim,
 )
-from workers.alio_current_executive_claim_import import (
-    prepare_import,
+from tests.cli_support import cli_payload
+from tests.support import ScenarioDatabase
+from tests.test_batch_alio_executives import (
+    FakeAlioProvider,
+    executive_table,
+    report_html,
+    vacant_executive_table,
 )
+from workers.alio_current_executive_claim_import import prepare_import
 from workers.public_institutions import AlioExecutiveEnumerator
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def enumerated_repository(
-    database: Path,
-    provider: FakeAlioProvider | None = None,
-) -> tuple[SqlAlchemyRepository, FakeAlioProvider]:
+    database: Path, provider: FakeAlioProvider | None = None
+) -> tuple[ScenarioDatabase, FakeAlioProvider]:
     repository = migrated_repository(database)
     source = provider or FakeAlioProvider()
     result = AlioExecutiveEnumerator(source.connector(), repository).enumerate()
     assert result.run.status == SourceRunStatus.SUCCESS
-    return repository, source
+    return (repository, source)
 
 
-def commit_prepared(repository: SqlAlchemyRepository):
+def commit_prepared(repository: ScenarioDatabase):
     prepared = prepare_import(repository)
     result = repository.import_organization_claim_batch(
         [item.organization for item in prepared.items],
@@ -61,15 +59,11 @@ def commit_prepared(repository: SqlAlchemyRepository):
             for claim, evidence in item.claims
         ],
     )
-    return prepared, result
+    return (prepared, result)
 
 
 def scaled_batch(prepared, organization_count: int):
-    templates = [
-        (claim, evidence)
-        for item in prepared.items
-        for claim, evidence in item.claims
-    ]
+    templates = [(claim, evidence) for item in prepared.items for claim, evidence in item.claims]
     organizations: list[Organization] = []
     items = []
     for index in range(organization_count):
@@ -78,8 +72,7 @@ def scaled_batch(prepared, organization_count: int):
         for template_index, (template_claim, template_evidence) in enumerate(templates):
             qualifiers = dict(template_claim.qualifiers)
             qualifiers["provider_record_key"] = (
-                f"{template_claim.qualifiers['provider_record_key']}"
-                f":scaled:{index:03d}:{template_index:02d}"
+                f"{template_claim.qualifiers['provider_record_key']}:scaled:{index:03d}:{template_index:02d}"
             )
             claim = template_claim.model_copy(
                 update={
@@ -92,14 +85,12 @@ def scaled_batch(prepared, organization_count: int):
                     "qualifiers": qualifiers,
                 }
             )
-            evidence = template_evidence.model_copy(
-                update={"id": uuid4(), "claim_id": claim.id}
-            )
+            evidence = template_evidence.model_copy(update={"id": uuid4(), "claim_id": claim.id})
             items.append((organization, claim, [evidence]))
-    return organizations, items
+    return (organizations, items)
 
 
-def count_batch_selects(repository: SqlAlchemyRepository, organizations, items) -> int:
+def count_batch_selects(repository: ScenarioDatabase, organizations, items) -> int:
     statements: list[str] = []
 
     def before_cursor_execute(_connection, _cursor, statement, *_args):
@@ -119,26 +110,40 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
 ) -> None:
     repository, _ = enumerated_repository(tmp_path / "activation.db")
     database_url = f"sqlite:///{(tmp_path / 'activation.db').as_posix()}"
+    from apps.cli.main import main
 
-    from workers.alio_current_executive_claim_import import main
-
-    assert main(["--database-url", database_url]) == 0
-    dry_run = json.loads(capsys.readouterr().out)
+    assert (
+        main(
+            ["inspect", "alio-item4", "--allow-effect", "READ_ONLY", "--database-url", database_url]
+        )
+        == 0
+    )
+    dry_run = cli_payload(capsys.readouterr().out)
     assert dry_run["status"] == "DRY_RUN"
     assert dry_run["organizations"] == 2
     assert dry_run["organizations_created"] == 2
     assert dry_run["claims"] == 5
     assert repository.organizations() == []
-
-    assert main(["--database-url", database_url, "--commit"]) == 0
-    committed = json.loads(capsys.readouterr().out)
+    assert (
+        main(
+            [
+                "publish",
+                "alio-item4",
+                "--allow-effect",
+                "CLAIM_PUBLICATION",
+                "--database-url",
+                database_url,
+            ]
+        )
+        == 0
+    )
+    committed = cli_payload(capsys.readouterr().out)
     assert committed["status"] == "COMMITTED"
     assert committed["organizations_created"] == 2
     assert committed["claims_created"] == 5
     assert committed["claims_reused"] == 0
     assert repository.people() == []
     assert len(repository.organizations(current_only=True)) == 2
-
     claims = [
         claim
         for organization in repository.organizations()
@@ -151,7 +156,6 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         and repository.evidence_for(claim.id)[0].stance == EvidenceStance.SUPPORT
         for claim in claims
     )
-
     with TestClient(create_app(repository)) as client:
         organizations = client.get("/organizations")
         assert organizations.status_code == 200
@@ -162,9 +166,7 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
             if any(
                 claim.predicate == ALIO_EXECUTIVE_PREDICATE
                 for claim in repository.claims(
-                    organization_id=organization.id,
-                    published_only=True,
-                    current_only=True,
+                    organization_id=organization.id, published_only=True, current_only=True
                 )
             )
         )
@@ -172,7 +174,6 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         assert detail.status_code == 200
         assert "normalized" not in json.dumps(detail.json(), ensure_ascii=False)
         assert "contact" not in json.dumps(detail.json(), ensure_ascii=False).casefold()
-
         ontology = client.get(f"/ontology/organizations/{organization.id}")
         assert ontology.status_code == 200
         ontology_payload = ontology.json()
@@ -180,16 +181,11 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
         executive_claim_count = sum(
             claim.predicate == ALIO_EXECUTIVE_PREDICATE
             for claim in repository.claims(
-                organization_id=organization.id,
-                published_only=True,
-                current_only=True,
+                organization_id=organization.id, published_only=True, current_only=True
             )
         )
         assert len(ontology_payload["edges"]) == executive_claim_count
-        assert all(
-            edge["relation_type"] == "LISTS_EXECUTIVE"
-            for edge in ontology_payload["edges"]
-        )
+        assert all(edge["relation_type"] == "LISTS_EXECUTIVE" for edge in ontology_payload["edges"])
         assert all(
             node["canonical_id"] is None
             for node in ontology_payload["nodes"]
@@ -200,33 +196,31 @@ def test_alio_organization_import_is_dry_run_then_atomic_public_commit(
 
 
 def test_public_organization_list_batches_source_and_policy_reads(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repository, _ = enumerated_repository(tmp_path / "public-list-batch.db")
     commit_prepared(repository)
-
     source_reads = 0
     policy_reads = 0
-    original_sources = repository.sources
-    original_policies = repository.policies
+    from packages.persistence.public import PublicRepository
 
-    def tracked_sources(source_ids=None):
+    original_sources = PublicRepository.sources
+    original_policies = PublicRepository.policies
+
+    def tracked_sources(self, source_ids=None):
         nonlocal source_reads
         source_reads += 1
-        return original_sources(source_ids)
+        return original_sources(self, source_ids)
 
-    def tracked_policies(policy_ids=None):
+    def tracked_policies(self, policy_ids=None):
         nonlocal policy_reads
         policy_reads += 1
-        return original_policies(policy_ids)
+        return original_policies(self, policy_ids)
 
-    monkeypatch.setattr(repository, "sources", tracked_sources)
-    monkeypatch.setattr(repository, "policies", tracked_policies)
-
+    monkeypatch.setattr(PublicRepository, "sources", tracked_sources)
+    monkeypatch.setattr(PublicRepository, "policies", tracked_policies)
     with TestClient(create_app(repository)) as client:
         response = client.get("/organizations")
-
     assert response.status_code == 200
     assert len(response.json()) == 2
     assert source_reads == 1
@@ -240,28 +234,20 @@ def test_alio_import_preflight_uses_one_scope_observation_read(
     calls: list[str | None] = []
     original = repository.feeder_observations
 
-    def tracked(
-        feeder: str,
-        scope_key: str,
-        provider_record_key: str | None = None,
-    ):
+    def tracked(feeder: str, scope_key: str, provider_record_key: str | None = None):
         calls.append(provider_record_key)
         return original(feeder, scope_key, provider_record_key)
 
     monkeypatch.setattr(repository, "feeder_observations", tracked)
-
     prepared = prepare_import(repository)
-
     assert len(prepared.observations) == 3
     assert calls == [None]
 
 
 def test_alio_organization_import_is_idempotent(tmp_path: Path) -> None:
     repository, _ = enumerated_repository(tmp_path / "idempotent.db")
-
     first_prepared, first = commit_prepared(repository)
     second_prepared, second = commit_prepared(repository)
-
     assert first_prepared.organizations_created == 2
     assert first.organizations_created == 2
     assert first.claims_created == 5
@@ -286,20 +272,16 @@ def test_alio_organization_batch_query_shape_is_bounded(tmp_path: Path) -> None:
             for claim, evidence in item.claims
         ],
     )
-
     scaled_repository, _ = enumerated_repository(tmp_path / "query-scaled.db")
     scaled_prepared = prepare_import(scaled_repository)
     organizations, items = scaled_batch(scaled_prepared, 120)
     scaled_count = count_batch_selects(scaled_repository, organizations, items)
-
     assert len(items) == 600
     assert scaled_count <= small_count + 20
     assert scaled_count <= 40
 
 
-def test_alio_organization_batch_rejects_duplicate_input_ids_and_names(
-    tmp_path: Path,
-) -> None:
+def test_alio_organization_batch_rejects_duplicate_input_ids_and_names(tmp_path: Path) -> None:
     repository, _ = enumerated_repository(tmp_path / "duplicate-input.db")
     prepared = prepare_import(repository)
     organization = prepared.items[0].organization
@@ -318,14 +300,12 @@ def test_alio_organization_batch_rejects_duplicate_input_ids_and_names(
         }
     )
     duplicate_evidence = evidence.model_copy(update={"id": uuid4(), "claim_id": duplicate_claim.id})
-
     with pytest.raises(ValueError, match="duplicate incoming Organization names"):
         repository.import_organization_claim_batch(
             [organization, duplicate],
             [(organization, claim, [evidence]), (duplicate, duplicate_claim, [duplicate_evidence])],
         )
     assert repository.organizations() == []
-
     with pytest.raises(ValueError, match="duplicate Claim IDs"):
         repository.import_organization_claim_batch(
             [organization],
@@ -345,7 +325,6 @@ def test_alio_organization_batch_rejects_duplicate_input_ids_and_names(
                 ),
             ],
         )
-
     with pytest.raises(ValueError, match="duplicate Evidence IDs"):
         repository.import_organization_claim_batch(
             [organization],
@@ -375,7 +354,6 @@ def test_alio_organization_batch_rejects_existing_id_and_source_owner_collisions
     prepared, _ = commit_prepared(repository)
     organization = prepared.items[0].organization
     claim, evidence = prepared.items[0].claims[0]
-
     with pytest.raises(ValueError, match="ID already exists"):
         repository.import_organization_claim_batch(
             [organization],
@@ -394,7 +372,6 @@ def test_alio_organization_batch_rejects_existing_id_and_source_owner_collisions
                 )
             ],
         )
-
     with pytest.raises(ValueError, match="evidence ID already exists"):
         new_claim = claim.model_copy(
             update={
@@ -407,15 +384,8 @@ def test_alio_organization_batch_rejects_existing_id_and_source_owner_collisions
         )
         repository.import_organization_claim_batch(
             [organization],
-            [
-                (
-                    organization,
-                    new_claim,
-                    [evidence.model_copy(update={"claim_id": new_claim.id})],
-                )
-            ],
+            [(organization, new_claim, [evidence.model_copy(update={"claim_id": new_claim.id})])],
         )
-
     new_organization = Organization(name="소유권 충돌 기관")
     owner_claim = claim.model_copy(
         update={
@@ -433,37 +403,28 @@ def test_alio_organization_batch_rejects_existing_id_and_source_owner_collisions
     assert repository.organization(new_organization.id) is None
 
 
-def test_alio_same_name_requires_exact_binding_and_exact_binding_is_reused(
-    tmp_path: Path,
-) -> None:
+def test_alio_same_name_requires_exact_binding_and_exact_binding_is_reused(tmp_path: Path) -> None:
     repository, _ = enumerated_repository(tmp_path / "identity.db")
     same_name = Organization(name="테스트공기업")
     with repository.sessions() as session:
-        repository._add_organization_row(session, same_name)
-        session.commit()
+        from packages.persistence.organizations import OrganizationsRepository
 
+        OrganizationsRepository._add_organization_row(session, same_name)
+        session.commit()
     with pytest.raises(ValueError, match="same-name"):
         prepare_import(repository)
     assert repository.claims(organization_id=same_name.id) == []
-
     repository, _ = enumerated_repository(tmp_path / "exact-binding.db")
     bound = Organization(id=uuid4(), name="테스트공기업")
     observation = repository.feeder_observations(
-        AlioExecutiveEnumerator.FEEDER,
-        AlioExecutiveEnumerator.SCOPE_KEY,
-        "2026083100000001:1",
+        AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY, "2026083100000001:1"
     )[0]
     context = repository.feeder_observation_contexts([observation.id])[observation.id]
     _, snapshot, source, policy = context
     claim, evidence = build_alio_classification_claim(
-        bound,
-        observation,
-        source=source,
-        snapshot=snapshot,
-        policy=policy,
+        bound, observation, source=source, snapshot=snapshot, policy=policy
     )
     repository.import_organization_claim_batch([bound], [(bound, claim, [evidence])])
-
     prepared, result = commit_prepared(repository)
     assert prepared.organizations_reused == 1
     assert result.organizations_created == 1
@@ -479,7 +440,6 @@ def test_alio_masked_and_no_current_rows_do_not_create_named_people_or_claims(
     provider.documents[provider.disclosures["C0001"]] = report_html(vacant_executive_table())
     provider.no_disclosure_for.add("C0002")
     repository, _ = enumerated_repository(tmp_path / "masked.db", provider)
-
     prepared, result = commit_prepared(repository)
     assert prepared.named_rows == 0
     assert prepared.masked_rows == 1
@@ -498,7 +458,6 @@ def test_alio_correction_only_observation_is_not_current_organization_content(
     provider.report_titles["C0001"] = "임원현황(수시공시) 수정공시"
     provider.documents[provider.disclosures["C0001"]] = report_html()
     repository, _ = enumerated_repository(tmp_path / "correction.db", provider)
-
     prepared, result = commit_prepared(repository)
     assert prepared.named_rows == 1
     assert result.organizations_created == 1
@@ -515,16 +474,13 @@ def test_alio_changed_immutable_observation_version_fails_closed(tmp_path: Path)
         ),
     )
     AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
-
     with pytest.raises(ValueError, match="immutable observation version"):
         prepare_import(repository)
     assert repository.organizations() == []
     assert repository.claims() == []
 
 
-def test_alio_batch_rolls_back_all_organizations_on_late_evidence_failure(
-    tmp_path: Path,
-) -> None:
+def test_alio_batch_rolls_back_all_organizations_on_late_evidence_failure(tmp_path: Path) -> None:
     repository, _ = enumerated_repository(tmp_path / "rollback.db")
     prepared = prepare_import(repository)
     items = [
@@ -532,7 +488,7 @@ def test_alio_batch_rolls_back_all_organizations_on_late_evidence_failure(
         for item in prepared.items
         for claim, evidence in item.claims
     ]
-    first_claim, first_evidence = items[0][1], items[0][2][0]
+    first_claim, first_evidence = (items[0][1], items[0][2][0])
     items[-1] = (
         items[-1][0],
         items[-1][1],
@@ -548,7 +504,6 @@ def test_alio_batch_rolls_back_all_organizations_on_late_evidence_failure(
         ],
     )
     assert first_claim.id != items[-1][1].id
-
     with pytest.raises(ValueError, match="missing source"):
         repository.import_organization_claim_batch(
             [item.organization for item in prepared.items], items
@@ -564,7 +519,6 @@ def test_alio_policy_denial_blocks_publication_preflight(tmp_path: Path) -> None
         assert row is not None
         row.can_store_metadata = False
         session.commit()
-
     with pytest.raises(ValueError, match="SourcePolicy forbids metadata storage"):
         prepare_import(repository)
     assert repository.organizations() == []

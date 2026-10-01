@@ -7,14 +7,16 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from packages.domain import db
 from packages.domain.work_orders import WorkOrderRequest
+from packages.persistence import models as db
 from packages.persistence.admin_workflow import AdminError, digest, receipt
 from packages.persistence.operator_queries import MODELS, _columns, _record
 
 
 def prepare_references(session: Session, request: WorkOrderRequest) -> dict[str, Any]:
-    requested: dict[tuple[str, str], Any] = {(item.kind, str(item.id)): item for item in request.references}
+    requested: dict[tuple[str, str], Any] = {
+        (item.kind, str(item.id)): item for item in request.references
+    }
     resolved: dict[tuple[str, str], dict[str, Any]] = {}
     for kind in sorted({item.kind for item in request.references}):
         ids = [str(item.id) for item in request.references if item.kind == kind]

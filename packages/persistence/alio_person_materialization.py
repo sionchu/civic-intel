@@ -10,7 +10,6 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from packages.domain import db
 from packages.domain.contracts import (
     Claim,
     Organization,
@@ -18,6 +17,7 @@ from packages.domain.contracts import (
     SourceRun,
 )
 from packages.domain.enums import IdentityStatus, PublicationStatus, SourceRunStatus
+from packages.persistence import models as db
 from packages.persistence.source_context_person_materialization import (
     checkpoint_from_row,
     lock_source_context_person_materialization,
@@ -153,7 +153,6 @@ class AlioPersonPreflight:
         return payload
 
 
-
 def _claim(row: db.ClaimRow) -> Claim:
     return Claim.model_validate(row, from_attributes=True)
 
@@ -188,7 +187,8 @@ def _packet_state(
     )
     immutable_exact = (
         expected_name_available
-        and person.identity_status in {
+        and person.identity_status
+        in {
             IdentityStatus.REVIEW.value,
             IdentityStatus.RESOLVED.value,
         }
@@ -205,7 +205,8 @@ def _packet_state(
         and claim.epistemic_status == packet.claim.epistemic_status.value
         and claim.asserted_as_true is False
         and claim.qualifiers == packet.claim.qualifiers
-        and claim.publication_status in {
+        and claim.publication_status
+        in {
             PublicationStatus.DRAFT.value,
             PublicationStatus.REVIEW.value,
             PublicationStatus.PUBLISHED.value,
@@ -286,9 +287,7 @@ def _current_checkpoint(
         or not hashes
         or run.records_seen < len(hashes)
         or any(
-            not isinstance(key, str)
-            or not isinstance(value, str)
-            or len(value) != 64
+            not isinstance(key, str) or not isinstance(value, str) or len(value) != 64
             for key, value in hashes.items()
         )
     ):
@@ -311,7 +310,9 @@ def prepare_alio_person_materialization(
                 db.FeederObservationRow.feeder == ALIO_EXECUTIVE_FEEDER,
                 db.FeederObservationRow.scope_key == ALIO_EXECUTIVE_SCOPE,
             )
-            .order_by(db.FeederObservationRow.provider_record_key, db.FeederObservationRow.recorded_at)
+            .order_by(
+                db.FeederObservationRow.provider_record_key, db.FeederObservationRow.recorded_at
+            )
         )
     )
     versions_by_key: dict[str, list[db.FeederObservationRow]] = defaultdict(list)
@@ -350,21 +351,13 @@ def prepare_alio_person_materialization(
             select(db.PersonAliasRow.name).where(db.PersonAliasRow.superseded_at.is_(None))
         )
     )
-    artifact_people = {
-        row.id: row for row in session.scalars(select(db.PersonRow))
-    }
+    artifact_people = {row.id: row for row in session.scalars(select(db.PersonRow))}
     aliases_by_person: dict[str, set[str]] = defaultdict(set)
     for alias_row in session.scalars(select(db.PersonAliasRow)):
         aliases_by_person[alias_row.person_id].add(alias_row.name)
-    artifact_links = {
-        row.id: row for row in session.scalars(select(db.PersonObservationLinkRow))
-    }
-    artifact_claims = {
-        row.id: row for row in session.scalars(select(db.ClaimRow))
-    }
-    artifact_evidence = {
-        row.id: row for row in session.scalars(select(db.ClaimEvidenceRow))
-    }
+    artifact_links = {row.id: row for row in session.scalars(select(db.PersonObservationLinkRow))}
+    artifact_claims = {row.id: row for row in session.scalars(select(db.ClaimRow))}
+    artifact_evidence = {row.id: row for row in session.scalars(select(db.ClaimEvidenceRow))}
 
     observation_ids = [row.id for row in named_rows]
     active_links: dict[str, list[db.PersonObservationLinkRow]] = defaultdict(list)
@@ -421,7 +414,9 @@ def prepare_alio_person_materialization(
     organizations = {
         row.id: _organization(row)
         for row in session.scalars(
-            select(db.OrganizationRow).where(db.OrganizationRow.id.in_([str(i) for i in organization_ids]))
+            select(db.OrganizationRow).where(
+                db.OrganizationRow.id.in_([str(i) for i in organization_ids])
+            )
         )
     }
 
@@ -449,7 +444,9 @@ def prepare_alio_person_materialization(
             continue
 
         candidate_claims = tuple(org_claims_by_observation.get(row.id, ()))
-        candidate_org_ids = {claim.organization_id for claim in candidate_claims if claim.organization_id}
+        candidate_org_ids = {
+            claim.organization_id for claim in candidate_claims if claim.organization_id
+        }
         organization = (
             organizations.get(str(next(iter(candidate_org_ids))))
             if len(candidate_org_ids) == 1
@@ -463,7 +460,9 @@ def prepare_alio_person_materialization(
                 policy=policy_from_row(policy_row),
                 checkpoint=checkpoint,
                 run=run,
-                versions=tuple(observation_from_row(item) for item in versions_by_key[row.provider_record_key]),
+                versions=tuple(
+                    observation_from_row(item) for item in versions_by_key[row.provider_record_key]
+                ),
                 organization_claims=candidate_claims,
                 organization=organization,
             )
@@ -501,11 +500,7 @@ def prepare_alio_person_materialization(
                     name,
                     institution_name,
                     "NOOP",
-                    (
-                        "ALREADY_MATERIALIZED"
-                        if state == "EXACT"
-                        else "ALREADY_MANAGED"
-                    ),
+                    ("ALREADY_MATERIALIZED" if state == "EXACT" else "ALREADY_MANAGED"),
                     packet,
                 )
             )
@@ -581,7 +576,9 @@ def prepare_alio_person_materialization(
 
     current_people = (
         session.scalar(
-            select(func.count()).select_from(db.PersonRow).where(db.PersonRow.superseded_at.is_(None))
+            select(func.count())
+            .select_from(db.PersonRow)
+            .where(db.PersonRow.superseded_at.is_(None))
         )
         or 0
     )
@@ -633,9 +630,7 @@ def commit_alio_person_materialization(
     expected_receipt_sha256: str,
 ) -> dict[str, Any]:
     expected = normalize_receipt_sha256(expected_receipt_sha256)
-    lock_source_context_person_materialization(
-        session, advisory_lock_id=187465323
-    )
+    lock_source_context_person_materialization(session, advisory_lock_id=187465323)
 
     preflight = prepare_alio_person_materialization(session)
     if preflight.sha256() != expected:

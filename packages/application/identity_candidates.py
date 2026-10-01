@@ -5,18 +5,17 @@ from dataclasses import dataclass
 from datetime import date
 from uuid import UUID
 
+from packages.application.ports import UnitOfWork, UnitOfWorkFactory
 from packages.domain.contracts import Claim, ClaimEvidence, Organization, Person
 from packages.domain.enums import IdentityDecisionClass, IdentityStatus, PublicationStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SCOPE,
     ALIO_EXECUTIVE_SEMANTIC_SCOPE,
     ALIO_EXECUTIVE_SOURCE_CONTRACT,
 )
-
-from .cross_lane_identity import resolve_cross_lane_identity
-from .identity import IdentityCandidate
+from packages.verification.cross_lane_identity import resolve_cross_lane_identity
+from packages.verification.identity import IdentityCandidate
 
 DISCOVERY_REASON = "EXACT_CANONICAL_NAME_OVERLAP_DISCOVERY_ONLY"
 
@@ -46,7 +45,7 @@ class CrossLaneCandidatePair:
 
     @property
     def candidate_key(self) -> tuple[UUID, UUID]:
-        return self.alio_claim_id, self.person_id
+        return (self.alio_claim_id, self.person_id)
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -61,9 +60,9 @@ class CrossLaneCandidatePair:
             "alio_apba_id": self.alio_apba_id,
             "person_id": str(self.person_id),
             "person_name": self.person_name,
-            "person_birth_date": (
-                self.person_birth_date.isoformat() if self.person_birth_date else None
-            ),
+            "person_birth_date": self.person_birth_date.isoformat()
+            if self.person_birth_date
+            else None,
             "discovery_reason": self.discovery_reason,
             "identity_status": self.identity_status.value,
             "decision_class": self.decision_class.value,
@@ -80,7 +79,9 @@ class AlioCandidateGeneration:
     def to_dict(self) -> dict[str, object]:
         resolved = sum(item.identity_status == IdentityStatus.RESOLVED for item in self.candidates)
         review = sum(item.identity_status == IdentityStatus.REVIEW for item in self.candidates)
-        unresolved = sum(item.identity_status == IdentityStatus.UNRESOLVED for item in self.candidates)
+        unresolved = sum(
+            item.identity_status == IdentityStatus.UNRESOLVED for item in self.candidates
+        )
         return {
             "status": "REVIEW_ONLY",
             "alio_executive_claims_considered": self.alio_executive_claims_considered,
@@ -106,10 +107,10 @@ def _optional_qualifier(qualifiers: dict[str, str], key: str) -> str | None:
 
 
 def _load_published_alio_claims(
-    repository: SqlAlchemyRepository,
+    repository: UnitOfWork,
 ) -> tuple[tuple[Organization, Claim, tuple[ClaimEvidence, ...]], ...]:
-    organizations = tuple(repository.public_organizations())
-    contexts = repository.published_organization_claim_contexts(
+    organizations = tuple(repository.public.public_organizations())
+    contexts = repository.public.published_organization_claim_contexts(
         item.id for item in organizations
     )
     claims: list[tuple[Organization, Claim, tuple[ClaimEvidence, ...]]] = []
@@ -120,10 +121,10 @@ def _load_published_alio_claims(
                 claim.organization_id != organization.id
                 or claim.publication_status != PublicationStatus.PUBLISHED
                 or claim.superseded_at is not None
-                or claim.predicate != ALIO_EXECUTIVE_PREDICATE
-                or claim.qualifiers.get("source_contract") != ALIO_EXECUTIVE_SOURCE_CONTRACT
-                or claim.qualifiers.get("source_scope") != ALIO_EXECUTIVE_SCOPE
-                or claim.qualifiers.get("semantic_scope") != ALIO_EXECUTIVE_SEMANTIC_SCOPE
+                or (claim.predicate != ALIO_EXECUTIVE_PREDICATE)
+                or (claim.qualifiers.get("source_contract") != ALIO_EXECUTIVE_SOURCE_CONTRACT)
+                or (claim.qualifiers.get("source_scope") != ALIO_EXECUTIVE_SCOPE)
+                or (claim.qualifiers.get("semantic_scope") != ALIO_EXECUTIVE_SEMANTIC_SCOPE)
             ):
                 continue
             if _optional_qualifier(claim.qualifiers, "canonical_name") is None:
@@ -152,23 +153,22 @@ def _load_published_alio_claims(
     )
 
 
-def generate_alio_cross_lane_candidates(
-    repository: SqlAlchemyRepository,
-) -> AlioCandidateGeneration:
-    """Generate deterministic, non-persistent ALIO-to-Person review candidates."""
-
-    repository.assert_ready()
+def _generate(repository: UnitOfWork) -> AlioCandidateGeneration:
     alio_claims = _load_published_alio_claims(repository)
     observation_ids = tuple(
-        evidence.feeder_observation_id
-        for _, _, evidence_items in alio_claims
-        for evidence in evidence_items
-        if evidence.feeder_observation_id is not None
+        (
+            evidence.feeder_observation_id
+            for _, _, evidence_items in alio_claims
+            for evidence in evidence_items
+            if evidence.feeder_observation_id is not None
+        )
     )
-    linked_people_by_observation = repository.active_person_ids_by_observation(observation_ids)
+    linked_people_by_observation = repository.identity.active_person_ids_by_observation(
+        observation_ids
+    )
     people = tuple(
         item
-        for item in repository.public_people()
+        for item in repository.public.public_people()
         if item.identity_status == IdentityStatus.RESOLVED and item.superseded_at is None
     )
     people_by_name: dict[str, list[Person]] = defaultdict(list)
@@ -176,7 +176,6 @@ def generate_alio_cross_lane_candidates(
         normalized = _normalized_name(person.canonical_name)
         if normalized:
             people_by_name[normalized].append(person)
-
     by_key: dict[tuple[UUID, UUID], CrossLaneCandidatePair] = {}
     for organization, claim, evidence in alio_claims:
         executive_name = _optional_qualifier(claim.qualifiers, "canonical_name")
@@ -208,7 +207,7 @@ def generate_alio_cross_lane_candidates(
             if not (
                 decision.status == IdentityStatus.REVIEW
                 and decision.decision_class == IdentityDecisionClass.CONTEXT_REVIEW
-                and "cross_lane_bridge_evidence_missing" in decision.reasons
+                and ("cross_lane_bridge_evidence_missing" in decision.reasons)
             ):
                 raise AlioCandidatePipelineError(
                     "ALIO name-overlap candidate resolved without bridge evidence"
@@ -239,7 +238,6 @@ def generate_alio_cross_lane_candidates(
                     )
                 continue
             by_key[candidate.candidate_key] = candidate
-
     ordered = tuple(
         sorted(
             by_key.values(),
@@ -256,3 +254,10 @@ def generate_alio_cross_lane_candidates(
         public_people_considered=len(people),
         candidates=ordered,
     )
+
+
+def generate_alio_cross_lane_candidates(factory: UnitOfWorkFactory) -> AlioCandidateGeneration:
+    """Generate read-only candidates from one coherent transaction; never merge Persons."""
+    factory.assert_ready()
+    with factory(read_only=True) as uow:
+        return _generate(uow)

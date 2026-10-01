@@ -30,25 +30,16 @@ from packages.domain.contracts import (
     SourcePolicy,
     SourceSnapshot,
 )
-from packages.domain.enums import (
-    EvidenceStance,
-    SourceCollectionMode,
-    SourceRunStatus,
-)
-from packages.persistence import SqlAlchemyRepository
-from packages.rendering.profile_projection import (
-    CHANGE_METHOD_VERSION,
-    build_profile_projection,
-)
-from packages.verification.assembly_historical_review import (
-    build_reviewed_assembly_career_claim,
-)
+from packages.domain.enums import EvidenceStance, SourceCollectionMode, SourceRunStatus
+from packages.rendering.profile_projection import CHANGE_METHOD_VERSION, build_profile_projection
+from packages.verification.assembly_historical_review import build_reviewed_assembly_career_claim
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError
 from packages.verification.profile_target import (
     ProfileTargetObservation,
     build_profile_research_target,
 )
+from tests.support import ScenarioDatabase
 from workers.ingest import IngestionPipeline
 
 FIXTURE = Path(__file__).parent / "fixtures" / "assembly_historical_known_positive_001.json"
@@ -56,12 +47,12 @@ PERSON_ID = UUID("00000000-0000-0000-0000-000000009301")
 POLICY_ID = UUID("10000000-0000-0000-0000-000000009301")
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def fixture_payload() -> dict:
@@ -81,10 +72,7 @@ def fixture_policy() -> SourcePolicy:
         can_show_excerpt=False,
         can_commercialize=False,
         terms_checked_at=datetime(2026, 9, 13, tzinfo=UTC),
-        policy_note=(
-            "Bounded reviewed packet only. The historical service remains L1 with L3 blocked; "
-            "no live fetch, complete-universe claim or correction interpretation is permitted."
-        ),
+        policy_note="Bounded reviewed packet only. The historical service remains L1 with L3 blocked; no live fetch, complete-universe claim or correction interpretation is permitted.",
     )
 
 
@@ -111,11 +99,7 @@ def source_document(record: AssemblyHistoricalCareerRecord) -> ConnectorDocument
         sort_keys=True,
     )
     return ConnectorDocument(
-        url=(
-            "https://open.assembly.go.kr/portal/openapi/"
-            f"{HISTORICAL_API_CODE}?Type=json&pIndex=1&pSize=100&"
-            f"PROFILE_UNIT_CD={record.profile_unit_code}"
-        ),
+        url=f"https://open.assembly.go.kr/portal/openapi/{HISTORICAL_API_CODE}?Type=json&pIndex=1&pSize=100&PROFILE_UNIT_CD={record.profile_unit_code}",
         title=f"국회 역대 국회의원 의원이력 {record.profile_unit_name}",
         publisher="국회 국회사무처",
         published_at=None,
@@ -137,21 +121,17 @@ def fixture_document() -> ConnectorDocument:
         publisher="국회 국회사무처",
         published_at=None,
         body=json.dumps(
-            {HISTORICAL_API_CODE: [{"row": payload["records"]}]},
-            ensure_ascii=False,
-            sort_keys=True,
+            {HISTORICAL_API_CODE: [{"row": payload["records"]}]}, ensure_ascii=False, sort_keys=True
         ),
         metadata={"capture": "bounded_reviewed_packet"},
     )
 
 
 def stage_record(
-    repository: SqlAlchemyRepository,
-    record: AssemblyHistoricalCareerRecord,
-    policy: SourcePolicy,
+    repository: ScenarioDatabase, record: AssemblyHistoricalCareerRecord, policy: SourcePolicy
 ) -> tuple[Source, SourceSnapshot, FeederObservation]:
     document = source_document(record)
-    ingestion = IngestionPipeline(connector=None).ingest_document(document, policy)  # type: ignore[arg-type]
+    ingestion = IngestionPipeline(connector=None).ingest_document(document, policy)
     scope_key = f"reviewed:{record.provider_record_key}"
     run = repository.start_source_run(
         HISTORICAL_FEEDER,
@@ -163,9 +143,7 @@ def stage_record(
         },
     )
     observation = record.to_observation(
-        run_id=run.id,
-        snapshot_id=ingestion.snapshot.id,
-        scope_key=scope_key,
+        run_id=run.id, snapshot_id=ingestion.snapshot.id, scope_key=scope_key
     )
     commit = repository.commit_source_page(
         run_id=run.id,
@@ -182,7 +160,7 @@ def stage_record(
     repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
     persisted = repository.feeder_observation(commit.observation_ids[0])
     assert persisted is not None
-    return ingestion.source, ingestion.snapshot, persisted
+    return (ingestion.source, ingestion.snapshot, persisted)
 
 
 def load_records() -> tuple[AssemblyHistoricalCareerRecord, ...]:
@@ -209,27 +187,28 @@ def load_reviewed_bundle(
         )
     )
     claims = tuple(
-        build_reviewed_assembly_career_claim(record, person_id=person.id).model_copy(
-            update={"id": UUID(f"30000000-0000-0000-0000-0000000093{index:02d}")}
+        (
+            build_reviewed_assembly_career_claim(record, person_id=person.id).model_copy(
+                update={"id": UUID(f"30000000-0000-0000-0000-0000000093{index:02d}")}
+            )
+            for index, record in enumerate(load_records(), start=1)
         )
-        for index, record in enumerate(load_records(), start=1)
     )
     evidence = tuple(
-        ClaimEvidence(
-            id=UUID(f"40000000-0000-0000-0000-0000000093{index:02d}"),
-            claim_id=claim.id,
-            source_id=sources[index - 1].id,
-            snapshot_id=snapshots[index - 1].id,
-            feeder_observation_id=observations[index - 1].id,
-            stance=EvidenceStance.SUPPORT,
+        (
+            ClaimEvidence(
+                id=UUID(f"40000000-0000-0000-0000-0000000093{index:02d}"),
+                claim_id=claim.id,
+                source_id=sources[index - 1].id,
+                snapshot_id=snapshots[index - 1].id,
+                feeder_observation_id=observations[index - 1].id,
+                stance=EvidenceStance.SUPPORT,
+            )
+            for index, claim in enumerate(claims, start=1)
         )
-        for index, claim in enumerate(claims, start=1)
     )
     return ReviewedPersonBundle(
-        person=person,
-        profile_target=target,
-        claims=claims,
-        evidence=evidence,
+        person=person, profile_target=target, claims=claims, evidence=evidence
     )
 
 
@@ -270,19 +249,21 @@ def test_bounded_observation_claim_evidence_and_derived_change_vertical_slice(
     sources = tuple(item[0] for item in staged)
     snapshots = tuple(item[1] for item in staged)
     observations = tuple(item[2] for item in staged)
-
     repository.import_reviewed_person(load_reviewed_bundle(sources, snapshots, observations))
-
     claims = repository.claims(PERSON_ID, published_only=True, current_only=True)
     evidence = {claim.id: repository.evidence_for(claim.id)[0] for claim in claims}
     assert len(claims) == 2
-    assert all(item.feeder_observation_id in {observation.id for observation in observations} for item in evidence.values())
-    assert all(item.snapshot_id in {snapshot.id for snapshot in snapshots} for item in evidence.values())
+    assert all(
+        item.feeder_observation_id in {observation.id for observation in observations}
+        for item in evidence.values()
+    )
+    assert all(
+        item.snapshot_id in {snapshot.id for snapshot in snapshots} for item in evidence.values()
+    )
     assert [item.status for item in repository.source_runs(HISTORICAL_FEEDER)] == [
         SourceRunStatus.SUCCESS,
         SourceRunStatus.SUCCESS,
     ]
-
     with TestClient(create_app(repository)) as client:
         response = client.get(f"/people/{PERSON_ID}")
     assert response.status_code == 200
@@ -309,7 +290,10 @@ def test_bounded_observation_claim_evidence_and_derived_change_vertical_slice(
     assert change["details"]["later"]["date"] == "2016-05-30"
     assert change["details"]["earlier"]["role_text"] == "새누리당 울산 울주군"
     assert change["details"]["later"]["role_text"] == "무소속 울산 울주군"
-    assert change["evidence_ids"] == [str(evidence[claims[0].id].id), str(evidence[claims[1].id].id)]
+    assert change["evidence_ids"] == [
+        str(evidence[claims[0].id].id),
+        str(evidence[claims[1].id].id),
+    ]
     assert all(trace["feeder_observation_id"] for trace in change["evidence"])
     assert "퇴임" not in json.dumps(change, ensure_ascii=False)
     assert "원인" not in json.dumps(change, ensure_ascii=False)
@@ -334,11 +318,8 @@ def test_changed_same_group_is_new_immutable_observation_and_not_an_automatic_ch
         valid_to=original.valid_to,
     )
     stage_record(repository, corrected, policy)
-
     observations = repository.feeder_observations(
-        HISTORICAL_FEEDER,
-        f"reviewed:{original.provider_record_key}",
-        original.provider_record_key,
+        HISTORICAL_FEEDER, f"reviewed:{original.provider_record_key}", original.provider_record_key
     )
     assert len(observations) == 2
     assert observations[0].id != observations[1].id
@@ -360,10 +341,8 @@ def test_reviewed_import_requires_snapshot_for_observation_provenance(tmp_path: 
     bundle = load_reviewed_bundle(sources, snapshots, observations)
     invalid_evidence = bundle.evidence[0].model_copy(update={"snapshot_id": None})
     invalid_bundle = replace(bundle, evidence=(invalid_evidence, *bundle.evidence[1:]))
-
     with pytest.raises(ReviewedPersonImportError, match="requires a snapshot"):
         repository.import_reviewed_person(invalid_bundle)
-
     assert repository.person(PERSON_ID) is None
 
 
@@ -377,10 +356,8 @@ def test_reviewed_import_rejects_mismatched_observation_snapshot(tmp_path: Path)
     bundle = load_reviewed_bundle(sources, snapshots, observations)
     invalid_evidence = bundle.evidence[0].model_copy(update={"snapshot_id": snapshots[1].id})
     invalid_bundle = replace(bundle, evidence=(invalid_evidence, *bundle.evidence[1:]))
-
     with pytest.raises(ReviewedPersonImportError, match="snapshot does not match"):
         repository.import_reviewed_person(invalid_bundle)
-
     assert repository.person(PERSON_ID) is None
 
 
@@ -434,14 +411,16 @@ def test_same_group_versions_are_excluded_from_change_projection() -> None:
         build_reviewed_assembly_career_claim(corrected, person_id=PERSON_ID),
     )
     evidence = tuple(
-        ClaimEvidence(
-            claim_id=claim.id,
-            source_id=source.id,
-            snapshot_id=snapshots[index].id,
-            feeder_observation_id=observations[index].id,
-            stance=EvidenceStance.SUPPORT,
+        (
+            ClaimEvidence(
+                claim_id=claim.id,
+                source_id=source.id,
+                snapshot_id=snapshots[index].id,
+                feeder_observation_id=observations[index].id,
+                stance=EvidenceStance.SUPPORT,
+            )
+            for index, claim in enumerate(claims)
         )
-        for index, claim in enumerate(claims)
     )
     profile = build_profile_projection(
         Person.model_validate(fixture_payload()["person"]),

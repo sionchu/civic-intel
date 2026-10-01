@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime
 from math import ceil
 
+from packages.application.context import Application
+from packages.application.ingestion import SourceLifecycle
 from packages.connectors.nec_local_elections import (
     LOCAL_ELECTION_TYPES,
     NecApiError,
@@ -17,8 +18,6 @@ from packages.connectors.nec_local_elections import (
     nec_local_election_policy,
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
-from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
@@ -80,9 +79,7 @@ class StagedLocalElectionCandidate:
                 "public_job": self.public_job,
                 "education": self.submitted_education,
                 "careers": list(self.submitted_careers),
-                "semantics": (
-                    "후보자가 선거관리위원회에 제출해 공개된 정보이며, 독립 검증된 경력과는 구분한다."
-                ),
+                "semantics": "후보자가 선거관리위원회에 제출해 공개된 정보이며, 독립 검증된 경력과는 구분한다.",
             },
             "identity_anchors": list(self.candidate.career_anchors),
         }
@@ -158,12 +155,7 @@ def normalized_nec_candidate(record: NecCandidateRecord) -> dict[str, object]:
 
 
 def nec_candidate_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -194,12 +186,7 @@ def normalized_nec_winner(record: NecWinnerRecord) -> dict[str, object]:
 
 
 def nec_winner_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -218,7 +205,7 @@ class LocalElectionWinnerEnumerator:
     def __init__(
         self,
         connector: NecWinnerConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         policy: SourcePolicy | None = None,
     ) -> None:
         self.connector = connector
@@ -230,22 +217,19 @@ class LocalElectionWinnerEnumerator:
         return f"{self.connector.election_id}:{self.connector.election_type}"
 
     def enumerate(self, *, resume: bool = False) -> NecEnumerationResult:
-        if any(
-            (
-                self.connector.district_name,
-                self.connector.province_name,
-                self.connector.party,
-            )
-        ):
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="NEC winner enumeration did not complete",
+        )
+        if any((self.connector.district_name, self.connector.province_name, self.connector.party)):
             raise NecWinnerCoverageError("L3 NEC winner enumeration must be unfiltered")
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the NEC winner connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
-        run = self.repository.start_source_run(
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
+        run = lifecycle.start(
             self.FEEDER,
             self.scope_key,
             {
@@ -277,7 +261,6 @@ class LocalElectionWinnerEnumerator:
                     raise NecWinnerCoverageError(
                         "resume checkpoint already covers the full NEC winner scope"
                     )
-
             page_no = start_page
             while True:
                 self.connector.page_no = page_no
@@ -313,15 +296,13 @@ class LocalElectionWinnerEnumerator:
                 assert expected_pages is not None
                 if page_no > expected_pages:
                     raise NecWinnerCoverageError("NEC winner API returned an unexpected extra page")
-
                 winners = self.connector.parse_winners(document)
                 expected_row_count = min(
                     self.connector.page_size,
-                    max(0, expected_total - ((page_no - 1) * self.connector.page_size)),
+                    max(0, expected_total - (page_no - 1) * self.connector.page_size),
                 )
                 if len(winners) != expected_row_count:
                     raise NecWinnerCoverageError("NEC winner page row count is incomplete")
-
                 page_hashes: dict[str, str] = {}
                 normalized_by_key: dict[str, dict[str, object]] = {}
                 for winner in winners:
@@ -345,16 +326,12 @@ class LocalElectionWinnerEnumerator:
                         raise NecWinnerCoverageError("duplicate NEC huboid appears across pages")
                     page_hashes[winner.candidate_id] = content_hash
                     normalized_by_key[winner.candidate_id] = normalized
-
                 fingerprint_payload = json.dumps(
-                    sorted(page_hashes.items()),
-                    ensure_ascii=False,
-                    separators=(",", ":"),
+                    sorted(page_hashes.items()), ensure_ascii=False, separators=(",", ":")
                 )
                 page_fingerprint = hashlib.sha256(fingerprint_payload.encode("utf-8")).hexdigest()
                 if page_fingerprint in page_fingerprints:
                     raise NecWinnerCoverageError("NEC winner API returned duplicate page content")
-
                 ingestion = IngestionPipeline(self.connector).ingest_document(document, self.policy)
                 observations = []
                 for winner in winners:
@@ -381,7 +358,6 @@ class LocalElectionWinnerEnumerator:
                             content_hash=page_hashes[winner.candidate_id],
                         )
                     )
-
                 next_seen_hashes = seen_hashes | page_hashes
                 next_page_fingerprints = [*page_fingerprints, page_fingerprint]
                 checkpoint_metadata = {
@@ -394,7 +370,7 @@ class LocalElectionWinnerEnumerator:
                     "seen_provider_hashes": next_seen_hashes,
                     "page_fingerprints": next_page_fingerprints,
                 }
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -406,7 +382,6 @@ class LocalElectionWinnerEnumerator:
                 pages_committed += 1
                 seen_hashes = next_seen_hashes
                 page_fingerprints = next_page_fingerprints
-
                 if page_no == expected_pages:
                     if len(seen_hashes) != expected_total:
                         raise NecWinnerCoverageError(
@@ -414,17 +389,10 @@ class LocalElectionWinnerEnumerator:
                         )
                     break
                 page_no += 1
-
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
+            completed = lifecycle.succeed()
             return NecEnumerationResult(completed, pages_committed, len(seen_hashes))
         except Exception as exc:
-            status = SourceRunStatus.PARTIAL if pages_committed else SourceRunStatus.FAILED
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="NEC winner enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
@@ -436,7 +404,7 @@ class LocalElectionCandidateEnumerator:
     def __init__(
         self,
         connector: NecCandidateConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         policy: SourcePolicy | None = None,
     ) -> None:
         self.connector = connector
@@ -448,22 +416,19 @@ class LocalElectionCandidateEnumerator:
         return f"{self.connector.election_id}:{self.connector.election_type}"
 
     def enumerate(self, *, resume: bool = False) -> NecEnumerationResult:
-        if any(
-            (
-                self.connector.district_name,
-                self.connector.province_name,
-                self.connector.party,
-            )
-        ):
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="NEC candidate enumeration did not complete",
+        )
+        if any((self.connector.district_name, self.connector.province_name, self.connector.party)):
             raise NecCandidateCoverageError("L3 NEC candidate enumeration must be unfiltered")
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the NEC candidate connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
-        run = self.repository.start_source_run(
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
+        run = lifecycle.start(
             self.FEEDER,
             self.scope_key,
             {
@@ -497,7 +462,6 @@ class LocalElectionCandidateEnumerator:
                     raise NecCandidateCoverageError(
                         "resume checkpoint already covers the full NEC candidate scope"
                     )
-
             page_no = start_page
             while True:
                 self.connector.page_no = page_no
@@ -543,15 +507,13 @@ class LocalElectionCandidateEnumerator:
                     raise NecCandidateCoverageError(
                         "NEC candidate API returned an unexpected extra page"
                     )
-
                 candidates = self.connector.parse_candidates(document)
                 expected_row_count = min(
                     self.connector.page_size,
-                    max(0, expected_total - ((page_no - 1) * self.connector.page_size)),
+                    max(0, expected_total - (page_no - 1) * self.connector.page_size),
                 )
                 if len(candidates) != expected_row_count:
                     raise NecCandidateCoverageError("NEC candidate page row count is incomplete")
-
                 page_hashes: dict[str, str] = {}
                 normalized_by_key: dict[str, dict[str, object]] = {}
                 for candidate in candidates:
@@ -585,18 +547,14 @@ class LocalElectionCandidateEnumerator:
                         raise NecCandidateCoverageError("duplicate NEC huboid appears across pages")
                     page_hashes[candidate.candidate_id] = content_hash
                     normalized_by_key[candidate.candidate_id] = normalized
-
                 fingerprint_payload = json.dumps(
-                    sorted(page_hashes.items()),
-                    ensure_ascii=False,
-                    separators=(",", ":"),
+                    sorted(page_hashes.items()), ensure_ascii=False, separators=(",", ":")
                 )
                 page_fingerprint = hashlib.sha256(fingerprint_payload.encode("utf-8")).hexdigest()
                 if page_fingerprint in page_fingerprints:
                     raise NecCandidateCoverageError(
                         "NEC candidate API returned duplicate page content"
                     )
-
                 ingestion = IngestionPipeline(self.connector).ingest_document(document, self.policy)
                 observations = []
                 for candidate in candidates:
@@ -625,7 +583,6 @@ class LocalElectionCandidateEnumerator:
                             content_hash=page_hashes[candidate.candidate_id],
                         )
                     )
-
                 next_seen_hashes = seen_hashes | page_hashes
                 next_page_fingerprints = [*page_fingerprints, page_fingerprint]
                 checkpoint_metadata = {
@@ -638,7 +595,7 @@ class LocalElectionCandidateEnumerator:
                     "seen_provider_hashes": next_seen_hashes,
                     "page_fingerprints": next_page_fingerprints,
                 }
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -650,7 +607,6 @@ class LocalElectionCandidateEnumerator:
                 pages_committed += 1
                 seen_hashes = next_seen_hashes
                 page_fingerprints = next_page_fingerprints
-
                 if page_no == expected_pages:
                     if len(seen_hashes) != expected_total:
                         raise NecCandidateCoverageError(
@@ -658,17 +614,10 @@ class LocalElectionCandidateEnumerator:
                         )
                     break
                 page_no += 1
-
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
+            completed = lifecycle.succeed()
             return NecEnumerationResult(completed, pages_committed, len(seen_hashes))
         except Exception as exc:
-            status = SourceRunStatus.PARTIAL if pages_committed else SourceRunStatus.FAILED
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="NEC candidate enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
@@ -692,7 +641,6 @@ class LocalElectionStager:
         if self.policy.domain != self.candidate_connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match NEC connectors")
         require_policy(self.policy, PolicyAction.FETCH)
-
         candidate_document = self.candidate_connector.fetch(self.candidate_connector.discover()[0])
         winner_document = self.winner_connector.fetch(self.winner_connector.discover()[0])
         candidates = self.candidate_connector.parse_candidates(candidate_document)
@@ -701,7 +649,6 @@ class LocalElectionStager:
             for record in self.winner_connector.parse_winners(winner_document)
         }
         winner_coverage_complete = _coverage_complete(winner_document.metadata)
-
         staged: list[StagedLocalElectionCandidate] = []
         for record in candidates:
             winner = winners.get(record.candidate_id)
@@ -739,119 +686,3 @@ def render_local_election_json(items: list[StagedLocalElectionCandidate]) -> str
     )
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Stage NEC local-election candidates for review.")
-    parser.add_argument("--election-id", required=True)
-    parser.add_argument("--type", required=True, type=int, choices=sorted(LOCAL_ELECTION_TYPES))
-    parser.add_argument("--province")
-    parser.add_argument("--district")
-    parser.add_argument("--party")
-    parser.add_argument("--page-no", type=int, default=1)
-    parser.add_argument("--page-size", type=int, default=100)
-    parser.add_argument(
-        "--enumerate-candidates",
-        action="store_true",
-        help="Persist and validate the complete unfiltered candidate roster for this scope.",
-    )
-    parser.add_argument(
-        "--enumerate-winners",
-        action="store_true",
-        help="Persist and validate the complete unfiltered winner roster for this scope.",
-    )
-    parser.add_argument(
-        "--resume",
-        action="store_true",
-        help="Resume the selected enumeration; defaults to winners for compatibility.",
-    )
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    if args.enumerate_candidates and args.enumerate_winners:
-        parser.error("select exactly one NEC L3 enumeration mode")
-    candidate_mode = bool(args.enumerate_candidates)
-    winner_mode = bool(args.enumerate_winners or (args.resume and not candidate_mode))
-    if (candidate_mode or winner_mode) and any((args.province, args.district, args.party)):
-        parser.error("NEC L3 enumeration does not accept province, district, or party filters")
-    try:
-        if candidate_mode:
-            candidate_connector = NecCandidateConnector(
-                election_id=args.election_id,
-                election_type=args.type,
-                page_no=args.page_no,
-                page_size=args.page_size,
-            )
-            result = LocalElectionCandidateEnumerator(
-                candidate_connector,
-                SqlAlchemyRepository(args.database_url),
-            ).enumerate(resume=args.resume)
-            print(
-                json.dumps(
-                    {
-                        "run_id": str(result.run.id),
-                        "status": result.run.status.value,
-                        "scope_key": result.run.scope_key,
-                        "pages_committed": result.pages_committed,
-                        "unique_records": result.unique_records,
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                    sort_keys=True,
-                )
-            )
-            return 0
-        if winner_mode:
-            winner_connector = NecWinnerConnector(
-                election_id=args.election_id,
-                election_type=args.type,
-                page_no=args.page_no,
-                page_size=args.page_size,
-            )
-            result = LocalElectionWinnerEnumerator(
-                winner_connector,
-                SqlAlchemyRepository(args.database_url),
-            ).enumerate(resume=args.resume)
-            print(
-                json.dumps(
-                    {
-                        "run_id": str(result.run.id),
-                        "status": result.run.status.value,
-                        "scope_key": result.run.scope_key,
-                        "pages_committed": result.pages_committed,
-                        "unique_records": result.unique_records,
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                    sort_keys=True,
-                )
-            )
-            return 0
-        candidate_connector = NecCandidateConnector(
-            election_id=args.election_id,
-            election_type=args.type,
-            page_no=args.page_no,
-            page_size=args.page_size,
-            district_name=args.district,
-            province_name=args.province,
-            party=args.party,
-        )
-        winner_connector = NecWinnerConnector(
-            election_id=args.election_id,
-            election_type=args.type,
-            page_no=args.page_no,
-            page_size=args.page_size,
-            district_name=args.district,
-            province_name=args.province,
-        )
-        staged = LocalElectionStager(candidate_connector, winner_connector).stage()
-    except (NecApiError, PolicyDenied, ValueError) as exc:
-        parser.error(str(exc))
-    print(render_local_election_json(staged))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

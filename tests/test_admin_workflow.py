@@ -10,13 +10,13 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import DBAPIError
-from test_alio_organization_activation import commit_prepared, enumerated_repository
 
 from apps.api.admin import sign_preview, verify_preview
 from apps.api.main import create_app
-from packages.domain import db
 from packages.domain.admin import AdminCommand
+from packages.persistence import models as db
 from packages.persistence.admin_workflow import AdminError
+from tests.test_alio_organization_activation import commit_prepared, enumerated_repository
 
 TOKEN = "operator-preview-tests-" + "x" * 40
 ACTOR = "test-reviewer"

@@ -9,43 +9,17 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import event
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 
 from apps.api.operator_review import current_review_inspection
-from packages.persistence import DatabaseNotReady, SqlAlchemyRepository
+from packages.application.context import Application
+from packages.persistence import DatabaseNotReady
+from packages.persistence.database import EXPECTED_SCHEMA_REVISION, Database
+from packages.persistence.operator_database import configure_read_only
 from packages.persistence.operator_queries import MODELS
-from packages.persistence.repository import EXPECTED_SCHEMA_REVISION
 
 ROOT = Path(__file__).resolve().parents[2]
-
-
-def configure_read_only(repository: SqlAlchemyRepository, *, allow_writes: bool = False) -> None:
-    """Apply database-enforced read-only defaults to this dedicated engine only."""
-    dialect = repository.engine.dialect.name
-    if dialect not in {"sqlite", "postgresql"}:
-        raise RuntimeError("Operator console supports SQLite or PostgreSQL only")
-
-    @event.listens_for(repository.engine, "connect")
-    def readonly_connection(connection: Any, _: Any) -> None:
-        cursor = connection.cursor()
-        try:
-            if dialect == "sqlite":
-                cursor.execute("PRAGMA query_only = OFF" if allow_writes else "PRAGMA query_only = ON")
-                cursor.execute("PRAGMA busy_timeout = 5000")
-            else:
-                connection.autocommit = True
-                cursor.execute("SET default_transaction_read_only = off" if allow_writes else "SET default_transaction_read_only = on")
-                cursor.execute("SET statement_timeout = 15000")
-                cursor.execute("SET idle_in_transaction_session_timeout = 20000")
-                cursor.execute("SET default_transaction_isolation = 'read committed'" if allow_writes
-                               else "SET default_transaction_isolation = 'repeatable read'")
-                connection.autocommit = False
-        finally:
-            cursor.close()
-
-    repository.engine.dispose()
 
 
 def documented_catalog() -> list[dict[str, str]]:
@@ -75,17 +49,17 @@ def documented_catalog() -> list[dict[str, str]]:
     return result
 
 
-def manifest_inspection(repository: SqlAlchemyRepository) -> dict[str, Any]:
+def manifest_inspection(repository: Application) -> dict[str, Any]:
     return current_review_inspection(repository)
 
 
-def build_operator_router(repository: SqlAlchemyRepository, label: str) -> APIRouter:
+def build_operator_router(repository: Application, label: str) -> APIRouter:
     router = APIRouter(prefix="/admin/operations", include_in_schema=False)
 
     @router.get("")
     def overview() -> dict[str, Any]:
         return {
-            **repository.operator_summary(),
+            **repository.administration.operator_summary(),
             "checked_at": datetime.now(UTC).isoformat(),
             "environment_label": label,
             "label_basis": "OPERATOR_SUPPLIED",
@@ -104,7 +78,7 @@ def build_operator_router(repository: SqlAlchemyRepository, label: str) -> APIRo
         limit: int = Query(25, ge=1, le=100),
     ) -> dict[str, Any]:
         try:
-            return repository.operator_records(
+            return repository.administration.operator_records(
                 kind, q=q, feeder=feeder, scope=scope, status=status, offset=offset, limit=limit
             )
         except ValueError as exc:
@@ -114,7 +88,7 @@ def build_operator_router(repository: SqlAlchemyRepository, label: str) -> APIRo
     def record_detail(kind: str, record_id: UUID) -> dict[str, Any]:
         if kind not in MODELS:
             raise HTTPException(422, "Unsupported record kind")
-        result = repository.operator_record_detail(kind, str(record_id))
+        result = repository.administration.operator_record_detail(kind, str(record_id))
         if result is None:
             raise HTTPException(404, "Record not found")
         return result
@@ -147,16 +121,22 @@ def create_operator_app() -> Any:
     ):
         raise RuntimeError("An existing migrated database is required; no automatic creation")
     try:
-        repository = SqlAlchemyRepository(url, pool_pre_ping=True)
+        repository = Database(url, pool_pre_ping=True)
         configure_read_only(repository, allow_writes=writes)
         repository.assert_ready()
-        if writes and not repository.admin_schema_ready():
-            raise RuntimeError("Admin writes require a reviewed admin-receipt schema (0007 or 0008)")
+        if writes and (not Application(repository).administration.admin_schema_ready()):
+            raise RuntimeError(
+                "Admin writes require a reviewed admin-receipt schema (0007 or 0008)"
+            )
     except (SQLAlchemyError, DatabaseNotReady, OSError, ValueError):
         raise RuntimeError(
             "Private operator database is not ready; no migration or write performed"
         ) from None
     return create_app(
-        repository, enable_review_surface=True, operator_token=token, operator_label=label,
-        operator_writes=writes, operator_actor=actor
+        repository,
+        enable_review_surface=True,
+        operator_token=token,
+        operator_label=label,
+        operator_writes=writes,
+        operator_actor=actor,
     )

@@ -9,26 +9,25 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from apps.api.main import create_app
+from packages.application.assembly_base_profile import AssemblyBaseProfilePublisher
+from packages.application.assembly_legislative_activity import AssemblyLegislativeActivityPublisher
 from packages.connectors.open_assembly import OpenAssemblyMemberConnector
 from packages.connectors.open_assembly_bills import OpenAssemblyBillConnector
 from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
-from packages.verification.assembly_base_profile import AssemblyBaseProfilePublisher
-from packages.verification.assembly_legislative_activity import (
-    AssemblyLegislativeActivityError,
-    AssemblyLegislativeActivityPublisher,
-)
+from packages.verification.assembly_legislative_activity import AssemblyLegislativeActivityError
+from tests.roster_scenario import enumerate_materialize_publish
+from tests.support import ScenarioDatabase
 from workers.assembly_roster import AssemblyRosterEnumerator
 from workers.legislative_activity import AssemblyBillParticipationEnumerator
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database.parent.mkdir(parents=True, exist_ok=True)
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def member_row(code: str, name: str) -> dict[str, str]:
@@ -68,7 +67,9 @@ class RosterApi:
 
 
 class BillApi:
-    def __init__(self, *, title: str = "테스트 법률안", lead: str = "M-001", co: str = "M-002") -> None:
+    def __init__(
+        self, *, title: str = "테스트 법률안", lead: str = "M-001", co: str = "M-002"
+    ) -> None:
         self.title = title
         self.lead = lead
         self.co = co
@@ -109,15 +110,15 @@ class BillApi:
         )
 
 
-def prepare_repository(tmp_path: Path) -> SqlAlchemyRepository:
+def prepare_repository(tmp_path: Path) -> ScenarioDatabase:
     repository = migrated_repository(tmp_path / "assembly-legislative.db")
     roster = AssemblyRosterEnumerator(RosterApi().connector(), repository)
-    roster.enumerate_and_materialize()
+    enumerate_materialize_publish(roster)
     AssemblyBaseProfilePublisher(repository).publish_latest_successful()
     return repository
 
 
-def publish_activity(repository: SqlAlchemyRepository, *, title: str = "테스트 법률안"):
+def publish_activity(repository: ScenarioDatabase, *, title: str = "테스트 법률안"):
     enumeration = AssemblyBillParticipationEnumerator(
         BillApi(title=title).connector(), repository
     ).enumerate()
@@ -129,22 +130,21 @@ def test_exact_mona_crosswalk_publishes_role_separated_activity_and_profile_trac
     tmp_path: Path,
 ) -> None:
     repository = prepare_repository(tmp_path)
-
     result = publish_activity(repository)
-
     assert result.observations_considered == 1
     assert result.observations_published == 2
     assert result.published_claims == 2
     assert result.unchanged_claims == 0
     assert result.unresolved_member_codes == ()
-
     people = repository.public_people()
     assert len(people) == 2
     with TestClient(create_app(repository)) as client:
         for person in people:
             payload = client.get(f"/people/{person.id}").json()
             activity = next(
-                item for item in payload["profile"]["sections"] if item["id"] == "legislative_activity"
+                item
+                for item in payload["profile"]["sections"]
+                if item["id"] == "legislative_activity"
             )
             assert activity["status"] == "AVAILABLE"
             entry = activity["entries"][0]
@@ -157,18 +157,13 @@ def test_exact_mona_crosswalk_publishes_role_separated_activity_and_profile_trac
             assert entry["evidence"][0]["snapshot_id"]
             assert entry["evidence"][0]["feeder_observation_id"]
             assert "normalized" not in str(payload)
-
         first = client.get(f"/people/{people[0].id}").json()
         second = client.get(f"/people/{people[1].id}").json()
         first_role = next(
-            item
-            for item in first["profile"]["sections"]
-            if item["id"] == "legislative_activity"
+            item for item in first["profile"]["sections"] if item["id"] == "legislative_activity"
         )["entries"][0]["details"]["participation_role"]
         second_role = next(
-            item
-            for item in second["profile"]["sections"]
-            if item["id"] == "legislative_activity"
+            item for item in second["profile"]["sections"] if item["id"] == "legislative_activity"
         )["entries"][0]["details"]["participation_role"]
         assert {first_role, second_role} == {"REPRESENTATIVE_PROPOSER", "CO_PROPOSER"}
 
@@ -195,19 +190,14 @@ def test_activity_publication_is_idempotent_and_version_conflict_fails_closed(
     repository = prepare_repository(tmp_path)
     first = publish_activity(repository)
     second = AssemblyLegislativeActivityPublisher(repository).publish_latest_successful()
-
     assert first.published_claims == 2
     assert first.unchanged_claims == 0
     assert second.published_claims == 0
     assert second.unchanged_claims == 2
-
     AssemblyBillParticipationEnumerator(
         BillApi(title="수정된 법률안").connector(), repository
     ).enumerate()
-    with pytest.raises(
-        AssemblyLegislativeActivityError,
-        match="immutable observation version",
-    ):
+    with pytest.raises(AssemblyLegislativeActivityError, match="immutable observation version"):
         AssemblyLegislativeActivityPublisher(repository).publish_latest_successful()
     claims = [
         claim

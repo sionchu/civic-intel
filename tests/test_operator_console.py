@@ -11,9 +11,9 @@ from sqlalchemy.exc import OperationalError
 
 from apps.api.main import create_app
 from apps.api.operator import configure_read_only, documented_catalog, manifest_inspection
-from packages.domain import db
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence import models as db
 from packages.persistence.operator_queries import MODELS, safe_url
+from tests.support import ScenarioDatabase
 
 TOKEN = "test-operator-token-" + "a" * 32
 
@@ -24,7 +24,7 @@ def repository(tmp_path: Path):
     configuration = Config("alembic.ini")
     configuration.set_main_option("sqlalchemy.url", url)
     command.upgrade(configuration, "head")
-    repository = SqlAlchemyRepository(url)
+    repository = ScenarioDatabase(url)
     repository.seed_golden()
     yield repository
     repository.engine.dispose()
@@ -128,7 +128,7 @@ def insert_lane(repository):
             )
         )
         session.commit()
-    return ids, source_id
+    return (ids, source_id)
 
 
 def test_operator_counts_are_real_and_versions_are_not_identities(repository):
@@ -153,7 +153,8 @@ def test_summary_is_bounded_query_count(repository):
     queries = []
     event.listen(repository.engine, "before_cursor_execute", lambda *args: queries.append(args[2]))
     repository.operator_summary()
-    assert len(queries) == 2
+    assert sum(sql.lstrip().upper().startswith("SELECT") for sql in queries) == 2
+    assert sum(sql.lstrip().upper().startswith("BEGIN") for sql in queries) == 1
 
 
 def test_record_browser_filters_paginates_and_escapes_wildcards(repository):
@@ -251,7 +252,7 @@ def test_private_operator_auth_denies_missing_token_external_host_and_origin(rep
 
 def test_operator_engine_cannot_write_and_reads_do_not_mutate(repository):
     before = repository.operator_summary()["counts"]
-    readonly = SqlAlchemyRepository(str(repository.engine.url))
+    readonly = ScenarioDatabase(str(repository.engine.url))
     configure_read_only(readonly)
     try:
         assert readonly.operator_records("people")["total"] == 10
@@ -351,12 +352,12 @@ def test_operator_factory_masks_invalid_connection_configuration(monkeypatch):
 
 
 def test_operator_pre_ping_replaces_closed_connection_and_preserves_read_only(repository):
-    readonly = SqlAlchemyRepository(str(repository.engine.url), pool_pre_ping=True)
+    readonly = ScenarioDatabase(str(repository.engine.url), pool_pre_ping=True)
     configure_read_only(readonly)
     try:
         with readonly.engine.connect() as connection:
             dbapi_connection = connection.connection.driver_connection
-        dbapi_connection.close()  # Simulate an idle pooled socket closing outside SQLAlchemy.
+        dbapi_connection.close()
         assert readonly.operator_records("people")["total"] == 10
         with pytest.raises(OperationalError), readonly.engine.begin() as connection:
             connection.execute(text("UPDATE people SET canonical_name = 'INVALID'"))
@@ -367,10 +368,12 @@ def test_operator_pre_ping_replaces_closed_connection_and_preserves_read_only(re
 def test_operator_expected_database_failure_is_safe_503(repository, monkeypatch):
     from sqlalchemy.exc import SQLAlchemyError
 
-    def disconnected():
+    from packages.persistence.administration import AdministrationRepository
+
+    def disconnected(self):
         raise SQLAlchemyError("private-password-must-not-leak")
 
-    monkeypatch.setattr(repository, "operator_summary", disconnected)
+    monkeypatch.setattr(AdministrationRepository, "operator_summary", disconnected)
     with TestClient(
         create_app(repository, enable_review_surface=True, operator_token=TOKEN),
         base_url="http://127.0.0.1",
@@ -399,20 +402,20 @@ def test_operator_connection_monitor_resets_and_checks_dead_process(monkeypatch)
 def test_operator_backend_recovery_replaces_owned_backend_only(monkeypatch):
     from workers import operator_console as launcher
 
-    old, new = object(), object()
+    old, new = (object(), object())
     processes = [old]
     stopped = []
     environment = {"CIVIC_OPERATOR_TOKEN": TOKEN, "CIVIC_OPERATOR_ENABLED": "1"}
     monkeypatch.setattr(launcher, "_stop", stopped.append)
 
     def restart(env, port, project, owned):
-        assert env is environment and port == 8310 and project == "reviewed-project"
+        assert env is environment and port == 8310 and (project == "reviewed-project")
         assert owned == []
         owned.append(new)
 
     monkeypatch.setattr(launcher, "_start_backend", restart)
     attempts = launcher._recover_backend(environment, 8310, "reviewed-project", processes, 0)
-    assert attempts == 1 and processes == [new] and stopped == [old]
+    assert attempts == 1 and processes == [new] and (stopped == [old])
     assert environment == {"CIVIC_OPERATOR_TOKEN": TOKEN, "CIVIC_OPERATOR_ENABLED": "1"}
 
 

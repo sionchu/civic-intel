@@ -5,13 +5,10 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import inspect, text
 
+from packages.bootstrap import bootstrap_database
 from packages.domain.enums import EpistemicStatus, PublicationStatus
-from packages.persistence import (
-    DatabaseNotReady,
-    GoldenSeedError,
-    SqlAlchemyRepository,
-    bootstrap_repository,
-)
+from packages.persistence import DatabaseNotReady, GoldenSeedError
+from tests.support import ScenarioDatabase
 
 
 def migrate(database: Path) -> str:
@@ -23,19 +20,17 @@ def migrate(database: Path) -> str:
 
 
 def test_runtime_repository_requires_migrated_database(tmp_path: Path) -> None:
-    repository = SqlAlchemyRepository(f"sqlite:///{(tmp_path / 'unmigrated.db').as_posix()}")
+    repository = ScenarioDatabase(f"sqlite:///{(tmp_path / 'unmigrated.db').as_posix()}")
     with pytest.raises(DatabaseNotReady, match="not migrated"):
-        bootstrap_repository(repository, "runtime")
+        bootstrap_database(repository, "runtime")
     assert inspect(repository.engine).get_table_names() == []
 
 
 def test_explicit_golden_seed_populates_migrated_database(tmp_path: Path) -> None:
     database = tmp_path / "runtime.db"
-    repository = SqlAlchemyRepository(migrate(database))
-
-    bootstrap_repository(repository, "runtime")
+    repository = ScenarioDatabase(migrate(database))
+    bootstrap_database(repository, "runtime")
     assert repository.people() == []
-
     repository.seed_golden()
     assert len(repository.people()) == 10
     unknowns = [
@@ -53,15 +48,14 @@ def test_explicit_golden_seed_populates_migrated_database(tmp_path: Path) -> Non
 
 def test_golden_bootstrap_is_explicit_and_refuses_nonempty_database(tmp_path: Path) -> None:
     database = tmp_path / "golden.db"
-    repository = SqlAlchemyRepository(migrate(database))
-
-    bootstrap_repository(repository, "golden")
+    repository = ScenarioDatabase(migrate(database))
+    bootstrap_database(repository, "golden")
     assert len(repository.people()) == 10
     with pytest.raises(GoldenSeedError, match="empty migrated database"):
-        bootstrap_repository(repository, "golden")
+        bootstrap_database(repository, "golden")
 
 
 def test_unknown_bootstrap_mode_fails_closed(tmp_path: Path) -> None:
-    repository = SqlAlchemyRepository(migrate(tmp_path / "mode.db"))
+    repository = ScenarioDatabase(migrate(tmp_path / "mode.db"))
     with pytest.raises(DatabaseNotReady, match="Unsupported CIVIC_BOOTSTRAP_MODE"):
-        bootstrap_repository(repository, "surprise")
+        bootstrap_database(repository, "surprise")

@@ -7,9 +7,8 @@ import pytest
 from alembic import command
 from alembic.config import Config
 
-from packages.domain.db import PersonObservationLinkRow
 from packages.domain.enums import CrossLaneIdentityEvidenceType
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import PersonObservationLinkRow
 from packages.verification.cross_lane_identity import CrossLaneIdentityEvidence
 from packages.verification.identity import IdentityCandidate
 from packages.verification.profile_target import (
@@ -18,18 +17,19 @@ from packages.verification.profile_target import (
     ProfileTargetObservation,
     build_profile_research_target,
 )
+from tests.support import ScenarioDatabase
 
 KIM_DONGCHEOL_CASE = (
     Path(__file__).parent / "fixtures" / "reviewed_cross_lane_kim_dongcheol_001.json"
 )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def kim_dongcheol_target_inputs() -> tuple[
@@ -72,7 +72,7 @@ def kim_dongcheol_target_inputs() -> tuple[
         )
         for item in bridge
     )
-    return primary, linked, evidence, payload
+    return (primary, linked, evidence, payload)
 
 
 def corporate_observation(*, birth_date: date | None = None) -> ProfileTargetObservation:
@@ -121,18 +121,12 @@ def continuity_evidence() -> tuple[CrossLaneIdentityEvidence, ...]:
 def test_resolved_corporate_to_presidential_observations_build_one_target() -> None:
     primary = corporate_observation()
     linked = presidential_observation()
-
     target = build_profile_research_target(
-        primary,
-        (ProfileTargetLink(linked, continuity_evidence()),),
+        primary, (ProfileTargetLink(linked, continuity_evidence()),)
     )
-
     assert target.canonical_name == "김AI"
     assert target.source_lanes == ("CORPORATE_OFFICIAL_PROFILE", "PRESIDENTIAL_PERSONNEL")
-    assert target.discovery_reasons == (
-        "PRIVATE_SECTOR_SENIOR_TALENT",
-        "PRESIDENTIAL_APPOINTMENT",
-    )
+    assert target.discovery_reasons == ("PRIVATE_SECTOR_SENIOR_TALENT", "PRESIDENTIAL_APPOINTMENT")
     assert target.appointment_target_slugs == (
         "ai-policy-senior-role",
         "national-ai-commission-vice-chair",
@@ -144,20 +138,15 @@ def test_resolved_corporate_to_presidential_observations_build_one_target() -> N
 def test_same_name_without_bridge_evidence_cannot_enter_profile_target() -> None:
     with pytest.raises(ProfileTargetBuildError, match="RESOLVED"):
         build_profile_research_target(
-            corporate_observation(),
-            (ProfileTargetLink(presidential_observation(), ()),),
+            corporate_observation(), (ProfileTargetLink(presidential_observation(), ()),)
         )
 
 
 def test_birth_date_conflict_cannot_be_overridden_by_continuity_evidence() -> None:
     primary = corporate_observation(birth_date=date(1980, 1, 1))
     linked = presidential_observation(birth_date=date(1981, 1, 1))
-
     with pytest.raises(ProfileTargetBuildError, match="RESOLVED"):
-        build_profile_research_target(
-            primary,
-            (ProfileTargetLink(linked, continuity_evidence()),),
-        )
+        build_profile_research_target(primary, (ProfileTargetLink(linked, continuity_evidence()),))
 
 
 def test_aggregate_source_refs_are_deduplicated_but_observation_provenance_remains() -> None:
@@ -166,7 +155,6 @@ def test_aggregate_source_refs_are_deduplicated_but_observation_provenance_remai
         (ProfileTargetLink(presidential_observation(), continuity_evidence()),),
     )
     payload = target.to_dict()
-
     assert target.source_refs == (
         "company-official-profile-kimai",
         "shared-public-source",
@@ -183,11 +171,12 @@ def test_aggregate_source_refs_are_deduplicated_but_observation_provenance_remai
     assert payload["linked_observations"][0]["identity"]["evidence_source_refs"] == [
         "presidential-briefing-kimai"
     ]
-    assert payload["linked_observations"][0]["identity"]["decision_class"] == (
-        "OFFICIAL_CAREER_CONTINUITY"
+    assert (
+        payload["linked_observations"][0]["identity"]["decision_class"]
+        == "OFFICIAL_CAREER_CONTINUITY"
     )
-    assert payload["linked_observations"][0]["identity"]["decision_scope"] == (
-        "RESEARCH_IDENTITY_ONLY"
+    assert (
+        payload["linked_observations"][0]["identity"]["decision_scope"] == "RESEARCH_IDENTITY_ONLY"
     )
     assert "score" not in payload["linked_observations"][0]["identity"]
 
@@ -198,7 +187,6 @@ def test_profile_target_has_no_appointment_probability_or_political_inference_fi
         (ProfileTargetLink(presidential_observation(), continuity_evidence()),),
     )
     rendered = json.dumps(target.to_dict(), ensure_ascii=False, sort_keys=True).casefold()
-
     assert "candidate_probability" not in rendered
     assert "appointment_probability" not in rendered
     assert "faction" not in rendered
@@ -209,28 +197,16 @@ def test_profile_target_has_no_appointment_probability_or_political_inference_fi
 def test_observation_requires_source_provenance() -> None:
     with pytest.raises(ValueError, match="source_refs"):
         ProfileTargetObservation(
-            lane="CORPORATE",
-            candidate=IdentityCandidate(canonical_name="김AI"),
-            source_refs=(),
+            lane="CORPORATE", candidate=IdentityCandidate(canonical_name="김AI"), source_refs=()
         )
 
 
-def test_kim_dongcheol_packet_builds_research_target_without_persistence(
-    tmp_path: Path,
-) -> None:
+def test_kim_dongcheol_packet_builds_research_target_without_persistence(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "kim-dongcheol-research-target.db")
     primary, linked, evidence, payload = kim_dongcheol_target_inputs()
-
-    target = build_profile_research_target(
-        primary,
-        (ProfileTargetLink(linked, evidence),),
-    )
-
+    target = build_profile_research_target(primary, (ProfileTargetLink(linked, evidence),))
     assert target.canonical_name == "김동철"
-    assert target.source_lanes == (
-        "ALIO_ITEM4_EXECUTIVE",
-        "NATIONAL_ASSEMBLY_HISTORICAL_REVIEW",
-    )
+    assert target.source_lanes == ("ALIO_ITEM4_EXECUTIVE", "NATIONAL_ASSEMBLY_HISTORICAL_REVIEW")
     assert target.source_refs == (
         payload["left"]["source_refs"][0],
         payload["right"]["source_refs"][0],
@@ -241,16 +217,14 @@ def test_kim_dongcheol_packet_builds_research_target_without_persistence(
     assert target.linked[0].observation.candidate.office == "제20대 국회의원"
     assert target.linked[0].observation.candidate.organization == "대한민국 국회"
     assert target.linked[0].decision.status.value == "RESOLVED"
-    assert target.linked[0].decision.decision_class.value == (
-        "OFFICIAL_CAREER_CONTINUITY"
-    )
+    assert target.linked[0].decision.decision_class.value == "OFFICIAL_CAREER_CONTINUITY"
     assert target.linked[0].decision.evidence_types == (
         CrossLaneIdentityEvidenceType.OFFICIAL_CAREER_CONTINUITY,
     )
-    assert target.to_dict()["linked_observations"][0]["identity"]["decision_scope"] == (
-        "RESEARCH_IDENTITY_ONLY"
+    assert (
+        target.to_dict()["linked_observations"][0]["identity"]["decision_scope"]
+        == "RESEARCH_IDENTITY_ONLY"
     )
-
     assert repository.people() == []
     assert repository.claims() == []
     with repository.sessions() as session:

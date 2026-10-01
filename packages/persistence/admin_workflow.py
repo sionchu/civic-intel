@@ -12,7 +12,6 @@ from uuid import UUID, uuid5
 from sqlalchemy import String, cast, func, inspect, or_, select, text
 from sqlalchemy.orm import Session
 
-from packages.domain import db
 from packages.domain.admin import (
     CORRECTION_PREDICATE,
     PERSON_ROLE_PREDICATE,
@@ -33,6 +32,7 @@ from packages.domain.enums import (
     IdentityStatus,
     PublicationStatus,
 )
+from packages.persistence import models as db
 from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_FEEDER,
     ALIO_EXECUTIVE_PREDICATE,
@@ -132,7 +132,9 @@ def row_data(row: Any) -> dict[str, Any]:
 
 def receipt(row: db.AdminOperationRow) -> dict[str, Any]:
     return {
-        "version": digest({"id": row.id, "command_hash": row.command_hash, "state_hash": row.state_hash}),
+        "version": digest(
+            {"id": row.id, "command_hash": row.command_hash, "state_hash": row.state_hash}
+        ),
         "id": row.id,
         "actor": row.actor,
         "action": row.action,
@@ -403,7 +405,7 @@ def _save_review(
 
 
 def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, str], Any, Any]:
-    from packages.persistence.repository import SqlAlchemyRepository
+    from packages.persistence import mapping
 
     row = plan.get(db.FeederObservationRow, identifier)
     snapshot_row = plan.get(db.SourceSnapshotRow, row.snapshot_id)
@@ -450,13 +452,13 @@ def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, st
     )
     try:
         context = validate_alio_person_source_context(
-            SqlAlchemyRepository._observation(row),
-            snapshot=SqlAlchemyRepository._snapshot(snapshot_row),
-            source=SqlAlchemyRepository._source(source_row),
-            policy=SqlAlchemyRepository._policy(policy_row),
-            checkpoint=SqlAlchemyRepository._checkpoint(checkpoint_row),
-            run=SqlAlchemyRepository._source_run(run_row),
-            versions=tuple(SqlAlchemyRepository._observation(item) for item in versions),
+            mapping._observation(row),
+            snapshot=mapping._snapshot(snapshot_row),
+            source=mapping._source(source_row),
+            policy=mapping._policy(policy_row),
+            checkpoint=mapping._checkpoint(checkpoint_row),
+            run=mapping._source_run(run_row),
+            versions=tuple(mapping._observation(item) for item in versions),
             organization_claims=candidate_claims,
             organization=organization,
         )
@@ -466,7 +468,7 @@ def _alio_person_record(plan: Plan, identifier: UUID) -> tuple[Any, dict[str, st
 
 
 def _nec_person_record(plan: Plan, identifier: UUID):
-    from packages.persistence.repository import SqlAlchemyRepository
+    from packages.persistence import mapping
 
     row = plan.get(db.FeederObservationRow, identifier)
     if row.feeder != NEC_CANDIDATE_FEEDER:
@@ -493,13 +495,13 @@ def _nec_person_record(plan: Plan, identifier: UUID):
     )
     try:
         context = validate_nec_candidate_source_context(
-            SqlAlchemyRepository._observation(row),
-            snapshot=SqlAlchemyRepository._snapshot(snapshot_row),
-            source=SqlAlchemyRepository._source(source_row),
-            policy=SqlAlchemyRepository._policy(policy_row),
-            checkpoint=SqlAlchemyRepository._checkpoint(checkpoint_row),
-            run=SqlAlchemyRepository._source_run(run_row),
-            versions=tuple(SqlAlchemyRepository._observation(item) for item in versions),
+            mapping._observation(row),
+            snapshot=mapping._snapshot(snapshot_row),
+            source=mapping._source(source_row),
+            policy=mapping._policy(policy_row),
+            checkpoint=mapping._checkpoint(checkpoint_row),
+            run=mapping._source_run(run_row),
+            versions=tuple(mapping._observation(item) for item in versions),
         )
     except NecPersonMaterializationError as exc:
         raise AdminError(exc.code, exc.message) from exc
@@ -851,9 +853,7 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
             limit=10,
         )
         source_links = [
-            row
-            for row in links
-            if row.decision_class == "DETERMINISTIC_SOURCE_CONTEXT"
+            row for row in links if row.decision_class == "DETERMINISTIC_SOURCE_CONTEXT"
         ]
         if len(source_links) != 1:
             raise AdminError(
@@ -882,14 +882,11 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
                 and row.qualifiers.get("organization_id") == organization.id
                 and row.qualifiers.get("canonical_name") == fields["canonical_name"]
                 and row.qualifiers.get("position_text") == fields["position_text"]
-                and row.qualifiers.get("identity_scope")
-                == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
+                and row.qualifiers.get("identity_scope") == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
             ]
             context_label = "ALIO_ROLE"
         elif observation_row.feeder == NEC_CANDIDATE_FEEDER:
-            observation, nec_context, _ = _nec_person_record(
-                plan, UUID(source_link.observation_id)
-            )
+            observation, nec_context, _ = _nec_person_record(plan, UUID(source_link.observation_id))
             if (
                 person.canonical_name != nec_context.canonical_name
                 or person.birth_date != nec_context.birth_date

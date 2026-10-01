@@ -6,7 +6,6 @@ from typing import Protocol
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from packages.domain import db
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -19,6 +18,7 @@ from packages.domain.contracts import (
     SourceRun,
     SourceSnapshot,
 )
+from packages.persistence import models as db
 
 
 class SourceContextPersonPacket(Protocol):
@@ -37,9 +37,7 @@ class SourceContextPersonPacket(Protocol):
 
 def normalize_receipt_sha256(value: str) -> str:
     expected = value.casefold()
-    if len(expected) != 64 or any(
-        char not in "0123456789abcdef" for char in expected
-    ):
+    if len(expected) != 64 or any(char not in "0123456789abcdef" for char in expected):
         raise ValueError("expected receipt SHA-256 must be 64 hex characters")
     return expected
 
@@ -56,9 +54,7 @@ def lock_source_context_person_materialization(
         {"lock_id": advisory_lock_id},
     )
     session.execute(text("LOCK TABLE people IN SHARE ROW EXCLUSIVE MODE"))
-    session.execute(
-        text("LOCK TABLE person_observation_links IN SHARE ROW EXCLUSIVE MODE")
-    )
+    session.execute(text("LOCK TABLE person_observation_links IN SHARE ROW EXCLUSIVE MODE"))
     session.execute(text("LOCK TABLE claims IN SHARE ROW EXCLUSIVE MODE"))
     session.execute(text("LOCK TABLE claim_evidence IN SHARE ROW EXCLUSIVE MODE"))
 

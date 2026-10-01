@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.orm import Session
 
-from packages.domain import db
+from packages.persistence import models as db
 from packages.persistence.operator_queries import _columns, _record
 from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_FEEDER,
@@ -82,7 +82,9 @@ def _queue_base():
         .label("candidate_count")
     )
     query = (
-        select(observation.id, name.label("name"),
+        select(
+            observation.id,
+            name.label("name"),
             observation.normalized_json["institution_name"].as_string().label("institution"),
             observation.normalized_json["position_text"].as_string().label("position"),
             state,
@@ -134,8 +136,14 @@ def person_review_queue(
         pattern = (
             "%" + q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
         )
-        filters.append(or_(*(column.ilike(pattern, escape="\\") for column in
-                             (base.c.name, base.c.institution, base.c.position))))
+        filters.append(
+            or_(
+                *(
+                    column.ilike(pattern, escape="\\")
+                    for column in (base.c.name, base.c.institution, base.c.position)
+                )
+            )
+        )
     count = session.scalar(select(func.count()).select_from(base).where(*filters)) or 0
     page = list(
         session.execute(

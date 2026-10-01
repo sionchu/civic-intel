@@ -14,13 +14,13 @@ from packages.domain.contracts import (
     SourcePolicy,
     SourceSnapshot,
 )
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle
 from packages.verification.profile_target import (
     ProfileTargetObservation,
     build_profile_research_target,
 )
+from tests.support import ScenarioDatabase
 
 FIXTURE = Path(__file__).parent / "fixtures" / "reviewed_person_im_munyoung_001.json"
 PERSON_ID = "00000000-0000-0000-0000-000000009101"
@@ -28,12 +28,12 @@ OFFICIAL_ROLE_SOURCE = "20000000-0000-0000-0000-000000009101"
 ELECTION_SOURCE = "20000000-0000-0000-0000-000000009102"
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def load_bundle() -> tuple[ReviewedPersonBundle, dict]:
@@ -65,12 +65,11 @@ def load_bundle() -> tuple[ReviewedPersonBundle, dict]:
         claims=tuple(Claim.model_validate(item) for item in raw["claims"]),
         evidence=tuple(ClaimEvidence.model_validate(item) for item in raw["evidence"]),
     )
-    return bundle, raw
+    return (bundle, raw)
 
 
 def test_reviewed_bundle_preserves_identity_and_defers_unverified_prior_career() -> None:
     bundle, raw = load_bundle()
-
     assert bundle.person.canonical_name == "임문영"
     assert bundle.person.birth_date is None
     assert bundle.profile_target.canonical_name == "임문영"
@@ -89,30 +88,25 @@ def test_reviewed_bundle_preserves_identity_and_defers_unverified_prior_career()
 def test_real_im_munyoung_bundle_imports_and_renders_existing_profile(tmp_path: Path) -> None:
     bundle, _ = load_bundle()
     repository = migrated_repository(tmp_path / "im-munyoung.db")
-
     repository.import_reviewed_person(bundle)
-
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{PERSON_ID}").json()
-
     assert payload["canonical_name"] == "임문영"
     assert payload["birth_date"] is None
     assert {item["predicate"] for item in payload["claims"]} == {"HELD_ROLE", "ELECTED_AS"}
-
     sections = {item["id"]: item for item in payload["profile"]["sections"]}
     assert sections["summary"]["status"] == "AVAILABLE"
     assert [item["details"]["predicate"] for item in sections["summary"]["entries"]] == [
         "ELECTED_AS"
     ]
     assert sections["summary"]["entries"][0]["source_ids"] == [ELECTION_SOURCE]
-
     assert sections["career_timeline"]["status"] == "AVAILABLE"
-    assert [
-        item["details"]["predicate"] for item in sections["career_timeline"]["entries"]
-    ] == ["HELD_ROLE", "ELECTED_AS"]
+    assert [item["details"]["predicate"] for item in sections["career_timeline"]["entries"]] == [
+        "HELD_ROLE",
+        "ELECTED_AS",
+    ]
     assert sections["career_timeline"]["entries"][0]["source_ids"] == [OFFICIAL_ROLE_SOURCE]
     assert sections["career_timeline"]["entries"][1]["source_ids"] == [ELECTION_SOURCE]
-
     assert sections["current_power_tasks"]["status"] == "UNKNOWN"
     assert sections["appointment_logic"]["status"] == "UNKNOWN"
     assert sections["forecast"]["status"] == "UNKNOWN"
@@ -122,7 +116,6 @@ def test_real_im_munyoung_bundle_imports_and_renders_existing_profile(tmp_path: 
 def test_real_bundle_sources_are_metadata_only_and_fail_closed_for_reuse() -> None:
     bundle, _ = load_bundle()
     policies = {policy.id: policy for policy in bundle.policies}
-
     assert all(policy.can_store_metadata for policy in policies.values())
     assert all(not policy.can_store_fulltext for policy in policies.values())
     assert all(not policy.can_send_to_ai for policy in policies.values())

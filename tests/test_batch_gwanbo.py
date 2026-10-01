@@ -15,10 +15,10 @@ from packages.connectors.gwanbo_personnel import (
     GwanboPersonnelError,
     gwanbo_personnel_policy,
 )
-from packages.domain.db import SourceRow, SourceSnapshotRow
 from packages.domain.enums import SourceCollectionMode, SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourceRow, SourceSnapshotRow
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers.gwanbo_personnel import GwanboCoverageError, GwanboPersonnelEnumerator
 
 SECRET = "gwanbo-secret-must-not-persist"
@@ -27,11 +27,7 @@ DATE_TO = date(2026, 8, 31)
 
 
 def notice(
-    notice_id: str,
-    title: str,
-    *,
-    institution: str = "행정안전부",
-    revision_reason: str = "",
+    notice_id: str, title: str, *, institution: str = "행정안전부", revision_reason: str = ""
 ) -> tuple[str, ...]:
     return (
         notice_id,
@@ -50,31 +46,19 @@ def notice(
 
 def page_html(rows: list[tuple[str, ...]], total: int) -> str:
     if not rows and total == 0:
-        return """
-        <li id="countArea"><span>총 건수 : 건</span></li>
-        <table><tbody><tr><td colspan="5">검색결과가 존재하지 않습니다.</td></tr></tbody></table>
-        """
+        return '\n        <li id="countArea"><span>총 건수 : 건</span></li>\n        <table><tbody><tr><td colspan="5">검색결과가 존재하지 않습니다.</td></tr></tbody></table>\n        '
     rendered = []
     for index, row in enumerate(rows, start=1):
         arguments = ",".join(f"'{value}'" for value in row)
         rendered.append(
-            "<tr>"
-            f"<td>{index}</td><td><a onclick=\"fnDetail({arguments});\">{row[1]}</a></td>"
-            f"<td>{row[5]}</td><td>{row[6]}</td><td>{row[2]}</td>"
-            "</tr>"
+            f'<tr><td>{index}</td><td><a onclick="fnDetail({arguments});">{row[1]}</a></td><td>{row[5]}</td><td>{row[6]}</td><td>{row[2]}</td></tr>'
         )
-    return (
-        f'<li id="countArea"><span>총 건수 : {total:,}건</span></li>'
-        f"<table><tbody>{''.join(rendered)}</tbody></table>"
-    )
+    return f"""<li id="countArea"><span>총 건수 : {total:,}건</span></li><table><tbody>{"".join(rendered)}</tbody></table>"""
 
 
 class GwanboApi:
     def __init__(
-        self,
-        pages: dict[int, list[tuple[str, ...]]],
-        *,
-        totals: dict[int, int] | None = None,
+        self, pages: dict[int, list[tuple[str, ...]]], *, totals: dict[int, int] | None = None
     ) -> None:
         self.pages = pages
         self.totals = totals or {}
@@ -117,12 +101,12 @@ class GwanboApi:
         )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def three_notice_api() -> GwanboApi:
@@ -137,10 +121,8 @@ def three_notice_api() -> GwanboApi:
 def test_connector_uses_official_post_contract_without_authentication() -> None:
     api = GwanboApi({1: [notice("G-001", "인사발령")]})
     connector = api.connector()
-
     document = connector.fetch(connector.discover()[0])
     records = connector.parse_notices(document)
-
     assert document.metadata["source_contract"] == "gwanbo_personnel_notice_list"
     assert document.metadata["list_total_count"] == "1"
     assert records[0].notice_id == "G-001"
@@ -154,9 +136,7 @@ def test_connector_uses_official_post_contract_without_authentication() -> None:
 def test_full_enumeration_is_complete_minimized_and_person_neutral(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "gwanbo.db")
     api = three_notice_api()
-
     result = GwanboPersonnelEnumerator(api.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.pages_committed == 2
     assert result.unique_records == 3
@@ -170,7 +150,6 @@ def test_full_enumeration_is_complete_minimized_and_person_neutral(tmp_path: Pat
     assert checkpoint.cursor == "2"
     assert checkpoint.metadata["expected_pages"] == 2
     assert checkpoint.metadata["list_total_count"] == 3
-
     observations = repository.feeder_observations(
         GwanboPersonnelEnumerator.FEEDER, "2026-08-01:2026-08-31"
     )
@@ -182,7 +161,6 @@ def test_full_enumeration_is_complete_minimized_and_person_neutral(tmp_path: Pat
     assert "orgnflPathUrlAddr" not in persisted
     assert "crtnYnPrnt" not in persisted
     assert SECRET not in persisted
-
     with repository.sessions() as session:
         sources = list(session.scalars(select(SourceRow)))
         snapshots = list(session.scalars(select(SourceSnapshotRow)))
@@ -201,16 +179,13 @@ def test_rerun_is_noop_and_changed_notice_creates_version(tmp_path: Path) -> Non
     second = enumerator.enumerate()
     api.pages[1][0] = notice("G-001", "고위공무원 인사발령 정정", revision_reason="정정")
     changed = enumerator.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
     assert changed.run.observations_created == 1
     assert changed.run.observations_unchanged == 2
     versions = repository.feeder_observations(
-        GwanboPersonnelEnumerator.FEEDER,
-        "2026-08-01:2026-08-31",
-        "G-001",
+        GwanboPersonnelEnumerator.FEEDER, "2026-08-01:2026-08-31", "G-001"
     )
     assert len(versions) == 2
     assert len({item.content_hash for item in versions}) == 2
@@ -221,17 +196,12 @@ def test_partial_failure_retains_checkpoint_and_resume_completes(tmp_path: Path)
     api = three_notice_api()
     api.fail_pages.add(2)
     enumerator = GwanboPersonnelEnumerator(api.connector(), repository)
-
     with pytest.raises(GwanboPersonnelError):
         enumerator.enumerate()
-
-    partial = repository.source_runs(
-        GwanboPersonnelEnumerator.FEEDER, "2026-08-01:2026-08-31"
-    )[-1]
+    partial = repository.source_runs(GwanboPersonnelEnumerator.FEEDER, "2026-08-01:2026-08-31")[-1]
     assert partial.status == SourceRunStatus.PARTIAL
     assert partial.checkpoint_after == "1"
     assert SECRET not in repr(partial.model_dump(mode="json"))
-
     api.fail_pages.clear()
     resumed = enumerator.enumerate(resume=True)
     assert resumed.run.status == SourceRunStatus.SUCCESS
@@ -247,11 +217,8 @@ def test_total_change_and_duplicate_notice_fail_closed(tmp_path: Path) -> None:
     with pytest.raises(GwanboCoverageError, match="total count changed"):
         GwanboPersonnelEnumerator(changing.connector(), total_repository).enumerate()
     assert total_repository.source_runs()[-1].status == SourceRunStatus.PARTIAL
-
     duplicate_repository = migrated_repository(tmp_path / "duplicate.db")
-    duplicate = GwanboApi(
-        {1: [notice("G-001", "인사발령")], 2: [notice("G-001", "인사발령")]}
-    )
+    duplicate = GwanboApi({1: [notice("G-001", "인사발령")], 2: [notice("G-001", "인사발령")]})
     with pytest.raises(GwanboCoverageError, match="duplicate Gwanbo notice id"):
         GwanboPersonnelEnumerator(
             duplicate.connector(page_size=1), duplicate_repository
@@ -259,9 +226,7 @@ def test_total_change_and_duplicate_notice_fail_closed(tmp_path: Path) -> None:
     assert duplicate_repository.source_runs()[-1].status == SourceRunStatus.PARTIAL
 
 
-def test_empty_official_shape_is_audited_and_policy_denial_precedes_network(
-    tmp_path: Path,
-) -> None:
+def test_empty_official_shape_is_audited_and_policy_denial_precedes_network(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "empty.db")
     empty = GwanboApi({})
     result = GwanboPersonnelEnumerator(empty.connector(), repository).enumerate()
@@ -269,16 +234,13 @@ def test_empty_official_shape_is_audited_and_policy_denial_precedes_network(
     assert result.pages_committed == 1
     assert result.unique_records == 0
     assert empty.calls == [1]
-
     blocked_repository = migrated_repository(tmp_path / "blocked.db")
     blocked_api = GwanboApi({})
     policy = gwanbo_personnel_policy().model_copy(
         update={"collection_mode": SourceCollectionMode.BLOCKED, "can_fetch": False}
     )
     with pytest.raises(PolicyDenied):
-        GwanboPersonnelEnumerator(
-            blocked_api.connector(), blocked_repository, policy
-        ).enumerate()
+        GwanboPersonnelEnumerator(blocked_api.connector(), blocked_repository, policy).enumerate()
     assert blocked_api.calls == []
     assert blocked_repository.source_runs() == []
 
@@ -292,9 +254,5 @@ def test_policy_blocks_unlicensed_downstream_uses_and_window_is_bounded() -> Non
     assert policy.can_show_excerpt is False
     assert policy.can_commercialize is False
     assert policy.license is None
-
     with pytest.raises(ValueError, match="three years"):
-        GwanboPersonnelConnector(
-            date_from=date(2020, 1, 1),
-            date_to=date(2026, 1, 1),
-        )
+        GwanboPersonnelConnector(date_from=date(2020, 1, 1), date_to=date(2026, 1, 1))

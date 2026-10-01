@@ -45,33 +45,24 @@ def _validate_base_url(value: str) -> str:
 
 
 def _visible_text(value: str) -> str:
-    without_tags = re.sub(r"<[^>]+>", " ", value)
-    return re.sub(r"\s+", " ", html.unescape(without_tags)).strip()
+    without_tags = re.sub("<[^>]+>", " ", value)
+    return re.sub("\\s+", " ", html.unescape(without_tags)).strip()
 
 
 def _require_text(body: str, required: Iterable[str], *, label: str) -> None:
     visible = _visible_text(body)
     missing = [item for item in required if item not in visible]
     if missing:
-        raise PublicBetaPreflightError(
-            f"{label} lacks required visible text: {', '.join(missing)}"
-        )
+        raise PublicBetaPreflightError(f"{label} lacks required visible text: {', '.join(missing)}")
 
 
 def _reject_tokens(body: str, forbidden: Iterable[str], *, label: str) -> None:
     found = [item for item in forbidden if item in body]
     if found:
-        raise PublicBetaPreflightError(
-            f"{label} exposes forbidden token(s): {', '.join(found)}"
-        )
+        raise PublicBetaPreflightError(f"{label} exposes forbidden token(s): {', '.join(found)}")
 
 
-def _get(
-    client: httpx.Client,
-    *,
-    path: str,
-    name: str,
-) -> tuple[PreflightCheck, str]:
+def _get(client: httpx.Client, *, path: str, name: str) -> tuple[PreflightCheck, str]:
     started = time.perf_counter()
     try:
         response = client.get(path)
@@ -79,15 +70,10 @@ def _get(
         raise PublicBetaPreflightError(f"{name} request failed") from exc
     elapsed_ms = int((time.perf_counter() - started) * 1000)
     if response.status_code != 200:
-        raise PublicBetaPreflightError(
-            f"{name} returned HTTP {response.status_code}"
-        )
+        raise PublicBetaPreflightError(f"{name} returned HTTP {response.status_code}")
     return (
         PreflightCheck(
-            name=name,
-            path=path,
-            http_status=response.status_code,
-            elapsed_ms=elapsed_ms,
+            name=name, path=path, http_status=response.status_code, elapsed_ms=elapsed_ms
         ),
         response.text,
     )
@@ -105,7 +91,6 @@ def run_public_beta_preflight(
     base_url = _validate_base_url(web_base_url)
     if timeout_seconds <= 0:
         raise PublicBetaPreflightError("timeout must be positive")
-
     checks: list[PreflightCheck] = []
     forbidden_tokens = (
         "TEL_NO",
@@ -114,7 +99,6 @@ def run_public_beta_preflight(
         "raw_payload",
         "private-ish@example.invalid",
     )
-
     with httpx.Client(
         base_url=base_url,
         timeout=timeout_seconds,
@@ -126,98 +110,55 @@ def run_public_beta_preflight(
         checks.append(check)
         _require_text(home, ("Civic Intel", "국감 2026"), label="home")
         _reject_tokens(home, forbidden_tokens, label="home")
-
         check, gukgam = _get(client, path="/gukgam/2026", name="gukgam_2026")
         checks.append(check)
         _require_text(
-            gukgam,
-            ("국감", "2026", "검증된 만큼만", "공식 기록상 연결만"),
-            label="gukgam_2026",
+            gukgam, ("국감", "2026", "검증된 만큼만", "공식 기록상 연결만"), label="gukgam_2026"
         )
         _reject_tokens(gukgam, forbidden_tokens, label="gukgam_2026")
-
         check, robots = _get(client, path="/robots.txt", name="robots")
         checks.append(check)
         check, sitemap = _get(client, path="/sitemap.xml", name="sitemap")
         checks.append(check)
-
         home_lower = home.casefold()
         if expect_indexing:
             if "noindex" in home_lower:
-                raise PublicBetaPreflightError(
-                    "indexing-enabled home still contains noindex"
-                )
-            if "rel=\"canonical\"" not in home_lower:
-                raise PublicBetaPreflightError(
-                    "indexing-enabled home lacks canonical link"
-                )
+                raise PublicBetaPreflightError("indexing-enabled home still contains noindex")
+            if 'rel="canonical"' not in home_lower:
+                raise PublicBetaPreflightError("indexing-enabled home lacks canonical link")
             if "Allow: /" not in robots or "Disallow: /admin/" not in robots:
-                raise PublicBetaPreflightError(
-                    "indexing-enabled robots contract is incomplete"
-                )
+                raise PublicBetaPreflightError("indexing-enabled robots contract is incomplete")
             if "Sitemap:" not in robots:
-                raise PublicBetaPreflightError(
-                    "indexing-enabled robots lacks sitemap"
-                )
+                raise PublicBetaPreflightError("indexing-enabled robots lacks sitemap")
             if "/gukgam/2026" not in sitemap:
-                raise PublicBetaPreflightError(
-                    "indexing-enabled sitemap lacks Gukgam route"
-                )
+                raise PublicBetaPreflightError("indexing-enabled sitemap lacks Gukgam route")
         else:
             if "noindex" not in home_lower:
-                raise PublicBetaPreflightError(
-                    "indexing-disabled home lacks noindex"
-                )
+                raise PublicBetaPreflightError("indexing-disabled home lacks noindex")
             if "Disallow: /" not in robots:
-                raise PublicBetaPreflightError(
-                    "indexing-disabled robots must disallow all"
-                )
+                raise PublicBetaPreflightError("indexing-disabled robots must disallow all")
             if "<url>" in sitemap:
-                raise PublicBetaPreflightError(
-                    "indexing-disabled sitemap must be empty"
-                )
-
+                raise PublicBetaPreflightError("indexing-disabled sitemap must be empty")
         if person_id:
-            check, person = _get(
-                client,
-                path=f"/people/{person_id}",
-                name="person_detail",
-            )
+            check, person = _get(client, path=f"/people/{person_id}", name="person_detail")
             checks.append(check)
-            _require_text(
-                person,
-                ("공식 기록상 연결", "Evidence"),
-                label="person_detail",
-            )
+            _require_text(person, ("공식 기록상 연결", "Evidence"), label="person_detail")
             _reject_tokens(person, forbidden_tokens, label="person_detail")
-
         if organization_id:
             check, organization = _get(
-                client,
-                path=f"/organizations/{organization_id}",
-                name="organization_detail",
+                client, path=f"/organizations/{organization_id}", name="organization_detail"
             )
             checks.append(check)
             _require_text(
-                organization,
-                ("공식 기록상 연결", "Evidence"),
-                label="organization_detail",
+                organization, ("공식 기록상 연결", "Evidence"), label="organization_detail"
             )
-            _reject_tokens(
-                organization,
-                forbidden_tokens,
-                label="organization_detail",
-            )
-
+            _reject_tokens(organization, forbidden_tokens, label="organization_detail")
     return {
         "status": "PASS",
         "web_base_url": base_url,
         "expect_indexing": expect_indexing,
         "checks": [check.to_dict() for check in checks],
-        "semantics": (
-            "READ_ONLY_HTTP_PREFLIGHT; this command does not mutate application data, "
-            "Railway configuration, indexing settings, or canonical evidence"
-        ),
+        "semantics": "READ_ONLY_HTTP_PREFLIGHT; this command does not mutate application data, Railway configuration, indexing settings, or canonical evidence",
     }
 
 
@@ -226,11 +167,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run read-only Civic Intel public-beta HTTP acceptance checks."
     )
     parser.add_argument("--web-base-url", required=True)
-    parser.add_argument(
-        "--expect-indexing",
-        choices=("enabled", "disabled"),
-        required=True,
-    )
+    parser.add_argument("--expect-indexing", choices=("enabled", "disabled"), required=True)
     parser.add_argument("--person-id")
     parser.add_argument("--organization-id")
     parser.add_argument("--timeout-seconds", type=float, default=20.0)
@@ -248,18 +185,13 @@ def main(argv: list[str] | None = None) -> int:
             timeout_seconds=args.timeout_seconds,
         )
     except PublicBetaPreflightError as exc:
-        print(
-            json.dumps(
-                {"status": "FAIL", "error": str(exc)},
-                ensure_ascii=False,
-                sort_keys=True,
-            )
-        )
+        print(json.dumps({"status": "FAIL", "error": str(exc)}, ensure_ascii=False, sort_keys=True))
         return 2
-
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+COMMAND_EFFECT = "READ_ONLY"

@@ -15,13 +15,13 @@ from packages.domain.contracts import (
     SourceSnapshot,
 )
 from packages.domain.enums import EpistemicStatus, EvidenceStance
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle
 from packages.verification.profile_target import (
     ProfileTargetObservation,
     build_profile_research_target,
 )
+from tests.support import ScenarioDatabase
 
 FIXTURE = Path(__file__).parent / "fixtures" / "reviewed_person_kim_hyunji_001.json"
 PERSON_ID = "00000000-0000-0000-0000-000000009201"
@@ -31,12 +31,12 @@ ASSEMBLY_AIDE_SOURCE = "20000000-0000-0000-0000-000000009203"
 PRESIDENTIAL_TRANSFER_SOURCE = "20000000-0000-0000-0000-000000009204"
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def load_bundle() -> ReviewedPersonBundle:
@@ -80,9 +80,7 @@ def test_bundle_separates_career_facts_allegation_and_response() -> None:
         if claim.predicate == "HELD_ROLE" and claim.object_text == "대통령비서실 제1부속실장"
     )
     allegation = next(claim for claim in bundle.claims if claim.predicate == "ALLEGATION")
-    response = next(
-        claim for claim in bundle.claims if claim.predicate == "RESPONSE_TO_ALLEGATION"
-    )
+    response = next(claim for claim in bundle.claims if claim.predicate == "RESPONSE_TO_ALLEGATION")
     career_facts = [
         claim
         for claim in bundle.claims
@@ -98,7 +96,6 @@ def test_bundle_separates_career_facts_allegation_and_response() -> None:
             ),
         }
     ]
-
     assert bundle.person.canonical_name == "김현지"
     assert bundle.person.birth_date is None
     assert current_role.epistemic_status == EpistemicStatus.FACT
@@ -113,13 +110,13 @@ def test_bundle_separates_career_facts_allegation_and_response() -> None:
     assert evidence[response.id].stance == EvidenceStance.SUPPORT
 
 
-def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(tmp_path: Path) -> None:
+def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(
+    tmp_path: Path,
+) -> None:
     repository = migrated_repository(tmp_path / "kim-hyunji.db")
     repository.import_reviewed_person(load_bundle())
-
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{PERSON_ID}").json()
-
     assert payload["canonical_name"] == "김현지"
     raw_allegation = next(item for item in payload["claims"] if item["predicate"] == "ALLEGATION")
     raw_response = next(
@@ -130,7 +127,6 @@ def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(tm
     assert raw_allegation["evidence"][0]["stance"] == "NEUTRAL"
     assert raw_response["epistemic_status"] == "FACT"
     assert raw_response["evidence"][0]["stance"] == "SUPPORT"
-
     sections = {item["id"]: item for item in payload["profile"]["sections"]}
     timeline = sections["career_timeline"]
     assert timeline["status"] == "AVAILABLE"
@@ -153,7 +149,6 @@ def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(tm
         [OFFICIAL_ROLE_SOURCE],
     ]
     assert sections["current_power_tasks"]["status"] == "UNKNOWN"
-
     controversy = sections["controversies"]
     assert controversy["status"] == "PARTIAL"
     assert [item["details"]["predicate"] for item in controversy["entries"]] == [
@@ -169,10 +164,8 @@ def test_reviewed_kim_hyunji_bundle_imports_with_attributable_career_timeline(tm
 def test_career_enrichment_does_not_infer_transfer_motive_or_older_roles(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "kim-hyunji-career.db")
     repository.import_reviewed_person(load_bundle())
-
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{PERSON_ID}").json()
-
     rendered = json.dumps(payload["profile"], ensure_ascii=False).casefold()
     assert "국감 회피" not in rendered
     assert "성남참여자치시민연대" not in rendered
@@ -187,7 +180,6 @@ def test_career_enrichment_does_not_infer_transfer_motive_or_older_roles(tmp_pat
 
 def test_source_policies_and_snapshots_remain_metadata_only() -> None:
     bundle = load_bundle()
-
     assert all(policy.can_store_metadata for policy in bundle.policies)
     assert all(not policy.can_store_fulltext for policy in bundle.policies)
     assert all(not policy.can_send_to_ai for policy in bundle.policies)

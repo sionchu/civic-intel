@@ -5,8 +5,8 @@ from pydantic import ValidationError
 from sqlalchemy import create_engine, inspect
 
 from packages.domain.contracts import Hypothesis, HypothesisAlternative, Person
-from packages.domain.db import Base
 from packages.domain.enums import EpistemicStatus, IdentityStatus
+from packages.persistence.models import Base
 
 
 def alternatives(labels=("H0", "H1", "H2")):

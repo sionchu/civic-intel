@@ -39,7 +39,6 @@ def _stop(process: subprocess.Popen) -> None:
     if process.poll() is not None:
         return
     if os.name == "nt":
-        # Only our recorded child process tree, including its owned private SSH forward.
         taskkill = str(Path(os.environ.get("WINDIR", "C:/Windows")) / "System32/taskkill.exe")
         subprocess.run(
             [taskkill, "/PID", str(process.pid), "/T", "/F"],
@@ -56,7 +55,7 @@ def _stop(process: subprocess.Popen) -> None:
 
 
 def _private_uri(line: str, port: int) -> str | None:
-    match = re.search(r"postgres(?:ql)?://[^\s\x1b]+", line)
+    match = re.search("postgres(?:ql)?://[^\\s\\x1b]+", line)
     if match is None:
         return None
     value = match.group(0).strip("\"'")
@@ -106,7 +105,7 @@ def _railway_tunnel(project: str, processes: list[subprocess.Popen]) -> str:
     def capture() -> None:
         assert process.stdout is not None
         for line in process.stdout:
-            lines.put(line[:10000])  # Never print or persist connection credentials.
+            lines.put(line[:10000])
 
     threading.Thread(target=capture, daemon=True).start()
     deadline = time.monotonic() + 60
@@ -182,7 +181,6 @@ def _recover_backend(
     processes: list[subprocess.Popen],
     attempts: int,
 ) -> int:
-    # Only restart our private read-only session. Never mutate DB, source jobs or cloud resources.
     while attempts < 2:
         attempts += 1
         for process in reversed(processes):
@@ -212,8 +210,14 @@ def main(argv: list[str] | None = None) -> int:
         type=UUID,
         help="Optional explicit Railway project; opens its existing staging/postgres private tunnel",
     )
-    parser.add_argument("--enable-writes", action="store_true", help="Enable confirmed admin commands; requires reviewed admin-receipt schema (0007/0008)")
-    parser.add_argument("--actor", default=getpass.getuser(), help="Local OS operator identity recorded in receipts")
+    parser.add_argument(
+        "--enable-writes",
+        action="store_true",
+        help="Enable confirmed admin commands; requires reviewed admin-receipt schema (0007/0008)",
+    )
+    parser.add_argument(
+        "--actor", default=getpass.getuser(), help="Local OS operator identity recorded in receipts"
+    )
     parser.add_argument("--api-port", type=int, default=8310)
     parser.add_argument("--web-port", type=int, default=3310)
     parser.add_argument(
@@ -222,7 +226,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Use the Next dev server instead of the built standalone artifact",
     )
     args = parser.parse_args(argv)
-    if not os.environ.get("DATABASE_URL") and not args.railway_project:
+    if not os.environ.get("DATABASE_URL") and (not args.railway_project):
         parser.error("Provide DATABASE_URL or --railway-project; no database is created or seeded")
     if os.environ.get("DATABASE_URL") and args.railway_project:
         parser.error("Choose DATABASE_URL or --railway-project, not both")
@@ -303,3 +307,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+COMMAND_EFFECT = "SCHEMA_OR_DEPLOY"

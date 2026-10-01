@@ -13,8 +13,8 @@ from packages.connectors.mois_organization_codes import (
     mois_organization_code_policy,
 )
 from packages.domain.enums import SourceCollectionMode, SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers.mois_organization_codes import (
     MoisOrganizationCoverageError,
     MoisOrganizationEnumerator,
@@ -71,10 +71,7 @@ class MoisApi:
             200,
             json={
                 "response": {
-                    "header": {
-                        "resultCode": "INFO-0",
-                        "resultMsg": "NORMAL SERVICE",
-                    },
+                    "header": {"resultCode": "INFO-0", "resultMsg": "NORMAL SERVICE"},
                     "body": {
                         "pageNo": page,
                         "numOfRows": page_size,
@@ -87,9 +84,7 @@ class MoisApi:
 
     def connector(self, *, page_size: int = 2) -> MoisOrganizationCodeConnector:
         return MoisOrganizationCodeConnector(
-            api_key=SECRET,
-            page_size=page_size,
-            transport=httpx.MockTransport(self.handle),
+            api_key=SECRET, page_size=page_size, transport=httpx.MockTransport(self.handle)
         )
 
 
@@ -105,47 +100,31 @@ def three_org_api() -> MoisApi:
     )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def enumerator(
-    api: MoisApi,
-    repository: SqlAlchemyRepository,
-    *,
-    policy=None,
+    api: MoisApi, repository: ScenarioDatabase, *, policy=None
 ) -> MoisOrganizationEnumerator:
-    return MoisOrganizationEnumerator(
-        api.connector(),
-        repository,
-        policy=policy,
-        max_pages=10,
-    )
+    return MoisOrganizationEnumerator(api.connector(), repository, policy=policy, max_pages=10)
 
 
-def test_full_current_universe_is_complete_minimized_and_not_materialized(
-    tmp_path: Path,
-) -> None:
+def test_full_current_universe_is_complete_minimized_and_not_materialized(tmp_path: Path) -> None:
     api = three_org_api()
     repository = migrated_repository(tmp_path / "mois-full.db")
-
     worker = enumerator(api, repository)
     result = worker.enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert worker.connector.page_no == 1
     assert result.pages_committed == 2
     assert result.unique_records == 3
     assert api.calls == [1, 2]
-
-    checkpoint = repository.source_checkpoint(
-        MoisOrganizationEnumerator.FEEDER,
-        SCOPE,
-    )
+    checkpoint = repository.source_checkpoint(MoisOrganizationEnumerator.FEEDER, SCOPE)
     assert checkpoint is not None
     assert checkpoint.cursor == "2"
     assert checkpoint.metadata["total_count"] == 3
@@ -155,20 +134,10 @@ def test_full_current_universe_is_complete_minimized_and_not_materialized(
     assert len(checkpoint.metadata["seen_provider_manifest_sha256"]) == 64
     assert len(checkpoint.metadata["page_fingerprints"]) == 2
     assert "seen_provider_hashes" not in checkpoint.metadata
-
-    observations = repository.feeder_observations(
-        MoisOrganizationEnumerator.FEEDER,
-        SCOPE,
-    )
-    assert [item.provider_record_key for item in observations] == [
-        "1741000",
-        "B555544",
-        "1Z00189",
-    ]
+    observations = repository.feeder_observations(MoisOrganizationEnumerator.FEEDER, SCOPE)
+    assert [item.provider_record_key for item in observations] == ["1741000", "B555544", "1Z00189"]
     assert observations[1].identity_hints["record_kind"] == "organization_registry_record"
-    assert observations[1].identity_hints["external_ids"] == {
-        "mois_org_cd": "B555544"
-    }
+    assert observations[1].identity_hints["external_ids"] == {"mois_org_cd": "B555544"}
     assert observations[1].identity_hints["materialization"] == "REVIEW_ONLY"
     assert observations[1].provider_observed_at is not None
     assert observations[1].provider_observed_at.date().isoformat() == "2026-01-01"
@@ -179,63 +148,40 @@ def test_full_current_universe_is_complete_minimized_and_not_materialized(
     assert repository.organizations() == []
 
 
-def test_unchanged_rerun_is_idempotent_and_changed_row_creates_version(
-    tmp_path: Path,
-) -> None:
+def test_unchanged_rerun_is_idempotent_and_changed_row_creates_version(tmp_path: Path) -> None:
     api = three_org_api()
     repository = migrated_repository(tmp_path / "mois-versions.db")
     worker = enumerator(api, repository)
-
     first = worker.enumerate()
     second = worker.enumerate()
     api.pages[1][0] = organization_row("1741000", "행정안전부 변경")
     changed = worker.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
     assert changed.run.observations_created == 1
     assert changed.run.observations_unchanged == 2
-    versions = repository.feeder_observations(
-        MoisOrganizationEnumerator.FEEDER,
-        SCOPE,
-        "1741000",
-    )
+    versions = repository.feeder_observations(MoisOrganizationEnumerator.FEEDER, SCOPE, "1741000")
     assert len(versions) == 2
-    assert {item.normalized["full_name"] for item in versions} == {
-        "행정안전부",
-        "행정안전부 변경",
-    }
+    assert {item.normalized["full_name"] for item in versions} == {"행정안전부", "행정안전부 변경"}
 
 
 def test_partial_failure_resumes_from_committed_manifest(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     api = three_org_api()
     api.fail_pages.add(2)
     repository = migrated_repository(tmp_path / "mois-resume.db")
     worker = enumerator(api, repository)
-
     with pytest.raises(MoisOrganizationCodeApiError):
         worker.enumerate()
-
-    partial = repository.source_runs(
-        MoisOrganizationEnumerator.FEEDER,
-        SCOPE,
-    )[-1]
-    checkpoint = repository.source_checkpoint(
-        MoisOrganizationEnumerator.FEEDER,
-        SCOPE,
-    )
+    partial = repository.source_runs(MoisOrganizationEnumerator.FEEDER, SCOPE)[-1]
+    checkpoint = repository.source_checkpoint(MoisOrganizationEnumerator.FEEDER, SCOPE)
     assert partial.status == SourceRunStatus.PARTIAL
     assert checkpoint is not None
     assert checkpoint.cursor == "1"
     assert checkpoint.metadata["seen_provider_count"] == 2
-    manifest = repository.feeder_observation_hash_manifest(
-        MoisOrganizationEnumerator.FEEDER,
-        SCOPE,
-    )
+    manifest = repository.feeder_observation_hash_manifest(MoisOrganizationEnumerator.FEEDER, SCOPE)
     assert len(manifest) == 2
     assert len({provider_record_key for provider_record_key, _ in manifest}) == 2
 
@@ -245,7 +191,6 @@ def test_partial_failure_resumes_from_committed_manifest(
     monkeypatch.setattr(repository, "feeder_observations", forbid_full_observation_load)
     api.fail_pages.clear()
     resumed = worker.enumerate(resume=True)
-
     assert resumed.run.status == SourceRunStatus.SUCCESS
     assert resumed.pages_committed == 1
     assert resumed.unique_records == 3
@@ -257,7 +202,6 @@ def test_resume_after_success_is_rejected(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "mois-success.db")
     worker = enumerator(api, repository)
     worker.enumerate()
-
     with pytest.raises(MoisOrganizationCoverageError, match="before the first successful"):
         worker.enumerate(resume=True)
 
@@ -270,14 +214,8 @@ def test_duplicate_org_code_across_pages_fails_closed(tmp_path: Path) -> None:
         }
     )
     repository = migrated_repository(tmp_path / "mois-duplicate.db")
-
     with pytest.raises(MoisOrganizationCoverageError, match="duplicate MOIS org_cd"):
-        MoisOrganizationEnumerator(
-            api.connector(page_size=1),
-            repository,
-            max_pages=10,
-        ).enumerate()
-
+        MoisOrganizationEnumerator(api.connector(page_size=1), repository, max_pages=10).enumerate()
     assert repository.source_runs()[-1].status == SourceRunStatus.PARTIAL
 
 
@@ -285,17 +223,13 @@ def test_policy_denial_happens_before_network_or_run(tmp_path: Path) -> None:
     api = three_org_api()
     repository = migrated_repository(tmp_path / "mois-policy.db")
     blocked = mois_organization_code_policy().model_copy(
-        update={
-            "collection_mode": SourceCollectionMode.BLOCKED,
-            "can_fetch": False,
-        }
+        update={"collection_mode": SourceCollectionMode.BLOCKED, "can_fetch": False}
     )
-
     with pytest.raises(PolicyDenied):
         enumerator(api, repository, policy=blocked).enumerate()
-
     assert api.calls == []
     assert repository.source_runs() == []
+
 
 def test_schema_0007_blocks_mois_l3_write_before_network(tmp_path: Path) -> None:
     database = tmp_path / "mois-schema-0007.db"
@@ -303,12 +237,10 @@ def test_schema_0007_blocks_mois_l3_write_before_network(tmp_path: Path) -> None
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "0007")
-    repository = SqlAlchemyRepository(database_url)
+    repository = ScenarioDatabase(database_url)
     api = three_org_api()
-
     with pytest.raises(MoisOrganizationCoverageError, match="revision 0008"):
         enumerator(api, repository).enumerate()
-
     assert api.calls == []
     assert repository.source_runs() == []
 
@@ -316,10 +248,8 @@ def test_schema_0007_blocks_mois_l3_write_before_network(tmp_path: Path) -> None
 def test_zero_result_current_scope_fails_closed(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "mois-empty.db")
     api = MoisApi({})
-
     with pytest.raises(MoisOrganizationCoverageError, match="must not be empty"):
         enumerator(api, repository).enumerate()
-
     run = repository.source_runs(MoisOrganizationEnumerator.FEEDER, SCOPE)[-1]
     assert run.status == SourceRunStatus.FAILED
     assert repository.source_checkpoint(MoisOrganizationEnumerator.FEEDER, SCOPE) is None

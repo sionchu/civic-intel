@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, time
 from math import ceil
 
-from sqlalchemy import text
-
+from packages.application.context import Application
+from packages.application.ingestion import SourceLifecycle
 from packages.connectors.mois_organization_codes import (
-    MissingMoisOrganizationCodeApiKey,
     MoisOrganizationCodeApiError,
     MoisOrganizationCodeConnector,
     MoisOrganizationCodeRecord,
@@ -18,7 +16,6 @@ from packages.connectors.mois_organization_codes import (
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
 from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
 
@@ -64,21 +61,12 @@ def normalized_mois_organization(record: MoisOrganizationCodeRecord) -> dict[str
 
 
 def mois_organization_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _manifest_sha256(hashes: dict[str, str]) -> str:
-    canonical = json.dumps(
-        sorted(hashes.items()),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(sorted(hashes.items()), ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -98,9 +86,8 @@ def _identity_hints(record: MoisOrganizationCodeRecord) -> dict[str, object]:
     }
 
 
-def _require_policy_reconciled_schema(repository: SqlAlchemyRepository) -> None:
-    with repository.engine.connect() as connection:
-        revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
+def _require_policy_reconciled_schema(repository: Application) -> None:
+    revision = repository.uows.schema_revision()
     if revision != "0008":
         raise MoisOrganizationCoverageError(
             "MOIS L3 writes require schema revision 0008 policy reconciliation"
@@ -116,7 +103,7 @@ class MoisOrganizationEnumerator:
     def __init__(
         self,
         connector: MoisOrganizationCodeConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         *,
         policy: SourcePolicy | None = None,
         max_pages: int = 500,
@@ -133,23 +120,25 @@ class MoisOrganizationEnumerator:
         self.max_pages = max_pages
 
     def enumerate(self, *, resume: bool = False) -> MoisOrganizationEnumerationResult:
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="MOIS organization-code enumeration did not complete",
+        )
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the MOIS connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
         _require_policy_reconciled_schema(self.repository)
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.SCOPE_KEY)
-        prior_runs = self.repository.source_runs(self.FEEDER, self.SCOPE_KEY)
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.SCOPE_KEY)
+        prior_runs = self.repository.acquisition.source_runs(self.FEEDER, self.SCOPE_KEY)
         if resume and prior_checkpoint is None:
             raise MoisOrganizationCoverageError("MOIS resume requires a committed checkpoint")
         if resume and any(run.status == SourceRunStatus.SUCCESS for run in prior_runs):
             raise MoisOrganizationCoverageError(
                 "MOIS resume is only allowed before the first successful full enumeration"
             )
-
-        run = self.repository.start_source_run(
+        run = lifecycle.start(
             self.FEEDER,
             self.SCOPE_KEY,
             {
@@ -166,7 +155,6 @@ class MoisOrganizationEnumerator:
             expected_pages: int | None = None
             seen_hashes: dict[str, str] = {}
             page_fingerprints: list[str] = []
-
             if resume:
                 assert prior_checkpoint is not None
                 if prior_checkpoint.cursor is None:
@@ -182,9 +170,7 @@ class MoisOrganizationEnumerator:
                     expected_manifest = str(
                         prior_checkpoint.metadata["seen_provider_manifest_sha256"]
                     )
-                    page_fingerprints = list(
-                        prior_checkpoint.metadata["page_fingerprints"]
-                    )
+                    page_fingerprints = list(prior_checkpoint.metadata["page_fingerprints"])
                 except (KeyError, TypeError, ValueError):
                     raise MoisOrganizationCoverageError(
                         "MOIS resume checkpoint metadata is invalid"
@@ -194,10 +180,9 @@ class MoisOrganizationEnumerator:
                     checkpoint_page_size != self.connector.page_size
                     or checkpoint_contract != self.SOURCE_CONTRACT
                     or checkpoint_selector != "0"
-                    or len(page_fingerprints) != committed_pages
+                    or (len(page_fingerprints) != committed_pages)
                     or any(
-                        not isinstance(item, str) or len(item) != 64
-                        for item in page_fingerprints
+                        not isinstance(item, str) or len(item) != 64 for item in page_fingerprints
                     )
                 ):
                     raise MoisOrganizationCoverageError(
@@ -207,9 +192,8 @@ class MoisOrganizationEnumerator:
                     raise MoisOrganizationCoverageError(
                         "MOIS resume checkpoint already covers the full scope"
                     )
-                prior_manifest = self.repository.feeder_observation_hash_manifest(
-                    self.FEEDER,
-                    self.SCOPE_KEY,
+                prior_manifest = self.repository.acquisition.feeder_observation_hash_manifest(
+                    self.FEEDER, self.SCOPE_KEY
                 )
                 for provider_record_key, content_hash in prior_manifest:
                     existing = seen_hashes.get(provider_record_key)
@@ -229,7 +213,6 @@ class MoisOrganizationEnumerator:
                     raise MoisOrganizationCoverageError(
                         "MOIS resume manifest does not match committed observations"
                     )
-
             page_no = start_page
             while True:
                 page_connector = self.connector.for_page(page_no)
@@ -246,15 +229,11 @@ class MoisOrganizationEnumerator:
                 if metadata.get("provider_page_no") != str(page_no):
                     raise MoisOrganizationCoverageError("MOIS provider page is inconsistent")
                 if metadata.get("provider_page_size") != str(self.connector.page_size):
-                    raise MoisOrganizationCoverageError(
-                        "MOIS provider page size is inconsistent"
-                    )
+                    raise MoisOrganizationCoverageError("MOIS provider page size is inconsistent")
                 try:
                     total_count = int(metadata["total_count"])
                 except (KeyError, TypeError, ValueError):
-                    raise MoisOrganizationCoverageError(
-                        "MOIS total count is unavailable"
-                    ) from None
+                    raise MoisOrganizationCoverageError("MOIS total count is unavailable") from None
                 if total_count <= 0:
                     raise MoisOrganizationCoverageError(
                         "MOIS current organization universe must not be empty"
@@ -276,17 +255,13 @@ class MoisOrganizationEnumerator:
                     raise MoisOrganizationCoverageError(
                         "MOIS API returned an unexpected extra page"
                     )
-
                 records = page_connector.parse_organizations(document)
                 expected_row_count = min(
                     self.connector.page_size,
-                    max(0, expected_total - ((page_no - 1) * self.connector.page_size)),
+                    max(0, expected_total - (page_no - 1) * self.connector.page_size),
                 )
                 if len(records) != expected_row_count:
-                    raise MoisOrganizationCoverageError(
-                        "MOIS page row count is incomplete"
-                    )
-
+                    raise MoisOrganizationCoverageError("MOIS page row count is incomplete")
                 page_hashes: dict[str, str] = {}
                 normalized_by_key: dict[str, dict[str, object]] = {}
                 for record in records:
@@ -310,17 +285,10 @@ class MoisOrganizationEnumerator:
                         )
                     page_hashes[record.org_code] = content_hash
                     normalized_by_key[record.org_code] = normalized
-
                 page_fingerprint = _manifest_sha256(page_hashes)
                 if page_fingerprint in page_fingerprints:
-                    raise MoisOrganizationCoverageError(
-                        "MOIS API returned duplicate page content"
-                    )
-
-                ingestion = IngestionPipeline(page_connector).ingest_document(
-                    document,
-                    self.policy,
-                )
+                    raise MoisOrganizationCoverageError("MOIS API returned duplicate page content")
+                ingestion = IngestionPipeline(page_connector).ingest_document(document, self.policy)
                 observations = [
                     FeederObservation(
                         feeder=self.FEEDER,
@@ -336,7 +304,6 @@ class MoisOrganizationEnumerator:
                     )
                     for record in records
                 ]
-
                 next_seen_hashes = seen_hashes | page_hashes
                 next_page_fingerprints = [*page_fingerprints, page_fingerprint]
                 checkpoint_metadata = {
@@ -349,7 +316,7 @@ class MoisOrganizationEnumerator:
                     "seen_provider_manifest_sha256": _manifest_sha256(next_seen_hashes),
                     "page_fingerprints": next_page_fingerprints,
                 }
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -361,7 +328,6 @@ class MoisOrganizationEnumerator:
                 pages_committed += 1
                 seen_hashes = next_seen_hashes
                 page_fingerprints = next_page_fingerprints
-
                 if page_no == expected_pages:
                     if len(seen_hashes) != expected_total:
                         raise MoisOrganizationCoverageError(
@@ -369,74 +335,10 @@ class MoisOrganizationEnumerator:
                         )
                     break
                 page_no += 1
-
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
-            return MoisOrganizationEnumerationResult(
-                completed,
-                pages_committed,
-                len(seen_hashes),
-            )
+            completed = lifecycle.succeed()
+            return MoisOrganizationEnumerationResult(completed, pages_committed, len(seen_hashes))
         except Exception as exc:
-            status = (
-                SourceRunStatus.PARTIAL
-                if pages_committed or prior_checkpoint is not None
-                else SourceRunStatus.FAILED
-            )
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="MOIS organization-code enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Persist the complete current MOIS standard-organization-code universe."
-    )
-    parser.add_argument("--page-size", type=int, default=1000)
-    parser.add_argument("--max-pages", type=int, default=500)
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    connector = MoisOrganizationCodeConnector(
-        page_no=1,
-        page_size=args.page_size,
-    )
-    try:
-        result = MoisOrganizationEnumerator(
-            connector,
-            SqlAlchemyRepository(args.database_url),
-            max_pages=args.max_pages,
-        ).enumerate(resume=args.resume)
-    except (
-        MissingMoisOrganizationCodeApiKey,
-        MoisOrganizationCodeApiError,
-        PolicyDenied,
-        ValueError,
-    ) as exc:
-        raise SystemExit(str(exc)) from None
-    print(
-        json.dumps(
-            {
-                "run_id": str(result.run.id),
-                "status": result.run.status.value,
-                "scope_key": result.run.scope_key,
-                "pages_committed": result.pages_committed,
-                "unique_records": result.unique_records,
-            },
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

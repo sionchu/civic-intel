@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import argparse
 import json
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 
 from packages.connectors.nkis_research import (
-    MissingNkisApiKey,
-    NkisApiError,
     NkisResearchOutput,
     NkisResearchReportConnector,
     nkis_research_policy,
@@ -40,24 +37,16 @@ class StagedResearchOutput:
                 "name": self.output.middle_category_name,
             },
             "original_url": self.output.original_url,
-            "researcher_candidate": (
-                {
-                    "canonical_name": self.candidate.canonical_name,
-                    "organization": self.candidate.organization,
-                    "office": self.candidate.office,
-                    "identity_anchors": list(self.candidate.career_anchors),
-                    "semantics": (
-                        "NKIS가 이 연구성과의 단일 연구책임자로 표시한 사람 후보이다. "
-                        "발행기관 재직 사실은 별도 공식 프로필로 검증해야 한다."
-                    ),
-                }
-                if self.candidate
-                else None
-            ),
-            "provenance_semantics": (
-                "NKIS 연구성과 메타데이터는 연구성과·책임자 표기를 증명하지만, "
-                "발행기관의 고용관계나 현재 재직을 자동 증명하지 않는다."
-            ),
+            "researcher_candidate": {
+                "canonical_name": self.candidate.canonical_name,
+                "organization": self.candidate.organization,
+                "office": self.candidate.office,
+                "identity_anchors": list(self.candidate.career_anchors),
+                "semantics": "NKIS가 이 연구성과의 단일 연구책임자로 표시한 사람 후보이다. 발행기관 재직 사실은 별도 공식 프로필로 검증해야 한다.",
+            }
+            if self.candidate
+            else None,
+            "provenance_semantics": "NKIS 연구성과 메타데이터는 연구성과·책임자 표기를 증명하지만, 발행기관의 고용관계나 현재 재직을 자동 증명하지 않는다.",
         }
 
 
@@ -86,21 +75,17 @@ def repeated_research_topics(
     outputs: list[NkisResearchOutput], *, minimum_outputs: int = 2
 ) -> list[dict[str, object]]:
     """Derive review candidates without pretending name-text grouping resolves identity."""
-
     if minimum_outputs < 2:
         raise ValueError("research topic inference requires at least two outputs")
-
     unique_outputs: dict[tuple[str, str], NkisResearchOutput] = {}
     for output in outputs:
-        unique_outputs[(output.output_id, output.sequence)] = output
-
+        unique_outputs[output.output_id, output.sequence] = output
     grouped_topics: dict[tuple[str, str], list[str]] = defaultdict(list)
     for output in unique_outputs.values():
         researcher = responsible_researcher_candidate_name(output.responsible_researcher_text)
         topic = output.middle_category_name or output.large_category_name
         if researcher and topic:
-            grouped_topics[(researcher, output.publisher)].append(topic)
-
+            grouped_topics[researcher, output.publisher].append(topic)
     derived: list[dict[str, object]] = []
     for (researcher, publisher), topics in sorted(grouped_topics.items()):
         for topic, count in sorted(Counter(topics).items()):
@@ -119,9 +104,7 @@ def repeated_research_topics(
 
 class PolicyResearchStager:
     def __init__(
-        self,
-        connector: NkisResearchReportConnector,
-        policy: SourcePolicy | None = None,
+        self, connector: NkisResearchReportConnector, policy: SourcePolicy | None = None
     ) -> None:
         self.connector = connector
         self.policy = policy or nkis_research_policy()
@@ -146,38 +129,3 @@ class PolicyResearchStager:
 
 def render_policy_research_json(payload: dict[str, object]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Stage NKIS research reports for review.")
-    parser.add_argument("--title")
-    parser.add_argument("--publisher")
-    parser.add_argument("--publisher-code")
-    parser.add_argument("--year-begin", type=int)
-    parser.add_argument("--year-end", type=int)
-    parser.add_argument("--page-no", type=int, default=1)
-    parser.add_argument("--row-count", type=int, default=30)
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    connector = NkisResearchReportConnector(
-        page_no=args.page_no,
-        row_count=args.row_count,
-        title=args.title,
-        publisher=args.publisher,
-        publisher_code=args.publisher_code,
-        year_begin=args.year_begin,
-        year_end=args.year_end,
-    )
-    try:
-        payload = PolicyResearchStager(connector).stage()
-    except (MissingNkisApiKey, NkisApiError, PolicyDenied, ValueError) as exc:
-        raise SystemExit(str(exc)) from None
-    print(render_policy_research_json(payload))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

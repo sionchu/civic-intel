@@ -24,10 +24,7 @@ def _safe_record(record: AssemblyScheduleRecord) -> dict[str, object]:
     }
 
 
-def build_probe_report(
-    *,
-    connector: OpenAssemblyScheduleConnector,
-) -> dict[str, object]:
+def build_probe_report(*, connector: OpenAssemblyScheduleConnector) -> dict[str, object]:
     document = connector.fetch(connector.discover()[0])
     records = connector.parse_schedules(document)
     candidates = connector.gukgam_candidates(records)
@@ -36,11 +33,9 @@ def build_probe_report(
         "api_code": connector.API_CODE,
         "source_contract": document.metadata.get("source_contract"),
         "query": {
-            "schedule_date": (
-                connector.schedule_date.isoformat()
-                if connector.schedule_date is not None
-                else None
-            ),
+            "schedule_date": connector.schedule_date.isoformat()
+            if connector.schedule_date is not None
+            else None,
             "committee": connector.committee,
             "page_size": connector.page_size,
         },
@@ -51,19 +46,13 @@ def build_probe_report(
         },
         "gukgam_candidate_count": len(candidates),
         "gukgam_candidates": [_safe_record(record) for record in candidates],
-        "semantics": (
-            "DISCOVERY_ONLY; schedule candidates do not publish audited organizations, "
-            "witnesses, reference persons, or identity links"
-        ),
+        "semantics": "DISCOVERY_ONLY; schedule candidates do not publish audited organizations, witnesses, reference persons, or identity links",
     }
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description=(
-            "Read one bounded National Assembly schedule slice and print safe Gukgam "
-            "discovery candidates without persistence."
-        )
+        description="Read one bounded National Assembly schedule slice and print safe Gukgam discovery candidates without persistence."
     )
     parser.add_argument("--date", type=date.fromisoformat, required=True)
     parser.add_argument("--committee", required=True)
@@ -78,27 +67,18 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--committee must not be empty")
     if not 1 <= args.page_size <= 100:
         parser.error("--page-size must be between 1 and 100")
-
     connector = OpenAssemblyScheduleConnector(
-        schedule_date=args.date,
-        committee=args.committee.strip(),
-        page_size=args.page_size,
+        schedule_date=args.date, committee=args.committee.strip(), page_size=args.page_size
     )
     try:
         report = build_probe_report(connector=connector)
     except (AssemblyApiError, MissingAssemblyApiKey, ValueError) as exc:
         parser.error(str(exc))
-
-    print(
-        json.dumps(
-            report,
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
-    )
+    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+COMMAND_EFFECT = "READ_ONLY"

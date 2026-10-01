@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from packages.domain.db import Base
+from packages.persistence.models import Base
 from packages.persistence.database_url import normalize_database_url
 
 config = context.config
@@ -35,9 +35,7 @@ def run_migrations_online() -> None:
     section = config.get_section(config.config_ini_section)
     if section is None:
         raise RuntimeError("Alembic configuration section is missing")
-    connectable = engine_from_config(
-        section, prefix="sqlalchemy.", poolclass=pool.NullPool
-    )
+    connectable = engine_from_config(section, prefix="sqlalchemy.", poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():

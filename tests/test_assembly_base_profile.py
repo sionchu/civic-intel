@@ -9,22 +9,21 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from apps.api.main import create_app
+from packages.application.assembly_base_profile import AssemblyBaseProfilePublisher
 from packages.connectors.open_assembly import OpenAssemblyMemberConnector
 from packages.domain.enums import MaterializationAction
-from packages.persistence import SqlAlchemyRepository
-from packages.verification.assembly_base_profile import (
-    AssemblyBaseProfileError,
-    AssemblyBaseProfilePublisher,
-)
+from packages.verification.assembly_base_profile import AssemblyBaseProfileError
+from tests.roster_scenario import enumerate_materialize_publish
+from tests.support import ScenarioDatabase
 from workers.assembly_roster import AssemblyRosterEnumerator
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def member_row(
@@ -70,16 +69,14 @@ class SinglePageRoster:
         )
 
 
-def test_base_profile_publishes_atomic_claims_and_projects_evidence(
-    tmp_path: Path,
-) -> None:
+def test_base_profile_publishes_atomic_claims_and_projects_evidence(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "base-profile.db")
     roster = SinglePageRoster(member_row("M-001", "가회원"))
-    enumeration = AssemblyRosterEnumerator(roster.connector(), repository).enumerate_and_materialize()
-
+    enumeration = enumerate_materialize_publish(
+        AssemblyRosterEnumerator(roster.connector(), repository)
+    )
     publisher = AssemblyBaseProfilePublisher(repository)
     result = publisher.publish_latest_successful()
-
     assert result.observations_considered == 1
     assert result.observations_published == 1
     assert result.published_claims == 4
@@ -100,7 +97,6 @@ def test_base_profile_publishes_atomic_claims_and_projects_evidence(
         assert len(evidence) == 1
         assert evidence[0].feeder_observation_id == enumeration.enumeration.observation_ids[0]
         assert evidence[0].snapshot_id is not None
-
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{person_id}").json()
         profile = payload["profile"]
@@ -127,7 +123,6 @@ def test_base_profile_publishes_atomic_claims_and_projects_evidence(
         assert "normalized" not in str(payload)
         assert "TEL_NO" not in str(payload)
         assert "E_MAIL" not in str(payload)
-
         list_payload = client.get("/people").json()
         discovery = list_payload[0]["discovery"]
         assert discovery["facets"]["role"]["value"] == "국회의원"
@@ -145,12 +140,10 @@ def test_base_profile_rerun_is_idempotent(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "base-profile-rerun.db")
     roster = SinglePageRoster(member_row("M-001", "가회원"))
     enumerator = AssemblyRosterEnumerator(roster.connector(), repository)
-    enumerator.enumerate_and_materialize()
+    enumerate_materialize_publish(enumerator)
     publisher = AssemblyBaseProfilePublisher(repository)
-
     first = publisher.publish_latest_successful()
     second = publisher.publish_latest_successful()
-
     assert first.published_claims == 4
     assert first.unchanged_claims == 0
     assert second.published_claims == 4
@@ -162,24 +155,14 @@ def test_base_profile_preserves_missingness_without_inference(tmp_path: Path) ->
     row = member_row("M-001", "가회원", party="", reelection="", committees="")
     repository = migrated_repository(tmp_path / "base-profile-missing.db")
     roster = SinglePageRoster(row)
-    AssemblyRosterEnumerator(roster.connector(), repository).enumerate_and_materialize()
-
+    enumerate_materialize_publish(AssemblyRosterEnumerator(roster.connector(), repository))
     result = AssemblyBaseProfilePublisher(repository).publish_latest_successful()
-
     assert result.published_claims == 1
-    assert result.missing_field_counts == {
-        "party": 1,
-        "committees": 1,
-        "reelection": 1,
-    }
+    assert result.missing_field_counts == {"party": 1, "committees": 1, "reelection": 1}
     person = repository.public_people()[0]
     with TestClient(create_app(repository)) as client:
         profile = client.get(f"/people/{person.id}").json()["profile"]
-        overview = next(
-            item
-            for item in profile["sections"]
-            if item["id"] == "overview"
-        )
+        overview = next(item for item in profile["sections"] if item["id"] == "overview")
     assert overview["status"] == "PARTIAL"
     assert [entry["details"]["field_name"] for entry in overview["entries"]] == ["district"]
     current_role = next(item for item in profile["sections"] if item["id"] == "current_role")
@@ -197,16 +180,13 @@ def test_changed_observation_version_fails_closed(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "base-profile-version.db")
     roster = SinglePageRoster(member_row("M-001", "가회원"))
     enumerator = AssemblyRosterEnumerator(roster.connector(), repository)
-    enumerator.enumerate_and_materialize()
+    enumerate_materialize_publish(enumerator)
     publisher = AssemblyBaseProfilePublisher(repository)
     publisher.publish_latest_successful()
     before = repository.claims(published_only=True, current_only=True)
-
     roster.row["POLY_NM"] = "변경정당"
-    changed = enumerator.enumerate_and_materialize()
+    changed = enumerate_materialize_publish(enumerator)
     assert changed.outcome_counts()[MaterializationAction.AUTO_LINK.value] == 1
-
     with pytest.raises(AssemblyBaseProfileError, match="immutable observation version"):
         publisher.publish_latest_successful()
-
     assert repository.claims(published_only=True, current_only=True) == before

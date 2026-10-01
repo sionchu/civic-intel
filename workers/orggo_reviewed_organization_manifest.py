@@ -1,24 +1,18 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from uuid import UUID, uuid5
 
+from packages.application.context import Application
 from packages.domain.contracts import Organization
-from packages.persistence import SqlAlchemyRepository
 
-ORGGO_REVIEWED_ORGANIZATION_MANIFEST_SCHEMA = (
-    "civic.orggo.reviewed_organization_manifest.v1"
-)
-ORGGO_REVIEWED_ORGANIZATION_DRY_RUN_SEMANTICS = (
-    "REVIEWED_ORGGO_ORGANIZATION_MANIFEST_DRY_RUN_V1"
-)
+ORGGO_REVIEWED_ORGANIZATION_MANIFEST_SCHEMA = "civic.orggo.reviewed_organization_manifest.v1"
+ORGGO_REVIEWED_ORGANIZATION_DRY_RUN_SEMANTICS = "REVIEWED_ORGGO_ORGANIZATION_MANIFEST_DRY_RUN_V1"
 ORGGO_ORGANIZATION_NAMESPACE = UUID("5936f87c-1ef9-5103-b25d-0971ba976fb1")
-_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_SHA256 = re.compile("^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -53,17 +47,14 @@ class ReviewedOrgGoOrganizationManifest:
 
     def sha256(self) -> str:
         payload = json.dumps(
-            self.canonical_payload(),
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
+            self.canonical_payload(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
         ).encode("utf-8")
         return hashlib.sha256(payload).hexdigest()
 
 
 def organization_id_for_orggo_code(org_code: str) -> UUID:
     normalized = org_code.strip()
-    if not re.fullmatch(r"[0-9]{7}", normalized):
+    if not re.fullmatch("[0-9]{7}", normalized):
         raise ValueError("org.go org_code must be seven digits")
     return uuid5(ORGGO_ORGANIZATION_NAMESPACE, normalized)
 
@@ -81,9 +72,7 @@ def _sha256_text(value: object, field: str) -> str:
     return normalized
 
 
-def parse_reviewed_orggo_organization_manifest(
-    raw: object,
-) -> ReviewedOrgGoOrganizationManifest:
+def parse_reviewed_orggo_organization_manifest(raw: object) -> ReviewedOrgGoOrganizationManifest:
     if not isinstance(raw, dict):
         raise TypeError("org.go Organization manifest must be a JSON object")
     if set(raw) != {"schema", "proposal_core_sha256", "items"}:
@@ -94,17 +83,10 @@ def parse_reviewed_orggo_organization_manifest(
     raw_items = raw.get("items")
     if not isinstance(raw_items, list) or not raw_items:
         raise ValueError("org.go Organization manifest items must be a non-empty list")
-
     items: list[ReviewedOrgGoOrganizationManifestItem] = []
     seen_codes: set[str] = set()
     seen_names: set[str] = set()
-    expected_fields = {
-        "organization_name",
-        "category",
-        "org_code",
-        "chart_id",
-        "source_locator",
-    }
+    expected_fields = {"organization_name", "category", "org_code", "chart_id", "source_locator"}
     for index, raw_item in enumerate(raw_items, start=1):
         if not isinstance(raw_item, dict):
             raise TypeError(f"org.go Organization manifest item {index} must be an object")
@@ -171,12 +153,8 @@ class ReviewedOrgGoOrganizationDryRun:
             "proposal_core_sha256": self.manifest.proposal_core_sha256,
             "item_count": len(self.prepared_items),
             "current_organization_count": self.current_organization_count,
-            "organizations_to_create": sum(
-                item.action == "CREATE" for item in self.prepared_items
-            ),
-            "organizations_to_reuse": sum(
-                item.action == "REUSE" for item in self.prepared_items
-            ),
+            "organizations_to_create": sum(item.action == "CREATE" for item in self.prepared_items),
+            "organizations_to_reuse": sum(item.action == "REUSE" for item in self.prepared_items),
             "items": [item.to_dict() for item in self.prepared_items],
             "all_preflights_passed": True,
             "write_performed": False,
@@ -188,18 +166,14 @@ class ReviewedOrgGoOrganizationDryRun:
 
 
 def _canonical_json_sha256(payload: object) -> str:
-    raw = json.dumps(
-        payload,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
     return hashlib.sha256(raw).hexdigest()
 
 
 def _proposal_items_by_org_code(
-    proposal_raw: object,
-    expected_sha256: str,
+    proposal_raw: object, expected_sha256: str
 ) -> tuple[int, dict[str, dict[str, object]]]:
     if not isinstance(proposal_raw, dict):
         raise TypeError("org.go proposal artifact must be a JSON object")
@@ -230,24 +204,20 @@ def _proposal_items_by_org_code(
         if code in by_code:
             raise ValueError("org.go proposal artifact duplicates org_code")
         by_code[code] = item
-    return current_count, by_code
+    return (current_count, by_code)
 
 
 def prepare_reviewed_orggo_organization_manifest(
-    repository: SqlAlchemyRepository,
-    manifest: ReviewedOrgGoOrganizationManifest,
-    proposal_raw: object,
+    repository: Application, manifest: ReviewedOrgGoOrganizationManifest, proposal_raw: object
 ) -> ReviewedOrgGoOrganizationDryRun:
     proposal_current_count, proposal_by_code = _proposal_items_by_org_code(
-        proposal_raw,
-        manifest.proposal_core_sha256,
+        proposal_raw, manifest.proposal_core_sha256
     )
-    current = repository.organizations(current_only=True)
+    current = repository.public.organizations(current_only=True)
     current_by_id = {item.id: item for item in current}
     current_by_name: dict[str, list[Organization]] = {}
     for organization in current:
         current_by_name.setdefault(organization.name.strip(), []).append(organization)
-
     prepared: list[PreparedOrgGoOrganization] = []
     for item in manifest.items:
         proposal_item = proposal_by_code.get(item.org_code)
@@ -272,7 +242,6 @@ def prepare_reviewed_orggo_organization_manifest(
             raise ValueError("org.go reviewed proposal item status is invalid")
         if proposal_item.get("current_exact_canonical_match_count") != 0:
             raise ValueError("org.go reviewed proposal item has a canonical-name conflict")
-
         organization_id = organization_id_for_orggo_code(item.org_code)
         same_id = current_by_id.get(organization_id)
         same_name = current_by_name.get(item.organization_name, [])
@@ -292,53 +261,13 @@ def prepare_reviewed_orggo_organization_manifest(
         prepared.append(
             PreparedOrgGoOrganization(
                 manifest_item=item,
-                organization=Organization(
-                    id=organization_id,
-                    name=item.organization_name,
-                ),
+                organization=Organization(id=organization_id, name=item.organization_name),
                 action=action,
             )
         )
     reused_count = sum(item.action == "REUSE" for item in prepared)
     if len(current) != proposal_current_count + reused_count:
-        raise ValueError(
-            "current Organization universe changed outside this reviewed manifest"
-        )
+        raise ValueError("current Organization universe changed outside this reviewed manifest")
     return ReviewedOrgGoOrganizationDryRun(
-        manifest=manifest,
-        prepared_items=tuple(prepared),
-        current_organization_count=len(current),
+        manifest=manifest, prepared_items=tuple(prepared), current_organization_count=len(current)
     )
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Preflight an explicit reviewed org.go Organization manifest without writes."
-    )
-    parser.add_argument("--manifest", required=True, type=Path)
-    parser.add_argument("--proposal", required=True, type=Path)
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    try:
-        manifest_raw = json.loads(args.manifest.read_text(encoding="utf-8"))
-        proposal_raw = json.loads(args.proposal.read_text(encoding="utf-8"))
-        manifest = parse_reviewed_orggo_organization_manifest(manifest_raw)
-        repository = SqlAlchemyRepository(args.database_url)
-        dry_run = prepare_reviewed_orggo_organization_manifest(
-            repository,
-            manifest,
-            proposal_raw,
-        )
-    except (OSError, RuntimeError, TypeError, ValueError, json.JSONDecodeError) as exc:
-        parser.error(str(exc))
-    print(json.dumps(dry_run.to_dict(), ensure_ascii=False, sort_keys=True))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

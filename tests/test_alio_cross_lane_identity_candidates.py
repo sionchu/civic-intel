@@ -1,29 +1,26 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from datetime import date
+from types import SimpleNamespace
 from uuid import UUID
 
 import pytest
 
 import workers.alio_cross_lane_identity_candidates as worker
-from packages.domain.contracts import Claim, ClaimEvidence, Organization, Person
-from packages.domain.enums import (
-    EpistemicStatus,
-    EvidenceStance,
-    IdentityStatus,
-    PublicationStatus,
+from packages.application.identity_candidates import (
+    DISCOVERY_REASON,
+    AlioCandidatePipelineError,
+    generate_alio_cross_lane_candidates,
 )
+from packages.domain.contracts import Claim, ClaimEvidence, Organization, Person
+from packages.domain.enums import EpistemicStatus, EvidenceStance, IdentityStatus, PublicationStatus
 from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SCOPE,
     ALIO_EXECUTIVE_SEMANTIC_SCOPE,
     ALIO_EXECUTIVE_SOURCE_CONTRACT,
-)
-from packages.verification.alio_person_candidates import (
-    DISCOVERY_REASON,
-    AlioCandidatePipelineError,
-    generate_alio_cross_lane_candidates,
 )
 
 
@@ -56,7 +53,7 @@ class FakeCandidateRepository:
         self, organization_ids: object
     ) -> dict[UUID, tuple[tuple[Claim, ...], dict[UUID, tuple[ClaimEvidence, ...]]]]:
         self.calls.append("published_organization_claim_contexts")
-        requested = tuple(organization_ids)  # type: ignore[arg-type]
+        requested = tuple(organization_ids)
         return {organization_id: self._contexts[organization_id] for organization_id in requested}
 
     def public_people(self) -> list[Person]:
@@ -73,6 +70,14 @@ class FakeCandidateRepository:
             if observation_id in self._linked_by_observation
         }
 
+    @property
+    def uows(self):
+        return self
+
+    @contextmanager
+    def __call__(self, *, read_only=False):
+        assert read_only is True
+        yield SimpleNamespace(public=self, identity=self)
 
 
 def alio_claim(
@@ -112,22 +117,21 @@ def alio_claim(
         source_id=stable_id(300 + claim_number),
         stance=EvidenceStance.SUPPORT,
     )
-    return claim, evidence
+    return (claim, evidence)
 
 
 def repository_for(
-    claim_specs: tuple[tuple[Organization, dict[str, object]], ...],
-    people: tuple[Person, ...],
+    claim_specs: tuple[tuple[Organization, dict[str, object]], ...], people: tuple[Person, ...]
 ) -> FakeCandidateRepository:
     grouped: dict[UUID, list[tuple[Claim, ClaimEvidence]]] = {}
     organizations: list[Organization] = []
     for organization, spec in claim_specs:
         organizations.append(organization)
-        claim, evidence = alio_claim(organization, **spec)  # type: ignore[arg-type]
+        claim, evidence = alio_claim(organization, **spec)
         grouped.setdefault(organization.id, []).append((claim, evidence))
     contexts = {
         organization_id: (
-            tuple(claim for claim, _ in items),
+            tuple((claim for claim, _ in items)),
             {claim.id: (evidence,) for claim, evidence in items},
         )
         for organization_id, items in grouped.items()
@@ -144,12 +148,9 @@ def test_exact_name_overlap_generates_one_review_candidate() -> None:
         identity_status=IdentityStatus.RESOLVED,
     )
     repository = repository_for(
-        ((organization, {"claim_number": 1, "name": "김테스트"}),),
-        (person,),
+        ((organization, {"claim_number": 1, "name": "김테스트"}),), (person,)
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    result = generate_alio_cross_lane_candidates(repository)
     assert len(result.candidates) == 1
     candidate = result.candidates[0]
     assert candidate.discovery_reason == DISCOVERY_REASON
@@ -167,14 +168,13 @@ def test_exact_name_overlap_generates_one_review_candidate() -> None:
 
 def test_different_name_generates_no_pair() -> None:
     organization = Organization(id=stable_id(3), name="테스트기관")
-    person = Person(id=stable_id(4), canonical_name="이테스트", identity_status=IdentityStatus.RESOLVED)
-    repository = repository_for(
-        ((organization, {"claim_number": 2, "name": "김테스트"}),),
-        (person,),
+    person = Person(
+        id=stable_id(4), canonical_name="이테스트", identity_status=IdentityStatus.RESOLVED
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    repository = repository_for(
+        ((organization, {"claim_number": 2, "name": "김테스트"}),), (person,)
+    )
+    result = generate_alio_cross_lane_candidates(repository)
     assert result.alio_executive_claims_considered == 1
     assert result.public_people_considered == 1
     assert result.candidates == ()
@@ -182,14 +182,14 @@ def test_different_name_generates_no_pair() -> None:
 
 def test_same_name_with_different_roles_stays_review() -> None:
     organization = Organization(id=stable_id(5), name="다른기관")
-    person = Person(id=stable_id(6), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(6), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     repository = repository_for(
         ((organization, {"claim_number": 3, "name": "김테스트", "position": "비상임이사"}),),
         (person,),
     )
-
-    candidate = generate_alio_cross_lane_candidates(repository).candidates[0]  # type: ignore[arg-type]
-
+    candidate = generate_alio_cross_lane_candidates(repository).candidates[0]
     assert candidate.position_text == "비상임이사"
     assert candidate.organization_name == "다른기관"
     assert candidate.identity_status == IdentityStatus.REVIEW
@@ -198,24 +198,22 @@ def test_same_name_with_different_roles_stays_review() -> None:
 
 def test_distinct_alio_claim_ids_remain_distinct_candidate_observations() -> None:
     organization = Organization(id=stable_id(7), name="중복기관")
-    person = Person(id=stable_id(8), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(8), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     first = alio_claim(organization, claim_number=4, name="김테스트", position="사장")
     second = alio_claim(organization, claim_number=5, name="김테스트", position="상임이사")
     repository = FakeCandidateRepository(
         (organization,),
-        (
-            {
-                organization.id: (
-                    (first[0], second[0]),
-                    {first[0].id: (first[1],), second[0].id: (second[1],)},
-                )
-            }
-        ),
+        {
+            organization.id: (
+                (first[0], second[0]),
+                {first[0].id: (first[1],), second[0].id: (second[1],)},
+            )
+        },
         (person,),
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    result = generate_alio_cross_lane_candidates(repository)
     assert len(result.candidates) == 2
     assert {item.alio_claim_id for item in result.candidates} == {first[0].id, second[0].id}
     assert len({item.candidate_key for item in result.candidates}) == 2
@@ -223,21 +221,20 @@ def test_distinct_alio_claim_ids_remain_distinct_candidate_observations() -> Non
 
 def test_masked_or_vacant_row_without_public_name_is_excluded() -> None:
     organization = Organization(id=stable_id(9), name="공석기관")
-    person = Person(id=stable_id(10), canonical_name="공석", identity_status=IdentityStatus.RESOLVED)
-    repository = repository_for(
-        ((organization, {"claim_number": 6, "name": ""}),),
-        (person,),
+    person = Person(
+        id=stable_id(10), canonical_name="공석", identity_status=IdentityStatus.RESOLVED
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    repository = repository_for(((organization, {"claim_number": 6, "name": ""}),), (person,))
+    result = generate_alio_cross_lane_candidates(repository)
     assert result.alio_executive_claims_considered == 0
     assert result.candidates == ()
 
 
 def test_non_alio_organization_claim_is_excluded() -> None:
     organization = Organization(id=stable_id(11), name="분류기관")
-    person = Person(id=stable_id(12), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(12), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     repository = repository_for(
         (
             (
@@ -251,46 +248,40 @@ def test_non_alio_organization_claim_is_excluded() -> None:
         ),
         (person,),
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    result = generate_alio_cross_lane_candidates(repository)
     assert result.candidates == ()
     assert result.alio_executive_claims_considered == 0
 
 
 def test_non_current_or_unpublished_alio_claim_is_excluded() -> None:
     organization = Organization(id=stable_id(19), name="비공개기관")
-    person = Person(id=stable_id(20), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(20), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     claim, evidence = alio_claim(organization, claim_number=11, name="김테스트")
     claim = claim.model_copy(update={"publication_status": PublicationStatus.DRAFT})
     repository = FakeCandidateRepository(
-        (organization,),
-        ({organization.id: ((claim,), {claim.id: (evidence,)})}),
-        (person,),
+        (organization,), {organization.id: ((claim,), {claim.id: (evidence,)})}, (person,)
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    result = generate_alio_cross_lane_candidates(repository)
     assert result.alio_executive_claims_considered == 0
     assert result.candidates == ()
 
 
 def test_command_is_read_only_and_has_no_commit_option(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     organization = Organization(id=stable_id(13), name="읽기기관")
-    person = Person(id=stable_id(14), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(14), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     repository = repository_for(
-        ((organization, {"claim_number": 8, "name": "김테스트"}),),
-        (person,),
+        ((organization, {"claim_number": 8, "name": "김테스트"}),), (person,)
     )
     before = (repository._organizations, repository._contexts, repository._people)
-    monkeypatch.setattr(worker, "SqlAlchemyRepository", lambda _url: repository)
-
+    monkeypatch.setattr(worker, "application", lambda _url: repository)
     assert worker.main(["--database-url", "sqlite:///read-only.db"]) == 0
     report = json.loads(capsys.readouterr().out)
-
     assert report["status"] == "REVIEW_ONLY"
     assert report["candidate_pairs"] == 1
     assert (repository._organizations, repository._contexts, repository._people) == before
@@ -303,38 +294,37 @@ def test_command_is_read_only_and_has_no_commit_option(
 
 def test_identical_runs_have_byte_equivalent_json() -> None:
     organization = Organization(id=stable_id(15), name="결정기관")
-    person = Person(id=stable_id(16), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(16), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     first_repository = repository_for(
-        ((organization, {"claim_number": 9, "name": "김테스트"}),),
-        (person,),
+        ((organization, {"claim_number": 9, "name": "김테스트"}),), (person,)
     )
     second_repository = repository_for(
-        ((organization, {"claim_number": 9, "name": "김테스트"}),),
-        (person,),
+        ((organization, {"claim_number": 9, "name": "김테스트"}),), (person,)
     )
-
     first = json.dumps(
-        generate_alio_cross_lane_candidates(first_repository).to_dict(),  # type: ignore[arg-type]
+        generate_alio_cross_lane_candidates(first_repository).to_dict(),
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
     )
     second = json.dumps(
-        generate_alio_cross_lane_candidates(second_repository).to_dict(),  # type: ignore[arg-type]
+        generate_alio_cross_lane_candidates(second_repository).to_dict(),
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
     )
-
     assert first == second
 
 
 def test_resolved_without_bridge_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
     organization = Organization(id=stable_id(17), name="차단기관")
-    person = Person(id=stable_id(18), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(18), canonical_name="김테스트", identity_status=IdentityStatus.RESOLVED
+    )
     repository = repository_for(
-        ((organization, {"claim_number": 10, "name": "김테스트"}),),
-        (person,),
+        ((organization, {"claim_number": 10, "name": "김테스트"}),), (person,)
     )
 
     class UnexpectedResolution:
@@ -343,16 +333,18 @@ def test_resolved_without_bridge_fails_closed(monkeypatch: pytest.MonkeyPatch) -
         reasons = ("name_match",)
 
     monkeypatch.setattr(
-        "packages.verification.alio_person_candidates.resolve_cross_lane_identity",
+        "packages.application.identity_candidates.resolve_cross_lane_identity",
         lambda *_args, **_kwargs: UnexpectedResolution(),
     )
-
     with pytest.raises(AlioCandidatePipelineError, match="bridge evidence"):
-        generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
+        generate_alio_cross_lane_candidates(repository)
+
 
 def test_existing_observation_link_is_not_reoffered_as_cross_lane_candidate() -> None:
     organization = Organization(id=stable_id(31), name="연결기관")
-    person = Person(id=stable_id(32), canonical_name="김연결", identity_status=IdentityStatus.RESOLVED)
+    person = Person(
+        id=stable_id(32), canonical_name="김연결", identity_status=IdentityStatus.RESOLVED
+    )
     claim, evidence = alio_claim(organization, claim_number=20, name="김연결")
     assert evidence.feeder_observation_id is None
     observation_id = stable_id(900)
@@ -363,8 +355,6 @@ def test_existing_observation_link_is_not_reoffered_as_cross_lane_candidate() ->
         (person,),
         {observation_id: frozenset({person.id})},
     )
-
-    result = generate_alio_cross_lane_candidates(repository)  # type: ignore[arg-type]
-
+    result = generate_alio_cross_lane_candidates(repository)
     assert result.candidates == ()
     assert "active_person_ids_by_observation" in repository.calls

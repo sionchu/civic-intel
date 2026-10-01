@@ -1,4 +1,4 @@
-.PHONY: test lint typecheck quality migrate api-dev web-dev web-verify verify
+.PHONY: test lint typecheck quality architecture migrate api-dev web-dev web-verify verify
 
 test:
 	python -m pytest
@@ -7,10 +7,13 @@ lint:
 	python -m ruff check apps packages workers tests
 
 typecheck:
-	python -m mypy packages workers apps/api
+	python -m mypy packages workers apps/api apps/cli
 
 quality:
 	python -m packages.verification.quality
+
+architecture:
+	python -m packages.verification.architecture
 
 migrate:
 	python -m alembic upgrade head
@@ -27,5 +30,5 @@ web-verify:
 	npm --prefix apps/web test
 	npm --prefix apps/web run build
 
-verify: lint typecheck test quality web-verify
+verify: lint typecheck test quality architecture web-verify
 

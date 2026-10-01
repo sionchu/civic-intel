@@ -39,6 +39,8 @@ class FakeReviewRepository:
         hash_manifest: list[tuple[str, str]] | None = None,
         observations: dict[UUID, FeederObservation] | None = None,
     ) -> None:
+        self.public = self
+        self.acquisition = self
         self._claims = claims or []
         self._checkpoint = checkpoint
         self._run = run
@@ -67,6 +69,8 @@ class FakeReviewRepository:
 
     def feeder_observation(self, observation_id: UUID) -> FeederObservation | None:
         return self._observations.get(observation_id)
+
+
 def _review_item(
     *,
     review_key: str,
@@ -132,13 +136,9 @@ def test_gukgam_current_review_excludes_existing_claim_and_keeps_no_write() -> N
             ),
         ),
     )
-    repository = FakeReviewRepository(
-        claims=[_published_gukgam_claim(existing_key)]
-    )
+    repository = FakeReviewRepository(claims=[_published_gukgam_claim(existing_key)])
 
-    result = operator_review._gukgam_claim_review_inspection(
-        repository, [organization], review
-    )
+    result = operator_review._gukgam_claim_review_inspection(repository, [organization], review)
 
     assert result["status"] == "HUMAN_REVIEW_REQUIRED_NO_WRITE"
     assert result["item_count"] == 1
@@ -147,6 +147,8 @@ def test_gukgam_current_review_excludes_existing_claim_and_keeps_no_write() -> N
     assert result["claim_commit_authorized"] is False
     assert result["items"][0]["review_key"] == pending_key
     assert len(result["manifest_sha256"]) == 64
+
+
 def _mois_observation() -> FeederObservation:
     return FeederObservation(
         id=MOIS_OBSERVATION_ID,
@@ -217,6 +219,8 @@ def _mois_artifact() -> dict[str, object]:
         "ambiguous_items": [],
         "limitations": [],
     }
+
+
 def _mois_review() -> GukgamOrganizationBindingReviewReport:
     return GukgamOrganizationBindingReviewReport(
         organization_universe_count=0,
@@ -230,9 +234,7 @@ def _mois_review() -> GukgamOrganizationBindingReviewReport:
                 review_key="schedule:4:audited-target:1",
                 name="아직없는기관",
                 match_class=NO_EXACT,
-                observation_id=UUID(
-                    "20000000-0000-0000-0000-000000000002"
-                ),
+                observation_id=UUID("20000000-0000-0000-0000-000000000002"),
             ),
         ),
     )
@@ -248,9 +250,7 @@ def _mois_repository() -> FakeReviewRepository:
         metadata={
             "total_count": 1,
             "seen_provider_count": 1,
-            "seen_provider_manifest_sha256": operator_review._provider_manifest_sha256(
-                manifest
-            ),
+            "seen_provider_manifest_sha256": operator_review._provider_manifest_sha256(manifest),
             "expected_pages": 1,
             "source_contract": "mois_standard_organization_code_v1",
             "stop_selt": "0",
@@ -285,9 +285,7 @@ def test_mois_current_review_revalidates_provider_and_occurrences(
     )
     monkeypatch.setattr(operator_review, "MOIS_PROPOSAL", artifact_path)
 
-    result = operator_review._mois_review_inspection(
-        _mois_repository(), [], _mois_review()
-    )
+    result = operator_review._mois_review_inspection(_mois_repository(), [], _mois_review())
 
     assert result["status"] == "HUMAN_REVIEW_REQUIRED_NO_WRITE"
     assert result["proposal_count"] == 1
@@ -310,6 +308,8 @@ def test_mois_current_review_revalidates_provider_and_occurrences(
             "observation_id": str(GUKGAM_OBSERVATION_ID),
         }
     ]
+
+
 def test_mois_current_review_fails_closed_when_no_exact_set_drifts(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -330,9 +330,7 @@ def test_mois_current_review_fails_closed_when_no_exact_set_drifts(
         ),
     )
 
-    result = operator_review._mois_review_inspection(
-        _mois_repository(), [], changed_review
-    )
+    result = operator_review._mois_review_inspection(_mois_repository(), [], changed_review)
 
     assert result["status"] == "CURRENT_REVIEW_DRIFT"
     assert result["write_performed"] is False

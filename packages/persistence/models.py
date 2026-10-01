@@ -135,9 +135,7 @@ class SourceCheckpointRow(Base):
     cursor: Mapped[str | None] = mapped_column(Text)
     metadata_json: Mapped[dict] = mapped_column(JSON)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    last_run_id: Mapped[str | None] = mapped_column(
-        ForeignKey("source_runs.id"), index=True
-    )
+    last_run_id: Mapped[str | None] = mapped_column(ForeignKey("source_runs.id"), index=True)
 
 
 class FeederObservationRow(Base):
@@ -173,12 +171,8 @@ class FeederObservationRow(Base):
 class IdentityReviewItemRow(Base):
     __tablename__ = "identity_review_items"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    observation_id: Mapped[str] = mapped_column(
-        ForeignKey("feeder_observations.id"), index=True
-    )
-    candidate_person_id: Mapped[str | None] = mapped_column(
-        ForeignKey("people.id"), index=True
-    )
+    observation_id: Mapped[str] = mapped_column(ForeignKey("feeder_observations.id"), index=True)
+    candidate_person_id: Mapped[str | None] = mapped_column(ForeignKey("people.id"), index=True)
     reason_code: Mapped[str] = mapped_column(String(100), index=True)
     details_json: Mapped[dict] = mapped_column(JSON)
     status: Mapped[str] = mapped_column(String(32), index=True)
@@ -190,15 +184,11 @@ class IdentityReviewItemRow(Base):
 class PersonObservationLinkRow(Base):
     __tablename__ = "person_observation_links"
     __table_args__ = (
-        UniqueConstraint(
-            "person_id", "observation_id", name="uq_person_observation_links_pair"
-        ),
+        UniqueConstraint("person_id", "observation_id", name="uq_person_observation_links_pair"),
     )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     person_id: Mapped[str] = mapped_column(ForeignKey("people.id"), index=True)
-    observation_id: Mapped[str] = mapped_column(
-        ForeignKey("feeder_observations.id"), index=True
-    )
+    observation_id: Mapped[str] = mapped_column(ForeignKey("feeder_observations.id"), index=True)
     action: Mapped[str] = mapped_column(String(40), index=True)
     decision_class: Mapped[str] = mapped_column(String(80), index=True)
     linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -227,9 +217,7 @@ class ClaimRow(TemporalMixin, Base):
     )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     person_id: Mapped[str | None] = mapped_column(ForeignKey("people.id"), index=True)
-    organization_id: Mapped[str | None] = mapped_column(
-        ForeignKey("organizations.id"), index=True
-    )
+    organization_id: Mapped[str | None] = mapped_column(ForeignKey("organizations.id"), index=True)
     proposition: Mapped[str] = mapped_column(Text)
     subject: Mapped[str] = mapped_column(Text)
     predicate: Mapped[str] = mapped_column(String(120), index=True)
@@ -310,6 +298,7 @@ class HypothesisEvidenceRow(Base):
 
 class AdminOperationRow(Base):
     """Append-only receipt written atomically with a successful operator command."""
+
     __tablename__ = "admin_operations"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     actor: Mapped[str] = mapped_column(String(100), index=True)

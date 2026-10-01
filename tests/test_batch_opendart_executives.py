@@ -17,15 +17,15 @@ from packages.connectors.open_dart_corporate import (
     OpenDartCorporateConnector,
     open_dart_corporate_policy,
 )
-from packages.domain.db import SourceRow, SourceSnapshotRow
 from packages.domain.enums import (
     IdentityReviewStatus,
     MaterializationAction,
     MaterializationDecisionClass,
     SourceRunStatus,
 )
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourceRow, SourceSnapshotRow
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers.corporate_talent import OpenDartExecutiveEnumerator
 
 SECRET = "dart-secret-must-not-persist"
@@ -34,13 +34,7 @@ PRIVATE_FIELD = "private@example.invalid"
 
 def corporation_archive(rows: list[dict[str, str]]) -> bytes:
     row_xml = "".join(
-        "<list>"
-        f"<corp_code>{row['corp_code']}</corp_code>"
-        f"<corp_name>{row['corp_name']}</corp_name>"
-        f"<corp_eng_name>{row.get('corp_eng_name', '')}</corp_eng_name>"
-        f"<stock_code>{row.get('stock_code', '')}</stock_code>"
-        f"<modify_date>{row['modify_date']}</modify_date>"
-        "</list>"
+        f"<list><corp_code>{row['corp_code']}</corp_code><corp_name>{row['corp_name']}</corp_name><corp_eng_name>{row.get('corp_eng_name', '')}</corp_eng_name><stock_code>{row.get('stock_code', '')}</stock_code><modify_date>{row['modify_date']}</modify_date></list>"
         for row in rows
     )
     stream = BytesIO()
@@ -50,12 +44,7 @@ def corporation_archive(rows: list[dict[str, str]]) -> bytes:
 
 
 def executive_row(
-    corp_code: str,
-    corp_name: str,
-    receipt_no: str,
-    name: str,
-    *,
-    career: str,
+    corp_code: str, corp_name: str, receipt_no: str, name: str, *, career: str
 ) -> dict[str, object]:
     return {
         "rcept_no": receipt_no,
@@ -109,18 +98,10 @@ class FakeOpenDartProvider:
                 "message": "정상",
                 "list": [
                     executive_row(
-                        "00000001",
-                        "알파테크",
-                        "20260831000001",
-                        "김대표",
-                        career="알파산업 부사장",
+                        "00000001", "알파테크", "20260831000001", "김대표", career="알파산업 부사장"
                     ),
                     executive_row(
-                        "00000001",
-                        "알파테크",
-                        "20260831000001",
-                        "이사외",
-                        career="알파연구소장",
+                        "00000001", "알파테크", "20260831000001", "이사외", career="알파연구소장"
                     ),
                 ],
             },
@@ -130,11 +111,7 @@ class FakeOpenDartProvider:
                 "message": "정상",
                 "list": [
                     executive_row(
-                        "00000003",
-                        "감마테크",
-                        "20260831000003",
-                        "박대표",
-                        career="감마산업 전무",
+                        "00000003", "감마테크", "20260831000003", "박대표", career="감마산업 전무"
                     )
                 ],
             },
@@ -152,7 +129,7 @@ class FakeOpenDartProvider:
         if request.url.path == "/api/exctvSttus.json":
             assert request.url.params["bsns_year"] == "2026"
             assert request.url.params["reprt_code"] == "11012"
-            if self.fail_once_for == corp_code and not self.failed:
+            if self.fail_once_for == corp_code and (not self.failed):
                 self.failed = True
                 raise httpx.ReadError("synthetic provider failure", request=request)
             assert corp_code is not None
@@ -176,19 +153,16 @@ class FakeOpenDartProvider:
         )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def enumerator(
-    provider: FakeOpenDartProvider,
-    repository: SqlAlchemyRepository,
-    *,
-    policy=None,
+    provider: FakeOpenDartProvider, repository: ScenarioDatabase, *, policy=None
 ) -> OpenDartExecutiveEnumerator:
     return OpenDartExecutiveEnumerator(
         provider.universe_connector(),
@@ -203,10 +177,8 @@ def enumerator(
 def test_corp_code_master_uses_exact_zip_contract_and_sorted_unique_universe() -> None:
     provider = FakeOpenDartProvider()
     connector = provider.universe_connector()
-
     document = connector.fetch(connector.discover()[0])
     corporations = connector.parse_corporations(document)
-
     assert [item.corp_code for item in corporations] == ["00000001", "00000002", "00000003"]
     assert corporations[0].stock_code == "123456"
     assert corporations[2].stock_code is None
@@ -224,9 +196,7 @@ def test_full_corp_master_scope_persists_complete_minimized_executive_observatio
 ) -> None:
     provider = FakeOpenDartProvider()
     repository = migrated_repository(tmp_path / "full.db")
-
     result = enumerator(provider, repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.corporations_committed == 3
     assert result.corporations_covered == 3
@@ -258,7 +228,6 @@ def test_full_corp_master_scope_persists_complete_minimized_executive_observatio
     assert SECRET not in payload
     assert "employee" not in payload.casefold()
     assert "compensation" not in payload.casefold()
-
     with repository.sessions() as session:
         sources = list(session.scalars(select(SourceRow)))
         snapshots = list(session.scalars(select(SourceSnapshotRow)))
@@ -281,22 +250,17 @@ def test_unchanged_rerun_is_idempotent_and_changed_disclosure_row_is_immutable(
     provider = FakeOpenDartProvider()
     repository = migrated_repository(tmp_path / "versions.db")
     worker = enumerator(provider, repository)
-
     first = worker.enumerate()
     second = worker.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
     first_row = provider.executives["00000001"]["list"][0]
     assert isinstance(first_row, dict)
     first_row["main_career"] = "변경된 회사 공시 주요경력"
-
     changed = worker.enumerate()
     versions = repository.feeder_observations(
-        OpenDartExecutiveEnumerator.FEEDER,
-        changed.run.scope_key,
-        "00000001:20260831000001:1",
+        OpenDartExecutiveEnumerator.FEEDER, changed.run.scope_key, "00000001:20260831000001:1"
     )
     assert changed.run.observations_created == 1
     assert changed.run.observations_unchanged == 2
@@ -309,16 +273,13 @@ def test_partial_failure_resumes_from_last_committed_corporation(tmp_path: Path)
     provider.fail_once_for = "00000002"
     repository = migrated_repository(tmp_path / "resume.db")
     worker = enumerator(provider, repository)
-
     with pytest.raises(DartApiError, match="request failed"):
         worker.enumerate()
-
     partial = repository.source_runs(OpenDartExecutiveEnumerator.FEEDER, worker.scope_key)[-1]
     checkpoint = repository.source_checkpoint(OpenDartExecutiveEnumerator.FEEDER, worker.scope_key)
     assert partial.status == SourceRunStatus.PARTIAL
     assert checkpoint is not None
     assert checkpoint.cursor == "1"
-
     resumed = worker.enumerate(resume=True)
     assert resumed.run.status == SourceRunStatus.SUCCESS
     assert resumed.corporations_committed == 2
@@ -333,7 +294,6 @@ def test_resume_fails_closed_when_corporation_universe_changes(tmp_path: Path) -
     worker = enumerator(provider, repository)
     with pytest.raises(DartApiError):
         worker.enumerate()
-
     provider.corporations[0] = {**provider.corporations[0], "corp_name": "감마테크변경"}
     with pytest.raises(DartApiError, match="universe changed"):
         worker.enumerate(resume=True)
@@ -355,7 +315,6 @@ def test_checkpoint_does_not_advance_when_corporation_commit_fails(
     monkeypatch.setattr(repository, "commit_source_page", fail_second_corporation)
     with pytest.raises(RuntimeError, match="synthetic commit failure"):
         enumerator(provider, repository).enumerate()
-
     checkpoint = repository.source_checkpoint(
         OpenDartExecutiveEnumerator.FEEDER, "all_corporations:2026:11012"
     )
@@ -373,7 +332,6 @@ def test_duplicate_corporation_code_and_mismatched_executive_company_fail_closed
         duplicate_provider.universe_connector().fetch(
             duplicate_provider.universe_connector().discover()[0]
         )
-
     mismatch_provider = FakeOpenDartProvider()
     mismatch_row = mismatch_provider.executives["00000001"]["list"][0]
     assert isinstance(mismatch_row, dict)
@@ -392,7 +350,6 @@ def test_policy_denial_and_missing_key_happen_before_network_or_run(
     )
     with pytest.raises(MissingDartApiKey):
         missing.fetch(missing.discover()[0])
-
     provider = FakeOpenDartProvider()
     repository = migrated_repository(tmp_path / "policy.db")
     denied = open_dart_corporate_policy().model_copy(update={"can_fetch": False})
@@ -411,9 +368,7 @@ def test_opendart_identity_materialization_is_review_required_without_person_cre
     observation = repository.feeder_observations(
         OpenDartExecutiveEnumerator.FEEDER, result.run.scope_key
     )[0]
-
     materialized = repository.materialize_feeder_observation(observation.id)
-
     assert materialized.decision.action == MaterializationAction.REVIEW_REQUIRED
     assert materialized.decision.decision_class == MaterializationDecisionClass.UNSUPPORTED_FEEDER
     assert materialized.review_item_id is not None
@@ -422,14 +377,13 @@ def test_opendart_identity_materialization_is_review_required_without_person_cre
     assert len(reviews) == 1
     assert reviews[0].observation_id == observation.id
 
+
 def test_corp_code_master_accepts_current_six_character_alphanumeric_stock_code() -> None:
     provider = FakeOpenDartProvider()
     provider.corporations[1]["stock_code"] = "0068Y0"
     connector = provider.universe_connector()
-
     document = connector.fetch(connector.discover()[0])
     corporations = connector.parse_corporations(document)
-
     target = next(item for item in corporations if item.corp_code == "00000001")
     assert target.stock_code == "0068Y0"
 
@@ -438,9 +392,9 @@ def test_corp_code_master_rejects_non_six_character_or_symbol_stock_code() -> No
     provider = FakeOpenDartProvider()
     provider.corporations[1]["stock_code"] = "0068-0"
     connector = provider.universe_connector()
-
     with pytest.raises(DartApiError, match="uppercase alphanumeric"):
         connector.fetch(connector.discover()[0])
+
 
 def test_live_korean_tenure_end_date_is_parsed() -> None:
     provider = FakeOpenDartProvider()
@@ -448,15 +402,12 @@ def test_live_korean_tenure_end_date_is_parsed() -> None:
     assert isinstance(row, dict)
     row["tenure_end_on"] = "2027년 03월 25일"
     connector = provider.executive_connector("00000001")
-
     document = connector.fetch(connector.discover()[0])
     records = connector.parse(document)
-
     assert records[0].tenure_end_on.isoformat() == "2027-03-25"
 
-def test_listed_only_scope_filters_corp_master_before_executive_requests(
-    tmp_path: Path,
-) -> None:
+
+def test_listed_only_scope_filters_corp_master_before_executive_requests(tmp_path: Path) -> None:
     provider = FakeOpenDartProvider()
     repository = migrated_repository(tmp_path / "listed-only.db")
     worker = OpenDartExecutiveEnumerator(
@@ -467,9 +418,7 @@ def test_listed_only_scope_filters_corp_master_before_executive_requests(
         executive_connector_factory=provider.executive_connector,
         listed_only=True,
     )
-
     result = worker.enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.run.scope_key == "listed_corporations:2026:11012"
     assert result.corporations_committed == 2
@@ -477,20 +426,17 @@ def test_listed_only_scope_filters_corp_master_before_executive_requests(
     assert result.companies_with_executives == 1
     assert result.companies_without_executives == 1
     assert result.unique_records == 2
-
     checkpoint = repository.source_checkpoint(worker.FEEDER, worker.scope_key)
     assert checkpoint is not None
     assert checkpoint.cursor == "2"
     assert checkpoint.metadata["corporation_total"] == 2
     assert checkpoint.metadata["source_contract"] == worker.LISTED_SOURCE_CONTRACT
     assert checkpoint.metadata["universe_mode"] == "LISTED_ONLY"
-
     executive_requests = [
         corp_code for path, corp_code in provider.requests if path == "/api/exctvSttus.json"
     ]
     assert executive_requests == ["00000001", "00000002"]
     assert "00000003" not in executive_requests
-
     observations = repository.feeder_observations(worker.FEEDER, worker.scope_key)
     assert {item.normalized["corp_code"] for item in observations} == {"00000001"}
     assert all(item.normalized["stock_code"] == "123456" for item in observations)
@@ -508,18 +454,14 @@ def test_listed_only_scope_resumes_with_filtered_universe(tmp_path: Path) -> Non
         executive_connector_factory=provider.executive_connector,
         listed_only=True,
     )
-
     with pytest.raises(DartApiError, match="request failed"):
         worker.enumerate()
-
     checkpoint = repository.source_checkpoint(worker.FEEDER, worker.scope_key)
     assert checkpoint is not None
     assert checkpoint.cursor == "1"
     assert checkpoint.metadata["corporation_total"] == 2
     assert checkpoint.metadata["universe_mode"] == "LISTED_ONLY"
-
     resumed = worker.enumerate(resume=True)
-
     assert resumed.run.status == SourceRunStatus.SUCCESS
     assert resumed.corporations_committed == 1
     assert resumed.corporations_covered == 2

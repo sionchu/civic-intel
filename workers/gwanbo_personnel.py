@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from math import ceil
 
+from packages.application.context import Application
+from packages.application.ingestion import SourceLifecycle
 from packages.connectors.gwanbo_personnel import (
     GwanboPersonnelConnector,
     GwanboPersonnelError,
@@ -14,8 +15,6 @@ from packages.connectors.gwanbo_personnel import (
     gwanbo_personnel_policy,
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
-from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
 
@@ -46,12 +45,7 @@ def normalized_gwanbo_notice(notice: GwanboPersonnelNotice) -> dict[str, object]
 
 
 def gwanbo_notice_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -63,7 +57,7 @@ class GwanboPersonnelEnumerator:
     def __init__(
         self,
         connector: GwanboPersonnelConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         policy: SourcePolicy | None = None,
     ) -> None:
         self.connector = connector
@@ -75,14 +69,17 @@ class GwanboPersonnelEnumerator:
         return f"{self.connector.date_from.isoformat()}:{self.connector.date_to.isoformat()}"
 
     def enumerate(self, *, resume: bool = False) -> GwanboEnumerationResult:
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="Gwanbo personnel enumeration did not complete",
+        )
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the Gwanbo connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
-        run = self.repository.start_source_run(
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
+        run = lifecycle.start(
             self.FEEDER,
             self.scope_key,
             {
@@ -114,7 +111,6 @@ class GwanboPersonnelEnumerator:
                     raise GwanboCoverageError(
                         "resume checkpoint already covers the full Gwanbo date window"
                     )
-
             page_index = start_page
             while True:
                 self.connector.page_index = page_index
@@ -146,15 +142,13 @@ class GwanboPersonnelEnumerator:
                 assert expected_pages is not None
                 if page_index > expected_pages:
                     raise GwanboCoverageError("Gwanbo returned an unexpected extra page")
-
                 notices = self.connector.parse_notices(document)
                 expected_row_count = min(
                     self.connector.page_size,
-                    max(0, expected_total - ((page_index - 1) * self.connector.page_size)),
+                    max(0, expected_total - (page_index - 1) * self.connector.page_size),
                 )
                 if len(notices) != expected_row_count:
                     raise GwanboCoverageError("Gwanbo page row count is incomplete")
-
                 page_hashes: dict[str, str] = {}
                 normalized_by_key: dict[str, dict[str, object]] = {}
                 for notice in notices:
@@ -173,23 +167,15 @@ class GwanboPersonnelEnumerator:
                             raise GwanboCoverageError(
                                 "conflicting Gwanbo notice id appears across pages"
                             )
-                        raise GwanboCoverageError(
-                            "duplicate Gwanbo notice id appears across pages"
-                        )
+                        raise GwanboCoverageError("duplicate Gwanbo notice id appears across pages")
                     page_hashes[notice.notice_id] = content_hash
                     normalized_by_key[notice.notice_id] = normalized
-
                 fingerprint_payload = json.dumps(
-                    sorted(page_hashes.items()),
-                    ensure_ascii=False,
-                    separators=(",", ":"),
+                    sorted(page_hashes.items()), ensure_ascii=False, separators=(",", ":")
                 )
-                page_fingerprint = hashlib.sha256(
-                    fingerprint_payload.encode("utf-8")
-                ).hexdigest()
+                page_fingerprint = hashlib.sha256(fingerprint_payload.encode("utf-8")).hexdigest()
                 if page_fingerprint in page_fingerprints:
                     raise GwanboCoverageError("Gwanbo returned duplicate page content")
-
                 ingestion = IngestionPipeline(self.connector).ingest_document(document, self.policy)
                 observations = [
                     FeederObservation(
@@ -208,7 +194,6 @@ class GwanboPersonnelEnumerator:
                     )
                     for notice in notices
                 ]
-
                 next_seen_hashes = seen_hashes | page_hashes
                 next_page_fingerprints = [*page_fingerprints, page_fingerprint]
                 checkpoint_metadata = {
@@ -221,7 +206,7 @@ class GwanboPersonnelEnumerator:
                     "seen_provider_hashes": next_seen_hashes,
                     "page_fingerprints": next_page_fingerprints,
                 }
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -233,69 +218,15 @@ class GwanboPersonnelEnumerator:
                 pages_committed += 1
                 seen_hashes = next_seen_hashes
                 page_fingerprints = next_page_fingerprints
-
                 if page_index == expected_pages:
                     if len(seen_hashes) != expected_total:
                         raise GwanboCoverageError("Gwanbo unique notice coverage is incomplete")
                     break
                 page_index += 1
-
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
+            completed = lifecycle.succeed()
             return GwanboEnumerationResult(completed, pages_committed, len(seen_hashes))
         except Exception as exc:
-            status = SourceRunStatus.PARTIAL if pages_committed else SourceRunStatus.FAILED
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="Gwanbo personnel enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Persist a bounded official Gwanbo personnel-notice date window."
-    )
-    parser.add_argument("--from-date", type=date.fromisoformat, required=True)
-    parser.add_argument("--to-date", type=date.fromisoformat, required=True)
-    parser.add_argument("--page-size", type=int, default=10)
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    connector = GwanboPersonnelConnector(
-        date_from=args.from_date,
-        date_to=args.to_date,
-        page_size=args.page_size,
-    )
-    try:
-        result = GwanboPersonnelEnumerator(
-            connector,
-            SqlAlchemyRepository(args.database_url),
-        ).enumerate(resume=args.resume)
-    except (GwanboPersonnelError, PolicyDenied, ValueError) as exc:
-        parser.error(str(exc))
-    print(
-        json.dumps(
-            {
-                "run_id": str(result.run.id),
-                "status": result.run.status.value,
-                "scope_key": result.run.scope_key,
-                "pages_committed": result.pages_committed,
-                "unique_records": result.unique_records,
-            },
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

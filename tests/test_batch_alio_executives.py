@@ -14,15 +14,15 @@ from packages.connectors.alio_disclosures import (
     AlioRecordError,
     alio_public_institution_policy,
 )
-from packages.domain.db import SourceRow, SourceSnapshotRow
 from packages.domain.enums import (
     IdentityReviewStatus,
     MaterializationAction,
     MaterializationDecisionClass,
     SourceRunStatus,
 )
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourceRow, SourceSnapshotRow
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers.public_institutions import AlioExecutiveEnumerator, stage_executive_rows
 
 STAFF_NAME = "수집금지담당자"
@@ -30,55 +30,17 @@ STAFF_PHONE = "02-9999-9999"
 
 
 def executive_table(
-    name: str,
-    *,
-    position: str = "상임기관장",
-    title: str = "원장",
-    career: str = "테스트부 차관",
+    name: str, *, position: str = "상임기관장", title: str = "원장", career: str = "테스트부 차관"
 ) -> str:
-    return f"""
-    <table border="1">
-      <tbody>
-        <tr><td>직위</td><td>{position}</td><td>성명</td><td>{name}</td></tr>
-        <tr><td>직책</td><td>{title}</td><td>성별</td><td>남</td></tr>
-        <tr>
-          <td>임기</td><td>(시작일)</td><td>2025년 01월 02일</td>
-          <td>(종료일)</td><td>2028년 01월 01일</td>
-        </tr>
-        <tr><td>주요경력</td><td>{career}<br/>테스트청장</td></tr>
-        <tr><td>선임절차</td><td>임원추천위원회 추천 후 임명</td></tr>
-        <tr><td>선임절차규정</td><td>기관 정관</td></tr>
-      </tbody>
-    </table>
-    """
+    return f'\n    <table border="1">\n      <tbody>\n        <tr><td>직위</td><td>{position}</td><td>성명</td><td>{name}</td></tr>\n        <tr><td>직책</td><td>{title}</td><td>성별</td><td>남</td></tr>\n        <tr>\n          <td>임기</td><td>(시작일)</td><td>2025년 01월 02일</td>\n          <td>(종료일)</td><td>2028년 01월 01일</td>\n        </tr>\n        <tr><td>주요경력</td><td>{career}<br/>테스트청장</td></tr>\n        <tr><td>선임절차</td><td>임원추천위원회 추천 후 임명</td></tr>\n        <tr><td>선임절차규정</td><td>기관 정관</td></tr>\n      </tbody>\n    </table>\n    '
 
 
 def vacant_executive_table(*, position: str = "상임기관장") -> str:
-    return f"""
-    <table border="1">
-      <tbody>
-        <tr><td>직위</td><td>{position}</td><td>성명</td><td>공석</td></tr>
-        <tr><td>선임절차</td><td>임원추천위원회 추천 후 임명</td></tr>
-      </tbody>
-    </table>
-    """
+    return f'\n    <table border="1">\n      <tbody>\n        <tr><td>직위</td><td>{position}</td><td>성명</td><td>공석</td></tr>\n        <tr><td>선임절차</td><td>임원추천위원회 추천 후 임명</td></tr>\n      </tbody>\n    </table>\n    '
 
 
 def report_html(*tables: str, as_of: str = "2026년 08월 31일") -> str:
-    return f"""
-    <div id="doc-">
-      <table border="1">
-        <tr><td>직위</td><td>변경 전<br/>성명</td><td>변경 후<br/>성명</td><td>변경사유</td></tr>
-        <tr><td>비상임이사</td><td>이전임원</td><td>현재임원</td><td>인사이동</td></tr>
-      </table>
-      {"".join(tables)}
-      <table border="1"><tr><td>기준일</td><td>{as_of}</td><td>제출일</td><td>2026년 08월 31일</td></tr></table>
-      <table border="1">
-        <tr><th>구분</th><th>담당자명</th><th>부서명</th><th>전화번호</th></tr>
-        <tr><td>작성자</td><td>{STAFF_NAME}</td><td>경영공시부</td><td>{STAFF_PHONE}</td></tr>
-      </table>
-    </div>
-    """
+    return f"""\n    <div id="doc-">\n      <table border="1">\n        <tr><td>직위</td><td>변경 전<br/>성명</td><td>변경 후<br/>성명</td><td>변경사유</td></tr>\n        <tr><td>비상임이사</td><td>이전임원</td><td>현재임원</td><td>인사이동</td></tr>\n      </table>\n      {"".join(tables)}\n      <table border="1"><tr><td>기준일</td><td>{as_of}</td><td>제출일</td><td>2026년 08월 31일</td></tr></table>\n      <table border="1">\n        <tr><th>구분</th><th>담당자명</th><th>부서명</th><th>전화번호</th></tr>\n        <tr><td>작성자</td><td>{STAFF_NAME}</td><td>경영공시부</td><td>{STAFF_PHONE}</td></tr>\n      </table>\n    </div>\n    """
 
 
 class FakeAlioProvider:
@@ -97,14 +59,8 @@ class FakeAlioProvider:
                 "typeNa": "준정부기관(위탁집행형)",
             },
         ]
-        self.disclosures = {
-            "C0001": "2026083100000001",
-            "C0002": "2026083100000002",
-        }
-        self.report_titles: dict[str, str] = {
-            "C0001": "임원현황",
-            "C0002": "임원현황",
-        }
+        self.disclosures = {"C0001": "2026083100000001", "C0002": "2026083100000002"}
+        self.report_titles: dict[str, str] = {"C0001": "임원현황", "C0002": "임원현황"}
         self.documents = {
             "2026083100000001": report_html(
                 executive_table("김기관"),
@@ -125,19 +81,12 @@ class FakeAlioProvider:
         self.requests.append((request.method, request.url.path, payload))
         if request.url.path == "/item/itemOrganListSusi.json":
             assert request.method == "POST"
-            assert payload == {
-                "apbaType": [],
-                "apbaId": "",
-                "reportFormRootNo": "20305",
-            }
+            assert payload == {"apbaType": [], "apbaId": "", "reportFormRootNo": "20305"}
             return httpx.Response(
                 200,
                 json={
                     "status": "success",
-                    "data": {
-                        "totalCnt": len(self.institutions),
-                        "organList": self.institutions,
-                    },
+                    "data": {"totalCnt": len(self.institutions), "organList": self.institutions},
                 },
             )
         if request.url.path == "/item/itemReportListSusi.json":
@@ -183,12 +132,7 @@ class FakeAlioProvider:
                                 "title": self.report_titles[institution_code],
                             }
                         ],
-                        "page": {
-                            "currPage": 1,
-                            "unitPage": 10,
-                            "totalCount": 1,
-                            "totalPage": 1,
-                        },
+                        "page": {"currPage": 1, "unitPage": 10, "totalCount": 1, "totalPage": 1},
                     },
                 },
             )
@@ -206,12 +150,12 @@ class FakeAlioProvider:
         return AlioExecutiveDisclosureConnector(transport=httpx.MockTransport(self.handle))
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def test_alio_connector_uses_exact_item_4_contract_and_parses_current_report() -> None:
@@ -221,7 +165,6 @@ def test_alio_connector_uses_exact_item_4_contract_and_parses_current_report() -
     directory = connector.parse_directory_body(directory_document.body)
     assert directory.total_count == 2
     assert [item.institution_code for item in directory.institutions] == ["C0001", "C0002"]
-
     list_document = connector.fetch(connector.report_list_url(directory.institutions[0]))
     page = connector.parse_report_page_body(
         list_document.body, institution_code="C0001", requested_page=1
@@ -229,15 +172,11 @@ def test_alio_connector_uses_exact_item_4_contract_and_parses_current_report() -
     current = connector.current_disclosure(page)
     assert current.disclosure_no == "2026083100000001"
     assert page.page_size == 10
-
     report = connector.fetch(connector.report_url(current))
     records = connector.parse_executives(
         report, institution=directory.institutions[0], disclosure=current
     )
-    assert [item.record_id for item in records] == [
-        "2026083100000001:1",
-        "2026083100000001:2",
-    ]
+    assert [item.record_id for item in records] == ["2026083100000001:1", "2026083100000001:2"]
     assert records[0].person_name == "김기관"
     assert records[0].reported_careers == ("테스트부 차관", "테스트청장")
     assert records[0].as_of.isoformat() == "2026-08-31"
@@ -245,14 +184,10 @@ def test_alio_connector_uses_exact_item_4_contract_and_parses_current_report() -
     assert STAFF_PHONE not in repr(records)
 
 
-def test_full_current_roster_persists_all_institutions_and_minimized_rows(
-    tmp_path: Path,
-) -> None:
+def test_full_current_roster_persists_all_institutions_and_minimized_rows(tmp_path: Path) -> None:
     provider = FakeAlioProvider()
     repository = migrated_repository(tmp_path / "full.db")
-
     result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.institutions_committed == 2
     assert result.unique_records == 3
@@ -273,7 +208,6 @@ def test_full_current_roster_persists_all_institutions_and_minimized_rows(
     assert STAFF_PHONE not in payload
     assert '"provider_person_id": null' in payload
     assert "성별" not in payload
-
     with repository.sessions() as session:
         sources = list(session.scalars(select(SourceRow)))
         snapshots = list(session.scalars(select(SourceSnapshotRow)))
@@ -293,7 +227,6 @@ def test_unchanged_rerun_is_idempotent_and_changed_row_is_immutable(tmp_path: Pa
     enumerator = AlioExecutiveEnumerator(provider.connector(), repository)
     first = enumerator.enumerate()
     second = enumerator.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
@@ -305,7 +238,6 @@ def test_unchanged_rerun_is_idempotent_and_changed_row_is_immutable(tmp_path: Pa
         )
         == 3
     )
-
     disclosure = provider.disclosures["C0001"]
     provider.documents[disclosure] = report_html(
         executive_table("김기관", career="변경된 주요경력"),
@@ -315,9 +247,7 @@ def test_unchanged_rerun_is_idempotent_and_changed_row_is_immutable(tmp_path: Pa
     )
     changed = enumerator.enumerate()
     versions = repository.feeder_observations(
-        AlioExecutiveEnumerator.FEEDER,
-        AlioExecutiveEnumerator.SCOPE_KEY,
-        f"{disclosure}:1",
+        AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY, f"{disclosure}:1"
     )
     assert changed.run.observations_created == 1
     assert changed.run.observations_unchanged == 2
@@ -330,10 +260,8 @@ def test_partial_failure_resumes_from_last_committed_institution(tmp_path: Path)
     provider.fail_once_for = "C0002"
     repository = migrated_repository(tmp_path / "resume.db")
     enumerator = AlioExecutiveEnumerator(provider.connector(), repository)
-
     with pytest.raises(AlioRecordError, match="request failed"):
         enumerator.enumerate()
-
     partial = repository.source_runs(
         AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
     )[-1]
@@ -343,7 +271,6 @@ def test_partial_failure_resumes_from_last_committed_institution(tmp_path: Path)
     assert partial.status == SourceRunStatus.PARTIAL
     assert checkpoint is not None
     assert checkpoint.cursor == "1"
-
     resumed = enumerator.enumerate(resume=True)
     assert resumed.run.status == SourceRunStatus.SUCCESS
     assert resumed.institutions_committed == 1
@@ -364,7 +291,6 @@ def test_resume_fails_closed_when_institution_universe_changes(tmp_path: Path) -
     enumerator = AlioExecutiveEnumerator(provider.connector(), repository)
     with pytest.raises(AlioRecordError):
         enumerator.enumerate()
-
     provider.institutions[0] = {**provider.institutions[0], "apbaNa": "기관명변경"}
     with pytest.raises(AlioRecordError, match="universe changed"):
         enumerator.enumerate(resume=True)
@@ -386,7 +312,6 @@ def test_checkpoint_does_not_advance_when_second_institution_commit_fails(
     monkeypatch.setattr(repository, "commit_source_page", fail_second_institution)
     with pytest.raises(RuntimeError, match="synthetic commit failure"):
         AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
-
     checkpoint = repository.source_checkpoint(
         AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
     )
@@ -417,10 +342,7 @@ def test_directory_coverage_failures_are_rejected(mutation, message: str) -> Non
     provider = FakeAlioProvider()
     payload = {
         "status": "success",
-        "data": {
-            "totalCnt": 2,
-            "organList": [dict(item) for item in provider.institutions],
-        },
+        "data": {"totalCnt": 2, "organList": [dict(item) for item in provider.institutions]},
     }
     mutation(payload)
     with pytest.raises(AlioRecordError, match=message):
@@ -449,13 +371,7 @@ def test_report_pagination_failures_are_rejected(page_update: dict, message: str
                     "idate": "2026.08.31",
                 }
             ],
-            "page": {
-                "currPage": 1,
-                "unitPage": 10,
-                "totalCount": 1,
-                "totalPage": 1,
-                **page_update,
-            },
+            "page": {"currPage": 1, "unitPage": 10, "totalCount": 1, "totalPage": 1, **page_update},
         },
     }
     with pytest.raises(AlioRecordError, match=message):
@@ -482,7 +398,6 @@ def test_missing_current_rank_fails_closed_and_vacancy_is_explicit_missingness()
     )
     with pytest.raises(AlioRecordError, match="current item 4"):
         connector.current_disclosure(missing_current)
-
     disclosure = connector.current_disclosure(page)
     provider.documents[disclosure.disclosure_no] = report_html(vacant_executive_table())
     report = connector.fetch(connector.report_url(disclosure))
@@ -498,12 +413,10 @@ def test_empty_current_report_page_is_an_explicit_no_data_result() -> None:
     provider.no_disclosure_for.add("C0001")
     connector = provider.connector()
     directory = connector.parse_directory_body(connector.fetch(connector.discover()[0]).body)
-
     document = connector.fetch(connector.report_list_url(directory.institutions[0]))
     page = connector.parse_report_page_body(
         document.body, institution_code="C0001", requested_page=1
     )
-
     assert page.page_no == 0
     assert page.total_count == 0
     assert connector.current_disclosure(page) is None
@@ -513,13 +426,10 @@ def test_vacancy_row_is_persisted_but_not_staged_as_a_person_candidate(tmp_path:
     provider = FakeAlioProvider()
     disclosure = provider.disclosures["C0001"]
     provider.documents[disclosure] = report_html(
-        vacant_executive_table(),
-        executive_table("김기관"),
+        vacant_executive_table(), executive_table("김기관")
     )
     repository = migrated_repository(tmp_path / "vacancy.db")
-
     result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.unique_records == 3
     observations = repository.feeder_observations(
@@ -553,9 +463,7 @@ def test_institution_without_current_report_is_covered_without_a_person_row(tmp_
     provider = FakeAlioProvider()
     provider.no_disclosure_for.add("C0002")
     repository = migrated_repository(tmp_path / "no-current.db")
-
     result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.institutions_committed == 2
     assert result.unique_records == 2
@@ -581,9 +489,7 @@ def test_correction_only_report_is_an_explicit_non_person_observation(tmp_path: 
     provider.report_titles["C0001"] = "임원현황(수시공시) 수정공시"
     provider.documents[disclosure] = report_html()
     repository = migrated_repository(tmp_path / "correction-only.db")
-
     result = AlioExecutiveEnumerator(provider.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.institutions_committed == 2
     assert result.unique_records == 1
@@ -638,9 +544,7 @@ def test_alio_identity_materialization_is_review_required_without_person_creatio
     observation = repository.feeder_observations(
         AlioExecutiveEnumerator.FEEDER, AlioExecutiveEnumerator.SCOPE_KEY
     )[0]
-
     result = repository.materialize_feeder_observation(observation.id)
-
     assert result.decision.action == MaterializationAction.REVIEW_REQUIRED
     assert result.decision.decision_class == MaterializationDecisionClass.UNSUPPORTED_FEEDER
     assert result.review_item_id is not None

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
 from uuid import UUID, uuid5
 
 from packages.domain.contracts import (
@@ -12,18 +11,9 @@ from packages.domain.contracts import (
     Source,
     SourcePolicy,
 )
-from packages.domain.enums import (
-    EpistemicStatus,
-    EvidenceStance,
-    IdentityStatus,
-    PublicationStatus,
-)
+from packages.domain.enums import EpistemicStatus, EvidenceStance, IdentityStatus, PublicationStatus
 from packages.verification.claims import validate_claim_publication
 from packages.verification.policy import PolicyAction, require_policy
-
-if TYPE_CHECKING:
-    from packages.persistence.repository import SqlAlchemyRepository
-
 
 ASSEMBLY_BASE_PROFILE_FEEDER = "national_assembly_members"
 ASSEMBLY_BASE_PROFILE_SCOPE = "current_member_roster"
@@ -60,14 +50,9 @@ class AssemblyBaseProfileBundle:
 
 
 def build_assembly_base_profile_bundle(
-    person: Person,
-    observation: FeederObservation,
-    *,
-    source: Source,
-    policy: SourcePolicy,
+    person: Person, observation: FeederObservation, *, source: Source, policy: SourcePolicy
 ) -> AssemblyBaseProfileBundle:
     """Build source-bounded roster field Claims without creating a new canonical model."""
-
     if person.identity_status != IdentityStatus.RESOLVED:
         raise AssemblyBaseProfileError("Assembly base profile requires a resolved Person")
     if (
@@ -80,14 +65,13 @@ def build_assembly_base_profile_bundle(
         raise AssemblyBaseProfileError("Assembly provider identity does not match observation key")
     if source.policy_id != policy.id:
         raise AssemblyBaseProfileError("Assembly base profile SourcePolicy does not match Source")
-
     require_policy(policy, PolicyAction.STORE_METADATA)
     claims: list[Claim] = []
     evidence: list[ClaimEvidence] = []
     missing_fields: list[str] = []
     for field_definition in ASSEMBLY_BASE_PROFILE_FIELDS:
         raw_value = observation.normalized.get(field_definition.name)
-        if raw_value is None or (isinstance(raw_value, str) and not raw_value.strip()):
+        if raw_value is None or (isinstance(raw_value, str) and (not raw_value.strip())):
             missing_fields.append(field_definition.name)
             continue
         if not isinstance(raw_value, str):
@@ -149,11 +133,7 @@ def build_assembly_base_profile_bundle(
             stance=EvidenceStance.SUPPORT,
         )
         gate = validate_claim_publication(
-            claim,
-            person,
-            [item],
-            {source.id: source},
-            {policy.id: policy},
+            claim, person, [item], {source.id: source}, {policy.id: policy}
         )
         if not gate.publishable:
             raise AssemblyBaseProfileError(
@@ -161,140 +141,7 @@ def build_assembly_base_profile_bundle(
             )
         claims.append(claim)
         evidence.append(item)
-
     return AssemblyBaseProfileBundle(tuple(claims), tuple(evidence), tuple(missing_fields))
-
-
-@dataclass(frozen=True)
-class AssemblyBaseProfileRunResult:
-    run_id: UUID
-    observations_considered: int
-    observations_published: int
-    published_claims: int
-    unchanged_claims: int
-    missing_field_counts: dict[str, int] = field(default_factory=dict)
-    skipped_observation_ids: tuple[UUID, ...] = ()
-
-
-class AssemblyBaseProfilePublisher:
-    """Publish only the exact manifest of the latest successful full roster run."""
-
-    def __init__(self, repository: SqlAlchemyRepository) -> None:
-        self.repository = repository
-
-    def _latest_successful_observations(self) -> tuple[UUID, tuple[FeederObservation, ...]]:
-        checkpoint = self.repository.source_checkpoint(
-            ASSEMBLY_BASE_PROFILE_FEEDER,
-            ASSEMBLY_BASE_PROFILE_SCOPE,
-        )
-        if checkpoint is None or checkpoint.last_run_id is None:
-            raise AssemblyBaseProfileError("Assembly current-roster success checkpoint is unavailable")
-        run = self.repository.source_run(checkpoint.last_run_id)
-        if (
-            run is None
-            or run.status.value != "SUCCESS"
-            or run.feeder != ASSEMBLY_BASE_PROFILE_FEEDER
-            or run.scope_key != ASSEMBLY_BASE_PROFILE_SCOPE
-        ):
-            raise AssemblyBaseProfileError(
-                "Assembly base profile requires the latest successful full enumeration"
-            )
-        metadata = checkpoint.metadata
-        if metadata.get("source_contract") != ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT:
-            raise AssemblyBaseProfileError("Assembly success checkpoint source contract is invalid")
-        raw_hashes = metadata.get("seen_provider_hashes")
-        if not isinstance(raw_hashes, dict) or not raw_hashes:
-            raise AssemblyBaseProfileError("Assembly success checkpoint lacks provider manifest")
-        try:
-            expected_total = int(metadata["list_total_count"])
-            expected_pages = int(metadata["expected_pages"])
-        except (KeyError, TypeError, ValueError):
-            raise AssemblyBaseProfileError("Assembly success checkpoint coverage metadata is invalid") from None
-        if checkpoint.cursor != str(expected_pages) or len(raw_hashes) != expected_total:
-            raise AssemblyBaseProfileError("Assembly success checkpoint coverage is incomplete")
-
-        observations = self.repository.feeder_observations(
-            ASSEMBLY_BASE_PROFILE_FEEDER,
-            ASSEMBLY_BASE_PROFILE_SCOPE,
-        )
-        by_key: dict[str, FeederObservation] = {}
-        for observation in observations:
-            expected_hash = raw_hashes.get(observation.provider_record_key)
-            if expected_hash != observation.content_hash:
-                continue
-            if observation.provider_record_key in by_key:
-                raise AssemblyBaseProfileError(
-                    "Assembly success manifest maps one provider key to multiple observations"
-                )
-            by_key[observation.provider_record_key] = observation
-        if set(by_key) != set(raw_hashes):
-            raise AssemblyBaseProfileError("Assembly success manifest lacks committed observations")
-        return run.id, tuple(by_key[key] for key in sorted(by_key))
-
-    def publish_latest_successful(self) -> AssemblyBaseProfileRunResult:
-        run_id, observations = self._latest_successful_observations()
-        contexts = self.repository.assembly_base_profile_contexts(
-            [observation.id for observation in observations]
-        )
-        missing_field_counts = {item.name: 0 for item in ASSEMBLY_BASE_PROFILE_FIELDS}
-        skipped: list[UUID] = []
-        pending: list[
-            tuple[Person, FeederObservation, tuple[Claim, ...], tuple[ClaimEvidence, ...]]
-        ] = []
-        observations_published = 0
-        published_claims = 0
-        unchanged_claims = 0
-        existing_ids = {
-            claim.id
-            for claim in self.repository.claims(
-                published_only=True,
-                current_only=True,
-            )
-        }
-
-        for observation in observations:
-            context = contexts.get(observation.id)
-            if context is None:
-                skipped.append(observation.id)
-                continue
-            person, source, policy = context
-            if person.identity_status != IdentityStatus.RESOLVED:
-                raise AssemblyBaseProfileError(
-                    "Assembly base profile link does not resolve to a canonical Person"
-                )
-
-            bundle = build_assembly_base_profile_bundle(
-                person,
-                observation,
-                source=source,
-                policy=policy,
-            )
-            for field_name in bundle.missing_fields:
-                missing_field_counts[field_name] += 1
-            observations_published += 1
-            if not bundle.claims:
-                continue
-            if all(claim.id in existing_ids for claim in bundle.claims):
-                published_claims += len(bundle.claims)
-                unchanged_claims += len(bundle.claims)
-                continue
-            pending.append((person, observation, bundle.claims, bundle.evidence))
-
-        stored = self.repository.import_assembly_base_profile_claims_batch(pending)
-        published_claims += len(stored)
-        unchanged_claims += sum(item.id in existing_ids for item in stored)
-
-        return AssemblyBaseProfileRunResult(
-            run_id=run_id,
-            observations_considered=len(observations),
-            observations_published=observations_published,
-            published_claims=published_claims,
-            unchanged_claims=unchanged_claims,
-            missing_field_counts={
-                key: value for key, value in missing_field_counts.items() if value
-            },
-            skipped_observation_ids=tuple(skipped),
-        )
 
 
 def is_assembly_base_profile_field(name: str) -> bool:

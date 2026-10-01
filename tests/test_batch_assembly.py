@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import NoReturn
 
 import httpx
 import pytest
@@ -16,13 +15,11 @@ from packages.connectors.open_assembly import (
     OpenAssemblyMemberConnector,
     national_assembly_member_policy,
 )
-from packages.domain.db import SourceRow, SourceSnapshotRow
 from packages.domain.enums import SourceCollectionMode, SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourceRow, SourceSnapshotRow
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers.assembly_roster import AssemblyCoverageError, AssemblyRosterEnumerator
-from workers.sync import main as sync_main
-from workers.sync import run_assembly_roster_sync
 
 SECRET = "batch-secret-must-not-persist"
 
@@ -47,10 +44,7 @@ def member_row(code: str, name: str, *, party: str = "테스트정당") -> dict[
 
 class RosterApi:
     def __init__(
-        self,
-        pages: dict[int, list[dict[str, str]]],
-        *,
-        totals: dict[int, int] | None = None,
+        self, pages: dict[int, list[dict[str, str]]], *, totals: dict[int, int] | None = None
     ) -> None:
         self.pages = pages
         self.totals = totals or {}
@@ -80,18 +74,16 @@ class RosterApi:
 
     def connector(self, *, page_size: int = 2) -> OpenAssemblyMemberConnector:
         return OpenAssemblyMemberConnector(
-            api_key=SECRET,
-            page_size=page_size,
-            transport=httpx.MockTransport(self.handle),
+            api_key=SECRET, page_size=page_size, transport=httpx.MockTransport(self.handle)
         )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def three_member_api() -> RosterApi:
@@ -106,9 +98,7 @@ def three_member_api() -> RosterApi:
 def test_full_enumeration_persists_complete_privacy_minimized_roster(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "batch.db")
     api = three_member_api()
-
     result = AssemblyRosterEnumerator(api.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.pages_committed == 2
     assert result.unique_records == 3
@@ -123,7 +113,6 @@ def test_full_enumeration_persists_complete_privacy_minimized_roster(tmp_path: P
     assert checkpoint.cursor == "2"
     assert checkpoint.metadata["list_total_count"] == 3
     assert checkpoint.metadata["expected_pages"] == 2
-
     observations = repository.feeder_observations(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
     )
@@ -136,7 +125,6 @@ def test_full_enumeration_persists_complete_privacy_minimized_roster(tmp_path: P
     assert observations[0].identity_hints["external_ids"] == {
         "assembly_mona_cd": observations[0].provider_record_key
     }
-
     with repository.sessions() as session:
         sources = list(session.scalars(select(SourceRow)))
         snapshots = list(session.scalars(select(SourceSnapshotRow)))
@@ -153,16 +141,18 @@ def test_unchanged_full_rerun_is_observation_noop(tmp_path: Path) -> None:
     enumerator = AssemblyRosterEnumerator(api.connector(), repository)
     first = enumerator.enumerate()
     second = enumerator.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.status == SourceRunStatus.SUCCESS
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
-    assert len(
-        repository.feeder_observations(
-            AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    assert (
+        len(
+            repository.feeder_observations(
+                AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+            )
         )
-    ) == 3
+        == 3
+    )
 
 
 def test_completed_checkpoint_resume_fails_closed_without_fetch_or_manifest_change(
@@ -176,10 +166,8 @@ def test_completed_checkpoint_resume_fails_closed_without_fetch_or_manifest_chan
     observations_before = repository.feeder_observations(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
     )
-
     with pytest.raises(AssemblyCoverageError, match="already covers the full roster"):
         enumerator.enumerate(resume=True)
-
     assert api.calls == calls_before
     observations_after = repository.feeder_observations(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
@@ -202,112 +190,17 @@ def test_completed_checkpoint_resume_fails_closed_without_fetch_or_manifest_chan
     assert checkpoint is not None and checkpoint.cursor == "2"
 
 
-def test_sync_boundary_reports_operational_receipt_and_materialization(
-    tmp_path: Path,
-) -> None:
-    repository = migrated_repository(tmp_path / "sync.db")
-    api = three_member_api()
-
-    receipt = run_assembly_roster_sync(api.connector(), repository)
-
-    payload = receipt.to_dict()
-    assert payload["source"] == AssemblyRosterEnumerator.FEEDER
-    assert payload["scope"] == AssemblyRosterEnumerator.SCOPE_KEY
-    assert payload["status"] == "SUCCESS"
-    assert payload["observed_count"] == 3
-    assert payload["committed_count"] == 3
-    assert payload["unchanged_count"] == 0
-    assert payload["conflict_review_count"] == 0
-    assert payload["checkpoint"] == "2"
-    assert payload["resume_requested"] is False
-    assert payload["error_reason"] is None
-    assert payload["materialization_outcomes"] == {
-        "AUTO_CREATE": 3,
-        "AUTO_LINK": 0,
-        "REVIEW_REQUIRED": 0,
-        "HARD_CONFLICT": 0,
-    }
-
-    unchanged = run_assembly_roster_sync(api.connector(), repository)
-
-    assert unchanged.to_dict()["status"] == "SUCCESS"
-    assert unchanged.to_dict()["committed_count"] == 0
-    assert unchanged.to_dict()["unchanged_count"] == 3
-    assert unchanged.to_dict()["resume_requested"] is False
-    assert unchanged.to_dict()["materialization_outcomes"] == {
-        "AUTO_CREATE": 0,
-        "AUTO_LINK": 3,
-        "REVIEW_REQUIRED": 0,
-        "HARD_CONFLICT": 0,
-    }
-    assert len(repository.public_people()) == 3
-    assert len(repository.claims(published_only=True)) == 3
-
-
-def test_sync_cli_emits_redacted_failure_receipt_without_credentials(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    database = tmp_path / "sync-failure.db"
-    migrated_repository(database)
-    monkeypatch.delenv("ASSEMBLY_API_KEY", raising=False)
-
-    exit_code = sync_main(
-        ["assembly-roster", "--database-url", f"sqlite:///{database.as_posix()}"]
-    )
-
-    output = capsys.readouterr().out
-    payload = json.loads(output)
-    assert exit_code == 1
-    assert payload["status"] == "FAILED"
-    assert payload["source_run_status"] == "FAILED"
-    assert payload["error_reason"]["phase"] == "source_fetch_parse_or_coverage"
-    assert payload["error_reason"]["code"] == "MissingAssemblyApiKey"
-    assert payload["checkpoint"] is None
-    assert SECRET not in output
-
-
-def test_sync_cli_classifies_alembic_command_error_as_database_precondition(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    database = tmp_path / "command-error.db"
-    migrated_repository(database)
-
-    def raise_command_error(*_args: object, **_kwargs: object) -> NoReturn:
-        raise CommandError("Path doesn't exist: /installed/site-packages/migrations")
-
-    monkeypatch.setattr("workers.sync.run_assembly_roster_sync", raise_command_error)
-    exit_code = sync_main(
-        ["assembly-roster", "--database-url", f"sqlite:///{database.as_posix()}"]
-    )
-
-    output = capsys.readouterr().out
-    payload = json.loads(output)
-    assert exit_code == 1
-    assert payload["error_reason"]["phase"] == "database_or_precondition"
-    assert payload["error_reason"]["code"] == "CommandError"
-    assert "Path doesn't exist" not in output
-    assert "migrations" not in output
-
-
 def test_changed_provider_record_creates_immutable_observation_version(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "changed.db")
     api = three_member_api()
     enumerator = AssemblyRosterEnumerator(api.connector(), repository)
     enumerator.enumerate()
     api.pages[1][0] = member_row("M-001", "가회원", party="변경정당")
-
     changed = enumerator.enumerate()
-
     assert changed.run.observations_created == 1
     assert changed.run.observations_unchanged == 2
     versions = repository.feeder_observations(
-        AssemblyRosterEnumerator.FEEDER,
-        AssemblyRosterEnumerator.SCOPE_KEY,
-        "M-001",
+        AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY, "M-001"
     )
     assert len(versions) == 2
     assert {item.normalized["party"] for item in versions} == {"테스트정당", "변경정당"}
@@ -319,10 +212,8 @@ def test_partial_failure_keeps_committed_checkpoint_and_resume_completes(tmp_pat
     api = three_member_api()
     api.fail_pages.add(2)
     enumerator = AssemblyRosterEnumerator(api.connector(), repository)
-
     with pytest.raises(AssemblyApiError):
         enumerator.enumerate()
-
     partial = repository.source_runs(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
     )[-1]
@@ -334,23 +225,28 @@ def test_partial_failure_keeps_committed_checkpoint_and_resume_completes(tmp_pat
     assert partial.error_summary == "Assembly enumeration did not complete"
     assert SECRET not in repr(partial.model_dump(mode="json"))
     assert checkpoint is not None and checkpoint.cursor == "1"
-    assert len(
-        repository.feeder_observations(
-            AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    assert (
+        len(
+            repository.feeder_observations(
+                AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+            )
         )
-    ) == 2
-
+        == 2
+    )
     api.fail_pages.clear()
     resumed = enumerator.enumerate(resume=True)
     assert resumed.run.status == SourceRunStatus.SUCCESS
     assert resumed.pages_committed == 1
     assert resumed.unique_records == 3
     assert api.calls[-1] == 2
-    assert len(
-        repository.feeder_observations(
-            AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    assert (
+        len(
+            repository.feeder_observations(
+                AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+            )
         )
-    ) == 3
+        == 3
+    )
 
 
 def test_checkpoint_does_not_advance_when_page_persistence_fails(
@@ -372,26 +268,26 @@ def test_checkpoint_does_not_advance_when_page_persistence_fails(
     monkeypatch.setattr(repository, "commit_source_page", fail_second_page)
     with pytest.raises(RuntimeError, match="synthetic persistence"):
         enumerator.enumerate()
-
     checkpoint = repository.source_checkpoint(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
     )
     assert checkpoint is not None and checkpoint.cursor == "1"
-    assert len(
-        repository.feeder_observations(
-            AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+    assert (
+        len(
+            repository.feeder_observations(
+                AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
+            )
         )
-    ) == 2
+        == 2
+    )
 
 
 def test_total_count_change_fails_closed(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "total.db")
     api = three_member_api()
     api.totals = {1: 3, 2: 4}
-
     with pytest.raises(AssemblyCoverageError, match="total count changed"):
         AssemblyRosterEnumerator(api.connector(), repository).enumerate()
-
     run = repository.source_runs(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
     )[-1]
@@ -411,10 +307,8 @@ def test_duplicate_or_conflicting_provider_key_fails_closed(
 ) -> None:
     repository = migrated_repository(tmp_path / f"{message[:3]}.db")
     api = RosterApi({1: [member_row("M-001", "가회원")], 2: [second_row]})
-
     with pytest.raises(AssemblyCoverageError, match=message):
         AssemblyRosterEnumerator(api.connector(page_size=1), repository).enumerate()
-
     run = repository.source_runs(
         AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
     )[-1]
@@ -428,11 +322,80 @@ def test_policy_denial_blocks_before_network_or_run_receipt(tmp_path: Path) -> N
     policy = national_assembly_member_policy().model_copy(
         update={"collection_mode": SourceCollectionMode.BLOCKED, "can_fetch": False}
     )
-
     with pytest.raises(PolicyDenied):
         AssemblyRosterEnumerator(api.connector(), repository, policy).enumerate()
-
     assert api.calls == []
-    assert repository.source_runs(
-        AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY
-    ) == []
+    assert (
+        repository.source_runs(AssemblyRosterEnumerator.FEEDER, AssemblyRosterEnumerator.SCOPE_KEY)
+        == []
+    )
+
+
+def test_observe_is_acquisition_only_and_rerun_is_idempotent(tmp_path):
+    repository = migrated_repository(tmp_path / "observe.db")
+    api = three_member_api()
+    enumerator = AssemblyRosterEnumerator(api.connector(), repository)
+    first = enumerator.enumerate()
+    assert first.run.status == SourceRunStatus.SUCCESS
+    assert first.run.observations_created == 3
+    assert first.run.checkpoint_after == "2"
+    assert repository.people() == []
+    assert repository.claims() == []
+    rerun = enumerator.enumerate()
+    assert rerun.run.observations_created == 0
+    assert rerun.run.observations_unchanged == 3
+    assert rerun.observation_ids == first.observation_ids
+    before = list(api.calls)
+    from workers.assembly_roster import materialize_latest_successful
+
+    materialized = materialize_latest_successful(repository)
+    assert materialized["created"] == 3
+    assert materialized["publication_status"] == "DRAFT"
+    assert api.calls == before
+    assert repository.claims(published_only=True) == []
+
+
+def test_observe_cli_redacts_failure_and_persists_terminal_run(tmp_path, monkeypatch, capsys):
+    from apps.cli.main import main
+
+    database = tmp_path / "observe-failure.db"
+    repository = migrated_repository(database)
+    monkeypatch.delenv("ASSEMBLY_API_KEY", raising=False)
+    assert (
+        main(
+            [
+                "observe",
+                "assembly",
+                "--allow-effect",
+                "SOURCE_INGESTION",
+                "--database-url",
+                str(repository.engine.url),
+            ]
+        )
+        == 1
+    )
+    output = capsys.readouterr().out
+    payload = json.loads(output)
+    assert payload["status"] == "FAILED"
+    assert payload["effect"] == "SOURCE_INGESTION"
+    assert payload["error_code"] == "COMMAND_FAILED"
+    assert SECRET not in output
+    run = repository.source_runs()[-1]
+    assert run.status == SourceRunStatus.FAILED
+    assert run.records_seen == 0
+    assert run.error_code == "MissingAssemblyApiKey"
+
+
+def test_observe_cli_redacts_precondition_failure(tmp_path, monkeypatch, capsys):
+    from apps.cli import adapters
+    from apps.cli.main import main
+
+    def fail(*_args):
+        raise CommandError("Path doesn't exist: /private/site-packages/migrations")
+
+    monkeypatch.setattr(adapters, "dispatch", fail)
+    assert main(["observe", "assembly", "--allow-effect", "SOURCE_INGESTION"]) == 1
+    output = capsys.readouterr().out
+    assert json.loads(output)["error_code"] == "COMMAND_FAILED"
+    assert "/private" not in output
+    assert "Path doesn't exist" not in output

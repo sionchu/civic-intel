@@ -35,6 +35,7 @@ ROUTES = {
             "mois-organizations",
             "alio-item4",
             "alio-item12",
+            "gukgam-plan",
             "assembly-page",
             "legislative-person",
             "nec-page",
@@ -53,6 +54,8 @@ ROUTES = {
         CommandEffect.CLAIM_PUBLICATION,
         (
             "assembly-profile",
+            "claim",
+            "alio-item4",
             "legislative",
             "alio-item12",
             "gukgam-claim",
@@ -64,6 +67,8 @@ ROUTES = {
         CommandEffect.READ_ONLY,
         (
             "commands",
+            "alio-item4",
+            "gukgam-plan",
             "alio-safe-people",
             "nec-safe-people",
             "orggo-organizations",
@@ -117,6 +122,15 @@ def build_parser() -> argparse.ArgumentParser:
                 "dart",
             ):
                 p.add_argument("--database-url")
+            if lane == "claim":
+                p.add_argument("--claim-id", type=UUID, required=True)
+            if lane == "gukgam-plan":
+                p.add_argument("--packet", type=Path, required=True)
+                p.add_argument("--artifact", type=Path, required=True)
+                p.add_argument("--attachment-url", required=True)
+                p.add_argument(
+                    "--confirm-exact-attachment-rights", action="store_true", required=True
+                )
             if verb == "observe":
                 if lane not in (
                     "policy-research",
@@ -271,7 +285,7 @@ def main(argv: list[str] | None = None) -> int:
                 default=_json_default,
             )
         )
-    except Exception:  # noqa: BLE001 - redact all operational connection/request errors.
+    except Exception as exc:  # noqa: BLE001 - redact all operational connection/request errors.
         print(
             json.dumps(
                 {
@@ -283,5 +297,7 @@ def main(argv: list[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
+        if isinstance(exc, ValueError):
+            raise SystemExit(2) from None
         return 1
     return 0

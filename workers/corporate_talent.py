@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from packages.application.context import Application
+from packages.application.ingestion import SourceLifecycle
 from packages.connectors.company_official_profiles import (
     CompanyOfficialSeniorProfileRecord,
     parse_company_official_profile_rows,
@@ -18,14 +19,11 @@ from packages.connectors.open_dart_corporate import (
     DartCorporationRecord,
     DartExecutiveRecord,
     DartOwnershipRecord,
-    MissingDartApiKey,
     OpenDartCorpCodeConnector,
     OpenDartCorporateConnector,
     open_dart_corporate_policy,
 )
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
-from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.identity import IdentityCandidate
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
@@ -50,21 +48,15 @@ class StagedDartExecutive:
                 "full_time_status": self.record.full_time_status,
                 "responsibility": self.record.responsibility,
                 "reported_main_career": self.record.reported_main_career,
-                "reported_main_career_semantics": (
-                    "DART 정기보고서 임원현황에 주요경력으로 공시된 내용이며, 과거 경력을 "
-                    "각 원출처에서 독립적으로 검증한 것과는 구분한다."
-                ),
+                "reported_main_career_semantics": "DART 정기보고서 임원현황에 주요경력으로 공시된 내용이며, 과거 경력을 각 원출처에서 독립적으로 검증한 것과는 구분한다.",
                 "largest_shareholder_relation": self.record.largest_shareholder_relation,
                 "tenure_text": self.record.tenure_text,
-                "tenure_end_on": (
-                    self.record.tenure_end_on.isoformat() if self.record.tenure_end_on else None
-                ),
+                "tenure_end_on": self.record.tenure_end_on.isoformat()
+                if self.record.tenure_end_on
+                else None,
                 "settlement_date": self.record.settlement_date.isoformat(),
             },
-            "provenance_semantics": (
-                "OpenDART는 제출된 공시서류의 일부 정보를 추출해 제공하므로 접수번호를 "
-                "원 공시 추적키로 보존한다."
-            ),
+            "provenance_semantics": "OpenDART는 제출된 공시서류의 일부 정보를 추출해 제공하므로 접수번호를 원 공시 추적키로 보존한다.",
         }
 
 
@@ -78,11 +70,9 @@ class StagedDartOwnership:
             "source_lane": "OPENDART_OFFICER_MAJOR_HOLDER_OWNERSHIP",
             "canonical_name": self.candidate.canonical_name if self.candidate else None,
             "identity_anchors": list(self.candidate.career_anchors) if self.candidate else [],
-            "identity_semantics": (
-                "PUBLIC_OFFICER_OR_MAJOR_HOLDER"
-                if self.candidate
-                else "NO_PUBLIC_SENIOR_ROLE_IN_ROW"
-            ),
+            "identity_semantics": "PUBLIC_OFFICER_OR_MAJOR_HOLDER"
+            if self.candidate
+            else "NO_PUBLIC_SENIOR_ROLE_IN_ROW",
             "ownership_disclosure": {
                 "receipt_no": self.record.receipt_no,
                 "receipt_date": self.record.receipt_date.isoformat(),
@@ -95,10 +85,7 @@ class StagedDartOwnership:
                 "security_change_count": self.record.security_change_count,
                 "security_rate": self.record.security_rate,
                 "security_change_rate": self.record.security_change_rate,
-                "semantics": (
-                    "공시된 특정증권 소유상황이며 현재 순자산, 회사 지배력 전체 또는 "
-                    "정책 이해충돌을 자동 의미하지 않는다."
-                ),
+                "semantics": "공시된 특정증권 소유상황이며 현재 순자산, 회사 지배력 전체 또는 정책 이해충돌을 자동 의미하지 않는다.",
             },
         }
 
@@ -126,10 +113,7 @@ class StagedCompanyOfficialSeniorProfile:
                 "source_url": self.record.source_url,
                 "source_ref": self.record.source_ref,
                 "source_policy_ref": self.record.source_policy_ref,
-                "semantics": (
-                    "회사가 공식적으로 공개한 고위 역할·책임을 기록한다. DART 등기임원 여부와 "
-                    "별도 근거이며, 회사 전체 성과를 개인의 인과적 성과로 자동 귀속하지 않는다."
-                ),
+                "semantics": "회사가 공식적으로 공개한 고위 역할·책임을 기록한다. DART 등기임원 여부와 별도 근거이며, 회사 전체 성과를 개인의 인과적 성과로 자동 귀속하지 않는다.",
             },
         }
 
@@ -168,9 +152,7 @@ def dart_ownership_to_identity(record: DartOwnershipRecord) -> IdentityCandidate
     )
 
 
-def company_profile_to_identity(
-    record: CompanyOfficialSeniorProfileRecord,
-) -> IdentityCandidate:
+def company_profile_to_identity(record: CompanyOfficialSeniorProfileRecord) -> IdentityCandidate:
     anchors = [
         f"company_official_record:{record.record_id}",
         f"company_official_scope:{record.public_scope}",
@@ -262,18 +244,11 @@ def normalized_dart_executive(
 
 
 def dart_executive_content_hash(normalized: dict[str, object]) -> str:
-    canonical = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    canonical = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def dart_corporation_universe_fingerprint(
-    corporations: tuple[DartCorporationRecord, ...],
-) -> str:
+def dart_corporation_universe_fingerprint(corporations: tuple[DartCorporationRecord, ...]) -> str:
     payload = [
         {
             "corp_code": item.corp_code,
@@ -313,7 +288,7 @@ class OpenDartExecutiveEnumerator:
     def __init__(
         self,
         universe_connector: OpenDartCorpCodeConnector,
-        repository: SqlAlchemyRepository,
+        repository: Application,
         *,
         business_year: int,
         report_code: str,
@@ -331,9 +306,7 @@ class OpenDartExecutiveEnumerator:
         self.report_code = report_code
         self.listed_only = listed_only
         self.universe_mode = "LISTED_ONLY" if listed_only else "ALL_CORPORATIONS"
-        self.source_contract = (
-            self.LISTED_SOURCE_CONTRACT if listed_only else self.SOURCE_CONTRACT
-        )
+        self.source_contract = self.LISTED_SOURCE_CONTRACT if listed_only else self.SOURCE_CONTRACT
         scope_prefix = "listed_corporations" if listed_only else "all_corporations"
         self.scope_key = f"{scope_prefix}:{business_year}:{report_code}"
         self.executive_connector_factory = executive_connector_factory or (
@@ -352,22 +325,25 @@ class OpenDartExecutiveEnumerator:
             connector.dataset != DartCorporateDataset.EXECUTIVE_STATUS
             or connector.corp_code != corp_code
             or connector.business_year != self.business_year
-            or connector.report_code != self.report_code
+            or (connector.report_code != self.report_code)
         ):
             raise DartApiError("OpenDART executive connector does not match enumeration scope")
         return connector
 
     def enumerate(self, *, resume: bool = False) -> OpenDartExecutiveEnumerationResult:
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="OpenDART executive full-scope enumeration did not complete",
+        )
         if self.policy.domain != self.universe_connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the OpenDART connector")
         require_policy(self.policy, PolicyAction.FETCH)
         require_policy(self.policy, PolicyAction.STORE_METADATA)
-
-        self.repository.assert_ready()
-        prior_checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
+        prior_checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
         if resume and prior_checkpoint is None:
             raise DartApiError("OpenDART resume requires a committed checkpoint")
-        run = self.repository.start_source_run(
+        run = lifecycle.start(
             self.FEEDER,
             self.scope_key,
             {
@@ -393,7 +369,6 @@ class OpenDartExecutiveEnumerator:
             companies_with_executives = 0
             companies_without_executives = 0
             executive_rows_seen = 0
-
             if resume:
                 assert prior_checkpoint is not None
                 if prior_checkpoint.cursor is None:
@@ -405,7 +380,9 @@ class OpenDartExecutiveEnumerator:
                     checkpoint_year = int(prior_checkpoint.metadata["business_year"])
                     checkpoint_report = str(prior_checkpoint.metadata["report_code"])
                     checkpoint_contract = str(prior_checkpoint.metadata["source_contract"])
-                    checkpoint_mode = str(prior_checkpoint.metadata.get("universe_mode") or "ALL_CORPORATIONS")
+                    checkpoint_mode = str(
+                        prior_checkpoint.metadata.get("universe_mode") or "ALL_CORPORATIONS"
+                    )
                     companies_with_executives = int(
                         prior_checkpoint.metadata["companies_with_executives"]
                     )
@@ -419,9 +396,9 @@ class OpenDartExecutiveEnumerator:
                     checkpoint_fingerprint != universe_fingerprint
                     or checkpoint_total != corporation_total
                     or checkpoint_year != self.business_year
-                    or checkpoint_report != self.report_code
-                    or checkpoint_contract != self.source_contract
-                    or checkpoint_mode != self.universe_mode
+                    or (checkpoint_report != self.report_code)
+                    or (checkpoint_contract != self.source_contract)
+                    or (checkpoint_mode != self.universe_mode)
                 ):
                     raise DartApiError("OpenDART corporation universe changed before resume")
                 if start_index < 0 or start_index >= corporation_total:
@@ -432,7 +409,7 @@ class OpenDartExecutiveEnumerator:
                 universe_ingestion = IngestionPipeline(self.universe_connector).ingest_document(
                     universe_document, self.policy
                 )
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=universe_ingestion.source,
@@ -453,7 +430,6 @@ class OpenDartExecutiveEnumerator:
                     },
                 )
                 chunks_committed += 1
-
             for index, corporation in enumerate(corporations, start=1):
                 if index <= start_index:
                     continue
@@ -504,11 +480,10 @@ class OpenDartExecutiveEnumerator:
                             content_hash=dart_executive_content_hash(normalized),
                         )
                     )
-
                 next_with = companies_with_executives + (1 if records else 0)
                 next_without = companies_without_executives + (0 if records else 1)
                 next_rows = executive_rows_seen + len(records)
-                self.repository.commit_source_page(
+                lifecycle.commit_page(
                     run_id=run.id,
                     policy=self.policy,
                     source=ingestion.source,
@@ -533,15 +508,14 @@ class OpenDartExecutiveEnumerator:
                 companies_with_executives = next_with
                 companies_without_executives = next_without
                 executive_rows_seen = next_rows
-
-            checkpoint = self.repository.source_checkpoint(self.FEEDER, self.scope_key)
+            checkpoint = lifecycle.load_checkpoint(self.FEEDER, self.scope_key)
             if (
                 checkpoint is None
                 or checkpoint.cursor != str(corporation_total)
                 or companies_with_executives + companies_without_executives != corporation_total
             ):
                 raise DartApiError("OpenDART executive universe coverage is incomplete")
-            completed = self.repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
+            completed = lifecycle.succeed()
             return OpenDartExecutiveEnumerationResult(
                 run=completed,
                 corporations_committed=corporations_committed,
@@ -551,21 +525,13 @@ class OpenDartExecutiveEnumerator:
                 unique_records=executive_rows_seen,
             )
         except Exception as exc:
-            status = SourceRunStatus.PARTIAL if chunks_committed else SourceRunStatus.FAILED
-            self.repository.finish_source_run(
-                run.id,
-                status,
-                error_code=type(exc).__name__[:120],
-                error_summary="OpenDART executive full-scope enumeration did not complete",
-            )
+            lifecycle.fail(exc)
             raise
 
 
 class OpenDartCorporateStager:
     def __init__(
-        self,
-        connector: OpenDartCorporateConnector,
-        policy: SourcePolicy | None = None,
+        self, connector: OpenDartCorporateConnector, policy: SourcePolicy | None = None
     ) -> None:
         self.connector = connector
         self.policy = policy or open_dart_corporate_policy()
@@ -595,92 +561,3 @@ def render_corporate_json(payload: dict[str, object]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Stage OpenDART corporate senior-person data.")
-    parser.add_argument(
-        "--dataset", required=True, choices=[item.value for item in DartCorporateDataset]
-    )
-    parser.add_argument("--corp-code")
-    parser.add_argument("--business-year", type=int)
-    parser.add_argument("--report-code")
-    parser.add_argument(
-        "--enumerate",
-        action="store_true",
-        help="Persist the complete corp-code-master executive scope for one report period.",
-    )
-    parser.add_argument(
-        "--resume",
-        action="store_true",
-        help="Resume a partially committed full-scope executive enumeration.",
-    )
-    parser.add_argument(
-        "--listed-only",
-        action="store_true",
-        help=(
-            "Restrict executive enumeration to corp-master rows with a non-empty stock_code "
-            "and persist a distinct listed-corporations scope."
-        ),
-    )
-    parser.add_argument("--database-url")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    dataset = DartCorporateDataset(args.dataset)
-    if args.enumerate or args.resume:
-        if dataset != DartCorporateDataset.EXECUTIVE_STATUS:
-            parser.error("full enumeration supports only EXECUTIVE_STATUS")
-        if args.corp_code is not None:
-            parser.error("full enumeration uses the unfiltered corp-code master")
-        if args.business_year is None or args.report_code is None:
-            parser.error("full enumeration requires --business-year and --report-code")
-        try:
-            result = OpenDartExecutiveEnumerator(
-                OpenDartCorpCodeConnector(),
-                SqlAlchemyRepository(args.database_url),
-                business_year=args.business_year,
-                report_code=args.report_code,
-                listed_only=args.listed_only,
-            ).enumerate(resume=args.resume)
-        except (DartApiError, MissingDartApiKey, PolicyDenied, ValueError) as exc:
-            parser.error(str(exc))
-        print(
-            json.dumps(
-                {
-                    "run_id": str(result.run.id),
-                    "status": result.run.status.value,
-                    "scope_key": result.run.scope_key,
-                    "corporations_committed": result.corporations_committed,
-                    "corporations_covered": result.corporations_covered,
-                    "companies_with_executives": result.companies_with_executives,
-                    "companies_without_executives": result.companies_without_executives,
-                    "unique_records": result.unique_records,
-                },
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True,
-            )
-        )
-        return 0
-    if args.listed_only:
-        parser.error("--listed-only is valid only with --enumerate/--resume")
-    if args.corp_code is None:
-        parser.error("single-pull staging requires --corp-code")
-    connector = OpenDartCorporateConnector(
-        dataset=dataset,
-        corp_code=args.corp_code,
-        business_year=args.business_year,
-        report_code=args.report_code,
-    )
-    try:
-        payload = OpenDartCorporateStager(connector).stage()
-    except (DartApiError, MissingDartApiKey, PolicyDenied, ValueError) as exc:
-        raise SystemExit(str(exc)) from None
-    print(render_corporate_json(payload))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

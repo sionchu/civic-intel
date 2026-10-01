@@ -103,7 +103,7 @@ def test_safe_people_preflight_and_commit_are_separate(monkeypatch):
         ),
         commit_alio_person_materialization=lambda **kw: calls.append(("write", kw)),
     )
-    monkeypatch.setattr(adapters, "repository", lambda args: r)
+    monkeypatch.setattr(adapters, "repository", lambda args: SimpleNamespace(administration=r))
     assert main(["inspect", "alio-safe-people"]) == 0
     digest = "a" * 64
     assert (

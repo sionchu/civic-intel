@@ -9,7 +9,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from sqlalchemy import func, or_, select, union
 from sqlalchemy.orm import Session
 
-from packages.domain import db
+from packages.persistence import models as db
 
 # A fixed read model over existing canonical rows, not a second repository.
 MODELS: dict[str, Any] = {
@@ -253,10 +253,14 @@ def _record(kind: str, row: Any) -> dict[str, Any]:
             else "STORED"
         )
     # A version of the allowlisted read view, not a hash asserting the whole DB is frozen.
-    version = hashlib.sha256(json.dumps(
-        {"kind": kind, "id": str(row["id"]), "fields": fields},
-        ensure_ascii=False, sort_keys=True, separators=(",", ":"),
-    ).encode()).hexdigest()
+    version = hashlib.sha256(
+        json.dumps(
+            {"kind": kind, "id": str(row["id"]), "fields": fields},
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()
     return {
         "version": version,
         "kind": kind,

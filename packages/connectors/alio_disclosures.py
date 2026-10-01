@@ -30,7 +30,10 @@ class AlioRecordError(ValueError):
 
 POLICY_ID = UUID("13000000-0000-0000-0000-000000000001")
 ITEM12_REPORT_FORM_NO = "20701"
-ALIO_ITEM12_SOURCE_CONTRACT = "alio_item_12_current_institution_head_business_expense"
+from packages.domain.source_contracts import (
+    ALIO_ITEM12_SOURCE_CONTRACT,
+)
+
 ALIO_ITEM12_ATTACHMENT_SUFFIXES = (".xls", ".xlsx", ".pdf", ".hwp")
 ALIO_ITEM12_MACHINE_READABLE_ATTACHMENT_SUFFIXES = (".xls", ".xlsx")
 

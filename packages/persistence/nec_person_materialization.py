@@ -11,13 +11,13 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from packages.domain import db
 from packages.domain.contracts import (
     FeederObservation,
     SourceCheckpoint,
     SourceRun,
 )
 from packages.domain.enums import IdentityStatus, PublicationStatus
+from packages.persistence import models as db
 from packages.persistence.source_context_person_materialization import (
     checkpoint_from_row,
     lock_source_context_person_materialization,
@@ -66,9 +66,7 @@ class PreparedNecPerson:
             **self.packet.ids(),
             "person_identity_status": self.packet.person.identity_status.value,
             "person_birth_date": (
-                self.packet.person.birth_date.isoformat()
-                if self.packet.person.birth_date
-                else None
+                self.packet.person.birth_date.isoformat() if self.packet.person.birth_date else None
             ),
             "link_action": self.packet.link.action.value,
             "link_decision_class": self.packet.link.decision_class.value,
@@ -156,7 +154,6 @@ class NecPersonPreflight:
             }
         )
         return payload
-
 
 
 def _packet_state(
@@ -326,13 +323,9 @@ def prepare_nec_person_materialization(
     aliases_by_person: dict[str, set[str]] = defaultdict(set)
     for alias in session.scalars(select(db.PersonAliasRow)):
         aliases_by_person[alias.person_id].add(alias.name)
-    artifact_links = {
-        row.id: row for row in session.scalars(select(db.PersonObservationLinkRow))
-    }
+    artifact_links = {row.id: row for row in session.scalars(select(db.PersonObservationLinkRow))}
     artifact_claims = {row.id: row for row in session.scalars(select(db.ClaimRow))}
-    artifact_evidence = {
-        row.id: row for row in session.scalars(select(db.ClaimEvidenceRow))
-    }
+    artifact_evidence = {row.id: row for row in session.scalars(select(db.ClaimEvidenceRow))}
 
     observation_ids = [row.id for row in current_rows]
     active_links: dict[str, list[db.PersonObservationLinkRow]] = defaultdict(list)
@@ -520,7 +513,9 @@ def prepare_nec_person_materialization(
 
     current_people = (
         session.scalar(
-            select(func.count()).select_from(db.PersonRow).where(db.PersonRow.superseded_at.is_(None))
+            select(func.count())
+            .select_from(db.PersonRow)
+            .where(db.PersonRow.superseded_at.is_(None))
         )
         or 0
     )
@@ -577,9 +572,7 @@ def commit_nec_person_materialization(
     election_types: Sequence[int] = DEFAULT_ELECTION_TYPES,
 ) -> dict[str, Any]:
     expected = normalize_receipt_sha256(expected_receipt_sha256)
-    lock_source_context_person_materialization(
-        session, advisory_lock_id=187465324
-    )
+    lock_source_context_person_materialization(session, advisory_lock_id=187465324)
 
     preflight = prepare_nec_person_materialization(
         session,

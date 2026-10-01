@@ -10,7 +10,7 @@ from alembic import command
 from alembic.config import Config
 
 from packages.domain.contracts import Organization
-from packages.persistence import SqlAlchemyRepository
+from tests.support import ScenarioDatabase
 from workers.orggo_reviewed_organization_commit import (
     commit_reviewed_orggo_organizations,
     prepare_reviewed_orggo_organization_commit,
@@ -23,12 +23,12 @@ from workers.orggo_reviewed_organization_manifest import (
 )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def proposal_payload(*, current_count: int = 0) -> dict[str, object]:
@@ -61,12 +61,9 @@ def proposal_payload(*, current_count: int = 0) -> dict[str, object]:
 
 
 def proposal_sha(payload: object) -> str:
-    raw = json.dumps(
-        payload,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
     return hashlib.sha256(raw).hexdigest()
 
 
@@ -110,16 +107,13 @@ def test_organization_batch_is_idempotent_and_preflight_reuses(tmp_path: Path) -
     manifest = parse_reviewed_orggo_organization_manifest(manifest_payload(proposal))
     prepared = prepare_reviewed_orggo_organization_manifest(repository, manifest, proposal)
     organization = prepared.prepared_items[0].organization
-
     first = repository.import_organization_batch([organization])
     assert first.organizations_created == 1
     assert first.organizations_reused == 0
-
     retry = prepare_reviewed_orggo_organization_manifest(repository, manifest, proposal)
     assert retry.prepared_items[0].action == "REUSE"
     assert retry.to_dict()["organizations_to_create"] == 0
     assert retry.to_dict()["organizations_to_reuse"] == 1
-
     second = repository.import_organization_batch([organization])
     assert second.organizations_created == 0
     assert second.organizations_reused == 1
@@ -146,12 +140,7 @@ def test_same_name_with_another_id_fails_closed(tmp_path: Path) -> None:
 def test_deterministic_id_collision_with_another_name_fails_closed(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "id-conflict.db")
     repository.import_organization_batch(
-        [
-            Organization(
-                id=organization_id_for_orggo_code("1741000"),
-                name="다른기관",
-            )
-        ]
+        [Organization(id=organization_id_for_orggo_code("1741000"), name="다른기관")]
     )
     proposal = proposal_payload()
     manifest = parse_reviewed_orggo_organization_manifest(manifest_payload(proposal))
@@ -168,7 +157,6 @@ def test_proposal_sha_and_exact_provider_fields_are_binding(tmp_path: Path) -> N
     manifest = parse_reviewed_orggo_organization_manifest(bad_sha)
     with pytest.raises(ValueError, match="SHA-256"):
         prepare_reviewed_orggo_organization_manifest(repository, manifest, proposal)
-
     changed = manifest_payload(proposal)
     changed_items = list(changed["items"])
     changed_items[0] = {**changed_items[0], "chart_id": "999"}
@@ -182,20 +170,12 @@ def test_commit_requires_exact_manifest_sha_and_is_idempotent(tmp_path: Path) ->
     repository = migrated_repository(tmp_path / "commit.db")
     proposal = proposal_payload()
     manifest = parse_reviewed_orggo_organization_manifest(manifest_payload(proposal))
-
     with pytest.raises(ValueError, match="operator confirmation"):
         prepare_reviewed_orggo_organization_commit(
-            repository,
-            manifest,
-            proposal,
-            expected_manifest_sha256="0" * 64,
+            repository, manifest, proposal, expected_manifest_sha256="0" * 64
         )
-
     prepared = prepare_reviewed_orggo_organization_commit(
-        repository,
-        manifest,
-        proposal,
-        expected_manifest_sha256=manifest.sha256(),
+        repository, manifest, proposal, expected_manifest_sha256=manifest.sha256()
     )
     receipt = commit_reviewed_orggo_organizations(repository, prepared)
     assert receipt["status"] == "COMMITTED"
@@ -208,12 +188,8 @@ def test_commit_requires_exact_manifest_sha_and_is_idempotent(tmp_path: Path) ->
     assert receipt["network_fetch"] is False
     assert len(repository.organizations()) == 1
     assert repository.claims() == []
-
     retry = prepare_reviewed_orggo_organization_commit(
-        repository,
-        manifest,
-        proposal,
-        expected_manifest_sha256=manifest.sha256(),
+        repository, manifest, proposal, expected_manifest_sha256=manifest.sha256()
     )
     retry_receipt = commit_reviewed_orggo_organizations(repository, retry)
     assert retry_receipt["status"] == "REUSED"
@@ -275,22 +251,12 @@ def test_commit_refuses_partially_materialized_manifest(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "partial.db")
     proposal = proposal_payload_two()
     manifest = parse_reviewed_orggo_organization_manifest(manifest_payload_two(proposal))
-
     repository.import_organization_batch(
-        [
-            Organization(
-                id=organization_id_for_orggo_code("1741000"),
-                name="행정안전부",
-            )
-        ]
+        [Organization(id=organization_id_for_orggo_code("1741000"), name="행정안전부")]
     )
-
     with pytest.raises(ValueError, match="partially materialized"):
         prepare_reviewed_orggo_organization_commit(
-            repository,
-            manifest,
-            proposal,
-            expected_manifest_sha256=manifest.sha256(),
+            repository, manifest, proposal, expected_manifest_sha256=manifest.sha256()
         )
     assert len(repository.organizations()) == 1
     assert repository.claims() == []

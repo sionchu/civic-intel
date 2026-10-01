@@ -13,8 +13,8 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
+from packages.application.administration import AdministrationService
 from packages.domain.work_orders import WorkOrderRequest
-from packages.persistence import SqlAlchemyRepository
 from packages.persistence.admin_workflow import AdminError, digest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -126,7 +126,9 @@ def configuration(root: Path = ROOT) -> dict[str, Any]:
             layer_path = (project_config_path.parent / config_file).resolve()
             agents_root = (project_config_path.parent / "agents").resolve()
             if layer_path.parent != agents_root or layer_path.name != f"{role}.toml":
-                raise ValueError(f"Role {role} config path is outside the canonical agent directory")
+                raise ValueError(
+                    f"Role {role} config path is outside the canonical agent directory"
+                )
             value = tomllib.loads(layer_path.read_text(encoding="utf-8"))
             if value.get("sandbox_mode") not in {"read-only", "workspace-write"}:
                 raise ValueError(f"Role {role} config layer has invalid sandbox mode")
@@ -198,7 +200,7 @@ def catalog(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def draft(
-    repository: SqlAlchemyRepository,
+    repository: AdministrationService,
     request: WorkOrderRequest,
     *,
     actor: str,
@@ -277,7 +279,9 @@ def draft(
     }
 
 
-def build_playbook_router(repository: SqlAlchemyRepository, *, actor: str, label: str) -> APIRouter:
+def build_playbook_router(
+    repository: AdministrationService, *, actor: str, label: str
+) -> APIRouter:
     router = APIRouter(prefix="/admin/operations/playbook", include_in_schema=False)
 
     @router.get("")

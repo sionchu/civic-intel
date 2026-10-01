@@ -24,7 +24,6 @@ from packages.domain.enums import (
     PublicationStatus,
     SourceCollectionMode,
 )
-from packages.persistence import SqlAlchemyRepository
 from packages.verification.cross_lane_identity import CrossLaneIdentityEvidence
 from packages.verification.identity import IdentityCandidate
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError
@@ -33,6 +32,7 @@ from packages.verification.profile_target import (
     ProfileTargetObservation,
     build_profile_research_target,
 )
+from tests.support import ScenarioDatabase
 
 PERSON_ID = UUID("00000000-0000-0000-0000-000000009001")
 POLICY_ID = UUID("10000000-0000-0000-0000-000000009001")
@@ -42,12 +42,12 @@ CLAIM_ID = UUID("30000000-0000-0000-0000-000000009001")
 EVIDENCE_ID = UUID("40000000-0000-0000-0000-000000009001")
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def profile_target(name: str = "김온보딩"):
@@ -79,10 +79,7 @@ def profile_target(name: str = "김온보딩"):
             source_ref="official-biography-kim",
         ),
     )
-    return build_profile_research_target(
-        primary,
-        (ProfileTargetLink(public_role, bridge),),
-    )
+    return build_profile_research_target(primary, (ProfileTargetLink(public_role, bridge),))
 
 
 def reviewed_bundle(
@@ -137,15 +134,19 @@ def reviewed_bundle(
         asserted_as_true=True,
     )
     evidence = (
-        ClaimEvidence(
-            id=EVIDENCE_ID,
-            claim_id=CLAIM_ID,
-            source_id=SOURCE_ID,
-            snapshot_id=SNAPSHOT_ID,
-            stance=EvidenceStance.SUPPORT,
-            excerpt=None,
-        ),
-    ) if include_evidence else ()
+        (
+            ClaimEvidence(
+                id=EVIDENCE_ID,
+                claim_id=CLAIM_ID,
+                source_id=SOURCE_ID,
+                snapshot_id=SNAPSHOT_ID,
+                stance=EvidenceStance.SUPPORT,
+                excerpt=None,
+            ),
+        )
+        if include_evidence
+        else ()
+    )
     return ReviewedPersonBundle(
         person=person,
         profile_target=profile_target(),
@@ -160,14 +161,11 @@ def reviewed_bundle(
 def test_reviewed_bundle_imports_new_person_into_existing_profile_api(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "reviewed.db")
     imported = repository.import_reviewed_person(reviewed_bundle())
-
     assert imported.id == PERSON_ID
     assert repository.person(PERSON_ID) is not None
     assert len(repository.people()) == 1
-
     with TestClient(create_app(repository)) as client:
         payload = client.get(f"/people/{PERSON_ID}").json()
-
     assert payload["canonical_name"] == "김온보딩"
     assert payload["claims"][0]["epistemic_status"] == "FACT"
     sections = {item["id"]: item for item in payload["profile"]["sections"]}
@@ -184,29 +182,23 @@ def test_existing_person_id_collision_fails_without_mutation(tmp_path: Path) -> 
     repository = migrated_repository(tmp_path / "collision.db")
     repository.import_reviewed_person(reviewed_bundle())
     before = len(repository.people())
-
     with pytest.raises(ReviewedPersonImportError, match="already exists"):
         repository.import_reviewed_person(reviewed_bundle())
-
     assert len(repository.people()) == before
 
 
 def test_broken_source_policy_reference_fails_and_rolls_back(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "missing-policy.db")
     bad_policy_id = UUID("10000000-0000-0000-0000-999999999999")
-
     with pytest.raises(ReviewedPersonImportError, match="missing SourcePolicy"):
         repository.import_reviewed_person(reviewed_bundle(source_policy_id=bad_policy_id))
-
     assert repository.people() == []
     assert repository.claims() == []
 
 
 def test_unsupported_published_fact_fails_and_rolls_back(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "unsupported-fact.db")
-
     with pytest.raises(ReviewedPersonImportError, match="fact_requires_support"):
         repository.import_reviewed_person(reviewed_bundle(include_evidence=False))
-
     assert repository.people() == []
     assert repository.claims() == []

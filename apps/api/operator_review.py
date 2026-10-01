@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+from packages.application.context import Application
 from packages.domain.enums import SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
 from packages.rendering.gukgam_organization_binding_review import (
     EXACT_ONE,
     NO_EXACT,
@@ -34,52 +34,41 @@ MOIS_PROPOSAL = ROOT / "docs/research/gukgam_2026_mois_organization_proposal_202
 
 
 def _canonical_sha256(payload: object) -> str:
-    raw = json.dumps(
-        payload,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
     return hashlib.sha256(raw).hexdigest()
 
 
 def _provider_manifest_sha256(items: list[tuple[str, str]]) -> str:
-    raw = json.dumps(
-        sorted(items),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    ).encode("utf-8")
+    raw = json.dumps(sorted(items), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
 
 
-def _current_gukgam_context(repository: SqlAlchemyRepository):
-    schedule = load_current_gukgam_schedule_review(repository)
+def _current_gukgam_context(repository: Application):
+    schedule = load_current_gukgam_schedule_review(repository.acquisition)
     if not schedule.committees:
         raise RuntimeError("current Gukgam reviewed schedule is unavailable")
-    organizations = repository.organizations(current_only=True)
+    organizations = repository.public.organizations(current_only=True)
     review = build_gukgam_organization_binding_review(schedule, organizations)
     if not review.items:
         raise RuntimeError("current Gukgam reviewed schedule has no audited targets")
-    return organizations, review
+    return (organizations, review)
 
 
 def _gukgam_claim_review_inspection(
-    repository: SqlAlchemyRepository,
-    organizations,
-    review,
+    repository: Application, organizations, review
 ) -> dict[str, Any]:
     existing_claims = [
         claim
-        for claim in repository.claims(current_only=True)
+        for claim in repository.public.claims(current_only=True)
         if claim.predicate == GUKGAM_AUDIT_TARGET_PREDICATE
     ]
     existing_keys = {
         key
         for claim in existing_claims
-        if isinstance((key := claim.qualifiers.get("provider_record_key")), str)
-        and key
+        if isinstance((key := claim.qualifiers.get("provider_record_key")), str) and key
     }
-
     pending = []
     manifest_items = []
     for item in review.items:
@@ -92,8 +81,7 @@ def _gukgam_claim_review_inspection(
         candidate = item.candidates[0]
         manifest_items.append(
             ReviewedGukgamClaimManifestItem(
-                review_key=item.review_key,
-                organization_id=candidate.organization_id,
+                review_key=item.review_key, organization_id=candidate.organization_id
             )
         )
         pending.append(
@@ -109,28 +97,17 @@ def _gukgam_claim_review_inspection(
                 "current_claim_present": False,
             }
         )
-
     manifest = ReviewedGukgamClaimBatchManifest(
         items=tuple(
-            sorted(
-                manifest_items,
-                key=lambda item: (item.review_key, str(item.organization_id)),
-            )
+            sorted(manifest_items, key=lambda item: (item.review_key, str(item.organization_id)))
         )
     )
     pending.sort(
-        key=lambda item: (
-            item["organization_name"],
-            item["audit_date"],
-            item["review_key"],
-        )
+        key=lambda item: (item["organization_name"], item["audit_date"], item["review_key"])
     )
     return {
         "status": "HUMAN_REVIEW_REQUIRED_NO_WRITE",
-        "message": (
-            "현재 Gukgam schedule/checkpoint, current Organization, current Claim을 다시 읽어 "
-            "exact-one 미공개 후보만 계산했습니다. 이름 일치는 승인 권한이 아닙니다."
-        ),
+        "message": "현재 Gukgam schedule/checkpoint, current Organization, current Claim을 다시 읽어 exact-one 미공개 후보만 계산했습니다. 이름 일치는 승인 권한이 아닙니다.",
         "manifest_sha256": manifest.sha256() if manifest.items else None,
         "item_count": len(pending),
         "organization_count": len({item["organization_id"] for item in pending}),
@@ -141,11 +118,7 @@ def _gukgam_claim_review_inspection(
     }
 
 
-def _mois_review_inspection(
-    repository: SqlAlchemyRepository,
-    organizations,
-    review,
-) -> dict[str, Any]:
+def _mois_review_inspection(repository: Application, organizations, review) -> dict[str, Any]:
     try:
         artifact = json.loads(MOIS_PROPOSAL.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -155,13 +128,12 @@ def _mois_review_inspection(
             "write_performed": False,
             "items": [],
         }
-
     if (
         not isinstance(artifact, dict)
         or artifact.get("semantics") != MOIS_ORGANIZATION_PROPOSAL_SEMANTICS
         or artifact.get("status") != "REVIEW_ONLY"
-        or artifact.get("canonical_name_conflict_count") != 0
-        or not isinstance(artifact.get("items"), list)
+        or (artifact.get("canonical_name_conflict_count") != 0)
+        or (not isinstance(artifact.get("items"), list))
     ):
         return {
             "status": "ARTIFACT_INVALID",
@@ -169,8 +141,7 @@ def _mois_review_inspection(
             "write_performed": False,
             "items": [],
         }
-
-    checkpoint = repository.source_checkpoint(MOIS_FEEDER, MOIS_SCOPE_KEY)
+    checkpoint = repository.acquisition.source_checkpoint(MOIS_FEEDER, MOIS_SCOPE_KEY)
     if checkpoint is None:
         return {
             "status": "CURRENT_SOURCE_UNAVAILABLE",
@@ -179,7 +150,6 @@ def _mois_review_inspection(
             "write_performed": False,
             "items": [],
         }
-
     if checkpoint.last_run_id is None:
         return {
             "status": "CURRENT_SOURCE_CONFLICT",
@@ -188,13 +158,13 @@ def _mois_review_inspection(
             "write_performed": False,
             "items": [],
         }
-    run = repository.source_run(checkpoint.last_run_id)
+    run = repository.acquisition.source_run(checkpoint.last_run_id)
     if (
         run is None
         or run.status != SourceRunStatus.SUCCESS
         or run.feeder != MOIS_FEEDER
-        or run.scope_key != MOIS_SCOPE_KEY
-        or run.checkpoint_after != checkpoint.cursor
+        or (run.scope_key != MOIS_SCOPE_KEY)
+        or (run.checkpoint_after != checkpoint.cursor)
     ):
         return {
             "status": "CURRENT_SOURCE_CONFLICT",
@@ -203,7 +173,6 @@ def _mois_review_inspection(
             "write_performed": False,
             "items": [],
         }
-
     try:
         total_count = int(checkpoint.metadata["total_count"])
         seen_count = int(checkpoint.metadata["seen_provider_count"])
@@ -219,52 +188,44 @@ def _mois_review_inspection(
             "write_performed": False,
             "items": [],
         }
-
-    hash_manifest = repository.feeder_observation_hash_manifest(MOIS_FEEDER, MOIS_SCOPE_KEY)
+    hash_manifest = repository.acquisition.feeder_observation_hash_manifest(
+        MOIS_FEEDER, MOIS_SCOPE_KEY
+    )
     unique_hashes = dict(hash_manifest)
     source_stable = (
-        total_count == artifact.get("provider_universe_count")
+        total_count
+        == artifact.get("provider_universe_count")
         == artifact.get("candidate_provider_row_count")
         and seen_count == total_count
-        and len(hash_manifest) == total_count
-        and len(unique_hashes) == total_count
-        and checkpoint.cursor == str(expected_pages)
-        and source_contract == "mois_standard_organization_code_v1"
-        and stop_selector == "0"
-        and run.metadata.get("source_contract") == source_contract
-        and run.metadata.get("stop_selt") == stop_selector
-        and _provider_manifest_sha256(hash_manifest) == manifest_sha
+        and (len(hash_manifest) == total_count)
+        and (len(unique_hashes) == total_count)
+        and (checkpoint.cursor == str(expected_pages))
+        and (source_contract == "mois_standard_organization_code_v1")
+        and (stop_selector == "0")
+        and (run.metadata.get("source_contract") == source_contract)
+        and (run.metadata.get("stop_selt") == stop_selector)
+        and (_provider_manifest_sha256(hash_manifest) == manifest_sha)
     )
     if not source_stable:
         return {
             "status": "CURRENT_SOURCE_DRIFT",
-            "message": (
-                "현재 MOIS observation/checkpoint universe가 review artifact 기준과 달라졌습니다. "
-                "proposal 재생성이 필요합니다."
-            ),
+            "message": "현재 MOIS observation/checkpoint universe가 review artifact 기준과 달라졌습니다. proposal 재생성이 필요합니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
         }
-
     if artifact.get("current_organization_count") != len(organizations):
         return {
             "status": "CURRENT_ORGANIZATION_DRIFT",
-            "message": (
-                "현재 canonical Organization 수가 proposal 기준과 달라졌습니다. "
-                "proposal 재생성이 필요합니다."
-            ),
+            "message": "현재 canonical Organization 수가 proposal 기준과 달라졌습니다. proposal 재생성이 필요합니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
         }
-
     current_names = {organization.name.strip() for organization in organizations}
     current_review = {item.review_key: item for item in review.items}
     current_no_exact_names = {
-        item.audited_target.strip()
-        for item in review.items
-        if item.match_class == NO_EXACT
+        item.audited_target.strip() for item in review.items if item.match_class == NO_EXACT
     }
     artifact_items = artifact["items"]
     ambiguous_items = artifact.get("ambiguous_items")
@@ -286,26 +247,19 @@ def _mois_review_inspection(
         for item in ambiguous_items
         if isinstance(item, dict)
     }
-    current_unmatched_count = len(
-        current_no_exact_names - proposal_names - ambiguous_names
-    )
+    current_unmatched_count = len(current_no_exact_names - proposal_names - ambiguous_names)
     if (
-        artifact.get("gukgam_no_exact_distinct_target_count")
-        != len(current_no_exact_names)
+        artifact.get("gukgam_no_exact_distinct_target_count") != len(current_no_exact_names)
         or artifact.get("ambiguous_distinct_target_count") != len(ambiguous_names)
         or artifact.get("unmatched_distinct_target_count") != current_unmatched_count
     ):
         return {
             "status": "CURRENT_REVIEW_DRIFT",
-            "message": (
-                "현재 Gukgam NO_EXACT target 집합이 MOIS proposal 기준과 달라졌습니다. "
-                "proposal 재생성이 필요합니다."
-            ),
+            "message": "현재 Gukgam NO_EXACT target 집합이 MOIS proposal 기준과 달라졌습니다. proposal 재생성이 필요합니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
         }
-
     validated_items: list[dict[str, Any]] = []
     try:
         for raw_item in artifact_items:
@@ -317,20 +271,18 @@ def _mois_review_inspection(
             if (
                 not isinstance(name, str)
                 or not name.strip()
-                or not isinstance(provider, dict)
-                or not isinstance(occurrences, list)
-                or name.strip() in current_names
+                or (not isinstance(provider, dict))
+                or (not isinstance(occurrences, list))
+                or (name.strip() in current_names)
             ):
                 raise ValueError("MOIS proposal item conflicts with current Organizations")
-
             observation_id = UUID(str(provider.get("observation_id")))
-            observation = repository.feeder_observation(observation_id)
+            observation = repository.acquisition.feeder_observation(observation_id)
             if observation is None:
                 raise ValueError("MOIS proposal observation is missing")
             current_provider = mois_organization_proposal_provider_row(observation).to_dict()
             if current_provider != provider:
                 raise ValueError("MOIS proposal provider observation changed")
-
             occurrence_refs: list[dict[str, str]] = []
             for occurrence in occurrences:
                 if not isinstance(occurrence, dict):
@@ -341,11 +293,11 @@ def _mois_review_inspection(
                     current is None
                     or current.match_class != NO_EXACT
                     or current.candidates
-                    or current.audited_target.strip() != name.strip()
-                    or current.committee_name != occurrence.get("committee_name")
-                    or current.audit_date != occurrence.get("audit_date")
-                    or current.provider_record_key != occurrence.get("provider_record_key")
-                    or str(current.observation_id) != occurrence.get("observation_id")
+                    or (current.audited_target.strip() != name.strip())
+                    or (current.committee_name != occurrence.get("committee_name"))
+                    or (current.audit_date != occurrence.get("audit_date"))
+                    or (current.provider_record_key != occurrence.get("provider_record_key"))
+                    or (str(current.observation_id) != occurrence.get("observation_id"))
                 ):
                     raise ValueError("MOIS proposal Gukgam occurrence changed")
                 occurrence_refs.append(
@@ -357,7 +309,6 @@ def _mois_review_inspection(
                         "observation_id": str(current.observation_id),
                     }
                 )
-
             validated_items.append(
                 {
                     "organization_name": name.strip(),
@@ -367,9 +318,7 @@ def _mois_review_inspection(
                     "type_mid": provider.get("type_mid"),
                     "parent_org_code": provider.get("parent_org_code"),
                     "top_org_code": provider.get("top_org_code"),
-                    "representative_org_code": provider.get(
-                        "representative_org_code"
-                    ),
+                    "representative_org_code": provider.get("representative_org_code"),
                     "base_date": provider.get("base_date"),
                     "changed_date": provider.get("changed_date"),
                     "observation_id": str(observation_id),
@@ -381,22 +330,15 @@ def _mois_review_inspection(
     except (TypeError, ValueError):
         return {
             "status": "CURRENT_REVIEW_DRIFT",
-            "message": (
-                "MOIS proposal의 provider observation 또는 Gukgam occurrence가 현재 DB와 "
-                "일치하지 않습니다. 자동 수정하지 않습니다."
-            ),
+            "message": "MOIS proposal의 provider observation 또는 Gukgam occurrence가 현재 DB와 일치하지 않습니다. 자동 수정하지 않습니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
         }
-
     validated_items.sort(key=lambda item: (item["organization_name"], item["org_code"]))
     return {
         "status": "HUMAN_REVIEW_REQUIRED_NO_WRITE",
-        "message": (
-            "체크인된 MOIS proposal을 현재 checkpoint, exact provider observations, "
-            "current Organizations와 Gukgam NO_EXACT occurrences에 대해 재검증했습니다."
-        ),
+        "message": "체크인된 MOIS proposal을 현재 checkpoint, exact provider observations, current Organizations와 Gukgam NO_EXACT occurrences에 대해 재검증했습니다.",
         "artifact_sha256": _canonical_sha256(artifact),
         "proposal_count": len(validated_items),
         "occurrence_count": sum(item["occurrence_count"] for item in validated_items),
@@ -407,17 +349,14 @@ def _mois_review_inspection(
     }
 
 
-def current_review_inspection(repository: SqlAlchemyRepository) -> dict[str, Any]:
+def current_review_inspection(repository: Application) -> dict[str, Any]:
     before = datetime.now(UTC).isoformat()
     try:
         organizations, review = _current_gukgam_context(repository)
     except (RuntimeError, TypeError, ValueError):
         return {
             "status": "CURRENT_REVIEW_UNAVAILABLE",
-            "message": (
-                "현재 Gukgam reviewed schedule/checkpoint를 canonical DB에서 복구하지 못했습니다. "
-                "과거 artifact로 대체하지 않습니다."
-            ),
+            "message": "현재 Gukgam reviewed schedule/checkpoint를 canonical DB에서 복구하지 못했습니다. 과거 artifact로 대체하지 않습니다.",
             "checked_at": before,
             "write_performed": False,
             "gukgam_claim_review": {
@@ -431,7 +370,6 @@ def current_review_inspection(repository: SqlAlchemyRepository) -> dict[str, Any
                 "materialization_authorized": False,
             },
         }
-
     gukgam = _gukgam_claim_review_inspection(repository, organizations, review)
     mois = _mois_review_inspection(repository, organizations, review)
     ready = (
@@ -440,11 +378,9 @@ def current_review_inspection(repository: SqlAlchemyRepository) -> dict[str, Any
     )
     return {
         "status": "CURRENT_HUMAN_REVIEW_READY" if ready else "CURRENT_REVIEW_BLOCKED",
-        "message": (
-            "현재 DB 기준 human-review lanes입니다. 어떤 항목도 자동 승인·반영하지 않습니다."
-            if ready
-            else "하나 이상의 review lane이 현재 DB와 일치하지 않아 fail-closed 상태입니다."
-        ),
+        "message": "현재 DB 기준 human-review lanes입니다. 어떤 항목도 자동 승인·반영하지 않습니다."
+        if ready
+        else "하나 이상의 review lane이 현재 DB와 일치하지 않아 fail-closed 상태입니다.",
         "checked_at": datetime.now(UTC).isoformat(),
         "write_performed": False,
         "gukgam_claim_review": gukgam,

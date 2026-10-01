@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 from uuid import UUID
 
 import httpx
@@ -15,15 +14,12 @@ from packages.connectors.nec_local_elections import (
     NecCandidateConnector,
     nec_local_election_policy,
 )
-from packages.domain.db import SourceRow, SourceSnapshotRow
 from packages.domain.enums import SourceCollectionMode, SourceRunStatus
-from packages.persistence import SqlAlchemyRepository
+from packages.persistence.models import SourceRow, SourceSnapshotRow
 from packages.verification.policy import PolicyDenied
+from tests.support import ScenarioDatabase
 from workers import local_elections
-from workers.local_elections import (
-    LocalElectionCandidateEnumerator,
-    NecCandidateCoverageError,
-)
+from workers.local_elections import LocalElectionCandidateEnumerator, NecCandidateCoverageError
 
 SECRET = "nec-candidate-secret-must-not-persist"
 SCOPE = "20260603:4"
@@ -121,12 +117,12 @@ class CandidateApi:
         )
 
 
-def migrated_repository(database: Path) -> SqlAlchemyRepository:
+def migrated_repository(database: Path) -> ScenarioDatabase:
     database_url = f"sqlite:///{database.as_posix()}"
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
     command.upgrade(config, "head")
-    return SqlAlchemyRepository(database_url)
+    return ScenarioDatabase(database_url)
 
 
 def three_candidate_api() -> CandidateApi:
@@ -138,14 +134,10 @@ def three_candidate_api() -> CandidateApi:
     )
 
 
-def test_full_candidate_enumeration_is_complete_minimized_and_semantic(
-    tmp_path: Path,
-) -> None:
+def test_full_candidate_enumeration_is_complete_minimized_and_semantic(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-candidates.db")
     api = three_candidate_api()
-
     result = LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.pages_committed == 2
     assert result.unique_records == 3
@@ -157,7 +149,6 @@ def test_full_candidate_enumeration_is_complete_minimized_and_semantic(
     assert checkpoint.cursor == "2"
     assert checkpoint.metadata["expected_pages"] == 2
     assert checkpoint.metadata["total_count"] == 3
-
     observations = repository.feeder_observations(LocalElectionCandidateEnumerator.FEEDER, SCOPE)
     assert len(observations) == 3
     first = observations[0]
@@ -182,7 +173,6 @@ def test_full_candidate_enumeration_is_complete_minimized_and_semantic(
         SECRET,
     ):
         assert forbidden.casefold() not in persisted.casefold()
-
     with repository.sessions() as session:
         sources = list(session.scalars(select(SourceRow)))
         snapshots = list(session.scalars(select(SourceSnapshotRow)))
@@ -193,18 +183,14 @@ def test_full_candidate_enumeration_is_complete_minimized_and_semantic(
     assert SECRET not in repr([item.metadata_json for item in snapshots])
 
 
-def test_unchanged_rerun_is_noop_and_registration_change_creates_version(
-    tmp_path: Path,
-) -> None:
+def test_unchanged_rerun_is_noop_and_registration_change_creates_version(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-candidate-rerun.db")
     api = three_candidate_api()
     enumerator = LocalElectionCandidateEnumerator(api.connector(), repository)
-
     first = enumerator.enumerate()
     second = enumerator.enumerate()
     api.pages[1][0] = candidate_row("C-001", "가후보", status="사퇴")
     changed = enumerator.enumerate()
-
     assert first.run.observations_created == 3
     assert second.run.observations_created == 0
     assert second.run.observations_unchanged == 3
@@ -223,10 +209,8 @@ def test_partial_failure_retains_checkpoint_and_resume_completes(tmp_path: Path)
     api = three_candidate_api()
     api.fail_pages.add(2)
     enumerator = LocalElectionCandidateEnumerator(api.connector(), repository)
-
     with pytest.raises(NecApiError):
         enumerator.enumerate()
-
     partial = repository.source_runs(LocalElectionCandidateEnumerator.FEEDER, SCOPE)[-1]
     checkpoint = repository.source_checkpoint(LocalElectionCandidateEnumerator.FEEDER, SCOPE)
     assert partial.status == SourceRunStatus.PARTIAL
@@ -234,7 +218,6 @@ def test_partial_failure_retains_checkpoint_and_resume_completes(tmp_path: Path)
     assert partial.error_summary == "NEC candidate enumeration did not complete"
     assert SECRET not in repr(partial.model_dump(mode="json"))
     assert checkpoint is not None and checkpoint.cursor == "1"
-
     api.fail_pages.clear()
     resumed = enumerator.enumerate(resume=True)
     assert resumed.run.status == SourceRunStatus.SUCCESS
@@ -262,7 +245,6 @@ def test_checkpoint_does_not_advance_when_candidate_page_commit_fails(
     monkeypatch.setattr(repository, "commit_source_page", fail_second_page)
     with pytest.raises(RuntimeError, match="synthetic NEC candidate"):
         enumerator.enumerate()
-
     checkpoint = repository.source_checkpoint(LocalElectionCandidateEnumerator.FEEDER, SCOPE)
     assert checkpoint is not None and checkpoint.cursor == "1"
     assert len(repository.feeder_observations(LocalElectionCandidateEnumerator.FEEDER, SCOPE)) == 2
@@ -288,22 +270,17 @@ def test_candidate_coverage_metadata_change_fails_closed(
     api.totals = totals
     api.provider_pages = provider_pages
     api.provider_sizes = provider_sizes
-
     with pytest.raises(NecCandidateCoverageError, match=message):
         LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
 
 
 def test_candidate_incomplete_page_or_wrong_scope_fails_closed(tmp_path: Path) -> None:
     incomplete_repository = migrated_repository(tmp_path / "nec-candidate-incomplete.db")
-    incomplete = CandidateApi(
-        {1: [candidate_row("C-001", "가후보")], 2: []},
-        totals={1: 2, 2: 2},
-    )
+    incomplete = CandidateApi({1: [candidate_row("C-001", "가후보")], 2: []}, totals={1: 2, 2: 2})
     with pytest.raises(NecCandidateCoverageError, match="page row count is incomplete"):
         LocalElectionCandidateEnumerator(
             incomplete.connector(page_size=1), incomplete_repository
         ).enumerate()
-
     wrong_scope_repository = migrated_repository(tmp_path / "nec-candidate-wrong-scope.db")
     wrong_scope = CandidateApi({1: [candidate_row("C-001", "가후보", election_id="20220415")]})
     with pytest.raises(NecCandidateCoverageError, match="row election id is inconsistent"):
@@ -316,10 +293,7 @@ def test_candidate_incomplete_page_or_wrong_scope_fails_closed(tmp_path: Path) -
     ("second_row", "message"),
     [
         (candidate_row("C-001", "가후보"), "duplicate NEC huboid"),
-        (
-            candidate_row("C-001", "가후보", party="충돌정당"),
-            "conflicting NEC huboid",
-        ),
+        (candidate_row("C-001", "가후보", party="충돌정당"), "conflicting NEC huboid"),
     ],
 )
 def test_duplicate_or_conflicting_candidate_huboid_fails_closed(
@@ -327,10 +301,8 @@ def test_duplicate_or_conflicting_candidate_huboid_fails_closed(
 ) -> None:
     repository = migrated_repository(tmp_path / f"nec-candidate-{message[:4]}.db")
     api = CandidateApi({1: [candidate_row("C-001", "가후보")], 2: [second_row]})
-
     with pytest.raises(NecCandidateCoverageError, match=message):
         LocalElectionCandidateEnumerator(api.connector(page_size=1), repository).enumerate()
-
     assert repository.source_runs()[-1].status == SourceRunStatus.PARTIAL
 
 
@@ -346,7 +318,6 @@ def test_candidate_policy_filter_and_required_status_fail_before_unsafe_progress
         LocalElectionCandidateEnumerator(api.connector(), repository, policy).enumerate()
     assert api.calls == []
     assert repository.source_runs() == []
-
     filtered = NecCandidateConnector(
         election_id="20260603",
         election_type=4,
@@ -358,7 +329,6 @@ def test_candidate_policy_filter_and_required_status_fail_before_unsafe_progress
         LocalElectionCandidateEnumerator(filtered, repository).enumerate()
     assert api.calls == []
     assert repository.source_runs() == []
-
     missing_status_repository = migrated_repository(tmp_path / "nec-candidate-status.db")
     missing_status = CandidateApi({1: [candidate_row("C-001", "가후보", status=None)]})
     with pytest.raises(NecCandidateCoverageError, match="registration status is unavailable"):
@@ -375,9 +345,7 @@ def test_candidate_policy_filter_and_required_status_fail_before_unsafe_progress
 def test_zero_candidate_scope_is_committed_as_complete_audit(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "nec-candidate-empty.db")
     api = CandidateApi({})
-
     result = LocalElectionCandidateEnumerator(api.connector(), repository).enumerate()
-
     assert result.run.status == SourceRunStatus.SUCCESS
     assert result.pages_committed == 1
     assert result.unique_records == 0
@@ -389,9 +357,7 @@ def test_zero_candidate_scope_is_committed_as_complete_audit(tmp_path: Path) -> 
 
 
 def test_cli_routes_candidate_enumeration_and_resume_without_live_fetch(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     observed: dict[str, object] = {}
 
@@ -402,33 +368,36 @@ def test_cli_routes_candidate_enumeration_and_resume_without_live_fetch(
 
         def enumerate(self, *, resume: bool = False):
             observed["resume"] = resume
-            return SimpleNamespace(
-                run=SimpleNamespace(
-                    id=UUID("00000000-0000-0000-0000-000000000123"),
-                    status=SourceRunStatus.SUCCESS,
-                    scope_key=SCOPE,
-                ),
-                pages_committed=2,
-                unique_records=3,
-            )
+            return {
+                "run": {
+                    "id": str(UUID("00000000-0000-0000-0000-000000000123")),
+                    "status": SourceRunStatus.SUCCESS.value,
+                    "scope_key": SCOPE,
+                },
+                "pages_committed": 2,
+                "unique_records": 3,
+            }
 
     monkeypatch.setattr(
         local_elections, "LocalElectionCandidateEnumerator", FakeCandidateEnumerator
     )
+    from apps.cli.main import main
 
-    result = local_elections.main(
+    result = main(
         [
+            "observe",
+            "nec-candidates",
+            "--allow-effect",
+            "SOURCE_INGESTION",
             "--election-id",
             "20260603",
             "--type",
             "4",
-            "--enumerate-candidates",
             "--resume",
             "--database-url",
             f"sqlite:///{(tmp_path / 'cli.db').as_posix()}",
         ]
     )
-
     assert result == 0
     assert observed["resume"] is True
     assert isinstance(observed["connector"], NecCandidateConnector)

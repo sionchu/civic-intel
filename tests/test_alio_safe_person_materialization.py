@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -8,33 +7,23 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import event, func, select
-from test_alio_organization_activation import (
-    commit_prepared,
-    enumerated_repository,
-)
-from test_batch_alio_executives import (
-    FakeAlioProvider,
-    executive_table,
-    report_html,
-)
 
 from apps.api.main import create_app
-from packages.domain import db
 from packages.domain.admin import AdminCommand
 from packages.domain.enums import IdentityStatus, PublicationStatus
-from packages.persistence.alio_person_materialization import (
-    AlioPersonMaterializationError,
-)
-from packages.verification.alio_person_materialization import (
-    PERSON_ROLE_PREDICATE,
-)
+from packages.persistence import models as db
+from packages.persistence.alio_person_materialization import AlioPersonMaterializationError
+from packages.verification.alio_person_materialization import PERSON_ROLE_PREDICATE
 from packages.verification.postgresql import verify_restored_database
+from tests.cli_support import cli_payload
+from tests.test_alio_organization_activation import commit_prepared, enumerated_repository
+from tests.test_batch_alio_executives import FakeAlioProvider, executive_table, report_html
 
 
 def ready_repository(tmp_path: Path, provider: FakeAlioProvider | None = None):
     repository, provider = enumerated_repository(tmp_path / "alio-safe.db", provider)
     commit_prepared(repository)
-    return repository, provider
+    return (repository, provider)
 
 
 def table_counts(repository):
@@ -62,30 +51,19 @@ def table_counts(repository):
 def test_dry_run_is_deterministic_and_reconciles_fixture(tmp_path: Path):
     repository, _ = ready_repository(tmp_path)
     before = table_counts(repository)
-
     first = repository.prepare_alio_person_materialization()
     second = repository.prepare_alio_person_materialization()
-
     assert first.to_dict() == second.to_dict()
     assert first.sha256() == second.sha256()
     assert first.current_named_rows == 3
-    assert first.action_counts() == {
-        "CREATE": 3,
-        "REVIEW": 0,
-        "CONFLICT": 0,
-        "NOOP": 0,
-    }
+    assert first.action_counts() == {"CREATE": 3, "REVIEW": 0, "CONFLICT": 0, "NOOP": 0}
     assert first.reason_counts() == {"SAFE_SINGLETON_SOURCE_CONTEXT": 3}
     assert len(first.to_dict()["selected"]) == 3
-    assert {
-        item["person_identity_status"] for item in first.to_dict()["selected"]
-    } == {"REVIEW"}
-    assert {
-        item["claim_publication_status"] for item in first.to_dict()["selected"]
-    } == {"DRAFT"}
-    assert {
-        item["link_decision_class"] for item in first.to_dict()["selected"]
-    } == {"DETERMINISTIC_SOURCE_CONTEXT"}
+    assert {item["person_identity_status"] for item in first.to_dict()["selected"]} == {"REVIEW"}
+    assert {item["claim_publication_status"] for item in first.to_dict()["selected"]} == {"DRAFT"}
+    assert {item["link_decision_class"] for item in first.to_dict()["selected"]} == {
+        "DETERMINISTIC_SOURCE_CONTEXT"
+    }
     assert first.to_dict()["expected_post_counts"] == {
         "people": before["people"] + 3,
         "claims": before["claims"] + 3,
@@ -102,11 +80,9 @@ def test_commit_creates_draft_source_context_people_and_is_idempotent(tmp_path: 
     repository, _ = ready_repository(tmp_path)
     before = table_counts(repository)
     preflight = repository.prepare_alio_person_materialization()
-
     receipt = repository.commit_alio_person_materialization(
         expected_receipt_sha256=preflight.sha256()
     )
-
     after = table_counts(repository)
     assert receipt["status"] == "COMMITTED"
     assert receipt["created_people"] == 3
@@ -120,7 +96,6 @@ def test_commit_creates_draft_source_context_people_and_is_idempotent(tmp_path: 
     assert after["published"] == before["published"]
     assert after["observations"] == before["observations"]
     assert after["snapshots"] == before["snapshots"]
-
     with repository.sessions() as session:
         people = list(session.scalars(select(db.PersonRow)))
         claims = list(
@@ -136,23 +111,14 @@ def test_commit_creates_draft_source_context_people_and_is_idempotent(tmp_path: 
     assert all(row.epistemic_status == "CLAIM" for row in claims)
     assert all(row.asserted_as_true is False for row in claims)
     assert all(
-        row.qualifiers["identity_scope"] == "DETERMINISTIC_ALIO_SOURCE_CONTEXT"
-        for row in claims
+        row.qualifiers["identity_scope"] == "DETERMINISTIC_ALIO_SOURCE_CONTEXT" for row in claims
     )
     assert all(row.action == "AUTO_CREATE" for row in links)
     assert all(row.decision_class == "DETERMINISTIC_SOURCE_CONTEXT" for row in links)
-
     rerun = repository.prepare_alio_person_materialization()
-    assert rerun.action_counts() == {
-        "CREATE": 0,
-        "REVIEW": 0,
-        "CONFLICT": 0,
-        "NOOP": 3,
-    }
+    assert rerun.action_counts() == {"CREATE": 0, "REVIEW": 0, "CONFLICT": 0, "NOOP": 3}
     assert rerun.reason_counts() == {"ALREADY_MATERIALIZED": 3}
-    noop = repository.commit_alio_person_materialization(
-        expected_receipt_sha256=rerun.sha256()
-    )
+    noop = repository.commit_alio_person_materialization(expected_receipt_sha256=rerun.sha256())
     assert noop["status"] == "NOOP"
     assert noop["write_performed"] is False
     assert table_counts(repository) == after
@@ -174,7 +140,6 @@ def test_repeated_current_name_and_existing_person_collision_stay_review_only(tm
     disclosure = provider.disclosures["C0002"]
     provider.documents[disclosure] = report_html(executive_table("김기관"))
     repository, _ = ready_repository(tmp_path, provider)
-
     now = datetime.now(UTC)
     with repository.sessions() as session:
         session.add(
@@ -190,15 +155,9 @@ def test_repeated_current_name_and_existing_person_collision_stay_review_only(tm
             )
         )
         session.commit()
-
     preflight = repository.prepare_alio_person_materialization()
     assert preflight.current_named_rows == 3
-    assert preflight.action_counts() == {
-        "CREATE": 0,
-        "REVIEW": 3,
-        "CONFLICT": 0,
-        "NOOP": 0,
-    }
+    assert preflight.action_counts() == {"CREATE": 0, "REVIEW": 3, "CONFLICT": 0, "NOOP": 0}
     assert preflight.reason_counts() == {
         "CURRENT_NAME_REPEATED": 2,
         "CURRENT_PERSON_OR_ALIAS_COLLISION": 1,
@@ -235,7 +194,6 @@ def test_alias_collision_stays_review_only(tmp_path: Path):
             )
         )
         session.commit()
-
     preflight = repository.prepare_alio_person_materialization()
     assert preflight.reason_counts()["CURRENT_PERSON_OR_ALIAS_COLLISION"] == 1
     assert preflight.action_counts()["CREATE"] == 2
@@ -263,7 +221,6 @@ def test_historical_provider_version_drift_stays_review_only(tmp_path: Path):
             )
         )
         session.commit()
-
     preflight = repository.prepare_alio_person_materialization()
     assert preflight.reason_counts()["HISTORICAL_VERSION_DRIFT"] == 1
     assert preflight.action_counts()["CREATE"] == 2
@@ -272,9 +229,7 @@ def test_historical_provider_version_drift_stays_review_only(tmp_path: Path):
 
 def test_missing_organization_binding_is_conflict_not_creation(tmp_path: Path):
     repository, _ = enumerated_repository(tmp_path / "missing-org.db")
-
     preflight = repository.prepare_alio_person_materialization()
-
     assert preflight.current_named_rows == 3
     assert preflight.action_counts()["CREATE"] == 0
     assert preflight.action_counts()["CONFLICT"] == 3
@@ -301,12 +256,8 @@ def test_stale_receipt_rejects_entire_commit(tmp_path: Path):
         )
         session.commit()
     before = table_counts(repository)
-
     with pytest.raises(AlioPersonMaterializationError) as exc:
-        repository.commit_alio_person_materialization(
-            expected_receipt_sha256=preflight.sha256()
-        )
-
+        repository.commit_alio_person_materialization(expected_receipt_sha256=preflight.sha256())
     assert exc.value.code == "STALE_PREFLIGHT"
     assert table_counts(repository) == before
 
@@ -331,16 +282,13 @@ def test_partial_deterministic_artifact_is_hard_conflict(tmp_path: Path):
             )
         )
         session.commit()
-
     next_preflight = repository.prepare_alio_person_materialization()
     assert next_preflight.reason_counts()["PARTIAL_OR_CONFLICTING_MATERIALIZATION"] == 1
     assert next_preflight.action_counts()["CONFLICT"] == 1
     assert next_preflight.action_counts()["CREATE"] == 2
 
 
-def test_database_failure_rolls_back_people_claims_evidence_and_links(
-    tmp_path: Path,
-):
+def test_database_failure_rolls_back_people_claims_evidence_and_links(tmp_path: Path):
     repository, _ = ready_repository(tmp_path)
     preflight = repository.prepare_alio_person_materialization()
     before = table_counts(repository)
@@ -356,39 +304,52 @@ def test_database_failure_rolls_back_people_claims_evidence_and_links(
             )
     finally:
         event.remove(db.ClaimRow, "before_insert", fail_claim_insert)
-
     assert table_counts(repository) == before
 
 
 def test_cli_dry_run_and_commit_require_exact_receipt(tmp_path: Path, capsys):
-    from workers.alio_safe_person_materialization import main
+    from apps.cli.main import main
 
     repository, _ = ready_repository(tmp_path)
     database_url = str(repository.engine.url)
     repository.engine.dispose()
-
-    assert main(["--database-url", database_url]) == 0
-    dry_run = json.loads(capsys.readouterr().out)
-    assert dry_run["status"] == "DRY_RUN"
-    assert dry_run["write_performed"] is False
-    assert dry_run["selected_count"] == 3
-
     assert (
         main(
             [
+                "inspect",
+                "alio-safe-people",
+                "--allow-effect",
+                "READ_ONLY",
                 "--database-url",
                 database_url,
-                "--commit",
+            ]
+        )
+        == 0
+    )
+    dry_run = cli_payload(capsys.readouterr().out)
+    assert dry_run["status"] == "DRY_RUN"
+    assert dry_run["write_performed"] is False
+    assert dry_run["selected_count"] == 3
+    assert (
+        main(
+            [
+                "materialize",
+                "alio-safe-people",
+                "--allow-effect",
+                "IDENTITY_MATERIALIZATION",
+                "--database-url",
+                database_url,
                 "--expected-receipt-sha256",
                 dry_run["receipt_sha256"],
             ]
         )
         == 0
     )
-    committed = json.loads(capsys.readouterr().out)
+    committed = cli_payload(capsys.readouterr().out)
     assert committed["status"] == "COMMITTED"
     assert committed["created_people"] == 3
     assert committed["claim_publication"] is False
+
 
 def test_source_context_person_requires_human_resolution_before_registered_state(tmp_path: Path):
     repository, _ = ready_repository(tmp_path)
@@ -397,7 +358,6 @@ def test_source_context_person_requires_human_resolution_before_registered_state
     item = preflight.create_items[0]
     assert item.packet is not None
     person_id = item.packet.person.id
-
     command = AdminCommand(
         request_id=uuid4(),
         action="RESOLVE_PERSON",
@@ -407,7 +367,6 @@ def test_source_context_person_requires_human_resolution_before_registered_state
     )
     preview = repository.admin_preview(command)
     receipt = repository.admin_commit(command, "test-reviewer", preview["state_hash"])
-
     person = repository.person(person_id)
     assert person is not None
     assert person.identity_status == IdentityStatus.RESOLVED
@@ -439,11 +398,9 @@ def test_source_context_person_requires_human_resolution_before_registered_state
             )
         )
         session.commit()
-
     with TestClient(create_app(repository)) as client:
         assert all(row["id"] != str(person_id) for row in client.get("/people").json())
         assert client.get(f"/people/{person_id}").status_code == 404
-
     publish = AdminCommand(
         request_id=uuid4(),
         action="PUBLISH",
@@ -485,6 +442,7 @@ def test_resolve_person_rejects_non_source_context_identity(tmp_path: Path):
     with pytest.raises(Exception, match="source-context"):
         repository.admin_preview(command)
 
+
 def test_human_resolution_and_publication_remain_materialization_noop(tmp_path: Path):
     repository, _ = ready_repository(tmp_path)
     preflight = repository.prepare_alio_person_materialization()
@@ -492,7 +450,6 @@ def test_human_resolution_and_publication_remain_materialization_noop(tmp_path: 
     item = preflight.create_items[0]
     assert item.packet is not None
     person_id = item.packet.person.id
-
     resolve = AdminCommand(
         request_id=uuid4(),
         action="RESOLVE_PERSON",
@@ -502,7 +459,6 @@ def test_human_resolution_and_publication_remain_materialization_noop(tmp_path: 
     )
     resolve_preview = repository.admin_preview(resolve)
     repository.admin_commit(resolve, "test-reviewer", resolve_preview["state_hash"])
-
     publish = AdminCommand(
         request_id=uuid4(),
         action="PUBLISH",
@@ -511,15 +467,12 @@ def test_human_resolution_and_publication_remain_materialization_noop(tmp_path: 
     )
     publish_preview = repository.admin_preview(publish)
     repository.admin_commit(publish, "test-reviewer", publish_preview["state_hash"])
-
     rerun = repository.prepare_alio_person_materialization()
     selected = next(row for row in rerun.items if row.observation_id == item.observation_id)
     assert selected.action == "NOOP"
     assert selected.reason == "ALREADY_MANAGED"
     assert rerun.action_counts()["CREATE"] == 0
-    noop = repository.commit_alio_person_materialization(
-        expected_receipt_sha256=rerun.sha256()
-    )
+    noop = repository.commit_alio_person_materialization(expected_receipt_sha256=rerun.sha256())
     assert noop["write_performed"] is False
 
 
@@ -530,7 +483,6 @@ def test_renamed_source_context_person_with_preserved_alias_remains_noop(tmp_pat
     item = preflight.create_items[0]
     assert item.packet is not None
     person_id = item.packet.person.id
-
     resolve = AdminCommand(
         request_id=uuid4(),
         action="RESOLVE_PERSON",
@@ -540,7 +492,6 @@ def test_renamed_source_context_person_with_preserved_alias_remains_noop(tmp_pat
     )
     preview = repository.admin_preview(resolve)
     repository.admin_commit(resolve, "test-reviewer", preview["state_hash"])
-
     evidence_id = item.packet.evidence.id
     rename = AdminCommand(
         request_id=uuid4(),
@@ -552,26 +503,29 @@ def test_renamed_source_context_person_with_preserved_alias_remains_noop(tmp_pat
     )
     rename_preview = repository.admin_preview(rename)
     repository.admin_commit(rename, "test-reviewer", rename_preview["state_hash"])
-
     rerun = repository.prepare_alio_person_materialization()
     selected = next(row for row in rerun.items if row.observation_id == item.observation_id)
     assert selected.action == "NOOP"
     assert selected.reason == "ALREADY_MANAGED"
+
 
 def test_restore_verifier_separates_review_people_from_public_roster(tmp_path: Path):
     repository, _ = ready_repository(tmp_path)
     preflight = repository.prepare_alio_person_materialization()
     repository.commit_alio_person_materialization(expected_receipt_sha256=preflight.sha256())
     with repository.sessions() as session:
-        organization_claims = session.scalar(
-            select(func.count())
-            .select_from(db.ClaimRow)
-            .where(
-                db.ClaimRow.organization_id.is_not(None),
-                db.ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
-                db.ClaimRow.superseded_at.is_(None),
+        organization_claims = (
+            session.scalar(
+                select(func.count())
+                .select_from(db.ClaimRow)
+                .where(
+                    db.ClaimRow.organization_id.is_not(None),
+                    db.ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    db.ClaimRow.superseded_at.is_(None),
+                )
             )
-        ) or 0
+            or 0
+        )
     report = verify_restored_database(
         str(repository.engine.url),
         expected_people=3,
