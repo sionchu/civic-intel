@@ -69,34 +69,40 @@ information Open API. Normal live use requires an `ASSEMBLY_API_KEY`; the key is
 only into the outbound request and is never embedded in discovered/source URLs or stored
 metadata.
 
-For a review-only identity staging pass after installing the project:
+For a bounded one-page identity-candidate observation after installing the project:
 
-```bash
-ASSEMBLY_API_KEY=... civic-stage-assembly --name "홍길동" --page-size 10
+```powershell
+$env:ASSEMBLY_API_KEY = "<set locally; do not paste the value into logs>"
+civic observe assembly-page --allow-effect SOURCE_INGESTION `
+  --name "홍길동" --page-size 10
 ```
 
-The staging command emits identity-safe JSON candidates only. It does not write the
-database, publish claims, or expose raw provider rows. Korean name, optional Hanja/English
-aliases, birth date, current party, district, committee text, election metadata, and the
-National Assembly member code are used as identity anchors for the existing resolver.
+This is a source-fetching command, so it requires the explicit `SOURCE_INGESTION` effect and
+the reviewed SourcePolicy still governs access and retention. It does not authorize identity
+materialization or Claim publication. Korean name, optional Hanja/English aliases, birth date,
+current party, district, committee text, election metadata, and the National Assembly member
+code are identity evidence for the existing resolver; they do not independently authorize a
+Person merge.
 
 ## Legislative activity staging
 
 `OpenAssemblyBillConnector` uses the official `의원 발의법률안` dataset and scans the full
 Assembly term for exact code-first participation when source coverage is complete:
 
-```bash
-ASSEMBLY_API_KEY=... civic-stage-legislative \
-  --name "홍길동" --member-code "MONA_CD_VALUE" --age 22 \
+```powershell
+$env:ASSEMBLY_API_KEY = "<set locally; do not paste the value into logs>"
+civic observe legislative-person --allow-effect SOURCE_INGESTION `
+  --name "홍길동" --member-code "MONA_CD_VALUE" --age 22 `
   --page-size 1000 --max-pages 100
 ```
 
 The same unfiltered term can be persisted with run/checkpoint/resume receipts after the target
 database is migrated:
 
-```bash
-ASSEMBLY_API_KEY=... civic-stage-legislative \
-  --age 22 --page-size 1000 --enumerate-bills \
+```powershell
+$env:ASSEMBLY_API_KEY = "<set locally; do not paste the value into logs>"
+civic observe legislative --allow-effect SOURCE_INGESTION `
+  --age 22 --page-size 1000 `
   --database-url sqlite:///civic-intel.db
 ```
 
@@ -129,8 +135,9 @@ candidate/winner APIs. Supported local-election scopes are governors, city/count
 heads, metropolitan/provincial councilors, municipal/county/district councilors, historical
 education councilors, and superintendents of education.
 
-```bash
-NEC_API_KEY=... civic-stage-local-election \
+```powershell
+$env:NEC_API_KEY = "<set locally; do not paste the value into logs>"
+civic observe nec-page --allow-effect SOURCE_INGESTION `
   --election-id 20260603 --type 4 --province "경기도" --district "테스트시"
 ```
 
@@ -141,19 +148,30 @@ explicitly labelled as submitted election-record data rather than independently 
 biographical FACT. A candidate absent from a partial winner page is `UNKNOWN`, not
 silently classified as a losing candidate.
 
-Complete unfiltered candidate scopes can be persisted with SourceRun/checkpoint/resume receipts.
-After a complete SUCCESS checkpoint, `civic-materialize-nec-safe-people` can prepare or commit
-only the deterministic no-drift/birth-date-present/no-current-Person-name-collision subset as
-private source-context `Person(REVIEW)` nodes with DRAFT candidacy Claims. It never name-links
-an existing Person, resolves cross-source identity, infers an election result or publishes a Claim.
+Complete unfiltered candidate scopes can be persisted with SourceRun/checkpoint/resume receipts
+using `civic observe nec-candidates --allow-effect SOURCE_INGESTION` and the exact election/type
+scope. After a complete SUCCESS checkpoint, inspect the bounded materialization candidate set,
+then use the returned receipt digest for an explicitly authorized commit:
+
+```powershell
+civic inspect nec-safe-people --election-id 20260603 --types 4
+civic materialize nec-safe-people --allow-effect IDENTITY_MATERIALIZATION `
+  --election-id 20260603 --types 4 --expected-receipt-sha256 "REPLACE_WITH_PREFLIGHT_SHA256"
+```
+
+This path can create only the deterministic no-drift/birth-date-present/no-current-Person-name-
+collision subset as private source-context `Person(REVIEW)` nodes with DRAFT candidacy Claims.
+It never name-links an existing Person, resolves cross-source identity, infers an election result
+or publishes a Claim. Recheck the exact current preflight before materializing.
 
 ## Policy-research staging
 
 `NkisResearchReportConnector` uses the official NKIS research-report Open API and requires an
 issued `NKIS_API_KEY` for live requests.
 
-```bash
-NKIS_API_KEY=... civic-stage-policy-research \
+```powershell
+$env:NKIS_API_KEY = "<set locally; do not paste the value into logs>"
+civic observe policy-research --allow-effect SOURCE_INGESTION `
   --publisher "산업연구원" --year-begin 2024 --year-end 2026
 ```
 
@@ -172,11 +190,12 @@ use, excerpt display and commercial reuse remain disabled in V0 unless separatel
 using the ordinary employee-status API for person discovery. Live requests require
 `DART_API_KEY`.
 
-```bash
-DART_API_KEY=... civic-stage-corporate-dart \
-  --dataset EXECUTIVE_STATUS \
-  --corp-code 00123456 \
-  --business-year 2026 \
+```powershell
+$env:DART_API_KEY = "<set locally; do not paste the value into logs>"
+civic observe dart --allow-effect SOURCE_INGESTION `
+  --dataset EXECUTIVE_STATUS `
+  --corp-code 00123456 `
+  --business-year 2026 `
   --report-code 11012
 ```
 
@@ -186,13 +205,12 @@ report (`--business-year 2025 --report-code 11011`). It is persisted under a dis
 `listed_corporations:2025:11011` checkpoint and does not silently claim coverage of all
 119k+ registered corporations.
 
-```bash
-civic-stage-corporate-dart \
-  --dataset EXECUTIVE_STATUS \
-  --business-year 2025 \
-  --report-code 11011 \
-  --enumerate --listed-only \
-  --database-url "$DATABASE_URL"
+```powershell
+civic observe dart-executives --allow-effect SOURCE_INGESTION `
+  --business-year 2025 `
+  --report-code 11011 `
+  --listed-only `
+  --database-url $env:DATABASE_URL
 ```
 
 Use `--resume --listed-only` only after a partial run of that exact scope. The corp-master
@@ -227,8 +245,9 @@ No scheduled synchronization is enabled yet.
 document surfaces exposed by the official ALIO item 4 page. The L3 scope is every institution
 in the unfiltered item 4 directory and the provider-ranked current disclosure for each one.
 
-```bash
-civic-stage-public-institutions --database-url sqlite:///civic-intel.db
+```powershell
+civic observe alio-item4 --allow-effect SOURCE_INGESTION `
+  --database-url sqlite:///civic-intel.db
 ```
 
 Use `--resume` only after a partial run. The worker is sequential because ALIO publishes no
@@ -242,6 +261,13 @@ deterministic source-context `Person(REVIEW)` nodes with DRAFT role Claims; cros
 identity, human resolution and publication remain separate gates.
 
 ## Safety and source rights
+
+Use `civic inspect commands` to see the installed command/effect inventory and [Canonical
+operator commands](docs/operations/COMMANDS.md) for the legacy-script mapping. The separate
+[collection-agent proposal](docs/operations/COLLECTION_AGENT.md) describes a review-and-run
+boundary; it is a proposal, not an implemented collector or permission to run one. For the
+application use-case and unit-of-work boundary, see [Architecture](ARCHITECTURE.md) and the
+current [`UnitOfWorkFactory` port](packages/application/ports.py).
 
 All collection flows require a SourcePolicy. Golden Set 001 contains manually reviewed
 metadata and short excerpts only; its policies are discovery-only or blocked, so tests

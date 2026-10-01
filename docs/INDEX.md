@@ -47,6 +47,8 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Evidence Preview deployment preparation](operations/EVIDENCE_PREVIEW_DEPLOYMENT.md)
 - [Private collection and DB admin console](operations/OPERATOR_CONSOLE.md)
 - [API credential acquisition checklist](operations/API_CREDENTIALS.md)
+- [Canonical operator commands and legacy-script map](operations/COMMANDS.md)
+- [Separate collection-agent operating proposal](operations/COLLECTION_AGENT.md)
 - [Admin work playbook implementation](exec-plans/completed/admin-work-playbook.md)
 - [Admin operation contracts](architecture/ADMIN_OPERATIONS.md)
 - [Admin review workflow execution plan](exec-plans/completed/admin-review-workflow.md)
