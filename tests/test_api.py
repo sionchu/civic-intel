@@ -421,14 +421,12 @@ def test_review_surface_exposes_materialization_action_and_provenance(
         provider_record_key="review-001",
         canonical_name="검토 후보",
     )
-    hard_conflict_observation = stage_observation(
+    from tests.test_materialization import OnePageRoster, enumerate_rows, member_row
+
+    hard_conflict_observation = enumerate_rows(
         seeded_repository,
-        feeder="national_assembly_members",
-        semantic_scope="legislative_member_roster",
-        provider_record_key="M-HARD-001",
-        canonical_name="하드 충돌 후보",
-        birth_date="1990-01-01",
-    )
+        OnePageRoster([member_row("M-HARD-001", "하드 충돌 후보", birth_date="19900101")]),
+    )[0]
     seeded_repository.materialize_feeder_observation(review_observation.id)
     seeded_repository.materialize_feeder_observation(hard_conflict_observation.id)
     report = client.get("/admin/review").json()
