@@ -39,7 +39,12 @@ coverage through `materialize_latest_successful(application)`. It never fetches 
 DRAFT Claims. Claim publication is a separate explicit operation. For a reviewed draft use
 `civic publish claim --allow-effect CLAIM_PUBLICATION --claim-id <draft-claim-id>`; the publication
 gate is revalidated in the transaction that changes its status. Base-profile publication is a
-separate source-specific operation. `civic inspect commands` inventories all 36 current routes.
+separate source-specific operation. `civic inspect commands` inventories all 37 current routes.
+
+`civic observe gukgam-schedule-probe --allow-effect SOURCE_INGESTION --date YYYY-MM-DD
+--committee <exact-committee> --page-size 10` fetches a bounded schedule sample without persistence.
+It checks SourcePolicy before fetching. It remains an L1 discovery path awaiting approved live
+validation; its effect is source acquisition even though it writes no database rows.
 
 ## Complete legacy console-script map
 

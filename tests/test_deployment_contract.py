@@ -34,7 +34,7 @@ def test_rehearsal_manifest_is_loopback_bound_and_migrates_before_api() -> None:
     assert "DATABASE_URL is required" in compose
     assert 'command: ["python", "-m", "alembic", "upgrade", "head"]' in compose
     assert "condition: service_completed_successfully" in compose
-    assert "CIVIC_BOOTSTRAP_MODE: runtime" in compose
+    assert "CIVIC_BOOTSTRAP_MODE" not in compose
     assert "CIVIC_API_URL: http://api:8000" in compose
     assert '"127.0.0.1:${CIVIC_API_PORT:-8000}:8000"' in compose
     assert '"127.0.0.1:${CIVIC_WEB_PORT:-3000}:3000"' in compose
@@ -47,4 +47,5 @@ def test_deployment_runbook_preserves_approval_and_sites_boundaries() -> None:
     assert "No `.openai/hosting.json`" in runbook
     assert "Web-only public domain and its browser smoke were explicitly approved and completed" in runbook
     assert "API and\ndatabase public access remain prohibited." in runbook
-    assert "production must never use Golden bootstrap" in runbook
+    assert "Startup only checks readiness" in runbook
+    assert "environment variables cannot enable seeding" in runbook

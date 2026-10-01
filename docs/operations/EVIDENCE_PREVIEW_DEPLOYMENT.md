@@ -163,10 +163,10 @@ backup/restore and any staging→production data copy require their own explicit
    the local/CI browser and API regressions, not by this empty staging deployment.
 
 Runtime startup checks schema head and does not migrate or seed. Canonical data loading must use an
-existing source-specific worker/import command and its publication/identity gates. For the bounded
-reviewed ALIO pair, the repeatable command is `python -m workers.alio_reviewed_claim_import` with an
-existing canonical Organization ID, institution code, two fiscal years, database URL and explicit
-`--commit`. A dry run without `--commit` is required first. Ignored local databases and Golden
+existing source-specific acquisition/materialization/publication command and its gates. For the bounded
+reviewed ALIO pair, inspect with `civic inspect alio-item12` using an existing canonical Organization
+ID, institution code, two fiscal years and an explicit target. After the reviewed preflight, use
+`civic publish alio-item12 --allow-effect CLAIM_PUBLICATION` with the same arguments. Ignored local databases and Golden
 fixtures are never deployment inputs.
 
 ## Rollback and recovery

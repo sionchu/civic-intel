@@ -36,6 +36,7 @@ ROUTES = {
             "alio-item4",
             "alio-item12",
             "gukgam-plan",
+            "gukgam-schedule-probe",
             "assembly-page",
             "legislative-person",
             "nec-page",
@@ -120,6 +121,7 @@ def build_parser() -> argparse.ArgumentParser:
                 "legislative-person",
                 "nec-page",
                 "dart",
+                "gukgam-schedule-probe",
             ):
                 p.add_argument("--database-url")
             if lane == "claim":
@@ -138,6 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
                     "legislative-person",
                     "nec-page",
                     "dart",
+                    "gukgam-schedule-probe",
                 ):
                     p.add_argument("--resume", action="store_true")
                 if lane in (
@@ -150,12 +153,13 @@ def build_parser() -> argparse.ArgumentParser:
                     "nec-page",
                     "gwanbo",
                     "mois-organizations",
+                    "gukgam-schedule-probe",
                 ):
                     p.add_argument(
                         "--page-size",
                         type=int,
                         default=10
-                        if lane == "gwanbo"
+                        if lane in ("gwanbo", "gukgam-schedule-probe")
                         else 1000
                         if lane in ("legislative", "legislative-person", "mois-organizations")
                         else 100,
@@ -170,6 +174,9 @@ def build_parser() -> argparse.ArgumentParser:
                     p.add_argument("--page-index", type=int, default=1)
                     for flag in ("name", "party", "district"):
                         p.add_argument("--" + flag)
+                if lane == "gukgam-schedule-probe":
+                    p.add_argument("--date", type=date.fromisoformat, required=True)
+                    p.add_argument("--committee", required=True)
                 if lane in ("legislative", "legislative-person"):
                     p.add_argument("--age", type=int, required=True)
                     if lane == "legislative-person":
@@ -252,6 +259,10 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
             parser.error(f"{flag.replace('_', '-')} must be positive")
     if args.lane == "gwanbo" and args.from_date > args.to_date:
         parser.error("from-date must precede to-date")
+    if args.lane == "gukgam-schedule-probe" and (
+        not args.committee.strip() or args.page_size > 100
+    ):
+        parser.error("schedule probe requires a committee and page-size from 1 to 100")
     return args
 
 

@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-import argparse
-import json
-from datetime import date
-
-from packages.connectors.open_assembly import AssemblyApiError, MissingAssemblyApiKey
 from packages.connectors.open_assembly_schedule import (
     AssemblyScheduleRecord,
     OpenAssemblyScheduleConnector,
+    national_assembly_schedule_policy,
 )
+from packages.domain.contracts import SourcePolicy
+from packages.verification.policy import PolicyAction, require_policy
 
 
 def _safe_record(record: AssemblyScheduleRecord) -> dict[str, object]:
@@ -24,12 +22,21 @@ def _safe_record(record: AssemblyScheduleRecord) -> dict[str, object]:
     }
 
 
-def build_probe_report(*, connector: OpenAssemblyScheduleConnector) -> dict[str, object]:
+def build_probe_report(
+    *, connector: OpenAssemblyScheduleConnector, policy: SourcePolicy | None = None
+) -> dict[str, object]:
+    selected = policy or national_assembly_schedule_policy()
+    require_policy(selected, PolicyAction.FETCH)
+    require_policy(selected, PolicyAction.STORE_METADATA)
+    if selected.domain != connector.HOST:
+        raise ValueError("schedule probe SourcePolicy domain does not match")
     document = connector.fetch(connector.discover()[0])
     records = connector.parse_schedules(document)
     candidates = connector.gukgam_candidates(records)
     return {
-        "status": "READ_ONLY_PROBE",
+        "status": "SOURCE_PROBE",
+        "network_fetch": True,
+        "persistence_performed": False,
         "api_code": connector.API_CODE,
         "source_contract": document.metadata.get("source_contract"),
         "query": {
@@ -48,37 +55,3 @@ def build_probe_report(*, connector: OpenAssemblyScheduleConnector) -> dict[str,
         "gukgam_candidates": [_safe_record(record) for record in candidates],
         "semantics": "DISCOVERY_ONLY; schedule candidates do not publish audited organizations, witnesses, reference persons, or identity links",
     }
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Read one bounded National Assembly schedule slice and print safe Gukgam discovery candidates without persistence."
-    )
-    parser.add_argument("--date", type=date.fromisoformat, required=True)
-    parser.add_argument("--committee", required=True)
-    parser.add_argument("--page-size", type=int, default=10)
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    if not args.committee.strip():
-        parser.error("--committee must not be empty")
-    if not 1 <= args.page_size <= 100:
-        parser.error("--page-size must be between 1 and 100")
-    connector = OpenAssemblyScheduleConnector(
-        schedule_date=args.date, committee=args.committee.strip(), page_size=args.page_size
-    )
-    try:
-        report = build_probe_report(connector=connector)
-    except (AssemblyApiError, MissingAssemblyApiKey, ValueError) as exc:
-        parser.error(str(exc))
-    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-
-COMMAND_EFFECT = "READ_ONLY"

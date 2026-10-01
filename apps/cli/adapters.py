@@ -30,6 +30,12 @@ def _read(path: Path) -> Any:
 
 
 def observe(a: argparse.Namespace) -> Any:
+    if a.lane == "gukgam-schedule-probe":
+        w = worker("gukgam_schedule_probe")
+        connector = w.OpenAssemblyScheduleConnector(
+            schedule_date=a.date, committee=a.committee.strip(), page_size=a.page_size
+        )
+        return w.build_probe_report(connector=connector)
     if a.lane in ("assembly", "assembly-page"):
         w = worker("assembly_roster")
         c = w.OpenAssemblyMemberConnector(

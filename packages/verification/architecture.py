@@ -59,7 +59,6 @@ def check(root: Path) -> list[str]:
     operational_modules = {
         "operator_console": "SCHEMA_OR_DEPLOY",
         "alio_cross_lane_identity_candidates": "READ_ONLY",
-        "gukgam_schedule_probe": "READ_ONLY",
         "public_beta_preflight": "READ_ONLY",
     }
     for path in (root / "workers").glob("*.py"):

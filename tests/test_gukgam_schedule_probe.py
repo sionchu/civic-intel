@@ -1,9 +1,17 @@
 import json
 from datetime import date
 
+import pytest
+
+from apps.cli import adapters
+from apps.cli.main import main
 from packages.connectors.base import ConnectorDocument
-from packages.connectors.open_assembly_schedule import OpenAssemblyScheduleConnector
-from workers.gukgam_schedule_probe import build_probe_report, main
+from packages.connectors.open_assembly_schedule import (
+    OpenAssemblyScheduleConnector,
+    national_assembly_schedule_policy,
+)
+from packages.verification.policy import PolicyDenied
+from workers.gukgam_schedule_probe import build_probe_report
 
 SECRET = "probe-test-secret"
 
@@ -68,7 +76,7 @@ def _document() -> ConnectorDocument:
     )
 
 
-def test_probe_report_is_read_only_and_only_returns_gukgam_candidates(
+def test_probe_report_does_not_persist_and_only_returns_gukgam_candidates(
     monkeypatch,
 ) -> None:
     connector = OpenAssemblyScheduleConnector(
@@ -81,7 +89,8 @@ def test_probe_report_is_read_only_and_only_returns_gukgam_candidates(
 
     report = build_probe_report(connector=connector)
 
-    assert report["status"] == "READ_ONLY_PROBE"
+    assert report["status"] == "SOURCE_PROBE"
+    assert report["persistence_performed"] is False
     assert report["api_code"] == "ALLSCHEDULE"
     assert report["provider"] == {
         "result_code": "INFO-000",
@@ -108,9 +117,53 @@ def test_probe_report_is_read_only_and_only_returns_gukgam_candidates(
     assert "reference_persons" not in candidate
 
 
+@pytest.mark.parametrize("field", ["can_fetch", "can_store_metadata", "domain"])
+def test_probe_policy_denial_precedes_network(monkeypatch, field) -> None:
+    connector = OpenAssemblyScheduleConnector(
+        api_key=SECRET,
+        schedule_date=date(2026, 10, 6),
+        committee="과학기술정보방송통신위원회",
+    )
+    policy = national_assembly_schedule_policy().model_copy(
+        update={field: "other.invalid" if field == "domain" else False}
+    )
+    monkeypatch.setattr(connector, "fetch", lambda url: pytest.fail("network called"))
+    with pytest.raises((PolicyDenied, ValueError)):
+        build_probe_report(connector=connector, policy=policy)
+
+
+@pytest.mark.parametrize("effect", [None, "READ_ONLY"])
+def test_probe_effect_rejection_precedes_dispatch(monkeypatch, effect) -> None:
+    monkeypatch.setattr(adapters, "dispatch", lambda args: pytest.fail("worker dispatched"))
+    argv = [
+        "observe",
+        "gukgam-schedule-probe",
+        "--date",
+        "2026-10-06",
+        "--committee",
+        "과학기술정보방송통신위원회",
+    ]
+    if effect is not None:
+        argv.extend(["--allow-effect", effect])
+    with pytest.raises(SystemExit) as exc:
+        main(argv)
+    assert exc.value.code == 2
+
+
 def test_probe_cli_requires_a_bounded_date_and_committee() -> None:
     try:
-        main(["--date", "2026-10-06", "--committee", ""])
+        main(
+            [
+                "observe",
+                "gukgam-schedule-probe",
+                "--allow-effect",
+                "SOURCE_INGESTION",
+                "--date",
+                "2026-10-06",
+                "--committee",
+                "",
+            ]
+        )
     except SystemExit as exc:
         assert exc.code == 2
     else:
@@ -121,6 +174,10 @@ def test_probe_cli_rejects_large_page_size() -> None:
     try:
         main(
             [
+                "observe",
+                "gukgam-schedule-probe",
+                "--allow-effect",
+                "SOURCE_INGESTION",
                 "--date",
                 "2026-10-06",
                 "--committee",
