@@ -81,10 +81,61 @@ reported honestly; no layer is marked PASS from another layer's result.
   0eb326d and previous test receipts preserved. No operational mutation at activation.
 - Three prior status audits and the proposal's independent consistency review completed.
 - Owner option1 selected; source/deployment preflight and frontend packet preparation delegated.
-- Current observed browser prerequisite: Aside CLI works but daemon is absent. Attempt only
-  documented non-destructive recovery; never substitute another browser transport.
-- Current unknowns: actual deployed SHA/schema/contents, staging target backup, Opus execution,
-  current rendered acceptance and target-specific source/identity/publication receipts.
+- Actual tool-less Opus collaboration completed: claude-opus-5-5, exit0, two turns,
+  240.641s. MAIN validated the seven-file exact input base and applied the scoped Person patch.
+  Final independent review found no actionable regression. UI commit: af46132d49d0e8106851c473bfcda69c50f89345.
+- Final `make verify` exit0: 853 Python passes, 4 optional PG skips, 6 SQLite warnings;
+  mypy 146 files, Golden 13 checks, architecture, web lint/typecheck, 26 web tests and production build PASS.
+  All four optional PostgreSQL tests separately executed in a fresh disposable local DB, exit0.
+- Live staging schema 0008 and 299 public people verified. Fresh private logical backup restored to a
+  separate local PG18 database with matching canonical counts, policy, coverage and provenance.
+  A synthetic 299-record PG rerun created zero duplicate observations and retained exact provenance.
+- The authorized source effect ran once at 07:06Z. Parent exit 1; durable run 876cd05a is PARTIAL,
+  ConcurrentWrite, 100 unchanged/0 created. Current checkpoint is page1, manifest100/299.
+  Sources/observations/People/Claims/Organizations/public counts stayed unchanged; one snapshot
+  and one run were added. No identity, publication, automatic retry or operational restore ran.
+- Historical PostgreSQL logs identify file-extension failure with No space left on device.
+  Actual data filesystem is 100% used, with 552960 bytes available; configured volume 500 MB.
+  Shared memory has 61759488 bytes available. Capacity was missing from the original allocation
+  preflight; it is now mandatory before any further source allocation. No speculative backend fix.
+  Logs identify an INSERT into source_snapshots in the failure window, but no per-run/session
+  correlation ID. Persisted ConcurrentWrite and disk-full diagnostics retain separate provenance.
+- Owner reopened Aside. Actual production-artifact DOM evidence confirms directory filtering,
+  Person content, keyboard audit disclosure, source-policy text, UNKNOWN/PARTIAL and not-found.
+  Native source anchors preserve hrefs; final source hash navigation was observed after keyboard
+  interaction. Immediate mouse navigation/scroll landing remain unconfirmed. Summary height 44px,
+  focus outline 3px and no desktop overflow are DOM measurements, not visual acceptance.
+  Screenshot calls timed out at 30s/60s; writable mobile viewport API is unavailable.
+  UI verification incomplete; conflict/loading/transport-error and narrow layout remain NOT_RUN.
+- An exact three-file UI patch applies cleanly to verified public master 77e2767 and matches the
+  candidate bytes. No branch push, PR, merge or deployment ran. Deployed SHA remains unavailable
+  in both runtime-variable and deployment-metadata probes. The Mac SSD capture is unchanged.
+
+## Concrete recovery decision
+
+Evidence is [the pilot receipt](../../receipts/assembly-site-pilot-20261002.json).
+The source request is [the executed request](../../operations/staging-assembly-one-shot-request.json).
+The exact UI release candidate is Person page, scoped CSS and copy-coupled UI assertions only;
+it does not release the whole architecture branch. Its patch hash and applied-byte evidence are
+in the receipt. Release remains gated by actual UI acceptance and a concrete public-code/deploy decision.
+
+1. Recommended: expand staging postgres-volume 88b510ef-4336-4cb3-ba30-09256636e427 from 500 MB
+   to 2000 MB within the existing plan, after owner accepts cost/restart implications. Preserve the
+   verified private backup and PARTIAL run. Verify schema/counts/readiness/capacity after resize,
+   then separately allocate one fresh whole-roster run under the existing 8-request/1s/120s/180s
+   limits. No blind resume of old pagination, automatic retry, identity or publication. If a paid
+   plan change is required, stop and present its actual terms; this choice does not authorize it.
+2. Keep the current DB and Mac SSD capture; leave live source writes stopped and retain the
+   committed frontend candidate while the Aside visual/mobile prerequisite is resolved.
+
+Railway charges actual used volume storage at $0.15/GB/month; 2 GB fully used would be about
+$0.30/month for volume storage alone. Subscription/CPU/RAM/egress are separate; the current
+account plan and resulting total bill are not verified. Free/Trial has a 0.5 GB volume limit and
+Hobby starts at $5/month. A full volume can require an offline resize and service restart; capacity
+cannot currently be shrunk afterwards. Sources checked 2026-10-02:
+[pricing](https://docs.railway.com/pricing/plans),
+[volume behavior](https://docs.railway.com/volumes/reference).
+No resize, plan change, deletion, VACUUM FULL, restart or new source attempt is authorized by this document.
 
 ## Stop and recovery
 

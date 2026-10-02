@@ -1,0 +1,378 @@
+{
+  "recorded_at": "2026-10-02T08:08:34.014444+00:00",
+  "pilot_status": "IN_PROGRESS_SOURCE_RECOVERY_REQUIRED_UI_VERIFICATION_INCOMPLETE",
+  "execution_plan": "docs/exec-plans/active/assembly-site-pilot.md",
+  "source_execution_code_commit": "4c947e914ff33bce5b365b5c6918bcf190d4f6e0",
+  "ui_commit": "af46132d49d0e8106851c473bfcda69c50f89345",
+  "opus": {
+    "models": [
+      "claude-opus-5-5"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 240.641,
+    "turns": 2,
+    "input_manifest": {
+      "DESIGN.md": "4768ec6c59d7760540906deb5838c18e400a7cbc94d5629c4ffad3104b19529a",
+      "apps/web/app/people/[id]/page.tsx": "7ee0e0627220c35e6089e2d5a6577b4912908408ee6f737f338922fe6bb1f587",
+      "apps/web/app/styles.css": "d53e937ab2e7ca18b63e1e466f56fe7057c6c431052c3d3df3cb8aed2ed93791",
+      "apps/web/app/types.ts": "9593bfa05fdd5c5bf40f2f469b1c51951a64f01f418716d4d50a46d5b830d5bb",
+      "apps/web/app/data.ts": "1ec0e69160869b9bb0a9dd435b44fe39efe21001157f1f81cd974811717dfca1",
+      "apps/web/app/components/read-state.tsx": "9a58c0d36bf113a72675da9fffe939b1b0b9afd0afb60be1a6716796c23d1c0b",
+      "apps/web/app/components/ontology-local-graph.tsx": "c7c4cb30ed0886a364cde178ec571678f4e8b85e45fb95eb222852bbeecb4413"
+    },
+    "response_sha256": "1e305b50c7aa06d8e5a7410c94d5c8925c13e92eabfb085bb2ea807e6e3821c0",
+    "tools": [],
+    "mcp_servers": [],
+    "source_records_or_secrets_supplied": false,
+    "validated_exact_base_patch_applied": true,
+    "independent_final_diff_review": "NO_ACTIONABLE_REGRESSION"
+  },
+  "code_verification": {
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "exit_code": 0,
+    "python_passed": 853,
+    "python_optional_pg_skipped": 4,
+    "sqlite_deprecation_warnings": 6,
+    "python_seconds": 345.31,
+    "mypy_files": 146,
+    "golden_checks_passed": 13,
+    "architecture": "PASS",
+    "web_tests_passed": 26,
+    "web_lint": "PASS",
+    "web_typecheck": "PASS",
+    "production_build": "PASS",
+    "diff_check": "PASS"
+  },
+  "postgres_verification": {
+    "optional_integration_command": "python -m pytest tests/test_postgresql_integration.py -q",
+    "optional_integration_exit": 0,
+    "optional_integration_passed": 4,
+    "optional_integration_target": "new_disposable_local_pg_database",
+    "offline_rerun": {
+      "checkpoint": "3",
+      "first_created": 299,
+      "mock_calls": 6,
+      "observations": 299,
+      "probe": "SYNTHETIC_ASSEMBLY_PG_RERUN",
+      "second_created": 0,
+      "second_unchanged": 299,
+      "snapshots": 6,
+      "status": "PASS",
+      "source_network": false,
+      "operational_mutation": false,
+      "migration_target": "new_disposable_local_fixture",
+      "exit_code": 0
+    }
+  },
+  "staging_backup": {
+    "project_id": "f403bc33-2190-4177-9150-2971e25dd9ee",
+    "environment_id": "b66af015-7013-4c38-9720-de48ec6f9a71",
+    "postgres_service_id": "2a4eb90c-c73a-4d22-bd25-14d0f80c6a44",
+    "schema_revision": "0008",
+    "postgres_version_num": "180006",
+    "dump_bytes": 29465885,
+    "dump_sha256": "92fa5661207325c60e30a515e02f16a44dbb4afa967357d5b37e90c88c4ef78d",
+    "private_ntfs_dacl": true,
+    "restore_audit_matches": true,
+    "before_source_refresh": true,
+    "canonical_table_counts": {
+      "people": 9120,
+      "person_aliases": 0,
+      "organizations": 347,
+      "offices": 0,
+      "appointments": 0,
+      "source_policies": 11,
+      "sources": 4486,
+      "source_snapshots": 4486,
+      "source_runs": 48,
+      "source_checkpoints": 18,
+      "feeder_observations": 96599,
+      "identity_review_items": 1,
+      "person_observation_links": 9120,
+      "source_origin_clusters": 0,
+      "claims": 14397,
+      "claim_evidence": 14397,
+      "asset_disclosures": 0,
+      "asset_items": 0,
+      "events": 0,
+      "decision_episodes": 0,
+      "relationships": 0,
+      "hypotheses": 0,
+      "profile_snapshots": 0,
+      "event_documents": 0,
+      "hypothesis_evidence": 0,
+      "admin_operations": 0
+    },
+    "public_people": 299,
+    "assembly_prior_successful_run_id": "4fa48daa-5b02-45eb-ad98-2fb01ee5c5f8",
+    "assembly_manifest_sha256": "8c660730b114fd9a7f0edd8028f003c4269203aea27192588ba2a37f273f5091",
+    "public_claim_gate_checked": 1494,
+    "invalid_public_claims": 0,
+    "operational_restore": false
+  },
+  "source_refresh": {
+    "request": "docs/operations/staging-assembly-one-shot-request.json",
+    "attempts": 1,
+    "parent_status": "FAILED",
+    "parent_exit_code": 1,
+    "hard_stop": false,
+    "owned_child_stopped": true,
+    "durable_source_run": {
+      "id": "876cd05a-973a-4375-8432-26d90c87bae4",
+      "status": "PARTIAL",
+      "error_code": "ConcurrentWrite",
+      "started_at": "2026-10-02T07:06:36.407814+00:00",
+      "finished_at": "2026-10-02T07:06:41.708802+00:00",
+      "records_seen": 100,
+      "observations_created": 0,
+      "observations_unchanged": 100
+    },
+    "current_checkpoint_run_id": "876cd05a-973a-4375-8432-26d90c87bae4",
+    "checkpoint_cursor": "1",
+    "manifest_count": 100,
+    "provider_total_count": 299,
+    "expected_pages": 3,
+    "assembly_observation_count": 299,
+    "actual_provider_request_count": "UNKNOWN",
+    "table_count_deltas": {
+      "source_snapshots": {
+        "before": 4486,
+        "after": 4487
+      },
+      "source_runs": {
+        "before": 48,
+        "after": 49
+      }
+    },
+    "public_people_after": 299,
+    "identity_materialization": "NOT_RUN_INCOMPLETE_CHECKPOINT",
+    "claim_publication": "NOT_RUN_INCOMPLETE_CHECKPOINT",
+    "automatic_retry": false,
+    "operational_restore_or_checkpoint_rewrite": false,
+    "stale_other_running_run_records_preserved": true,
+    "partial_postflight": {
+      "observed_at": "2026-10-02T07:54:13.255669+00:00",
+      "schema": "0008",
+      "source_run_id": "876cd05a-973a-4375-8432-26d90c87bae4",
+      "source_run_status": "PARTIAL",
+      "checkpoint_cursor": "1",
+      "partial_manifest_contexts_checked": 100,
+      "manifest_contexts_complete": true,
+      "context_policy_privacy_violations": 0,
+      "new_snapshots_checked": 1,
+      "new_snapshot_metadata_key_sets": [
+        [
+          "api_code",
+          "list_total_count",
+          "page_index",
+          "page_size",
+          "row_count"
+        ]
+      ],
+      "new_snapshot_privacy_violations": 0,
+      "public_people": 299,
+      "source_fetch": false,
+      "operational_mutation": false,
+      "raw_values_emitted": false
+    }
+  },
+  "failure_diagnosis": {
+    "historical_log_categories": {
+      "target": "staging_postgres_historical_logs",
+      "window_start": "2026-10-02T07:06:30Z",
+      "window_end": "2026-10-02T07:06:50Z",
+      "exit_code": 0,
+      "timed_out": false,
+      "line_count": 3,
+      "error_line_count": 1,
+      "categories": [
+        "DISK_FULL"
+      ],
+      "constraint_identifiers": [],
+      "sqlstates": [],
+      "raw_log_output": false,
+      "source_fetch": false,
+      "operational_mutation": false,
+      "resource_failure_class": "POSTGRES_FILE_EXTEND",
+      "requested_shared_memory_bytes": []
+    },
+    "filesystem_capacity": {
+      "target": "staging_postgres",
+      "read_only": true,
+      "exit_code": 0,
+      "filesystems": [
+        {
+          "mount_class": "container_root",
+          "size_bytes": 3147638644736,
+          "used_bytes": 1192923680768,
+          "available_bytes": 1954698186752,
+          "use_percent": 38
+        },
+        {
+          "mount_class": "shared_memory",
+          "size_bytes": 64000000,
+          "used_bytes": 2240512,
+          "available_bytes": 61759488,
+          "use_percent": 4
+        },
+        {
+          "mount_class": "postgres_data",
+          "size_bytes": 454299648,
+          "used_bytes": 443682816,
+          "available_bytes": 552960,
+          "use_percent": 100
+        }
+      ],
+      "raw_output": false,
+      "cost_or_config_mutation": false
+    },
+    "log_correlation": {
+      "log_ingestion_timestamps": [
+        "2026-10-02T07:06:46.679578795Z",
+        "2026-10-02T07:06:46.679583085Z",
+        "2026-10-02T07:06:46.679586375Z"
+      ],
+      "postgres_server_timestamps": [
+        "2026-10-02 07:06:40.763 UTC",
+        "2026-10-02 07:06:40.763 UTC",
+        "2026-10-02 07:06:40.763 UTC"
+      ],
+      "allowlisted_write_statement_categories": [
+        {
+          "operation": "INSERT INTO",
+          "canonical_table": "source_snapshots"
+        }
+      ],
+      "run_uuid_in_captured_log": false,
+      "exact_run_session_correlation": "NOT_ESTABLISHED",
+      "raw_sql_or_parameters_emitted": false
+    },
+    "railway_volume": {
+      "id": "88b510ef-4336-4cb3-ba30-09256636e427",
+      "configured_size_mb": 500,
+      "reported_current_size_mb": 495.362048,
+      "status": "Ready"
+    },
+    "conclusion": "DATA_VOLUME_FULL_CONFIRMED_SOURCE_PAGE_FAILURE_CORRELATES_IN_TIME",
+    "preflight_capacity_was_checked": false,
+    "further_source_allocation_requires_capacity_check": true,
+    "backend_schema_or_error_semantics_changed": false
+  },
+  "browser": {
+    "backend": "ASIDE_ONLY",
+    "data": "verified_private_staging_restore_with_20260915_public_claims",
+    "person_dom_receipt": {
+      "data": "verified_staging_restore_20260915_public_claims",
+      "route": "http://127.0.0.1:52674/people/44745d09-398c-46ce-bc38-81f0f606c1d7#source-408beedd-7233-4ef9-ab81-a6edfedfcc0f",
+      "reportedViewport": {
+        "width": 1425,
+        "height": 900
+      },
+      "states": [
+        {
+          "stage": "directory_to_person",
+          "confirmed": true
+        },
+        {
+          "stage": "keyboard_evidence_disclosure",
+          "confirmed": true
+        },
+        {
+          "stage": "evidence_to_source",
+          "confirmed": false,
+          "observed": {
+            "top": 3598.203125,
+            "height": 306.03125,
+            "hashMatches": false
+          }
+        },
+        {
+          "stage": "evidence_to_source_keyboard",
+          "confirmed": false,
+          "observed": {
+            "top": 3598.203125,
+            "hashMatches": true
+          }
+        },
+        {
+          "stage": "source_hash_navigation_after_audit",
+          "confirmed": true
+        }
+      ],
+      "keyboard": {
+        "open": true,
+        "summaryFocused": true,
+        "focusOutlineWidth": "3px",
+        "summaryHeight": 44
+      },
+      "desktopOverflow": {
+        "scrollWidth": 1425,
+        "clientWidth": 1425,
+        "overflow": false
+      },
+      "coverageStatesPreserved": true,
+      "screenshotStatus": "FAILED_ASIDE_CAPTURE_TIMEOUT",
+      "mobileStatus": "NOT_RUN_WRITABLE_VIEWPORT_API_UNAVAILABLE",
+      "visualAcceptance": false
+    },
+    "not_found_content_observed": true,
+    "missing_route": "/people/00000000-0000-0000-0000-000000000000",
+    "immediate_mouse_navigation_and_scroll": "UNCONFIRMED",
+    "conflict_loading_transport_error_browser_states": "NOT_RUN",
+    "desktop_screenshot": "FAILED_CAPTURE_TIMEOUT_30S_AND_60S",
+    "mobile": "NOT_RUN_WRITABLE_VIEWPORT_API_UNAVAILABLE",
+    "screenshot_artifacts_inspected": 0,
+    "visual_acceptance": false
+  },
+  "release_candidate": {
+    "base_commit": "77e2767ab043738f00b8dd38be8d99803e5ad7bc",
+    "paths": [
+      "apps/web/app/people/[id]/page.tsx",
+      "apps/web/app/styles.css",
+      "apps/web/tests/ui.test.mjs"
+    ],
+    "patch_sha256": "4594ff99580192d873768a5a5cec4d2b68b7dd554dabef2f43a2cb521e263db4",
+    "normalized_file_sha256": {
+      "apps/web/app/people/[id]/page.tsx": "b90f0c5d352f8293e0a15cf977e6e2adee5486bf75a0a8db87115b2f0b20695e",
+      "apps/web/app/styles.css": "8218cd45c2572baf306b1feb99e1e240f5f5a3b183fd53377e901c9b941b6f4e",
+      "apps/web/tests/ui.test.mjs": "0014725a654321df20c6212b17d23f4d75cd605852f7c9b000885350dc78dd50"
+    },
+    "apply_check_exit": 0,
+    "isolated_apply_exit": 0,
+    "applied_files_match_candidate": true,
+    "public_push": false,
+    "pull_request_created": false,
+    "deployed": false,
+    "api_or_schema_changes": false,
+    "scope": "Person UI only; all other apps/web files match pinned public master"
+  },
+  "deployed_commit": "UNKNOWN_RUNTIME_AND_METADATA_PROBES_DID_NOT_RETURN_SHA",
+  "not_executed": [
+    "public branch push",
+    "PR",
+    "merge",
+    "deployment",
+    "volume resize",
+    "paid plan change",
+    "operational restart",
+    "destructive cleanup",
+    "new source retry",
+    "identity materialization",
+    "Claim publication",
+    "recurring scheduler"
+  ],
+  "cleanup": {
+    "owned_loopback_api_web_stopped": true,
+    "owned_restore_pg_stop_exit": 0,
+    "owned_private_tunnels_stopped": true,
+    "private_backup_preserved": true,
+    "mac_capture_mutation": false
+  },
+  "sensitive_output": {
+    "source_key_values": false,
+    "database_uris": false,
+    "private_paths": false,
+    "raw_records": false,
+    "raw_exceptions_or_sql": false
+  }
+}

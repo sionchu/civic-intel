@@ -2,22 +2,24 @@
 
 ## Objective
 
-Reapply the approved architecture refactor and prepare the selected dedicated one-shot collector
-on the Mac/SSD. The local architecture work order is complete. The owner approved the exact
-one-shot Assembly acquisition and Windows source-key reuse. That run and canonical audit are complete:
-299 observations, provider total 299, three snapshots, checkpoint 3, SUCCESS.
+Continue owner-selected option1: Assembly site integration and actual Claude Opus Person UI
+collaboration on existing staging. The earlier architecture and Mac SSD one-shot are complete.
+This site pilot is IN_PROGRESS: frontend code is verified and committed; staging refresh is
+PARTIAL, the data volume is full, and rendered/mobile acceptance remains incomplete.
 
 ## Scope
 
 Preserve Evidence Core, current Organization/source reachability, UNKNOWN, admin signing/locking/
-receipts, source-context identity gates and schema compatibility. Operational grant is limited
-to the single current Assembly roster and allocated fresh target; no identity/publication/schedule.
+receipts, source-context identity gates and schema compatibility. Preserve original master edits
+and the successful Mac SSD capture. Source, identity, publication, release and recurring collection
+are separate effects. No production, new domain/indexing, public API/DB or paid plan change.
 
 ## Acceptance criteria
 
-Pure domain, application orchestration, one UoW/session, capability repositories, shared proven
-acquisition lifecycle, explicit CLI effects, coherent reads, bounded context, independent review
-and executed local verification. All are satisfied; details are in the final receipt.
+Current pilot acceptance: full code/Golden gates, real PostgreSQL backup/restore and source
+coverage/provenance, gated identities/Claims, actual Aside desktop/mobile/keyboard evidence,
+and exact deployed-commit staging reads. Code/PG recovery passed; source completion, visual
+acceptance, identity/publication continuation and deployment have not passed.
 
 ## Completed
 
@@ -32,6 +34,14 @@ its value or transferring other `.env` values.
 ## Current checkpoint
 
 Branch codex/architecture-current-master, isolated architecture-current-master worktree.
+UI commit af46132d49d0e8106851c473bfcda69c50f89345, on approved work-order commit 4c947e9.
+Current plan: docs/exec-plans/active/assembly-site-pilot.md.
+Current receipt: docs/receipts/assembly-site-pilot-20261002.json.
+Staging schema 0008; public 299; People 9120, Claims 14397, Organizations 347 preserved.
+One authorized source run 876cd05a-973a-4375-8432-26d90c87bae4 ended PARTIAL/ConcurrentWrite.
+Checkpoint page 1 and manifest 100/299; zero new observations, one snapshot and one run committed.
+Historical PG logs identify file extension/No space left on device; data FS 100%, available 552960
+bytes, configured volume 500 MB. Do not materialize/publish from this incomplete checkpoint or retry.
 Base/remote master 77e2767ab043738f00b8dd38be8d99803e5ad7bc; verified source
 333aa26bda5f1110e53190f27de0c62a0f43cb30 for the installed bounded candidate; initial
 architecture source 0ae6945 is retained in the earlier receipt.
@@ -51,6 +61,23 @@ unchanged and schema at 0008. Dedicated immutable one-shot acquisition is the fi
 option; unrestricted LLM roles/worktrees cannot prove credential/tool isolation or writer exclusion.
 
 ## Verification evidence
+
+Current UI: `python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify`
+exit 0; 853 Python passes, 4 optional PG skips, 6 warnings, 26 web passes, lint/typecheck/build PASS.
+Four optional PostgreSQL tests separately executed, exit0, in a new disposable local DB.
+Private fresh dump/restore matches schema/counts/policy/coverage/provenance; dump 29465885 bytes,
+SHA 92fa5661207325c60e30a515e02f16a44dbb4afa967357d5b37e90c88c4ef78d.
+Actual Opus model claude-opus-5-5, exit 0; two turns, 240.641s, seven-file tool-less code packet.
+Independent final diff review: no actionable regression. Offline 299-record PG rerun PASS: 6 snapshots,
+299 observations retained, second-created 0/unchanged 299. No provider network or operational writes.
+Aside production-artifact DOM confirms filtering, profile/audit/source-policy/UNKNOWN/PARTIAL,
+final keyboard source hash and not-found; immediate mouse/scroll acceptance is unconfirmed.
+Screenshots timed out; writable mobile viewport API absent. UI verification incomplete.
+Exact 3-file UI patch applies to public master 77e2767, candidate bytes match. No public push/deploy.
+Partial postflight checked 100 contexts and one new snapshot: policy/privacy violations 0, public 299.
+Owned loopback web/API/PG and private tunnels stopped; protected backup remains.
+
+Earlier completed architecture/Mac evidence:
 
 python .tools/run_clean.py .tools/make/ucrt64/bin/mingw32-make.exe verify: exit 0; Ruff, mypy
 (146 files), 728 Python tests, Golden quality, architecture contract, web lint/types, 26 web tests
@@ -82,33 +109,30 @@ assembly-one-shot-live-audit-20261002.json and one-shot-profile-7b004bf.json.
 
 ## Not executed
 
-Current-branch remote CI, identity materialization/admin writes, publication, scheduling,
-browser/visual acceptance, Docker build (unavailable), push/PR/merge, deployment or public access changes.
+Current-branch remote CI, staging identity materialization/admin writes, publication, scheduling,
+full rendered/mobile acceptance, conflict/loading/transport-error browser states, Docker build,
+push/PR/merge, deployment, resize/plan/restart or public access changes. No source retry.
 
 ## Blockers
 
-None for the completed one-shot scope. Allocated ownership/advisory launcher lock is not a
-database-enforced shared-writer lease; shared recurring writers remain a separate change.
+Staging data volume is full; owner cost/restart decision is needed before proposed 500→2000 MB
+resize and a separately bounded fresh source run. Account plan/total bill remain unverified;
+paid plan change is not authorized. Aside capture/mobile limitations block visual acceptance.
+Deployed SHA is unavailable. Allocated ownership/advisory lock is not a DB-enforced shared-writer
+lease; old ALIO/MOIS RUNNING records are preserved and do not authorize recurring writers.
 
 ## Modified files
 
-See the receipt for source paths. Current continuation: this HANDOFF, completed architecture
-plan, final receipt, docs/operations/COLLECTION_AGENT.md and Mac readiness/bounded receipts.
-Assembly connector/CLI budgets, fixed relay, trusted parent and completed Mac plan are integrated.
-Original history is in docs/history. Mac preparation helpers/bundle are local ignored .tools files.
+UI commit contains apps/web/app/people/[id]/page.tsx, apps/web/app/styles.css and copy-coupled
+apps/web/tests/ui.test.mjs. Current checkpoint updates this HANDOFF, active pilot plan, executed
+staging request, pilot receipt and INDEX. Diagnostic helpers, exact release patch, external-model
+response and returned Aside DOM receipts remain ignored/private; no secret/raw source payload in Git.
 
 ## Next concrete action
 
-No active collection remains. Preserve the SSD DB/key and receipts. The nonempty target guard
-prevents a duplicate first run. Further collection/resume, identity work, publication or recurring
-execution needs a separately scoped work order.
-
-Owner requested a read-only status audit and choices for site/data/Claude Opus orchestration.
-Three scoped child inventories and MAIN checks completed on 2026-10-02. The proposal is
-docs/operations/NEXT_PHASE_ORCHESTRATION.md. Owner selected option1; the current active work
-order is docs/exec-plans/active/assembly-site-pilot.md. Source/deployment preflight and Opus
-frontend packet preparation are in progress; MAIN owns keys, operational writes and integration.
-Railway staging reports three SUCCESS deployments and Web GET200; production has zero services.
-Mac count/schema checks still match 299 observations and zero People/Claims. Mac SQLite and site
-PostgreSQL are separate; no canonical transfer command exists. Claude CLI/login are confirmed,
-but no Opus request ran. Aside daemon is missing, so current rendered acceptance remains incomplete.
+Present the active plan's concrete recovery choices: existing-plan 2 GB staging volume and a new
+bounded whole-roster source run after readiness checks, or preserve all data and leave source
+writes stopped. No destructive cleanup, forced checkpoint rollback, automatic retry or plan upgrade.
+Resume actual Aside desktop/mobile capture when supported; require visual acceptance before release.
+The prepared release contains only the 3 UI files, not the whole architecture history. Public code
+and deployment remain a later concrete decision. Preserve the successful Mac capture and its guard.
