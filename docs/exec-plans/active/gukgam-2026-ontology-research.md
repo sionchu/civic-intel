@@ -6,15 +6,50 @@ The full historical execution chronology is preserved in
 [the archived original plan](../../history/gukgam-2026-governance-ontology-visual-explorer-v0.md).
 
 Owner priority, 2026-10-02: continue the Mac SSD/Sites preparation with Gukgam first.
-Current work order (base 8efb059): MAIN reorders the existing Gukgam UI around Claim-backed
+Latest owner correction: prepare audited institutions and officially listed witnesses/reference
+people together. MAIN's bounded research work order (base adf4b13) covers the exact two Science
+Committee witness PDFs found on the official reference-materials board, minimized local
+extraction, source-scoped linkage candidates and frontend/backend work order. This instruction
+supersedes the preceding source-lookup restriction for these two operator acquisitions only.
+No repeated automated feeder, operational DB change, canonical identity binding, actual human
+attestation, Claim publication or deployment is authorized by this research checkpoint.
+
+Completed preceding UI work order (base 8efb059): MAIN reorders the existing Gukgam UI around Claim-backed
 audited Organizations and distinguishes the audit subject from witness/reference-person
 records. Owned paths: existing Gukgam page/scoped anchor CSS, copy-coupled UI checks, reviewed-packet coverage
 receipt, operations/INDEX and HANDOFF. Reuse DESIGN/components; no new DTO or persistence.
-Read-only Mac API and local canonical packet validation are allowed. No source retrieval,
+That preceding work order allowed read-only Mac API and local canonical packet validation. No source retrieval,
 operational DB writes, identity bindings, human attestation, Claim publication or deployment is authorized.
 Disposable local regression/UI fixtures may be migrated/seeded under the original work order;
 their test publication is never operational publication or real identity approval.
 Require full make verify and Aside desktop/mobile acceptance; report browser failure separately.
+
+## Official witness linkage research checkpoint, 2026-10-02
+
+- Official Science Committee posts `3078724` (institution witnesses) and `3078723`
+  (general witnesses/reference people), both published 2026-09-22, were verified through
+  bounded Aside operator navigation. Each explicitly names the committee and displays KOGL Type 1.
+- Exact PDF download identifiers match each parent post; one acquisition per attachment was
+  executed. The 26-page institution artifact hash is
+  `7ef99c6e217dc775cb2878f395a02eebcdd95cb4eecfa852b6d08b94d0217b9f`; the 4-page general/reference
+  artifact hash is `bb1cf15928ef93e5e4e974fa2971fad628bedc58a1416ea890a46de9308f861d`.
+- [Source-scoped research candidates](../../research/gukgam_2026_science_witness_linkage_2026-10-02.json)
+  contain 370 institution-role rows / 369 institution name cells, 29 general-witness rows and
+  13 reference-person rows. All 87 institution table heading counts match the source name cells.
+  The shared name cell on institution page 25 is one printed name covering two roles.
+  These are neither unique canonical people nor national completeness counts.
+- General/reference rows explicitly carry `대상기관` separately from employment/affiliation.
+  Institution rows retain their exact organization headings and do not infer unprinted dates.
+  Exact page/table/row keys, original PDF SHA and normalized record hashes remain distinct.
+- The packet is `DRAFT_NOT_HUMAN_REVIEWED`, L0 research, not canonical import eligible.
+  The existing plan parser remains schedule-only. No witness-specific canonical parser/import/API
+  or public projection was implemented; no operational ingestion, identity or publication occurred.
+  Actual attendance and later-amendment completeness are not established.
+- [Connection work order and primary-source examples](../../research/gukgam_2026_science_witness_linkage_2026-10-02.md)
+  prepare institution → three witness categories → person/affiliation → Claim/Evidence.
+  Source-specific minimized research permissions are recorded in the source contract; no raw-file
+  AI processing, public raw storage, secondary-site copied rows or repeated retrieval is allowed.
+  Field-level human review, exact target DB identities and publication remain separate steps.
 
 ## Purpose and Evidence Core boundary
 
@@ -140,15 +175,19 @@ source run, migration or database write is authorized by this plan.
 
 ## Next review packet
 
-1. Prepare the exact Mac target/source/Organization identity work order, using the 41 historic
+1. Extend the source-specific reviewed metadata contract for witness/reference rows after exact
+   field-level human review; keep the newly prepared 412-row research artifact DRAFT in the meantime.
+   Reuse Source/Snapshot/Observation and internal review surfaces; do not turn plan packets or ALIO
+   materialization into a witness importer. Preserve printed target vs employer and requested vs attended.
+2. Prepare the exact Mac target/source/Organization identity work order, using the 41 historic
    draft pairs only as review references. Do not reuse staging IDs in the empty Mac target.
    For the historic batch, obtain the human decision on its exact 41 pairs before its separate
    manifest gate; preserve DRAFT if not approved.
-2. Independently review the 70-item MOIS proposal and its provider-ID/provenance mapping; keep it
+3. Independently review the 70-item MOIS proposal and its provider-ID/provenance mapping; keep it
    review-only until a separate source-specific contract is approved.
-3. Reassess the official schedule API’s authenticated sample and operation-specific policy before
+4. Reassess the official schedule API’s authenticated sample and operation-specific policy before
    any L2 or collection request; keep committee HTML automation blocked.
-4. Route any infrastructure spend, public domain, public API or indexing decision through its
+5. Route any infrastructure spend, public domain, public API or indexing decision through its
    own explicit approval and exact-master verification boundary.
 
 Historical binding/staging counts, artifacts and prior test/deployment claims are transcribed

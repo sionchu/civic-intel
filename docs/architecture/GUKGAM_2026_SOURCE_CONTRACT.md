@@ -5,8 +5,9 @@
 `RECONNAISSANCE / MULTI-COMMITTEE PLAN ATTACHMENTS RIGHTS-REVIEWED / AUTOMATED_COMMITTEE_HTML_BLOCKED`
 
 This document records the official-source shape observed during the first Gukgam 2026 release
-slice. It does **not** authorize a live committee-site feeder, attachment full-text storage,
-AI processing or public witness identity materialization. The current human/source/public-access
+slice and the dated witness research refresh below. It does **not** authorize a live committee-site
+feeder, canonical attachment full-text storage, raw-file AI processing or public witness identity
+materialization. The current human/source/public-access
 decision packet is the [active Gukgam research plan](../exec-plans/active/gukgam-2026-ontology-research.md).
 
 ## Source family
@@ -51,6 +52,41 @@ No separate institution-witness, general-witness or reference-person attachment 
 this exact plan post. Such material must be treated as separate official records when published.
 
 Correction/replacement semantics across later posts remain an open gate.
+
+## Witness-source refresh, 2026-10-02
+
+The owner's instruction to connect audited institutions and officially listed witnesses
+supersedes the preceding institution-only work order for bounded source research. An Aside
+operator lookup of the first Science Committee reference-materials list and its two 2026
+detail pages confirmed these separate official records:
+
+| Record | nttId | Publication | PDF attachment / fileSn |
+| --- | --- | --- | --- |
+| 2026년도 과학기술정보방송통신위원회 국정감사 기관증인 명단 | 3078724 | 2026-09-22 | 8023b8baac924e0aa23d2c9eaaf07a32 / 2 |
+| 2026년도 과방위 국정감사 일반증인 및 참고인 명단 | 3078723 | 2026-09-22 | 2fdefa0fd9d24ab89e331c5d89a34bcd / 2 |
+
+Both pages explicitly identify 과학기술정보방송통신위원회 and display the public-nuri
+attribution/commercial-use/modification-permitted notice (KOGL Type 1). The PDF filenames
+and attachment IDs were checked against each detail page's own download control. Exact
+attachment GET locators were discovered through a secondary site's links and independently
+matched to those controls; the secondary site's copied rows and counts are not evidence.
+
+This source-specific research decision permits one bounded operator acquisition of each
+exact PDF for local verification and deterministic extraction of public name, institution
+group heading, printed affiliation/title, explicit audited-target column, witness category,
+requested date/time, decision-date text and page/row provenance. Institution group headings are
+list context, not a per-person employment field. It permits
+Codex assistance on these minimized fields, not sending raw fulltext or unnecessary personal
+fields to AI. Operator artifacts are local verification inputs, not a second canonical raw
+truth store. No fulltext, birth dates, sex/age, addresses, contacts or raw republication enter
+the research packet, snapshots, logs or public projections. Source attribution is required.
+
+Repeated committee retrieval remains blocked. Field-by-field human review, canonical identity
+binding, operational ingestion and Claim publication are not supplied by this source lookup.
+Rows remain source-scoped research candidates. A listed general witness's employer does not
+automatically become an audited institution. A request to attend is not actual attendance.
+The attachment filename's “최종” is its printed label, not proof that later amendments cannot
+exist; any later version needs a fresh exact capture and review.
 
 ## Critical committee-identity rule
 

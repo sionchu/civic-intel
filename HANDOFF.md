@@ -2,7 +2,8 @@
 
 ## Objective
 
-Owner priority, 2026-10-02: Gukgam audited institutions first, with canonical DB/API on the
+Owner priority, 2026-10-02: Gukgam audited institutions linked to official witness/reference
+people, with canonical DB/API on the
 Mac external SSD and cloud web on Sites later. Preserve the Assembly site pilot's 298
 identity-linked private DRAFT Claims and one OPEN conflict, prior Opus UI and Railway corpus.
 The SSD runtime and official Sites SDK investigation are complete. The pilot is IN_PROGRESS;
@@ -44,12 +45,24 @@ SSD implementation base 0865e5dec85b043574640dc02132366631ce7b11.
 UI commit af46132d49d0e8106851c473bfcda69c50f89345, on approved work-order commit 4c947e9.
 Current plan: docs/exec-plans/active/assembly-site-pilot.md.
 Current Gukgam work order: docs/exec-plans/active/gukgam-2026-ontology-research.md.
-Current Gukgam evidence: docs/receipts/gukgam-priority-20261002.json.
+Current Gukgam evidence: docs/receipts/gukgam-witness-research-20261002.json;
+preceding UI/packet evidence: docs/receipts/gukgam-priority-20261002.json.
+Latest source research (base adf4b13): exact Science witness posts 3078724/3078723, both 2026-09-22,
+KOGL1 and attachment locators verified through Aside operator lookup; two PDFs acquired once each.
+Research DRAFT: 370 institution role rows / 369 source name cells, 29 general and 13 reference rows.
+All 87 institution heading counts match; page25 merged name cell retains two roles under one name-cell key.
+General/reference records explicitly separate audited target from employer/role. No name-only binding,
+inferred institution dates, actual attendance assertion or national/latest-version completeness claim.
+Connection candidates/work order: docs/research/gukgam_2026_science_witness_linkage_2026-10-02.json
+and matching .md. These are L0 research, not a canonical import; witness parser/import/API, actual
+field-level human review, SSD identity/ingestion and public Claim-backed UI remain pending.
+No operational DB effect, canonical identity or publication. Product code/schema were not changed.
 Gukgam continuation base: 8efb059c32ddc0b0b28c0125f6660a69f6d48eb7.
 Mac API refresh: Organizations 0; public Gukgam targets/committees 0/0. Seven reviewed local
 committee packets retain exact inventory hashes: 57 schedule rows, 390 target mentions,
 359 distinct source labels, no witness/reference-person rows included. These are neither
-canonical Organization identities nor a complete national list. Latest plans were not fetched.
+canonical Organization identities nor a complete national list. Latest plans were not fetched;
+the subsequent two witness attachments above are separate sources, not a refreshed audit plan.
 Historical 41 draft bindings and 70 MOIS proposals remain target-specific review references;
 do not blindly apply their staging IDs to the empty Mac Organization target.
 Current code/plan receipt: docs/receipts/web-api-bridge-20261002.json.

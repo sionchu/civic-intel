@@ -1,0 +1,89 @@
+{
+  "kind": "BOUNDED_GUKGAM_WITNESS_RESEARCH_RECEIPT",
+  "checked_on": "2026-10-02",
+  "implementation_base": "adf4b13f05bfc3ba82af59e8970e9f92fc26c0d3",
+  "scope": "Science Committee; two exact 2026-09-22 witness attachments",
+  "result": "RESEARCH_CANDIDATES_PREPARED",
+  "maturity": "L0_RESEARCHED",
+  "operator_source_lookup": {
+    "mechanism": "Aside CLI; bounded official board/detail inspection",
+    "explicit_committee": "과학기술정보방송통신위원회",
+    "posts": ["3078724", "3078723"],
+    "rights": "KOGL_TYPE_1_VISIBLE_ON_BOTH_EXACT_PARENT_POSTS",
+    "exact_download_controls_checked": true,
+    "attachment_captures_per_source": 1,
+    "secondary_site_copied_rows_used_as_evidence": false,
+    "repeated_automated_collector": false
+  },
+  "exact_artifacts": [
+    {
+      "ntt_id": "3078724",
+      "atch_file_id": "8023b8baac924e0aa23d2c9eaaf07a32",
+      "file_sn": 2,
+      "page_count": 26,
+      "byte_count": 197487,
+      "sha256": "7ef99c6e217dc775cb2878f395a02eebcdd95cb4eecfa852b6d08b94d0217b9f"
+    },
+    {
+      "ntt_id": "3078723",
+      "atch_file_id": "2fdefa0fd9d24ab89e331c5d89a34bcd",
+      "file_sn": 2,
+      "page_count": 4,
+      "byte_count": 194207,
+      "sha256": "bb1cf15928ef93e5e4e974fa2971fad628bedc58a1416ea890a46de9308f861d"
+    }
+  ],
+  "research_artifact": {
+    "path": "docs/research/gukgam_2026_science_witness_linkage_2026-10-02.json",
+    "local_lf_bytes_sha256": "102497a4a22dfe55eda2d4af4a856ee9986cc84db8a9f5abbc64501ff7c0ed00",
+    "canonical_json_sha256": "62e393a889a35bfa30393f832600f279d08fa8d136e5eb93e9fb014ba252d0d6",
+    "review_status": "DRAFT_NOT_HUMAN_REVIEWED",
+    "operational_import_eligible": false,
+    "institution_role_rows": 370,
+    "institution_source_name_cells": 369,
+    "institution_heading_tables": 87,
+    "general_witness_rows": 29,
+    "reference_person_rows": 13,
+    "total_role_or_request_rows": 412,
+    "count_semantics": "SOURCE_ROWS_AND_CELLS; NOT_UNIQUE_CANONICAL_PEOPLE"
+  },
+  "verification": {
+    "exact_input_sha256": "PASS",
+    "header_field_mapping": "PASS",
+    "institution_heading_counts": "87/87 PASS",
+    "record_hashes_and_unique_keys": "412/412 PASS",
+    "merged_name_cell_geometry": "PASS; page 25 shared name cell preserves two roles",
+    "unchanged_offline_rerun": "PASS; same byte and canonical JSON hashes",
+    "final_institution_group_semantics": "PASS; group heading does not assert employment",
+    "minimal_field_and_zero_effect_check": "PASS",
+    "architecture_command": "python -m packages.verification.architecture",
+    "architecture_result": "PASS",
+    "product_runtime_code_changed": false,
+    "full_make_verify": "NOT_RERUN; product code/schema unchanged from verified base",
+    "independent_read_only_review": "Exact artifacts/counts/row hashes/category mapping passed; one institution-heading affiliation-label defect identified and corrected, final correction validated by MAIN",
+    "pdf_public_field_crops_rendered_and_opened": 6,
+    "whole_pdf_or_all_rows_human_review": "NOT_EXECUTED",
+    "frontend_ui_acceptance": "NOT_EXECUTED_FOR_NEW_WITNESS_DATA"
+  },
+  "effects": {
+    "local_metadata_research_files": "CREATED",
+    "local_exact_operator_artifacts": "CAPTURED_OUTSIDE_GIT",
+    "operational_source_runs": 0,
+    "operational_observations": 0,
+    "persons": 0,
+    "organizations": 0,
+    "identity_links": 0,
+    "claims": 0,
+    "evidence": 0,
+    "mac_or_staging_db_writes": 0,
+    "deployment": "NOT_EXECUTED"
+  },
+  "incomplete": [
+    "FIELD_BY_FIELD_HUMAN_REVIEW",
+    "WITNESS_SPECIFIC_CANONICAL_CONTRACT_IMPORT_AND_REVIEW_API",
+    "EXACT_MAC_TARGET_ORGANIZATION_AND_PERSON_IDENTITY_REVIEW",
+    "CLAIM_EVIDENCE_PUBLICATION_AND_PUBLIC_FRONTEND_LINKAGE",
+    "LATER_AMENDMENT_AND_NATIONAL_COMPLETENESS",
+    "ACTUAL_ATTENDANCE_EVIDENCE"
+  ]
+}
