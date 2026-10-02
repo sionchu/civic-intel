@@ -105,7 +105,9 @@ execution needs a separately scoped work order.
 
 Owner requested a read-only status audit and choices for site/data/Claude Opus orchestration.
 Three scoped child inventories and MAIN checks completed on 2026-10-02. The proposal is
-docs/operations/NEXT_PHASE_ORCHESTRATION.md, awaiting owner choice; it is not an active ExecPlan.
+docs/operations/NEXT_PHASE_ORCHESTRATION.md. Owner selected option1; the current active work
+order is docs/exec-plans/active/assembly-site-pilot.md. Source/deployment preflight and Opus
+frontend packet preparation are in progress; MAIN owns keys, operational writes and integration.
 Railway staging reports three SUCCESS deployments and Web GET200; production has zero services.
 Mac count/schema checks still match 299 observations and zero People/Claims. Mac SQLite and site
 PostgreSQL are separate; no canonical transfer command exists. Claude CLI/login are confirmed,
