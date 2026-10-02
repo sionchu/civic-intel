@@ -3,12 +3,16 @@
 Status: IN_PROGRESS, 2026-10-02. Owner selected option 1 from the reviewed
 [orchestration proposal](../../operations/NEXT_PHASE_ORCHESTRATION.md).
 Implementation base: `788ae0ce29fc86ce74283e8b3c0a53aeb1bb7a17`.
+Current topology decision: Mac SSD DB/API, cloud web on Sites later; implementation base
+`0865e5d`. The local SSD runtime is verified. Publication, Sites connectivity/Workers output
+and rendered/mobile acceptance remain incomplete.
 
 ## Scope and ownership
 
-Prove one National Assembly current-roster site slice: bounded source acquisition into the
-site-serving staging PostgreSQL target, separate safe identity/DRAFT creation, gated public
-records, and a readable Person→Claim→Evidence→Source UI. Preserve the existing Mac SSD capture.
+Prove one National Assembly current-roster site slice using the owner-selected Mac SSD
+site-serving SQLite and loopback API, separate safe identity/DRAFT creation, gated public
+records, and a readable Person→Claim→Evidence→Source UI. Preserve the successful original
+SSD capture and existing Railway corpus/backup. Sites delivery is a later stage.
 No generic transfer/importer, production service creation, new domain/indexing, paid plan
 change, recurring collector or public API/database endpoint is in scope.
 
@@ -18,7 +22,7 @@ are preserved. Child agents perform read-only preparation/review; they cannot ac
 operational databases. No recursive delegation; at most three concurrent work slots.
 Claude Opus is an external tool-less source-packet collaborator, not a Codex model subagent.
 
-The staging target is project `f403bc33-2190-4177-9150-2971e25dd9ee`, environment
+The preserved historical staging target is project `f403bc33-2190-4177-9150-2971e25dd9ee`, environment
 `b66af015-7013-4c38-9720-de48ec6f9a71`, PostgreSQL service
 `2a4eb90c-c73a-4d22-bd25-14d0f80c6a44`. Current schema, contents, deployed code and backup
 must be verified before operational mutation. Allocation is coordination, not a universal lease.
@@ -40,7 +44,11 @@ Live source/identity/publication effects stay separate and require their actual 
 - PILOT-QUALITY/RISK: independently review actual candidate changes and exact data/exposure
   effects after preparation slots finish; read-only, no edits or fabricated human approval.
 
-## Milestones and gates
+## Original staging milestones and gates
+
+These establish the preceding executed pilot and its preserved evidence. The owner-selected
+SSD continuation below supersedes target/recollection/resize steps; it does not erase the
+existing PARTIAL run or authorize more Railway writes.
 
 1. Pin baseline and activate this plan. Confirm source/worktree, source-policy grant, release
    path, private staging target and ownership. Baseline full local verification already exists;
@@ -113,22 +121,54 @@ reported honestly; no layer is marked PASS from another layer's result.
 
 ## Concrete recovery decision
 
+Owner decision, 2026-10-02: supersede the resize proposal below with Mac/SSD topology 1.
+Keep existing Railway data and its backup unchanged. Use a consistent SQLite backup of the
+successful immutable SSD capture as a new private site-serving target; MAIN is its sole writer.
+Reuse the byte-verified installed package and canonical API/UoW, with schema 0008 and a
+read-only loopback API. Verify storage identity, disconnect behavior and public-read gates before
+continuing separate identity/DRAFT effects. No new provider request is needed for this copy.
+Sites documentation/SDK research and local deployment preparation are approved; the owner
+explicitly referred to Sites publication as later. No Site registration/publication, cloud API
+connectivity, public API endpoint, recurring collector or paid resource is executed in this step.
+Full existing cloud-corpus migration is not implied by the fresh Assembly-only SSD target.
+Operational details and evidence are recorded in
+[SSD operations](../../operations/MAC_SSD_SITE.md).
+
+Executed SSD continuation: consistent source backup PASS; schema/provenance/full manifest
+PASS; offline sandboxed `civic materialize assembly` created 298 Persons/DRAFT Claims and
+298 Evidence/links; one OPEN EXACT_BIRTH_DATE_CONFLICT preserved. No publication or fetch.
+Canonical read-only API and user LaunchAgent now return health/ready/people/person 200,
+298 directory entries, admin/review and DRAFT-only Source 404. Owner reported Python disk
+access approval before the successful independent login-service probe and permanent startup.
+Actual Mac SSD disposable missing/replaced-file checks return 503; read-only write rejection
+PASS. Original capture hash unchanged. Reboot/unplug, cloud connectivity and Sites deployment
+were not run. Details: [SSD operations](../../operations/MAC_SSD_SITE.md) and
+[runtime receipt](../../receipts/mac-ssd-site-20261002.json).
+Vinext 1.0.1 static check: 12 supported, zero issues; no Workers build or frontend port yet.
+Final code verification is recorded with the SSD receipt; former resize choices below are
+historical proposals, not the selected execution route.
+
 Evidence is [the pilot receipt](../../receipts/assembly-site-pilot-20261002.json).
 The source request is [the executed request](../../operations/staging-assembly-one-shot-request.json).
 The exact UI release candidate is Person page, scoped CSS and copy-coupled UI assertions only;
 it does not release the whole architecture branch. Its patch hash and applied-byte evidence are
 in the receipt. Release remains gated by actual UI acceptance and a concrete public-code/deploy decision.
 
-1. Recommended: expand staging postgres-volume 88b510ef-4336-4cb3-ba30-09256636e427 from 500 MB
+### Superseded staging options
+
+These were evaluated before the owner selected the Mac SSD path. Neither is the current
+recommended next action; retain them only as history of the preserved staging incident.
+
+1. Previously considered: expand staging postgres-volume 88b510ef-4336-4cb3-ba30-09256636e427 from 500 MB
    to 2000 MB within the existing plan, after owner accepts cost/restart implications. Preserve the
    verified private backup and PARTIAL run. Verify schema/counts/readiness/capacity after resize,
    then separately allocate one fresh whole-roster run under the existing 8-request/1s/120s/180s
    limits. No blind resume of old pagination, automatic retry, identity or publication. If a paid
    plan change is required, stop and present its actual terms; this choice does not authorize it.
-2. Keep the current DB and Mac SSD capture; leave live source writes stopped and retain the
+2. Previously considered: keep the current DB and Mac SSD capture; leave live source writes stopped and retain the
    committed frontend candidate while the Aside visual/mobile prerequisite is resolved.
 
-Railway charges actual used volume storage at $0.15/GB/month; 2 GB fully used would be about
+Historical pricing check: Railway charged used volume storage at $0.15/GB/month; 2 GB fully used would be about
 $0.30/month for volume storage alone. Subscription/CPU/RAM/egress are separate; the current
 account plan and resulting total bill are not verified. Free/Trial has a 0.5 GB volume limit and
 Hobby starts at $5/month. A full volume can require an offline resize and service restart; capacity

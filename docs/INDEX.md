@@ -52,6 +52,8 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Latest-master architecture refactor receipt](receipts/architecture-current-master.md)
 - [Active Assembly site pilot and recovery choices](exec-plans/active/assembly-site-pilot.md)
 - [Assembly site pilot execution evidence](receipts/assembly-site-pilot-20261002.json)
+- [Mac SSD API and Sites delivery route](operations/MAC_SSD_SITE.md)
+- [Mac SSD service runtime evidence](receipts/mac-ssd-site-20261002.json)
 - [Executed staging Assembly source request](operations/staging-assembly-one-shot-request.json)
 - [Completed latest-master architecture execution plan](exec-plans/completed/architecture-current-master.md)
 - [Admin work playbook implementation](exec-plans/completed/admin-work-playbook.md)

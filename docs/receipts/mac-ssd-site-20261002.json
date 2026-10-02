@@ -1,0 +1,215 @@
+{
+  "recorded_at_utc": "2026-10-02T09:17:29.398561+00:00",
+  "updated_at_utc": "2026-10-02T09:37:55+00:00",
+  "implementation_base": "0865e5dec85b043574640dc02132366631ce7b11",
+  "selected_topology": "MAC_SSD_DB_API_CLOUD_WEB_LATER",
+  "target_alias": "mac-ssd-assembly-site",
+  "package_commit": "333aa26bda5f1110e53190f27de0c62a0f43cb30",
+  "package_sha256": "f94bd36a38c886da82b226301a6191000b8f4ad94c6747bd8f76a94c9f3d9cca",
+  "installed_python_files_matched": 147,
+  "api_launcher_sha256": "69da9345001fb0f8994e2dc2d153f4edee31ffc867e9f8b05a19348dd25cf890",
+  "backup": {
+    "status": "PASS",
+    "effect": "PRIVATE_DATABASE_BACKUP",
+    "original_capture_sha256": "d3be4cb641a5f8a3275c627e3e18995c9623e214165d7679e5df1a66cfaaafce",
+    "original_unchanged": true,
+    "schema": "0008",
+    "mode": "0o600",
+    "counts": {
+      "people": 0,
+      "claims": 0,
+      "organizations": 0,
+      "sources": 3,
+      "source_snapshots": 3,
+      "feeder_observations": 299,
+      "source_runs": 1
+    },
+    "source_run_id": "62f4567c-fb56-403c-952d-eb768136d6c3",
+    "checkpoint": "3",
+    "manifest_records": 299,
+    "coverage_and_policy_provenance": true,
+    "fulltext_absent": true,
+    "private_contact_field_names_absent": true,
+    "network_fetch": false
+  },
+  "materialization": {
+    "command": "materialize assembly",
+    "effect": "IDENTITY_MATERIALIZATION",
+    "result": {
+      "created": 298,
+      "network_fetch": false,
+      "observations": 299,
+      "publication_status": "DRAFT",
+      "source_run_id": "62f4567c-fb56-403c-952d-eb768136d6c3"
+    }
+  },
+  "materialization_sandbox": {
+    "network_denied": true,
+    "unallocated_write_denied": true,
+    "credential_read_denied": true
+  },
+  "postflight": {
+    "status": "PASS",
+    "counts": {
+      "people": 298,
+      "claims": 298,
+      "claim_evidence": 298,
+      "organizations": 0,
+      "sources": 3,
+      "source_snapshots": 3,
+      "feeder_observations": 299,
+      "source_runs": 1,
+      "person_observation_links": 298,
+      "identity_review_items": 1
+    },
+    "claim_states": {
+      "DRAFT": 298
+    },
+    "claims_evidence_source_policy_complete": true,
+    "published_claims": 0,
+    "original_capture_unchanged": true,
+    "automatic_merge": false
+  },
+  "review_reason_counts": [
+    [
+      "EXACT_BIRTH_DATE_CONFLICT",
+      "OPEN",
+      1
+    ]
+  ],
+  "publication_preflight": {
+    "effect": "READ_ONLY",
+    "drafts_checked": 298,
+    "technically_publishable": 298,
+    "gate_failure_count": 0,
+    "publication_executed": false,
+    "human_review_attested": false
+  },
+  "storage_guard": {
+    "status": "PASS",
+    "actual_mac_and_ssd_fixture": true,
+    "connected_http": 200,
+    "missing_file_http": 503,
+    "replacement_file_http": 503,
+    "read_only_database_write_rejected": true,
+    "physical_disk_disconnect_executed": false,
+    "original_capture_unchanged": true
+  },
+  "api_runtime": {
+    "status": "PASS",
+    "checked_at_utc": "2026-10-02T09:13:31.895683+00:00",
+    "service_label": "com.civic-intel.ssd-api",
+    "process_id": 21983,
+    "ready_http": 200,
+    "health_http": 200,
+    "people_http": 200,
+    "people_count": 298,
+    "person_http": 200,
+    "admin_http": 404,
+    "review_http": 404,
+    "unreachable_draft_source_http": 404,
+    "loopback_listener_only": true,
+    "login_service_enabled": true,
+    "launch_agent_bootstrap_verified": true,
+    "owner_reported_python_removable_volume_approval": true,
+    "login_reboot_cycle_executed": false,
+    "manual_api_stopped": true,
+    "probe_service_unloaded": true,
+    "read_only_database": true,
+    "operator_routes_enabled": false,
+    "source_key_environment_omitted": true,
+    "original_capture_unchanged": true,
+    "site_deployment": false,
+    "parent_independence_check": {
+      "checked_at_utc": "2026-10-02T09:32:00.018624+00:00",
+      "remote_preparation_process_exited": true,
+      "ready_http": 200,
+      "launch_agent_running": true,
+      "same_permanent_pid": true
+    }
+  },
+  "initial_login_service_attempt": {
+    "ready": false,
+    "observed_wait": "SQLITE_OPEN",
+    "permission_cause_confirmed": false,
+    "job_unloaded": true
+  },
+  "api_environment_sanitized": true,
+  "site_database_bytes": 1409024,
+  "free_ssd_bytes": 2000064696320,
+  "source_fetch_executed": false,
+  "cloud_database_modified": false,
+  "cloud_corpus_migrated": false,
+  "site_created_or_deployed": false,
+  "code_verification": {
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "exit_code": 0,
+    "canonical_verify_exit": 0,
+    "python_passed": 862,
+    "optional_postgresql_skipped": 4,
+    "sqlite_datetime_warnings": 6,
+    "python_elapsed_seconds": 375.44,
+    "mypy_source_files": 146,
+    "ruff": "PASS",
+    "golden_quality": "PASS",
+    "architecture": "PASS",
+    "web_tests_passed": 26,
+    "web_lint_typecheck_build": "PASS",
+    "standalone_assets": "PASS",
+    "additional_checks": [
+      {
+        "command": "python -m ruff check scripts/mac_ssd_api.py tests/test_mac_ssd_api.py",
+        "result": "PASS"
+      },
+      {
+        "command": "python -m mypy --platform darwin scripts/mac_ssd_api.py",
+        "result": "PASS",
+        "source_files": 1
+      },
+      {
+        "command": "python -m pytest tests/test_mac_ssd_api.py -q",
+        "result": "PASS",
+        "passed": 9
+      }
+    ],
+    "independent_review": {
+      "result": "NO_ADDITIONAL_DEFECT_FOUND",
+      "focused_tests_passed": 9,
+      "launcher_hash_matched": true,
+      "actual_mac_reproduced_by_reviewer": false
+    },
+    "current_optional_postgresql_runtime_tests_executed": false,
+    "schema_change": false,
+    "browser_visual_acceptance": "INCOMPLETE"
+  },
+  "sites_research": {
+    "official_sdk_repository": "https://github.com/openai/sites",
+    "packages": [
+      "@openai/create-sites",
+      "@openai/sites-vite-plugin"
+    ],
+    "installed_starter_vendored_plugin_version": "0.2.0",
+    "native_management_tools_available": true,
+    "custom_app_mcp_server_required": false,
+    "current_frontend": "Next.js 16.3.3 standalone",
+    "proposed_worker_adapter": "vinext",
+    "inspected_adapter_version": "1.0.1",
+    "static_compatibility": {
+      "command": "npm exec --yes --package=vinext@1.0.1 -- vinext check",
+      "exit_code": 0,
+      "supported": 12,
+      "partial": 0,
+      "issues": 0,
+      "supported_import_families": 5,
+      "pages": 7
+    },
+    "manifests_or_lockfiles_modified": false,
+    "adapter_initialized": false,
+    "workers_build_executed": false,
+    "workers_runtime_executed": false,
+    "private_mac_connectivity_documented": false,
+    "authenticated_https_connection_configured": false,
+    "site_registered": false,
+    "site_deployed": false
+  }
+}

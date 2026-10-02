@@ -2,10 +2,11 @@
 
 ## Objective
 
-Continue owner-selected option1: Assembly site integration and actual Claude Opus Person UI
-collaboration on existing staging. The earlier architecture and Mac SSD one-shot are complete.
-This site pilot is IN_PROGRESS: frontend code is verified and committed; staging refresh is
-PARTIAL, the data volume is full, and rendered/mobile acceptance remains incomplete.
+Continue the Assembly site pilot with owner-selected option1: canonical DB/API on the Mac
+external SSD, cloud web on Sites later. The SSD runtime milestone and official Sites SDK
+investigation are complete. The pilot is IN_PROGRESS: 298 identity-linked DRAFT Claims are
+private; Claim publication, cloud connectivity, Workers output and rendered/mobile acceptance
+remain incomplete. Prior Opus UI code and the existing Railway corpus are preserved.
 
 ## Scope
 
@@ -16,10 +17,12 @@ are separate effects. No production, new domain/indexing, public API/DB or paid 
 
 ## Acceptance criteria
 
-Current pilot acceptance: full code/Golden gates, real PostgreSQL backup/restore and source
-coverage/provenance, gated identities/Claims, actual Aside desktop/mobile/keyboard evidence,
-and exact deployed-commit staging reads. Code/PG recovery passed; source completion, visual
-acceptance, identity/publication continuation and deployment have not passed.
+Current pilot acceptance: full code/Golden gates, canonical source coverage/provenance,
+gated identities/Claims, exact SSD identity/schema/read-only runtime, actual Aside desktop/
+mobile/keyboard evidence, and verified Site-to-Mac reads at a reported deployed commit.
+Code, original capture coverage, private identity/DRAFT construction and local API checks
+passed. Publication, cloud reachability, Workers build, visual acceptance and deployment
+have not passed. Earlier PostgreSQL backup/restore evidence remains historical evidence.
 
 ## Completed
 
@@ -34,14 +37,30 @@ its value or transferring other `.env` values.
 ## Current checkpoint
 
 Branch codex/architecture-current-master, isolated architecture-current-master worktree.
+SSD implementation base 0865e5dec85b043574640dc02132366631ce7b11.
 UI commit af46132d49d0e8106851c473bfcda69c50f89345, on approved work-order commit 4c947e9.
 Current plan: docs/exec-plans/active/assembly-site-pilot.md.
-Current receipt: docs/receipts/assembly-site-pilot-20261002.json.
-Staging schema 0008; public 299; People 9120, Claims 14397, Organizations 347 preserved.
+Current receipt: docs/receipts/mac-ssd-site-20261002.json.
+Runtime/delivery guide: docs/operations/MAC_SSD_SITE.md.
+Mac service DB: /Volumes/data/civic-intel/service/assembly.sqlite, schema 0008, mode 0600.
+Consistent SQLite backup preserves the successful 299-observation capture and its canonical
+IDs/provenance. Separate deny-network/key-denied materialization produced 298 Persons,
+298 DRAFT Claims, 298 Evidence/links; one OPEN EXACT_BIRTH_DATE_CONFLICT remains unresolved.
+Read-only publication preflight: 298 technically eligible, zero failures; no publication or
+human-review attestation executed. Original capture SHA-256 unchanged.
+User LaunchAgent com.civic-intel.ssd-api is enabled and running on 127.0.0.1:8765.
+Health/ready/people/person return 200; directory 298; admin/review and DRAFT-only Source 404.
+Temporary manual/probe services and the preparation REPL stopped; a fresh Commander process
+confirmed the same permanent API remained ready. Actual reboot/logout and physical unplug
+were not executed. Sites registration, HTTPS cloud connection and Workers output do not exist.
+
+Preserved preceding staging receipt: docs/receipts/assembly-site-pilot-20261002.json.
+Historical staging schema 0008; public 299; People 9120, Claims 14397, Organizations 347.
 One authorized source run 876cd05a-973a-4375-8432-26d90c87bae4 ended PARTIAL/ConcurrentWrite.
 Checkpoint page 1 and manifest 100/299; zero new observations, one snapshot and one run committed.
 Historical PG logs identify file extension/No space left on device; data FS 100%, available 552960
-bytes, configured volume 500 MB. Do not materialize/publish from this incomplete checkpoint or retry.
+bytes, configured volume 500 MB. The SSD decision supersedes resize/recollection proposals.
+Do not materialize/publish from the incomplete Railway checkpoint or retry it.
 Base/remote master 77e2767ab043738f00b8dd38be8d99803e5ad7bc; verified source
 333aa26bda5f1110e53190f27de0c62a0f43cb30 for the installed bounded candidate; initial
 architecture source 0ae6945 is retained in the earlier receipt.
@@ -51,17 +70,36 @@ Python 3.12.14, pinned wheel. External /Volumes/data is APFS on USB 10 Gb/s. Own
 resolved remote storage access; mkdir/fsync/readback/SHA/rename and SSD schema/CLI checks passed.
 Target mac-ssd-assembly-one-shot-333aa26 is schema 0008, mode 0600. SourceRun
 62f4567c-fb56-403c-952d-eb768136d6c3 is SUCCESS; 299 observations, three snapshots/Sources,
-checkpoint 3, zero People/Claims/Organizations. Parent launcher pin 7b004bf and SHA-256
+checkpoint 3, zero People/Claims/Organizations in the frozen capture. Parent launcher pin 7b004bf and SHA-256
 33d50df5b38387c9ec7e7908fe168bd15e5dc10a585fc0d3d49be34520701662; wheel stays 333aa26.
 
 ## Decisions and reasons
 
-Transform current semantics rather than replacing them from an older branch. Keep SQL rows
-unchanged and schema at 0008. Dedicated immutable one-shot acquisition is the first collector
+Transform current semantics rather than replacing them from an older branch. Preserve existing
+canonical rows and schema 0008. Dedicated immutable one-shot acquisition is the first collector
 option; unrestricted LLM roles/worktrees cannot prove credential/tool isolation or writer exclusion.
+The selected site API reuses the byte-verified wheel and canonical persistence; it neither
+fetches nor writes. MAIN remains the sole allocated writer. No generic importer or cloud
+corpus migration is implied. Native Sites management MCP needs no custom application MCP.
+Official OpenAI Sites/Vite tooling and Vinext are the later Worker delivery path; the static
+compatibility check does not prove a build or private Mac network connection.
 
 ## Verification evidence
 
+SSD milestone: canonical fixture `make verify` runner exit 0, CANONICAL_VERIFY_EXIT=0;
+862 Python PASS, 4 optional PG skips, 6 SQLite datetime warnings, 375.44s; Ruff, mypy
+(146 files), Golden, architecture, 26 web tests, lint/typecheck/build and assets PASS.
+Launcher-specific Ruff, Darwin mypy and nine focused tests PASS. Independent read-only
+review independently ran those nine tests, matched the launcher hash and found no further
+defect; the reviewer did not reproduce Mac operations. Actual SSD fixture: read-only write
+rejected, missing/replaced file 503. Schema and source policy/provenance postflight PASS.
+Owner reported Python removable-volume approval; separate login-service probe and permanent
+bootstrap PASS. Fresh check after preparation process exit: ready 200, same permanent PID.
+Official Sites SDK investigated; Vinext 1.0.1 static check exit 0: 12 supported, zero partial/
+issues. No dependency manifest change, adapter initialization, Workers build or deployment.
+Commands, timestamps, states and remaining gates: docs/receipts/mac-ssd-site-20261002.json.
+
+Preceding staging/UI evidence (not re-executed optional PG runtime tests in this milestone):
 Current UI: `python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify`
 exit 0; 853 Python passes, 4 optional PG skips, 6 warnings, 26 web passes, lint/typecheck/build PASS.
 Four optional PostgreSQL tests separately executed, exit0, in a new disposable local DB.
@@ -75,7 +113,7 @@ final keyboard source hash and not-found; immediate mouse/scroll acceptance is u
 Screenshots timed out; writable mobile viewport API absent. UI verification incomplete.
 Exact 3-file UI patch applies to public master 77e2767, candidate bytes match. No public push/deploy.
 Partial postflight checked 100 contexts and one new snapshot: policy/privacy violations 0, public 299.
-Owned loopback web/API/PG and private tunnels stopped; protected backup remains.
+Earlier pilot-owned loopback web/API/PG and private tunnels stopped; protected backup remains.
 
 Earlier completed architecture/Mac evidence:
 
@@ -109,30 +147,36 @@ assembly-one-shot-live-audit-20261002.json and one-shot-profile-7b004bf.json.
 
 ## Not executed
 
-Current-branch remote CI, staging identity materialization/admin writes, publication, scheduling,
+Current-branch remote CI, cloud DB identity/admin writes, Claim publication, scheduling,
 full rendered/mobile acceptance, conflict/loading/transport-error browser states, Docker build,
-push/PR/merge, deployment, resize/plan/restart or public access changes. No source retry.
+push/PR/merge, Sites registration/deployment, Worker build/runtime, authenticated HTTPS cloud
+connection, cloud corpus migration, resize/plan or public access changes. No source retry.
+Actual Mac logout/reboot and physical disk unplug; current optional PG runtime tests.
 
 ## Blockers
 
-Staging data volume is full; owner cost/restart decision is needed before proposed 500→2000 MB
-resize and a separately bounded fresh source run. Account plan/total bill remain unverified;
-paid plan change is not authorized. Aside capture/mobile limitations block visual acceptance.
-Deployed SHA is unavailable. Allocated ownership/advisory lock is not a DB-enforced shared-writer
-lease; old ALIO/MOIS RUNNING records are preserved and do not authorize recurring writers.
+Sites cannot reach Mac loopback. A concrete authenticated HTTPS route, Worker artifact and
+verified Site-to-Mac reads are required before cloud delivery. Sites inspected capabilities do
+not establish private LAN connectivity. Claim/profile publication selection remains separate;
+the OPEN birth-date conflict fails closed. Aside capture/mobile limitations block visual
+acceptance. The preserved Railway volume is full, but resizing is no longer the selected path.
+Allocated ownership is not a DB-enforced shared-writer lease; old ALIO/MOIS RUNNING records
+remain preserved and do not authorize recurring writers.
 
 ## Modified files
 
-UI commit contains apps/web/app/people/[id]/page.tsx, apps/web/app/styles.css and copy-coupled
-apps/web/tests/ui.test.mjs. Current checkpoint updates this HANDOFF, active pilot plan, executed
-staging request, pilot receipt and INDEX. Diagnostic helpers, exact release patch, external-model
-response and returned Aside DOM receipts remain ignored/private; no secret/raw source payload in Git.
+This milestone adds scripts/mac_ssd_api.py and its focused regression coverage, SSD/Sites
+operations guide and sanitized runtime receipt; updates this HANDOFF, active pilot plan and
+INDEX. Previous UI commit contains the Person page, scoped CSS and copy-coupled UI assertions.
+Diagnostic helpers, runtime databases/keys, raw model/browser outputs and private process logs
+remain outside Git. Original root master/user contracts.py edits remain untouched.
 
 ## Next concrete action
 
-Present the active plan's concrete recovery choices: existing-plan 2 GB staging volume and a new
-bounded whole-roster source run after readiness checks, or preserve all data and leave source
-writes stopped. No destructive cleanup, forced checkpoint rollback, automatic retry or plan upgrade.
-Resume actual Aside desktop/mobile capture when supported; require visual acceptance before release.
-The prepared release contains only the 3 UI files, not the whole architecture history. Public code
-and deployment remain a later concrete decision. Preserve the successful Mac capture and its guard.
+Prepare the exact Claim/profile publication selection while preserving the OPEN identity
+conflict; retain DRAFT until the separate publication gate is satisfied. Adapt the canonical
+UI to Worker output using official Sites/Vinext tooling without replacing its architecture.
+Complete actual Aside desktop/mobile acceptance. Prepare and review the concrete authenticated
+HTTPS connection, cost/access and public-code scope before the later private Sites delivery.
+Use native Sites registration/build/archive/save/deploy/status only at that later stage.
+Preserve the frozen source capture, private service DB, healthy loopback API and Railway backup.
