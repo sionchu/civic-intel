@@ -102,3 +102,11 @@ Original history is in docs/history. Mac preparation helpers/bundle are local ig
 No active collection remains. Preserve the SSD DB/key and receipts. The nonempty target guard
 prevents a duplicate first run. Further collection/resume, identity work, publication or recurring
 execution needs a separately scoped work order.
+
+Owner requested a read-only status audit and choices for site/data/Claude Opus orchestration.
+Three scoped child inventories and MAIN checks completed on 2026-10-02. The proposal is
+docs/operations/NEXT_PHASE_ORCHESTRATION.md, awaiting owner choice; it is not an active ExecPlan.
+Railway staging reports three SUCCESS deployments and Web GET200; production has zero services.
+Mac count/schema checks still match 299 observations and zero People/Claims. Mac SQLite and site
+PostgreSQL are separate; no canonical transfer command exists. Claude CLI/login are confirmed,
+but no Opus request ran. Aside daemon is missing, so current rendered acceptance remains incomplete.
