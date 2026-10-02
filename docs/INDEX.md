@@ -54,6 +54,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Assembly site pilot execution evidence](receipts/assembly-site-pilot-20261002.json)
 - [Mac SSD API and Sites delivery route](operations/MAC_SSD_SITE.md)
 - [Frontend/backend connection and delivery plan](operations/FRONTEND_BACKEND_INTEGRATION.md)
+- [Gukgam institution/witness pipeline and collection-order roadmap](operations/GUKGAM_COLLECTION_ROADMAP.md)
 - [Server API bridge verification](receipts/web-api-bridge-20261002.json)
 - [Gukgam-first UI and reviewed-packet coverage verification](receipts/gukgam-priority-20261002.json)
 - [Official Science witness lists and institution/person connection work order](research/gukgam_2026_science_witness_linkage_2026-10-02.md)

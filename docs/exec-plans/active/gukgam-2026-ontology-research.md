@@ -51,6 +51,29 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
   AI processing, public raw storage, secondary-site copied rows or repeated retrieval is allowed.
   Field-level human review, exact target DB identities and publication remain separate steps.
 
+## Pipeline roadmap definition, 2026-10-02
+
+The owner requested a roadmap and collection order based on the linked institution/witness
+criteria. The [collection roadmap](../../operations/GUKGAM_COLLECTION_ROADMAP.md) is the single
+pipeline/order reference; this checkpoint does not launch new collection or database effects.
+
+- Per-committee bundle: current audit plan/change records → institution witnesses → general
+  witnesses → reference people, then only the official identity context needed for selected rows.
+  Actual attendance/minutes/results are a later source lane, not inferred from the request list.
+- First linkage acceptance sample: MSIT headquarters institution roles 32 + MSIT general
+  witnesses 13 + reference people 2 = 47 source rows. It is a test/review subset of the full
+  412-row Science research scope, never national/L3 coverage or a unique-person count.
+- Default expansion: Science pilot/whole packet → six existing reviewed-plan committees →
+  Foreign Affairs after lossless date-range handling → nine remaining inventory committees.
+  Newly verified imminent official dates and amendment/withdrawal impact override the default.
+- R0 source/version/policy baseline; R1 staged contract/parser/review and offline regression;
+  R2 actual field review and acquisition-only import; R3 exact target identity; R4 Claim/Evidence
+  publication; R5 canonical API/UI/Sites checks; R6 expansion; R7 post-audit evidence.
+  R1 preparation need not wait for human attestations; R2 consumes only actually reviewed rows.
+- Reuse the UoW/kernel/effect-separated CLI. Witness commands are not yet installed. The one-shot
+  Assembly runner's request/time budget is not inherited by committee documents or other APIs.
+  Source agents prepare bounded requests without keys; MAIN owns the single pinned SSD writer.
+
 ## Purpose and Evidence Core boundary
 
 Continue the Gukgam research surface over canonical Evidence Core records. An audit-target Claim
@@ -175,8 +198,9 @@ source run, migration or database write is authorized by this plan.
 
 ## Next review packet
 
-1. Extend the source-specific reviewed metadata contract for witness/reference rows after exact
-   field-level human review; keep the newly prepared 412-row research artifact DRAFT in the meantime.
+1. Stage the source-specific witness/reference contract, parser/internal review and offline
+   47-row/412-row regression per roadmap R1 while keeping the research artifact DRAFT.
+   Import/publication is a later step requiring the actual field/identity/publication decisions.
    Reuse Source/Snapshot/Observation and internal review surfaces; do not turn plan packets or ALIO
    materialization into a witness importer. Preserve printed target vs employer and requested vs attended.
 2. Prepare the exact Mac target/source/Organization identity work order, using the 41 historic

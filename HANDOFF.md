@@ -45,6 +45,13 @@ SSD implementation base 0865e5dec85b043574640dc02132366631ce7b11.
 UI commit af46132d49d0e8106851c473bfcda69c50f89345, on approved work-order commit 4c947e9.
 Current plan: docs/exec-plans/active/assembly-site-pilot.md.
 Current Gukgam work order: docs/exec-plans/active/gukgam-2026-ontology-research.md.
+Pipeline/collection-order reference: docs/operations/GUKGAM_COLLECTION_ROADMAP.md (base 0c77064).
+First connection acceptance subset: MSIT institution roles 32 + general witnesses 13 + reference
+people 2 = 47 source rows; then full Science 412-row research scope. Collection bundles contain
+plan/change records and all three witness categories together. Default expansion uses the six
+existing reviewed-plan committees, Foreign Affairs after date-range proof, then nine remaining
+inventory committees; newly verified imminent dates and display-affecting amendments take priority.
+Roadmap definition performed no new source retrieval, operational DB/identity/publication or deployment.
 Current Gukgam evidence: docs/receipts/gukgam-witness-research-20261002.json;
 preceding UI/packet evidence: docs/receipts/gukgam-priority-20261002.json.
 Latest source research (base adf4b13): exact Science witness posts 3078724/3078723, both 2026-09-22,
@@ -116,6 +123,11 @@ compatibility check does not prove a build or private Mac network connection.
 
 ## Verification evidence
 
+Roadmap-only checkpoint (base 0c77064): local research selection verified 32+13+2=47 rows,
+15 explicit general/reference datetimes and no inferred institution datetime. Full 412-row JSON
+bytes remain identical to its receipt. Relative document links 129 PASS;
+`python -m packages.verification.architecture` PASS; `git diff --check` PASS.
+No product/schema change; full make verify, new browser work and live source/DB actions were not run.
 Gukgam continuation: final canonical make verify exit0, CANONICAL_VERIFY_EXIT=0;
 862 Python PASS, four optional PG skips, six SQLite warnings, 302.86s; 34 web PASS;
 types/lint/Golden/architecture/Next standalone build/assets PASS. No dependency/schema change.
@@ -216,6 +228,8 @@ remain preserved and do not authorize recurring writers.
 
 ## Modified files
 
+Current roadmap definition adds docs/operations/GUKGAM_COLLECTION_ROADMAP.md and aligns active
+plan, frontend/backend guide, INDEX and this HANDOFF. Product code, schema and research rows unchanged.
 Gukgam continuation changes the existing page and scoped sticky-anchor CSS, copy-coupled
 UI checks, integration/active plans/INDEX/HANDOFF and a sanitized receipt. No new DTO, feeder,
 persistence path or real identity/publication effect; disposable local UI fixtures only.
@@ -229,9 +243,11 @@ remain outside Git. Original root master/user contracts.py edits remain untouche
 
 ## Next concrete action
 
-Prepare the exact Mac-target institution identity/source work order and no-write preflight
-from the seven reviewed Gukgam packets. Resolve creation/binding authority and actual human
-decisions before separate canonical effects; institution heads do not become witnesses by title.
+Roadmap R1: stage the witness-specific source contract/parser/internal review and 47-row/412-row
+offline provenance/category/merged-cell regression. Keep the research data DRAFT; actual reviewed
+field manifests, Mac-target source/identity preflights and publication are later separate effects.
+Use the seven plan packets as references and verify their current editions before operational use;
+institution heads do not become witnesses by title.
 Retain Assembly DRAFTs/OPEN conflict, frozen capture, loopback API and Railway backup.
 The delivery plan keeps later Aside mobile acceptance, Workers output, reviewed authenticated
 HTTPS connection and private Sites delivery as distinct unfinished gates.
