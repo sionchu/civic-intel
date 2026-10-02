@@ -61,9 +61,16 @@ All 87 institution heading counts match; page25 merged name cell retains two rol
 General/reference records explicitly separate audited target from employer/role. No name-only binding,
 inferred institution dates, actual attendance assertion or national/latest-version completeness claim.
 Connection candidates/work order: docs/research/gukgam_2026_science_witness_linkage_2026-10-02.json
-and matching .md. These are L0 research, not a canonical import; witness parser/import/API, actual
-field-level human review, SSD identity/ingestion and public Claim-backed UI remain pending.
-No operational DB effect, canonical identity or publication. Product code/schema were not changed.
+and matching .md. Actual research remains DRAFT; R1 witness contract/parser/acquisition-only CLI
+and private review API are implemented. R1 base c4bea98658b499f2f0acd7490dc268a873be5573;
+contract: docs/architecture/GUKGAM_WITNESS_PACKET.md; receipt: docs/receipts/gukgam-witness-R1-20261002.json.
+Source bytes and all 412 normalized rows/87 table counts are verified offline. The 47-row MSIT
+review table and full/pilot DRAFT packets are prepared under .tools/gukgam-witness-R1-prepared.
+No actual human field review, SSD witness import, canonical identity or public Claim-backed UI.
+No schema/dependency/public UI change. Independent quality/risk reviews found no actionable bypass.
+Mac Commander read-only refresh: schema0008, quick_check ok, mode0600; 298 People/298 DRAFT Claims,
+0 Organizations, 299 observations/3 snapshots, one source run, 0 witness runs and one identity review item.
+Loopback public Gukgam API HTTP200, targets/committees0/0. Operational rows unchanged by this refresh.
 Gukgam continuation base: 8efb059c32ddc0b0b28c0125f6660a69f6d48eb7.
 Mac API refresh: Organizations 0; public Gukgam targets/committees 0/0. Seven reviewed local
 committee packets retain exact inventory hashes: 57 schedule rows, 390 target mentions,
@@ -122,6 +129,14 @@ Official OpenAI Sites/Vite tooling and Vinext are the later Worker delivery path
 compatibility check does not prove a build or private Mac network connection.
 
 ## Verification evidence
+
+Witness R1: canonical `python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify`
+exit0, CANONICAL_VERIFY_EXIT=0; 898 Python PASS, 4 optional PG skips, 6 warnings, 442.39s;
+34 web PASS; Ruff, mypy150 files, Golden, architecture, web lint/types/build/standalone assets PASS.
+Targeted witness/plan/review regressions PASS. Changed raw PDF / unchanged fields creates exact
+new-snapshot observations; byte-identical rerun dedupes; subset manifest excludes old rows;
+failure after flush rolls back source/snapshot/observation/checkpoint; public review404 and private
+token/cache/robots gates PASS. No operational ingest/identity/publication/deployment or new browser QA.
 
 Roadmap-only checkpoint (base 0c77064): local research selection verified 32+13+2=47 rows,
 15 explicit general/reference datetimes and no inferred institution datetime. Full 412-row JSON
@@ -243,9 +258,10 @@ remain outside Git. Original root master/user contracts.py edits remain untouche
 
 ## Next concrete action
 
-Roadmap R1: stage the witness-specific source contract/parser/internal review and 47-row/412-row
-offline provenance/category/merged-cell regression. Keep the research data DRAFT; actual reviewed
-field manifests, Mac-target source/identity preflights and publication are later separate effects.
+Roadmap R2 preparation: package the verified witness implementation at a fixed commit, transfer
+the DRAFT packets/exact artifacts through Commander and execute read-only pinned-runtime checks.
+Keep research DRAFT; actual reviewed field manifests, consistent SSD backup/sole-writer and
+target readiness are required before acquisition. Identity/publication remain separate effects.
 Use the seven plan packets as references and verify their current editions before operational use;
 institution heads do not become witnesses by title.
 Retain Assembly DRAFTs/OPEN conflict, frozen capture, loopback API and Railway backup.

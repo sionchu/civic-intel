@@ -37,6 +37,7 @@ ROUTES = {
             "alio-item4",
             "alio-item12",
             "gukgam-plan",
+            "gukgam-witness",
             "gukgam-schedule-probe",
             "assembly-page",
             "legislative-person",
@@ -71,6 +72,7 @@ ROUTES = {
             "commands",
             "alio-item4",
             "gukgam-plan",
+            "gukgam-witness",
             "alio-safe-people",
             "nec-safe-people",
             "orggo-organizations",
@@ -134,12 +136,25 @@ def build_parser() -> argparse.ArgumentParser:
                 p.add_argument(
                     "--confirm-exact-attachment-rights", action="store_true", required=True
                 )
+            if lane == "gukgam-witness":
+                if verb == "inspect":
+                    inputs = p.add_mutually_exclusive_group(required=True)
+                    inputs.add_argument("--research", type=Path)
+                    inputs.add_argument("--packet", type=Path)
+                    p.add_argument("--artifact", type=Path)
+                else:
+                    p.add_argument("--packet", type=Path, required=True)
+                    p.add_argument("--artifact", type=Path, required=True)
+                    p.add_argument(
+                        "--confirm-exact-attachment-rights", action="store_true", required=True
+                    )
             if verb == "observe":
                 if lane == "assembly":
                     p.add_argument("--max-requests", type=int)
                     p.add_argument("--min-request-interval", type=float)
                     p.add_argument("--fetch-deadline-seconds", type=float)
                 if lane not in (
+                    "gukgam-witness",
                     "policy-research",
                     "assembly-page",
                     "legislative-person",
@@ -273,6 +288,11 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
                 parser.error("min-request-interval must be finite and nonnegative")
             if not math.isfinite(args.fetch_deadline_seconds) or args.fetch_deadline_seconds <= 0:
                 parser.error("fetch-deadline-seconds must be finite and positive")
+    if args.lane == "gukgam-witness" and args.verb == "inspect":
+        if args.packet and not args.artifact:
+            parser.error("witness packet inspection requires its exact local artifact")
+        if args.research and args.artifact:
+            parser.error("research inspection does not accept an artifact for multiple sources")
     if args.lane == "gwanbo" and args.from_date > args.to_date:
         parser.error("from-date must precede to-date")
     if args.lane == "gukgam-schedule-probe" and (

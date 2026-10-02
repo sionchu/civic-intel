@@ -28,6 +28,10 @@ from packages.rendering.gukgam_schedule_review import (
     GukgamScheduleReviewReport,
     load_current_gukgam_schedule_review,
 )
+from packages.rendering.gukgam_witness_review import (
+    GukgamWitnessReviewError,
+    load_current_gukgam_witness_review,
+)
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -538,6 +542,14 @@ class DirectoryView:
 
     def gukgam_2026_schedule_review(self) -> dict:
         return self.current_gukgam_schedule_review().to_dict()
+
+    def gukgam_2026_witness_review(self) -> dict:
+        try:
+            return load_current_gukgam_witness_review(self.uow.acquisition)
+        except GukgamWitnessReviewError:
+            raise PublicApiError(
+                409, "SOURCE_VERSION_CONFLICT", "Witness review provenance requires inspection."
+            ) from None
 
     def gukgam_2026_organization_binding_candidates(self) -> dict:
         return build_gukgam_organization_binding_review(

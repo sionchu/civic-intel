@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Protocol
 from urllib.parse import parse_qs, urlparse
 from uuid import UUID, uuid5
 
@@ -14,6 +15,7 @@ from packages.connectors.gukgam_reviewed_packet import (
     PACKET_SCHEMA,
     REVIEW_STATUS,
     ReviewedGukgamPlanPacket,
+    ReviewedGukgamSource,
 )
 from packages.domain.contracts import (
     FeederObservation,
@@ -36,6 +38,11 @@ class GukgamReviewedPlanImportError(ValueError):
     """A reviewed plan packet lacks exact source provenance required for persistence."""
 
 
+class GukgamAttachmentPacket(Protocol):
+    @property
+    def source(self) -> ReviewedGukgamSource: ...
+
+
 @dataclass(frozen=True)
 class ReviewedGukgamArtifactProof:
     attachment_url: str
@@ -46,7 +53,7 @@ class ReviewedGukgamArtifactProof:
     @classmethod
     def from_bytes(
         cls,
-        packet: ReviewedGukgamPlanPacket,
+        packet: GukgamAttachmentPacket,
         *,
         attachment_url: str,
         artifact_bytes: bytes,
@@ -62,7 +69,7 @@ class ReviewedGukgamArtifactProof:
         proof.validate(packet)
         return proof
 
-    def validate(self, packet: ReviewedGukgamPlanPacket) -> None:
+    def validate(self, packet: GukgamAttachmentPacket) -> None:
         if self.rights_scope != EXACT_ATTACHMENT_RIGHTS:
             raise GukgamReviewedPlanImportError(
                 "canonical packet import requires exact attachment rights review"

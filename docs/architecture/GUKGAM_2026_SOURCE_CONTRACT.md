@@ -55,6 +55,11 @@ Correction/replacement semantics across later posts remain an open gate.
 
 ## Witness-source refresh, 2026-10-02
 
+The later owner-approved R1 implementation is defined in
+[Witness packet and private review contract](GUKGAM_WITNESS_PACKET.md). It adds local
+strict parsing, acquisition preparation and private source-row review; it does not perform
+the actual human field review, repeated retrieval, canonical identity or public Claim approval.
+
 The owner's instruction to connect audited institutions and officially listed witnesses
 supersedes the preceding institution-only work order for bounded source research. An Aside
 operator lookup of the first Science Committee reference-materials list and its two 2026

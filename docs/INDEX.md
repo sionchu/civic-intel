@@ -12,6 +12,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
 - [Governance ontology projection](architecture/GOVERNANCE_ONTOLOGY.md)
 - [Gukgam 2026 source contract](architecture/GUKGAM_2026_SOURCE_CONTRACT.md)
+- [Gukgam witness packet, acquisition and private review contract](architecture/GUKGAM_WITNESS_PACKET.md)
 - [Career facets](architecture/CAREER_FACETS.md)
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)

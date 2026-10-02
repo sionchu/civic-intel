@@ -222,6 +222,11 @@ def create_app(
             with target(read_only=True) as uow:
                 return DirectoryView(uow).gukgam_2026_schedule_review()
 
+        @app.get("/admin/gukgam/2026/witnesses")
+        def gukgam_2026_witness_review() -> dict:
+            with target(read_only=True) as uow:
+                return DirectoryView(uow).gukgam_2026_witness_review()
+
         @app.get("/admin/gukgam/2026/organization-binding-candidates")
         def gukgam_2026_organization_binding_candidates() -> dict:
             with target(read_only=True) as uow:

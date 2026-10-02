@@ -151,6 +151,12 @@ def observe(a: argparse.Namespace) -> Any:
 
 
 def dispatch(a: argparse.Namespace) -> Any:
+    if a.lane == "gukgam-witness":
+        w = worker("gukgam_witness_import")
+        if a.verb == "inspect":
+            return w.inspect_inputs(a)
+        capture = w.load_capture(a)
+        return w.persist_capture(repository(a), capture)
     if a.lane == "gukgam-plan":
         w = worker("gukgam_reviewed_plan_import")
         capture = w._load_capture(a)

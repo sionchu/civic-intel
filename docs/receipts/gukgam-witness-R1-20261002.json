@@ -1,0 +1,91 @@
+{
+  "recorded_at_utc": "2026-10-02T13:10:44.604221+00:00",
+  "base_commit": "c4bea98658b499f2f0acd7490dc268a873be5573",
+  "effect": "LOCAL_WITNESS_IMPLEMENTATION_AND_READ_ONLY_MAC_REFRESH",
+  "maturity": "L1_CONTRACT_STAGED",
+  "research_state": "DRAFT_NOT_HUMAN_REVIEWED",
+  "source_proof": {
+    "raw_attachment_hashes": [
+      "7ef99c6e217dc775cb2878f395a02eebcdd95cb4eecfa852b6d08b94d0217b9f",
+      "bb1cf15928ef93e5e4e974fa2971fad628bedc58a1416ea890a46de9308f861d"
+    ],
+    "local_bytes_verified": true,
+    "normalized_rows": 412,
+    "pilot_rows": 47,
+    "pilot_category_counts": [
+      32,
+      13,
+      2
+    ],
+    "institution_heading_checks": 87
+  },
+  "verification": {
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "exit_code": 0,
+    "canonical_verify_exit": 0,
+    "python_passed": 898,
+    "optional_postgresql_skipped": 4,
+    "sqlite_warnings": 6,
+    "python_elapsed_seconds": 442.39,
+    "web_passed": 34,
+    "mypy_source_files": 150,
+    "lint_types_golden_architecture_standalone_assets": "PASS",
+    "independent_quality_review": "NO_ACTIONABLE_FINDING; reviewer executed selected offline witness/plan/review tests",
+    "independent_risk_review": "NO_CONCRETE_BOUNDARY_BYPASS; read-only code review, no tests or live execution",
+    "browser_qa": "NOT_RUN_NO_WEB_UI_CHANGE"
+  },
+  "mac_read_only": {
+    "schema": "0008",
+    "quick_check": "ok",
+    "db_mode": "0600",
+    "counts": {
+      "people": 298,
+      "organizations": 0,
+      "claims": 298,
+      "source_runs": 1,
+      "source_snapshots": 3,
+      "feeder_observations": 299,
+      "person_observation_links": 298,
+      "identity_review_items": 1
+    },
+    "claim_status_counts": {
+      "DRAFT": 298
+    },
+    "witness_source_run_count": 0,
+    "gukgam_api_status": 200,
+    "public_targets": 0,
+    "public_committees": 0,
+    "counts_initial_query": "CORRECTED_TABLE_NAME_QUERY; no rows modified"
+  },
+  "operational_effects": {
+    "source_fetch": false,
+    "database_write": false,
+    "human_attestation": false,
+    "identity_binding": false,
+    "claim_publication": false,
+    "credential_access": false,
+    "deployment": false,
+    "push": false
+  },
+  "prepared_artifacts": ".tools/gukgam-witness-R1-prepared (DRAFT only; full and pilot packets, source manifest, 47-row review tables)",
+  "code_hashes_lf": {
+    "packages/domain/contracts.py": "a1f1464a9d040ef92ae72412dfb4baf563598d09ca9181d206706ec1708b8a47",
+    "packages/connectors/gukgam_witness_packet.py": "373e9cc7b8662b10635e729d7d853714e921837572a04f62db24c7907b7b18f4",
+    "packages/verification/gukgam_reviewed_plan_import.py": "1e8f57a19483fb420466be3a5c1f33238d7a6763c71c74cb09e52f3a25dee0df",
+    "packages/verification/gukgam_witness_import.py": "4abbc6c7f833b170bf51cf3564a65f2cfbace0db206e167b7eeb3e82ab789c87",
+    "packages/rendering/gukgam_witness_review.py": "93bcb2ad98bec36892036aa3577cae14bcafc0f198201e346cb87c35d5567271",
+    "packages/application/queries.py": "ccceb9479d74816b262d78919026954daf8e2590a71c29179c1bf208bc486db5",
+    "workers/gukgam_witness_import.py": "3617c8bdce20c8ca454664c9d472c5bcc5a4a1136924fe13c6df99f20094acd3",
+    "apps/cli/main.py": "332342a683f0e6d089efa657c26f15bf9e18763cb38827c1adbe19fe4e5b6a64",
+    "apps/cli/adapters.py": "6827084aa6be8684d0da13b50e06547d53ab87a61e982c16bfbe9a398a1f2969",
+    "apps/api/main.py": "48fdb65d289c4378d78d48e924dcaf4f92c3dfbdf0f9faa370938db6f9c4c7f3",
+    "tests/test_gukgam_witness.py": "dd2f106ad2e6890ac578ca98b5c6de3608c7a3cac70db14ea6ba341c57e05726"
+  },
+  "remaining": [
+    "actual source field review",
+    "pinned Mac package/read-only validation",
+    "consistent backup and sole writer before SSD acquisition",
+    "canonical target identities and Claim/Evidence publication",
+    "public DTO/UI/Aside acceptance and Sites delivery"
+  ]
+}

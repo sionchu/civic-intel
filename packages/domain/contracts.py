@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
@@ -37,6 +37,74 @@ def now_utc() -> datetime:
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid", from_attributes=True)
+
+
+class GukgamWitnessRow(Contract):
+    """Literal public fields in one source row; never a canonical Person or attendance event."""
+
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    record_key: str = Field(min_length=1)
+    source_key: str = Field(min_length=1)
+    page_number: int = Field(ge=1)
+    table_number: int = Field(ge=1)
+    table_row_number: int = Field(ge=1)
+    source_section: str = Field(min_length=1)
+    category: Literal["INSTITUTION_WITNESS", "GENERAL_WITNESS", "REFERENCE_PERSON"]
+    printed_name: str = Field(min_length=1)
+    printed_institution_group: str | None
+    printed_role: str | None
+    printed_affiliation_role: str | None
+    printed_audited_target: str | None
+    requested_datetime_text: str | None
+    decision_date_text: str | None
+    printed_ordinal: str | None
+    source_name_cell_key: str = Field(min_length=1)
+    name_from_merged_cell: bool
+    relation: Literal["SOURCE_LISTED_INSTITUTION_GROUP", "SOURCE_LISTED_AUDIT_CONTEXT"]
+
+    @model_validator(mode="after")
+    def source_literal_semantics(self) -> GukgamWitnessRow:
+        for value in self.model_dump().values():
+            if isinstance(value, str) and not value.strip():
+                raise ValueError("witness text must not be blank")
+        prefix = f"{self.source_key}:page:{self.page_number}:table:{self.table_number}:"
+        if self.category == "INSTITUTION_WITNESS":
+            if self.record_key != f"{prefix}row:{self.table_row_number}":
+                raise ValueError("witness row locator is inconsistent")
+            cell_prefix = f"{prefix}name-row:"
+            if not self.source_name_cell_key.startswith(cell_prefix):
+                raise ValueError("witness name cell must belong to the same source table")
+            cell_row = self.source_name_cell_key.removeprefix(cell_prefix)
+            if not cell_row.isdecimal() or str(int(cell_row)) != cell_row or int(cell_row) < 1:
+                raise ValueError("witness name cell row is invalid")
+            if int(cell_row) > self.table_row_number or self.name_from_merged_cell != (
+                int(cell_row) != self.table_row_number
+            ):
+                raise ValueError("witness merged-name locator is inconsistent")
+            if not self.printed_institution_group or not self.printed_role:
+                raise ValueError("institution witness requires literal group and role")
+            if self.relation != "SOURCE_LISTED_INSTITUTION_GROUP" or any(
+                value is not None
+                for value in (
+                    self.printed_affiliation_role, self.printed_audited_target,
+                    self.requested_datetime_text, self.decision_date_text, self.printed_ordinal,
+                )
+            ):
+                raise ValueError("institution heading cannot supply employment, target or date")
+        else:
+            ordinal = self.printed_ordinal
+            if (
+                ordinal is None or not ordinal.isdecimal() or str(int(ordinal)) != ordinal
+                or int(ordinal) < 1
+                or self.record_key != f"{self.source_key}:{self.category}:ordinal:{ordinal}"
+                or self.source_name_cell_key != self.record_key or self.name_from_merged_cell
+            ):
+                raise ValueError("general/reference witness ordinal locator is inconsistent")
+            if self.relation != "SOURCE_LISTED_AUDIT_CONTEXT" or any(
+                value is not None for value in (self.printed_institution_group, self.printed_role)
+            ):
+                raise ValueError("general/reference row cannot inherit an institution heading")
+        return self
 
 
 class TemporalRecord(Contract):

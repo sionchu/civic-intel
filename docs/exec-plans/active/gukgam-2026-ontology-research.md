@@ -1,7 +1,8 @@
 # Gukgam 2026 ontology research and public-gate plan
 
-Status: IN PROGRESS — bounded research, local UI and review. This plan does not authorize
-operational source collection/database changes, production infrastructure, broader public access or indexing.
+Status: IN PROGRESS — bounded research, witness implementation, local UI and review.
+The owner's latest instruction is to continue without routine confirmation. Production
+infrastructure, broader public access and indexing still require their concrete release gates.
 The full historical execution chronology is preserved in
 [the archived original plan](../../history/gukgam-2026-governance-ontology-visual-explorer-v0.md).
 
@@ -25,6 +26,24 @@ their test publication is never operational publication or real identity approva
 Require full make verify and Aside desktop/mobile acceptance; report browser failure separately.
 
 ## Official witness linkage research checkpoint, 2026-10-02
+
+### Active witness implementation work order
+
+Task `gukgam-witness-R1`, MAIN / Development, base
+`c4bea98658b499f2f0acd7490dc268a873be5573`. Implement strict source-specific witness
+contracts/parser, acquisition-only preparation and private review projection on the existing
+kernel/effect-separated CLI. Inputs are the two pinned PDF hashes and the unchanged 412-row
+research artifact; the 47-row linkage subset remains a sample. Owned paths are canonical
+domain/connectors/verification/rendering/worker/CLI/API seams, deterministic tests and the
+existing plan, operations docs and HANDOFF. No schema, dependency, public UI or deployment change
+is expected. Test databases are disposable and migrated through Alembic. No live network,
+operational write, credential access or human attestation is part of R1 verification.
+Independent read-only review may inspect these paths and run offline checks; it may not edit,
+read credentials, invoke live tools or grant identity/publication approval. MAIN integrates
+and runs `make verify`, inspects the diff and commits the milestone before continuing.
+The owner's continuation approval supersedes preceding planning-only implementation limits;
+it does not attest that the 412 source fields have been personally reviewed. Actual field review,
+exact target identity, publication and live runner readiness remain distinct domain gates.
 
 - Official Science Committee posts `3078724` (institution witnesses) and `3078723`
   (general witnesses/reference people), both published 2026-09-22, were verified through
@@ -53,6 +72,18 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Pipeline roadmap definition, 2026-10-02
 
+R1 implementation checkpoint (base c4bea98): strict frozen witness rows, DRAFT-only research
+adapter, exact local-artifact proof, acquisition-only CLI and private source-scoped review API
+are implemented. Observation hashes include raw artifact SHA to preserve new-PDF provenance;
+checkpoint manifests select only current reviewed rows. Canonical make verify exit0:
+898 Python PASS, 4 optional PostgreSQL skips, 6 warnings, 442.39s; 34 web PASS; lint/types/Golden/
+architecture/standalone assets PASS. Independent quality/risk reviews found no actionable defect.
+Actual source JSON remains DRAFT, and no operational witness rows/identities/Claims were written.
+Both raw PDFs were checked again locally; 47-row review tables and full/pilot DRAFT packets
+are prepared outside Git. Mac read-only refresh confirms schema0008/quick_check ok and HTTP200;
+0 witness source runs, 0 Organizations/public targets, preserved 298 DRAFT legislative Claims.
+[Witness implementation receipt](../../receipts/gukgam-witness-R1-20261002.json).
+
 The owner requested a roadmap and collection order based on the linked institution/witness
 criteria. The [collection roadmap](../../operations/GUKGAM_COLLECTION_ROADMAP.md) is the single
 pipeline/order reference; this checkpoint does not launch new collection or database effects.
@@ -70,7 +101,8 @@ pipeline/order reference; this checkpoint does not launch new collection or data
   R2 actual field review and acquisition-only import; R3 exact target identity; R4 Claim/Evidence
   publication; R5 canonical API/UI/Sites checks; R6 expansion; R7 post-audit evidence.
   R1 preparation need not wait for human attestations; R2 consumes only actually reviewed rows.
-- Reuse the UoW/kernel/effect-separated CLI. Witness commands are not yet installed. The one-shot
+- Reuse the UoW/kernel/effect-separated CLI. Witness commands are implemented in R1; Mac pinned
+  runtime verification is a separate preparation checkpoint. The one-shot
   Assembly runner's request/time budget is not inherited by committee documents or other APIs.
   Source agents prepare bounded requests without keys; MAIN owns the single pinned SSD writer.
 
@@ -198,9 +230,9 @@ source run, migration or database write is authorized by this plan.
 
 ## Next review packet
 
-1. Stage the source-specific witness/reference contract, parser/internal review and offline
-   47-row/412-row regression per roadmap R1 while keeping the research artifact DRAFT.
-   Import/publication is a later step requiring the actual field/identity/publication decisions.
+1. Continue R2 preparation with a fixed verified package, Commander transfer and no-write runtime
+   validation of full/pilot DRAFT packets and exact PDF hashes. R1 offline regressions are complete.
+   Import/publication requires actual field/identity/publication decisions; do not convert DRAFT.
    Reuse Source/Snapshot/Observation and internal review surfaces; do not turn plan packets or ALIO
    materialization into a witness importer. Preserve printed target vs employer and requested vs attended.
 2. Prepare the exact Mac target/source/Organization identity work order, using the 41 historic
