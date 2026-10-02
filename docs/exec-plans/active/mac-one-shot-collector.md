@@ -1,8 +1,10 @@
 # Mac one-shot collector preparation
 
 Authority: owner selected dedicated one-shot collection on the Mac's external SSD and authorized
-continuation. Base: 3ec9a76b0110df66fddeea3acb736c514fc52028. Live source/target grant and source
-credential delivery remain separate gates. No publication, identity or scheduling scope.
+continuation. Base: 3ec9a76b0110df66fddeea3acb736c514fc52028. On 2026-10-02 the owner approved
+one unfiltered current Assembly roster, the allocated SSD target and exact bounded limits.
+The owner also authorized transfer of only the Windows `.codex/.env` ASSEMBLY_API_KEY to the
+private Mac slot; delivery passed. No publication, identity or scheduling scope.
 
 ## Scope
 
@@ -22,6 +24,9 @@ required on forced termination rather than fabricate a terminal SourceRun.
 3. Install verified updated package on Mac; prove budget stops and sanitized receipts on SSD
    fixtures, prepare sole-writer target and precise source/target/limits request. No live call
    before the corresponding grant and isolated credential delivery.
+4. Validate the source-specific parent launcher, exact request/artifact/schema/writer/key checks,
+   clean child environment, exact-target sandbox and 180-second watchdog. Execute one authorized
+   live acquisition, inspect actual durable status/coverage/checkpoint and record evidence.
 
 ## Ownership
 
@@ -53,6 +58,16 @@ datetime warnings retained. Initial full run had one Windows getpass failure bec
 verification wrapper omitted USERNAME; the corrected wrapper passed that regression and the
 full gate. Product code was unchanged for this environment correction.
 
-Milestone 3 pending: immutable updated package, installed Mac/SSD request-budget fixtures,
-sole-writer target and precise source/target grant. Existing SSD fixture receipts prove only
-credential-free offline runtime behavior.
+Milestone 3 passed: immutable wheel 333aa26 installed; four SSD request-budget fixtures and
+forced-stop recovery semantics passed; schema-0008 fresh sole-writer target remains empty.
+Pinned fixed Assembly relay 22d32c6 passed 58 tests, independent review and seven Mac canaries.
+Installed CLI with real HTTPX/TLS passed a trusted fixture and rejected an untrusted certificate.
+Latest full gate after relay integration passed 826 Python/26 web tests, Ruff/mypy/quality/
+architecture/build; four optional PG skips and six SQLite warnings retained. Official API was
+not contacted. Approved request SHA is b127f5f10c596a78f9d370cde269a158b574e321c5502b33f29307420241b0ae.
+Private single-key delivery completed with no value printed and no other environment values moved.
+
+Milestone 4 in progress: source_worker owns only scripts/mac_assembly_one_shot.py and its tests
+in isolated assembly-one-shot worktree at base 22d32c6. MAIN owns integration, request/docs,
+Mac execution and sole operational writer. Reviewer remains read-only; no child receives keys
+or operational tool access. Parent process receipt supplements, but never replaces, SourceRun.

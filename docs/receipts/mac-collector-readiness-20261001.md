@@ -1,10 +1,11 @@
 # Mac collector readiness, 2026-10-01
 
-Status: PARTIAL. The dedicated installed runtime and offline fixtures are verified. SSD write
-readiness and the live one-shot runner are not complete. This receipt records remote execution,
+Status: SSD_READY, LIVE_PENDING. SSD storage and the bounded installed runtime are verified;
+the updated continuation is in [the bounded collector receipt](mac-collector-bounded-20261002.md).
+This receipt preserves initial preparation and access diagnostics. It records remote execution,
 not live acquisition, publication, deployment or a source-rights grant.
 
-## Immutable inputs and environment
+## Initial immutable inputs and environment
 
 - Code: `0ae694578125a9a070053205cf790880d9e07148`; documentation baseline `15b6d84`.
 - Wheel: `civic_intel-0.1.0-py3-none-any.whl`, SHA-256
@@ -69,10 +70,10 @@ disk4/volume disk4s1 maps to physical RTL9210 media disk6; the old Basic data pa
 does not change its APFS content identity. USB is now 10 Gb/s at location 0x01230000.
 SMART is unsupported through this bridge; no drive-health PASS is claimed.
 
-The owner confirms Finder can create folders. Remote Python mkdir stalled inside the mkdir
+Before owner approval, Finder could create folders but remote Python mkdir stalled inside the mkdir
 system call, and a subsequent bounded retry was killed after eight seconds without creating
 `civic-intel`. Native Commander directory/write probes timed out; the 35-byte probe file was
-absent on subsequent stat. The intended 8 MiB fsync/readback test never ran.
+absent on subsequent stat. The intended 8 MiB fsync/readback test had not run at that checkpoint.
 Only this task's stalled diagnostic processes and orphaned children were terminated; cleanup
 was checked. Existing SSD data, formatting, mounting and USB state were preserved.
 
@@ -84,37 +85,48 @@ authValue=1; this receipt does not interpret that internal value as an enabled/d
 An actual remote process ancestry check connected Python → node 6783 → node 4210 → PID 1110,
 `npm exec @wonderwhy-er/desktop-commander@latest remote`, confirming the approval subject
 belongs to the Commander's execution chain. This is a concrete access-prompt finding; current
-checkbox state, visible prompt and the ultimate cause of the stall remain unverified.
+checkbox state and visible prompt were not independently inspected.
 
 Read-only SELECT of only removable-volume permission rows from the protected TCC database
 returned authorization denied.
 System Events UI-permission query returned AppleEvent timeout (-1712). Therefore the exact
-Commander permission setting and cause of the write stall remain UNVERIFIED. A Files & Folders
-Settings deep-link command completed; panel visibility was not inspected. The owner must
-respond to the node-specific access prompt if it is present; see Apple's
+Commander permission checkbox was UNVERIFIED. A Files & Folders
+Settings deep-link command completed; panel visibility was not inspected. The owner subsequently
+confirmed approval of node access, after which remote SSD writes and storage checks passed; see Apple's
 [file access controls](https://support.apple.com/guide/mac-help/control-access-to-files-and-folders-on-mac-mchld5a35146/mac).
 
 Remote Commander policy rejected the read-only `/sbin/mount` status query. That operation was
 stopped without an alternative transport or a remount attempt. A prior `sudo pmset` change was
 also rejected; no disk-sleep setting change is claimed.
 
+## Resolved SSD checkpoint
+
+Owner node approval was followed by successful creation of `/Volumes/data/civic-intel` (0700),
+8 MiB fsync/readback/SHA/rename, SSD migration 0008→0007→0008 and sandboxed installed-CLI
+missing-key verification. Six SSD filesystem/network canaries passed. Their profile SHA-256 is
+`f4d225a24a089b4b74d4a2eab0426bfbe765453687e3822e233376b7e43f6536`.
+The storage probe hash is `f11f6c10ff728a6923eab02770afea2ea20fd58344eeb47757c2589b501c496c`
+for 8388608 bytes. One initial verification-script retry failed because first/third migration
+logs had the same exclusive filename; indexed logs corrected it and the full rerun exited 0.
+These are executed storage checks, not a drive-health or sustained-performance benchmark.
+
 ## Remaining operational gate
 
-1. Obtain the owner's response to node's access prompt, recheck SSD writes and execute the
-   pending fsync/readback verification.
-2. Allocate a fresh staging target with sole-writer ownership and schema 0008.
-3. Prove bounded live egress, numeric rate/run budgets, cancellation/recovery and restricted
-   credential delivery on fixtures. The current offline profile permits no live network traffic.
-4. Obtain the exact SourcePolicy/source/scope/target grant before one live acquisition.
+The continuation now proves request budgets, forced-stop recovery, fixed Assembly loopback
+egress and real HTTPX/TLS fixtures. The owner approved the exact source/scope/target and limits
+on 2026-10-02. Only the existing Windows ASSEMBLY_API_KEY was delivered privately to Mac.
+Operational launcher and exact-target profile validation remain before live acquisition;
+see the current [continuation receipt](mac-collector-bounded-20261002.md).
 
-Prepared candidate: current unfiltered Assembly member roster; `national_assembly_members`,
+Approved scope: current unfiltered Assembly member roster; `national_assembly_members`,
 `current_member_roster`, SourcePolicy `11000000-0000-0000-0000-000000000001`,
 source contract `assembly_member_roster`, credential name `ASSEMBLY_API_KEY`. No resume,
 identity materialization, Claim publication, admin write, deployment or scheduler is granted.
 SourcePolicy has no revision field: use its ID, `terms_checked_at` 2026-08-30T00:00:00Z and
 the pinned code/wheel to identify the reviewed policy.
-The existing CLI's per-request timeout is 15 seconds; it has no enforced total request/page/run
-budget or numeric throttle. No such enforcement is claimed by this preparation checkpoint.
+The initial CLI had only a 15-second per-operation HTTP timeout. Code 333aa26 adds optional
+request-count, spacing and cooperative fetch deadlines; updated installed-CLI SSD tests prove
+them. These deadlines do not bound parsing/DB commit or guarantee graceful process recovery.
 
 Full product verification was not rerun for these documentation-only changes. The pinned code's
 earlier canonical verification remains recorded in [the architecture receipt](architecture-current-master.md).

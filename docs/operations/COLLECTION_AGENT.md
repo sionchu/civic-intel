@@ -1,10 +1,11 @@
 # Separate collection-agent operating proposal
 
-Status: dedicated Mac runtime installed and disposable offline checks executed; SSD write readiness
-remains blocked. No live source, scheduler or operational database was run. See the
+Status: owner approved the exact one-shot Assembly scope on 2026-10-02; source key delivery,
+dedicated runtime, SSD writes, bounded CLI and loopback/TLS fixtures passed. An empty dedicated
+SSD staging target is provisioned. Operational launcher validation remains; no live source ran. See the
 [Mac readiness receipt](../receipts/mac-collector-readiness-20261001.md).
-Research base: master 77e2767ab043738f00b8dd38be8d99803e5ad7bc. Locally verified package candidate:
-code 0ae6945 and wheel SHA-256 `2c6cbf5e06ef16dafb3822eae431f918757ec67af28d343a2f441c560a37bcc4`.
+Research base: master 77e2767ab043738f00b8dd38be8d99803e5ad7bc. Installed bounded candidate:
+code 333aa26 and wheel SHA-256 `f94bd36a38c886da82b226301a6191000b8f4ad94c6747bd8f76a94c9f3d9cca`.
 The full local acceptance gate is recorded in [the refactor receipt](../receipts/architecture-current-master.md).
 This pin identifies the candidate; it does not grant an operational run.
 
@@ -15,8 +16,8 @@ runner executes the acquisition command. The source agent never receives operati
 Do not run acquisition from an actively edited worktree or from this unrestricted Codex runtime.
 Worktrees separate files; they do not isolate credentials, tools, database access or writers.
 
-The first candidate is one unfiltered current Assembly roster into a newly allocated staging
-database. This is a candidate scope, not authorization to operate it. NEC needs its own exact
+The owner approved one unfiltered current Assembly roster into the allocated fresh staging
+database, with the limits in `mac-assembly-one-shot-request.json`. NEC needs its own exact
 election scope and operational review. Gukgam committee HTML remains blocked by its source policy.
 
 ## Run request
@@ -64,31 +65,43 @@ Abrupt process termination can leave RUNNING state; inspect and reconcile it bef
 | Dedicated one-shot runner (recommended) | First bounded staging acquisition | Smallest scope; explicit sole-writer ownership |
 | Shared recurring runner with enforced lease | Several schedules/agents sharing a DB | Additional lease, recovery and scheduler validation required |
 
-The next operational decision is the exact source, target and bounded execution grant. Until then,
-the separate agent prepares requests and reviews receipts only.
+The approved first request is acquisition only. The separate agent prepares source-specific
+implementation and fixtures; MAIN owns the single operational execution and audits its receipt.
 
-## Mac preparation checkpoint, 2026-10-01
+## Mac preparation checkpoint, 2026-10-02
 
 The verified package and 22 pinned dependencies are installed in a dedicated Python 3.12.14 venv
-under `/Users/lee/Developer/civic-intel-collector-20261001`. Installation used a clean environment,
+under `/Users/lee/Developer/civic-intel-collector-20261001/bounded-333aa26`. Installation used a clean environment,
 isolated pip and the explicit PyPI index. The code release is the pinned wheel, not a working tree.
 Alembic resources are byte-identical to the pinned source; provisioning is a separate operation.
 
 Disposable SQLite verification passed schema 0008 → 0007 → 0008, all 37 CLI routes and the
 canonical missing-key receipt audit. A deny-all-network sandbox also passed six bounded
-file/network checks and the actual installed CLI missing-key audit. This offline profile does
-not permit live API access or prove approved live egress, numeric rate/run-budget enforcement,
-credential delivery or an exclusive operational writer.
+file/network checks and the actual installed CLI missing-key audit. Updated installed-CLI SSD
+fixtures prove request caps, start-to-start spacing and cooperative fetch deadlines with
+SUCCESS/FAILED/PARTIAL and exact committed checkpoints. A separate forced-stop fixture proved
+RUNNING remains durable and requires recovery rather than automatic retry or a fabricated FAILED.
+The offline profile permits no live API access and does not prove credential delivery or live TLS.
 
 External APFS volume `/Volumes/data` is mounted and advertised writable; USB is now 10 Gb/s.
-The owner reports Finder can create folders. Remote Python mkdir still times out, and the
-native Commander write probe did not create its file. No operational database or collector root
-was created there. A wider TCC log query found an initial removable-volume approval prompt for
-`node` (21:18:23), with no completion for that request in the queried records. Process ancestry
-confirmed that node owns this Commander's remote execution. The current permission setting and
-prompt visibility remain unverified: the protected permission database refused read access and
-System Events querying timed out. Owner-side approval of that node prompt is the next checkpoint;
-do not infer a denied setting, repair/format the SSD, reset USB or remount it from these results.
+The owner approved node's removable-volume access. Remote mkdir, 8 MiB fsync/readback/SHA/rename,
+SSD schema 0008→0007→0008 and installed offline CLI checks then passed. The owned SSD root
+`/Volumes/data/civic-intel` is mode 0700. Fresh target `mac-ssd-assembly-one-shot-333aa26`
+is a mode-0600 SQLite file at schema 0008, with zero runs, observations, People and Claims.
+MAIN owns the sole one-shot writer; no scheduler targets it. This is allocated ownership, not a
+shared-writer database lease. Existing SSD data and disk settings were preserved.
 
-Resolve Commander access to the SSD before allocating its dedicated target. Then prove a bounded
-live runner on fixtures and obtain the exact source/target/scope grant described above.
+Native Seatbelt rejected a named-host allow rule. The pinned fixed Assembly CONNECT relay
+(`22d32c6`, SHA-256 `41105315eb56979e66d4aaf6cdc2a122427084e582f0e204258b964ecf9b64ab`)
+passed 58 offline tests, independent review and seven Mac file/network canaries. A real HTTPX/TLS
+fixture through the installed canonical CLI passed; an untrusted certificate failed closed.
+Those fixtures contacted no official API and changed no OS trust. The live child must omit the
+fixture SSL_CERT_FILE and permit only its allocated loopback port and exact SQLite files.
+
+The owner approved page size 100, maximum 8 requests, minimum start interval 1 second, fetch
+budget 120 seconds and hard child stop 180 seconds. These are operating limits, not provider
+permission. Windows `.codex/.env` supplied only ASSEMBLY_API_KEY via an encrypted envelope to
+the private mode-0600 Mac slot; no other values were transferred or printed. Operational
+launcher preflight/watchdog validation remains before the live run. The relay is bounded but
+not client-authenticated; unrelated local clients could consume its capacity. DNS cannot be
+cancelled within the relay. These checks are not comprehensive adversarial isolation.
