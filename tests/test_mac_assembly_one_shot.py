@@ -140,6 +140,8 @@ def test_child_environment_is_explicit_and_command_keeps_fixed_scope(monkeypatch
     assert DUMMY not in repr(argv)
     profile = launcher._sandbox(1234)
     assert "(deny default)" in profile
+    assert '(literal "/")' in profile and '(subpath "/")' not in profile
+    assert "(allow file-read-metadata)" in profile
     assert '(remote ip "localhost:1234")' in profile
     assert "credentials" not in profile and "/release" not in profile
     for suffix in ("", "-journal", "-wal", "-shm"):

@@ -231,7 +231,9 @@ def _sandbox(port: int) -> str:
     runtime = json.dumps(str(ROOT / "venv"))
     return (
         "(version 1)\n(deny default)\n(allow process-exec process-fork sysctl-read mach-lookup)\n"
-        '(allow file-read* (subpath "/System") (subpath "/usr") (subpath "/bin") '
+        # dyld/libignition opens exactly / as an openat root; Python realpath stats ancestors.
+        "(allow file-read-metadata)\n"
+        '(allow file-read* (literal "/") (subpath "/System") (subpath "/usr") (subpath "/bin") '
         '(subpath "/Library") (subpath "/opt/homebrew") (subpath "/private/var/db") '
         f'(subpath {runtime}) (literal "/dev/urandom") (literal "/dev/null") {read})\n'
         f'(allow file-write* (literal "/dev/null") {read})\n'
