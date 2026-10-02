@@ -10,12 +10,12 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /entry\.epistemic_status/);
   assert.match(page, /entry\.evidence/);
   assert.match(page, /entry\.source_ids/);
-  assert.match(page, /DERIVED · CHANGE/);
+  assert.match(page, /파생 비교 · CHANGE/);
   assert.match(page, /changeDetails\.earlier/);
   assert.match(page, /method_version/);
   assert.match(page, /correction_semantics/);
   assert.match(page, /UNKNOWN/);
-  assert.match(page, /Evidence & audit/);
+  assert.match(page, /출처와 감사/);
 });
 
 test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", async () => {

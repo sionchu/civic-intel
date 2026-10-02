@@ -750,3 +750,75 @@ main { flex: 1; }
   outline: 3px solid var(--color-accent-soft);
   outline-offset: 4px;
 }
+
+
+/* Person dossier editorial reading flow (scoped to Person detail only) */
+.profile-page.person-dossier .back-link { min-height: 44px; }
+.profile-page.person-dossier .profile-identity { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.profile-page.person-dossier .profile-identity .micro-label { color: var(--color-ink-muted); }
+.profile-page.person-dossier .profile-lede { word-break: keep-all; overflow-wrap: anywhere; line-height: 1.7; }
+.profile-page.person-dossier .audit-details summary { padding: 12px 0; line-height: 20px; }
+.profile-page.person-dossier .audit-details small { display: block; overflow-wrap: anywhere; }
+.profile-page.person-dossier .profile-index li a { min-height: 44px; }
+.profile-page.person-dossier .profile-source-index-link { display: flex; align-items: center; min-height: 44px; margin-top: 12px; padding-top: 0; }
+.profile-page.person-dossier .profile-source-index-link + .profile-source-index-link { margin-top: 0; }
+
+.profile-page.person-dossier .profile-coverage { padding: 0 0 32px; border: 0; border-bottom: 1px solid var(--color-line); border-radius: 0; background: transparent; box-shadow: none; }
+.profile-page.person-dossier .overview-heading h2 { font-family: "Noto Serif KR", "Batang", Georgia, serif; font-size: 26px; letter-spacing: -.04em; line-height: 1.25; word-break: keep-all; }
+.profile-page.person-dossier .overview-heading p { font-size: 14px; line-height: 1.65; word-break: keep-all; }
+.profile-page.person-dossier .profile-coverage-rows { display: grid; margin: 0; border-top: 1px solid var(--color-line-strong); }
+.profile-page.person-dossier .profile-coverage-rows > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 48px; padding: 8px 0; border-bottom: 1px solid var(--color-line); }
+.profile-page.person-dossier .profile-coverage-rows dt,
+.profile-page.person-dossier .profile-coverage-rows dd { min-width: 0; margin: 0; }
+.profile-page.person-dossier .profile-coverage-rows dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.profile-page.person-dossier .profile-coverage-rows strong { font-family: Georgia, serif; font-size: 24px; line-height: 1; }
+.profile-page.person-dossier .profile-coverage-rows dd span { color: var(--color-ink-muted); font-size: 13px; }
+
+.profile-page.person-dossier .profile-sections { grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 32px; }
+.profile-page.person-dossier .section-heading h2 { word-break: keep-all; overflow-wrap: anywhere; }
+.profile-page.person-dossier .section-note { min-height: 0; margin: 12px 0 0; font-size: 14px; line-height: 1.65; }
+.profile-page.person-dossier .profile-empty-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: 0; padding: 16px 0; border-bottom: 1px solid var(--color-line); color: var(--color-ink-muted); font-size: 14px; line-height: 1.6; }
+.profile-page.person-dossier .profile-section .claim { margin: 0; padding: 24px 0; border: 0; border-bottom: 1px solid var(--color-line); border-radius: 0; background: transparent; box-shadow: none; }
+.profile-page.person-dossier .profile-section .change-card { padding-left: 16px; border-left: 2px solid var(--color-accent); background: transparent; }
+.profile-page.person-dossier .claim-kind { font-size: 10px; }
+.profile-page.person-dossier .claim-title { margin-top: 12px; font-size: 16px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+.profile-page.person-dossier .claim-date { font-size: 12px; }
+.profile-page.person-dossier .claim .resolution { font-size: 13px; line-height: 1.6; }
+.profile-page.person-dossier .conflict-note { font-size: 12px; }
+.profile-page.person-dossier .change-point { padding: 12px 0 0; border: 0; border-top: 1px solid var(--color-line-strong); border-radius: 0; background: transparent; }
+.profile-page.person-dossier .change-point.later { border-top-color: var(--color-accent); }
+.profile-page.person-dossier .change-point .micro-label { font-size: 10px; letter-spacing: .08em; }
+.profile-page.person-dossier .change-point small { overflow-wrap: anywhere; }
+.profile-page.person-dossier .change-reason { font-size: 13px; }
+.profile-page.person-dossier .activity-facts div { grid-template-columns: 120px minmax(0, 1fr); }
+.profile-page.person-dossier .activity-facts dt { font-size: 12px; }
+.profile-page.person-dossier .activity-facts dd { font-size: 13px; }
+.profile-page.person-dossier .activity-link { align-items: center; min-height: 44px; margin-top: 8px; }
+
+.profile-page.person-dossier .evidence-list { gap: 0; margin-top: 16px; padding-left: 12px; border-left: 1px solid var(--color-line-strong); }
+.profile-page.person-dossier .evidence-list-heading { padding-bottom: 8px; font-size: 12px; }
+.profile-page.person-dossier .evidence-list-heading strong { font-size: 12px; }
+.profile-page.person-dossier .evidence-trace { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 12px; padding-top: 4px; font-size: 13px; }
+.profile-page.person-dossier .evidence-trace > a,
+.profile-page.person-dossier .evidence-trace > span:not(.status) { display: flex; align-items: center; min-width: 0; min-height: 44px; overflow-wrap: anywhere; }
+.profile-page.person-dossier .evidence-trace .audit-details { grid-column: 1 / -1; margin-top: 0; }
+.profile-page.person-dossier .source-links { gap: 0; }
+.profile-page.person-dossier .source-links strong { padding-bottom: 8px; font-size: 12px; }
+.profile-page.person-dossier .source-links a { display: flex; align-items: center; min-height: 44px; border-top: 1px solid var(--color-line); overflow-wrap: anywhere; }
+
+.profile-page.person-dossier .section-intro > p { word-break: keep-all; line-height: 1.65; }
+.profile-page.person-dossier .profile-source-list { grid-template-columns: minmax(0, 1fr); gap: 0; border-top: 1px solid var(--color-line-strong); }
+.profile-page.person-dossier .profile-source-list .source { padding: 24px 0; border: 0; border-bottom: 1px solid var(--color-line); border-radius: 0; background: transparent; box-shadow: none; scroll-margin-top: 112px; }
+.profile-page.person-dossier .profile-source-list .source:target { padding-left: 16px; box-shadow: inset 2px 0 0 var(--color-accent); }
+.profile-page.person-dossier .source h3 { margin-top: 12px; word-break: keep-all; }
+.profile-page.person-dossier .source-license { font-size: 12px; }
+.profile-page.person-dossier .profile-policy { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 16px 0 0; }
+.profile-page.person-dossier .profile-policy > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; min-width: 0; padding: 8px 0; border-top: 1px solid var(--color-line); font-size: 12px; }
+.profile-page.person-dossier .profile-policy dt { color: var(--color-ink-muted); }
+.profile-page.person-dossier .profile-policy dd { margin: 0; font-weight: 750; overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+  .profile-page.person-dossier .profile-coverage-rows > div { grid-template-columns: 88px minmax(0, 1fr); }
+  .profile-page.person-dossier .activity-facts div { grid-template-columns: 1fr; gap: 2px; }
+  .profile-page.person-dossier .profile-policy { grid-template-columns: 1fr; }
+}
