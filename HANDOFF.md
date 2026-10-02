@@ -4,7 +4,8 @@
 
 Reapply the approved architecture refactor and prepare the selected dedicated one-shot collector
 on the Mac/SSD. The local architecture work order is complete. The owner approved the exact
-one-shot Assembly acquisition and Windows source-key reuse; operational launcher validation remains.
+one-shot Assembly acquisition and Windows source-key reuse. That run and canonical audit are complete:
+299 observations, provider total 299, three snapshots, checkpoint 3, SUCCESS.
 
 ## Scope
 
@@ -23,8 +24,8 @@ and executed local verification. All are satisfied; details are in the final rec
 All five milestones in docs/exec-plans/completed/architecture-current-master.md. Eight adapters,
 nine enumerators sharing SourceLifecycle, 37 CLI routes, startup readiness only, policy-first
 identity, local trace/run correlation, old paths removed and full histories retained.
-Separate collector proposal and Mac runtime installation are documented. Only disposable,
-credential-free offline acquisition checks ran; no live collector was launched.
+Separate collector preparation, immutable Mac runtime and bounded acquisition are complete.
+One live run completed; coverage, provenance, privacy and zero identity/publication rows were audited.
 The approved single source key has been delivered privately from Windows to Mac without printing
 its value or transferring other `.env` values.
 
@@ -38,7 +39,10 @@ Original master and its modified packages/domain/contracts.py remain untouched.
 Mac bounded runtime: /Users/lee/Developer/civic-intel-collector-20261001/bounded-333aa26,
 Python 3.12.14, pinned wheel. External /Volumes/data is APFS on USB 10 Gb/s. Owner node approval
 resolved remote storage access; mkdir/fsync/readback/SHA/rename and SSD schema/CLI checks passed.
-Fresh target mac-ssd-assembly-one-shot-333aa26 is schema 0008, mode 0600, with zero data/run rows.
+Target mac-ssd-assembly-one-shot-333aa26 is schema 0008, mode 0600. SourceRun
+62f4567c-fb56-403c-952d-eb768136d6c3 is SUCCESS; 299 observations, three snapshots/Sources,
+checkpoint 3, zero People/Claims/Organizations. Parent launcher pin 7b004bf and SHA-256
+33d50df5b38387c9ec7e7908fe168bd15e5dc10a585fc0d3d49be34520701662; wheel stays 333aa26.
 
 ## Decisions and reasons
 
@@ -67,29 +71,34 @@ passed. Installed canonical CLI with real HTTPX/TLS passed trusted fixtures and 
 untrusted certificate; no official API or OS trust change. Approved request hash b127f5f1;
 single-key encrypted delivery PID57756 completed with exit 0.
 Updated inputs/receipts: docs/receipts/mac-collector-bounded-20261002.md.
+Final launcher: 27 tests, Ruff and mypy-darwin PASS; independent read-only review pinned source.
+Full gate after launcher integration passed 853 Python tests, 4 PG skips, 6 warnings and 26 web
+tests. Final repeat at 7b004bf passed CANONICAL_VERIFY_EXIT=0. Tight Mac profile passed seven
+canaries and actual installed CLI; real watchdog stopped/reaped its own child at 180.011s and
+kept RUNNING/RECOVERY_REQUIRED in an isolated fixture. Approved live execution PID75766 exit0
+in 3.44s; canonical audit PID76155 exit0. Actual provider coverage/provenance/privacy PASS.
+Sanitized receipts copied byte-for-byte: docs/receipts/assembly-one-shot-live-20261002.json,
+assembly-one-shot-live-audit-20261002.json and one-shot-profile-7b004bf.json.
 
 ## Not executed
 
-Current-branch remote CI, live source, operational DB/admin writes, publication, scheduling,
-browser/visual acceptance, Docker build (unavailable), push/PR/merge, deployment or access changes.
-Actual official-source DNS/TLS/API and the approved first live run.
+Current-branch remote CI, identity materialization/admin writes, publication, scheduling,
+browser/visual acceptance, Docker build (unavailable), push/PR/merge, deployment or public access changes.
 
 ## Blockers
 
-No SSD/storage, source-grant or key-delivery blocker. Native sandbox compilation rejected named-host
-egress; the fixed Assembly loopback relay and TLS fixtures passed. The remaining live prerequisite
-is independent launcher review and exact-target sandbox/watchdog validation. Allocated ownership is not a
-database-enforced shared-writer lease. Shared recurring writers remain a separate change.
+None for the completed one-shot scope. Allocated ownership/advisory launcher lock is not a
+database-enforced shared-writer lease; shared recurring writers remain a separate change.
 
 ## Modified files
 
 See the receipt for source paths. Current continuation: this HANDOFF, completed architecture
 plan, final receipt, docs/operations/COLLECTION_AGENT.md and Mac readiness/bounded receipts.
-Assembly connector/CLI budget changes and active Mac one-shot plan are integrated.
+Assembly connector/CLI budgets, fixed relay, trusted parent and completed Mac plan are integrated.
 Original history is in docs/history. Mac preparation helpers/bundle are local ignored .tools files.
 
 ## Next concrete action
 
-Verify the fixed one-shot parent launcher, install its immutable companion and prove its tighter
-exact-target profile on Mac fixtures. Then execute the already-approved single acquisition and
-audit canonical status, coverage and checkpoint; never retry a forced stop automatically.
+No active collection remains. Preserve the SSD DB/key and receipts. The nonempty target guard
+prevents a duplicate first run. Further collection/resume, identity work, publication or recurring
+execution needs a separately scoped work order.

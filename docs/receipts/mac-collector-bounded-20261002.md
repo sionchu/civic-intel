@@ -1,9 +1,11 @@
 # Mac SSD bounded collector, 2026-10-02
 
-Status: SSD/runtime/budget/egress/TLS fixtures PASS; owner-approved live acquisition pending
-operational launcher validation. Private source-key delivery PASS. The owner approved node
+Status: COMPLETE. One owner-approved live Assembly acquisition completed with SUCCESS and
+299 observations covering the provider's 299 records; checkpoint 3. Canonical post-read audit,
+private source-key delivery, SSD/runtime/budget/egress/TLS and 180-second watchdog fixtures PASS.
+The owner approved node
 removable-volume access. All Mac commands used Remote Desktop Commander, with explicit device
-1a9f82ea-a0b2-44ee-9997-4f75f2916ebe and /bin/zsh. No live source, identity materialization,
+1a9f82ea-a0b2-44ee-9997-4f75f2916ebe and /bin/zsh. No identity materialization,
 Claim publication, scheduler, deployment, push or merge ran.
 
 ## Installed inputs
@@ -36,6 +38,14 @@ Claim publication, scheduler, deployment, push or merge ran.
 | Mac egress canaries, PID 51880 | Exit 0; seven loopback/direct-egress/file-write canaries PASS; one injected fixture dial |
 | Mac actual HTTPX/TLS installed CLI, PID 52573 | Exit 0; trusted fixture SUCCESS, 3 observations, checkpoint 2; default-trust negative FAILED, 0 observations, no checkpoint |
 | private key delivery, PID 57756 | Exit 0; only ASSEMBLY_API_KEY transferred as encrypted envelope; mode 0600; temporary transport private key removed; secret not printed |
+| parent launcher | 27 tests PASS; Ruff and mypy --platform darwin PASS; independent review pinned both original and bootstrap-fix commits |
+| full gate after launcher integration | 853 Python tests PASS, 4 optional PG skips, 6 warnings; 26 web tests, quality/architecture/build PASS |
+| final full gate at 7b004bf | Complete repeat PASS; CANONICAL_VERIFY_EXIT=0; script-specific Ruff/mypy and 27 tests also PASS |
+| Mac tight-profile and actual watchdog, PID 74485 | Exit 0; seven canaries and installed CLI fixture PASS; actual timeout at 180.011s, SIGTERM -15, reaped, persisted RUNNING, RECOVERY_REQUIRED |
+| approved launcher preflight, PID 74625 | Exit 0; request/artifacts/policy/schema/pristine target and private key checks READY; no fetch |
+| live execution, PID 75766 | Exit 0 in 3.44s; canonical SUCCESS, 299 new observations, 0 unchanged, checkpoint 3 |
+| canonical live audit, PID 76155 | Exit 0; full coverage/provenance/privacy and zero Person/Claim/Organization rows PASS |
+| duplicate first-run guard read, PID 77927 | Exit 0; TARGET_NOT_EMPTY, still exactly one SourceRun; no key read or source API call |
 
 Initial full verification had one failure caused by the fixture wrapper omitting Windows USERNAME.
 After retaining this nonsecret OS identity, the focused regression and complete gate passed.
@@ -97,7 +107,7 @@ They used a TCP echo fixture, not the official API. The separate TLS fixture use
 installed CLI and HTTPX, without MockTransport. Profile SHA-256:
 `19f955bcecb88c3b53fce8fd6d4450715c952f64a1a638239077e88e3d596b62`.
 The fixture CA was process-local; no OS trust changed. Omitting it made the negative fixture
-fail before an HTTP request reached the fixture server. No actual source DNS/TLS/API was tested.
+fail before an HTTP request reached the fixture server. These fixtures tested no actual source DNS/TLS/API.
 Live environments must not inherit this fixture CA or other source/admin/deployment credentials.
 
 The relay permits only exact Assembly CONNECT, rejects nonpublic/mixed DNS answers, and caps
@@ -110,11 +120,59 @@ The owner authorized reuse of the Windows `.codex/.env` key. Only the named sour
 read internally and RSA-OAEP encrypted to a temporary Mac transport key; only ciphertext crossed
 tool arguments. Mac decryption wrote the existing empty private slot and removed the temporary
 transport key. The key value, hash and other `.env` values were never printed. The exact request
-grant is now recorded; no further scope confirmation is required. Operational launcher validation
-and one bounded live run remain.
+grant is recorded; no further scope confirmation was required. The operational launcher and
+one bounded live run completed as recorded below. The immutable request's CREDENTIAL_PENDING
+status is its approval-time snapshot; execution state is in the separate canonical run/receipts.
 
 Remote receipts are in the bounded runtime's receipts directory and `/Volumes/data/civic-intel/receipts`:
 setup.json, assembly-budget-333aa26.json, forced-stop-333aa26.json, staging-provision.json,
 egress-333aa26.json and tls-333aa26.json.
 The earlier SSD storage/schema/isolation receipts remain intact. No credential value was
 requested in chat or included in an execution report or versioned artifact.
+
+## Completed live acquisition and audit
+
+The immutable canonical wheel stayed at 333aa26. Trusted parent launcher is pinned separately
+at `7b004bf0b0e3472624a3556a6fbb8caf5ae36ccc`, 14586 bytes, SHA-256
+`33d50df5b38387c9ec7e7908fe168bd15e5dc10a585fc0d3d49be34520701662`.
+It validates the exact approved request, release manifest/payloads and installed Python files,
+SourcePolicy, schema, pristine target, owned advisory lock and private key slot. It dispatches
+only the existing `civic observe assembly` acquisition with the approved limits. The child gets
+only six explicit environment keys and no fixture CA, admin/deploy credentials or direct egress.
+
+The first tighter sandbox fixture failed before ingestion: Python aborted during native loader
+startup. The current Mac's Apple `dyld-support.sb` explains that libignition needs opening exactly
+`/` as an openat root. An exact root-directory read plus metadata reads fixed bootstrap; neither
+unrestricted descendant reads nor unrestricted default/network/write access was retained.
+Fresh seven-canary/installed-CLI/actual-180-second fixtures then passed. Failed artifacts remain
+separate. The audit helper's first read-only attempt failed because Source.url is HttpUrl; converting
+it to str fixed the helper. No additional collection or canonical mutation ran for that correction.
+
+| Authoritative live result | Value |
+|---|---|
+| SourceRun | `62f4567c-fb56-403c-952d-eb768136d6c3` |
+| durable status / process | SUCCESS; exit 0, reaped, no forced stop |
+| provider-reported total / unique records / observations | 299 / 299 / 299 |
+| observations created / unchanged | 299 / 0 |
+| committed pages / checkpoint | 3 / 3 |
+| canonical snapshots / Sources | 3 / 3 |
+| schema / new People / Claims / Organizations | 0008 / 0 / 0 / 0 |
+| coverage / exact snapshot-source-policy provenance | PASS / PASS |
+| stored fulltext / source key / private contact fields | absent / absent / absent |
+
+Actual source DNS, TLS and API succeeded through the fixed relay and certificate-verifying
+installed HTTPX client. SUCCESS was audited against provider total, unique MONA_CD/hash coverage,
+all persisted observations, page fingerprints and the committed run/checkpoint. No materialization,
+publication, scheduler, deployment, automatic retry or additional acquisition ran.
+
+The three sanitized remote receipts were copied byte-for-byte into this repository; their
+internal-runtime and SSD copies also match. They contain counts/IDs and execution evidence,
+without source rows, key values or raw source paths:
+
+- [Live parent receipt](assembly-one-shot-live-20261002.json): SHA-256 `7b83bd5af3684eb16c98b6e46f2eabe8e1c2d9dbbfb257879c8d9384de0d7cf4`.
+- [Canonical live audit](assembly-one-shot-live-audit-20261002.json): SHA-256 `82b3434a46850afe8d8728c44f93fc4690a64ff58c834dd713fc8dbc3c904499`.
+- [Tight profile and watchdog fixture](one-shot-profile-7b004bf.json): SHA-256 `ecff083a7358d590f55e93ccaac9b9aa9f7f0e24616a2ed5e3c0634a25222014`.
+
+The live DB is retained on SSD. It is no longer pristine; a second launch is blocked by the
+parent's empty-target check. Further acquisition/resume, identity materialization, publication
+or scheduling needs its own scope. The key remains in the owner-approved mode-0600 Mac slot.

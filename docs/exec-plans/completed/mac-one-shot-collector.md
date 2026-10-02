@@ -1,5 +1,7 @@
 # Mac one-shot collector preparation
 
+Status: COMPLETE, 2026-10-02. The approved live run and canonical post-read audit passed.
+
 Authority: owner selected dedicated one-shot collection on the Mac's external SSD and authorized
 continuation. Base: 3ec9a76b0110df66fddeea3acb736c514fc52028. On 2026-10-02 the owner approved
 one unfiltered current Assembly roster, the allocated SSD target and exact bounded limits.
@@ -59,7 +61,7 @@ verification wrapper omitted USERNAME; the corrected wrapper passed that regress
 full gate. Product code was unchanged for this environment correction.
 
 Milestone 3 passed: immutable wheel 333aa26 installed; four SSD request-budget fixtures and
-forced-stop recovery semantics passed; schema-0008 fresh sole-writer target remains empty.
+forced-stop recovery semantics passed; schema-0008 sole-writer target was provisioned empty.
 Pinned fixed Assembly relay 22d32c6 passed 58 tests, independent review and seven Mac canaries.
 Installed CLI with real HTTPX/TLS passed a trusted fixture and rejected an untrusted certificate.
 Latest full gate after relay integration passed 826 Python/26 web tests, Ruff/mypy/quality/
@@ -67,7 +69,24 @@ architecture/build; four optional PG skips and six SQLite warnings retained. Off
 not contacted. Approved request SHA is b127f5f10c596a78f9d370cde269a158b574e321c5502b33f29307420241b0ae.
 Private single-key delivery completed with no value printed and no other environment values moved.
 
-Milestone 4 in progress: source_worker owns only scripts/mac_assembly_one_shot.py and its tests
-in isolated assembly-one-shot worktree at base 22d32c6. MAIN owns integration, request/docs,
-Mac execution and sole operational writer. Reviewer remains read-only; no child receives keys
-or operational tool access. Parent process receipt supplements, but never replaces, SourceRun.
+Milestone 4 passed: source_worker prepared the source-specific parent in an isolated worktree;
+MAIN finalized unchanged reviewed blobs as eca2bd0 and integrated 7b3e00d. Actual Mac bootstrap
+needed exact root-directory read and path metadata permissions; MAIN corrected only that profile
+at 7b004bf, retained deny-default/direct-network denial/exact-target writes, and received independent
+delta review. Script Ruff/mypy-darwin and 27 tests passed. Full gate passed 853 Python/26 web tests;
+final repeat at 7b004bf returned CANONICAL_VERIFY_EXIT=0. Four optional PG skips/six warnings remain.
+The agent prepared code only; MAIN exclusively handled private keys and operational execution.
+
+Fresh tight-profile fixture PID74485 exit0: seven canaries, installed canonical CLI SUCCESS;
+actual hard watchdog stopped/reaped its child at 180.011s, durable RUNNING/zero observations/no
+checkpoint, RECOVERY_REQUIRED. Approved artifact/request/policy/schema/key/pristine-target
+preflight PID74625 exit0 READY. Actual live PID75766 exit0 in 3.44s: SourceRun
+62f4567c-fb56-403c-952d-eb768136d6c3 SUCCESS, 299 new observations, checkpoint3. Canonical audit
+PID76155 exit0: provider total/unique records/observations 299, three snapshots/Sources,
+complete policy provenance, key/private contact fields/fulltext absent, People/Claims/Organizations0.
+No additional acquisition, automatic retry, materialization, publication or scheduling ran.
+
+Parent receipt supplements, never replaces, SourceRun. Remote runtime/SSD receipt copies match;
+sanitized originals were copied with exact hash verification to docs/receipts. See
+[completed evidence](../../receipts/mac-collector-bounded-20261002.md). The operational target
+is now nonempty and another first-run launch is rejected. All four milestones are complete.

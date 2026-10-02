@@ -1,0 +1,29 @@
+{
+  "launcher_code_commit": "7b004bf0b0e3472624a3556a6fbb8caf5ae36ccc",
+  "launcher_sha256": "33d50df5b38387c9ec7e7908fe168bd15e5dc10a585fc0d3d49be34520701662",
+  "wheel_code_commit": "333aa26bda5f1110e53190f27de0c62a0f43cb30",
+  "wheel_sha256": "f94bd36a38c886da82b226301a6191000b8f4ad94c6747bd8f76a94c9f3d9cca",
+  "relay_sha256": "41105315eb56979e66d4aaf6cdc2a122427084e582f0e204258b964ecf9b64ab",
+  "request_sha256": "b127f5f10c596a78f9d370cde269a158b574e321c5502b33f29307420241b0ae",
+  "process_audit": "FINISHED",
+  "live_run": true,
+  "automatic_retry": false,
+  "result": {
+    "status": "SUCCESS",
+    "target": "mac-ssd-assembly-one-shot-333aa26",
+    "process": {
+      "exit_code": 0,
+      "forced_stop": false,
+      "process_reaped": true
+    },
+    "canonical": {
+      "source_run_id": "62f4567c-fb56-403c-952d-eb768136d6c3",
+      "status": "SUCCESS",
+      "records_seen": 299,
+      "observations_created": 299,
+      "observations_unchanged": 0,
+      "observation_count": 299,
+      "checkpoint": "3"
+    }
+  }
+}

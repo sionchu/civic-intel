@@ -1,0 +1,47 @@
+{
+  "fixture_only": true,
+  "live_run": false,
+  "source_key_used": false,
+  "launcher_sha256": "33d50df5b38387c9ec7e7908fe168bd15e5dc10a585fc0d3d49be34520701662",
+  "profile_sha256": "d6e6c473e27e1fd44324815a2319fa1ca6ee3650c7c25984c707aff2d2ff9e59",
+  "canaries": {
+    "allocated_loopback_allowed": true,
+    "unallocated_loopback_denied": true,
+    "direct_external_denied": true,
+    "unrelated_fixture_read_denied": true,
+    "unrelated_fixture_write_denied": true,
+    "operational_target_write_denied": true,
+    "release_write_denied": true
+  },
+  "cli_exit": 0,
+  "transport": "HTTPX_MockTransport",
+  "canonical": {
+    "source_run_id": "1aa9bba7-526c-4b8a-902e-c9aa72d04773",
+    "status": "SUCCESS",
+    "observation_count": 3,
+    "checkpoint": "1"
+  },
+  "fixture_CA_in_child_environment": false,
+  "actual_180_second_watchdog": {
+    "elapsed_seconds": 180.011,
+    "receipt": {
+      "status": "RECOVERY_REQUIRED",
+      "target": "mac-ssd-one-shot-profile-fixture",
+      "process": {
+        "exit_code": -15,
+        "forced_stop": true,
+        "process_reaped": true
+      },
+      "canonical": {
+        "source_run_id": "64f437bf-f90b-4bc8-b51a-969b99bcfc69",
+        "status": "RUNNING",
+        "records_seen": 0,
+        "observations_created": 0,
+        "observations_unchanged": 0,
+        "observation_count": 0,
+        "checkpoint": null
+      }
+    },
+    "automatic_retry": false
+  }
+}

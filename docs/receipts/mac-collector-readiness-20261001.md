@@ -1,7 +1,7 @@
 # Mac collector readiness, 2026-10-01
 
-Status: SSD_READY, LIVE_PENDING. SSD storage and the bounded installed runtime are verified;
-the updated continuation is in [the bounded collector receipt](mac-collector-bounded-20261002.md).
+Status: initial SSD/runtime readiness verified. The subsequent one-shot live acquisition and
+audit completed; current evidence is in [the bounded collector receipt](mac-collector-bounded-20261002.md).
 This receipt preserves initial preparation and access diagnostics. It records remote execution,
 not live acquisition, publication, deployment or a source-rights grant.
 
@@ -110,13 +110,14 @@ for 8388608 bytes. One initial verification-script retry failed because first/th
 logs had the same exclusive filename; indexed logs corrected it and the full rerun exited 0.
 These are executed storage checks, not a drive-health or sustained-performance benchmark.
 
-## Remaining operational gate
+## Operational continuation
 
 The continuation now proves request budgets, forced-stop recovery, fixed Assembly loopback
 egress and real HTTPX/TLS fixtures. The owner approved the exact source/scope/target and limits
 on 2026-10-02. Only the existing Windows ASSEMBLY_API_KEY was delivered privately to Mac.
-Operational launcher and exact-target profile validation remain before live acquisition;
-see the current [continuation receipt](mac-collector-bounded-20261002.md).
+Operational launcher/exact-target profile/watchdog validation and the approved live acquisition
+now passed: 299 observations, three snapshots, checkpoint3, SUCCESS, complete audited coverage.
+See the current [continuation receipt](mac-collector-bounded-20261002.md).
 
 Approved scope: current unfiltered Assembly member roster; `national_assembly_members`,
 `current_member_roster`, SourcePolicy `11000000-0000-0000-0000-000000000001`,

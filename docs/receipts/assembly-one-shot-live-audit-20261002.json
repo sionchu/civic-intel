@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "target": "mac-ssd-assembly-one-shot-333aa26",
+  "schema": "0008",
+  "source_run_id": "62f4567c-fb56-403c-952d-eb768136d6c3",
+  "durable_status": "SUCCESS",
+  "finished_at": "2026-10-02T04:53:09.625019",
+  "provider_reported_total": 299,
+  "observations": 299,
+  "unique_provider_records": 299,
+  "committed_pages": 3,
+  "checkpoint": "3",
+  "canonical_snapshots": 3,
+  "sources": 3,
+  "policy_provenance_complete": true,
+  "fulltext_absent": true,
+  "source_key_absent_from_canonical_data": true,
+  "private_contact_field_names_absent": true,
+  "coverage_complete": true,
+  "forbidden_effect_counts": {
+    "people": 0,
+    "claims": 0,
+    "organizations": 0
+  },
+  "parent_process": {
+    "exit_code": 0,
+    "forced_stop": false,
+    "process_reaped": true
+  },
+  "automatic_retry": false,
+  "live_run": true
+}

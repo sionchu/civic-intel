@@ -1,8 +1,9 @@
-# Separate collection-agent operating proposal
+# Separate collection-agent operation
 
-Status: owner approved the exact one-shot Assembly scope on 2026-10-02; source key delivery,
-dedicated runtime, SSD writes, bounded CLI and loopback/TLS fixtures passed. An empty dedicated
-SSD staging target is provisioned. Operational launcher validation remains; no live source ran. See the
+Status: the owner-approved one-shot Assembly acquisition completed on 2026-10-02. The SSD
+target contains 299 observations, three canonical snapshots and checkpoint 3, with full provider
+coverage audited. Source key delivery, runtime, bounded CLI, loopback/TLS, tight file access and
+actual 180-second watchdog fixtures passed. No identity/publication/scheduler ran. See the
 [Mac readiness receipt](../receipts/mac-collector-readiness-20261001.md).
 Research base: master 77e2767ab043738f00b8dd38be8d99803e5ad7bc. Installed bounded candidate:
 code 333aa26 and wheel SHA-256 `f94bd36a38c886da82b226301a6191000b8f4ad94c6747bd8f76a94c9f3d9cca`.
@@ -81,13 +82,16 @@ file/network checks and the actual installed CLI missing-key audit. Updated inst
 fixtures prove request caps, start-to-start spacing and cooperative fetch deadlines with
 SUCCESS/FAILED/PARTIAL and exact committed checkpoints. A separate forced-stop fixture proved
 RUNNING remains durable and requires recovery rather than automatic retry or a fabricated FAILED.
-The offline profile permits no live API access and does not prove credential delivery or live TLS.
+The earlier offline profile permits no live API access. The later approved live run separately
+proved actual source TLS/API and restricted credential use.
 
 External APFS volume `/Volumes/data` is mounted and advertised writable; USB is now 10 Gb/s.
 The owner approved node's removable-volume access. Remote mkdir, 8 MiB fsync/readback/SHA/rename,
 SSD schema 0008→0007→0008 and installed offline CLI checks then passed. The owned SSD root
 `/Volumes/data/civic-intel` is mode 0700. Fresh target `mac-ssd-assembly-one-shot-333aa26`
-is a mode-0600 SQLite file at schema 0008, with zero runs, observations, People and Claims.
+was provisioned as a mode-0600 SQLite file at schema 0008 with zero rows. The completed live run
+now has one SUCCESS SourceRun, 299 observations, three snapshots and checkpoint 3; People and
+Claims remain zero.
 MAIN owns the sole one-shot writer; no scheduler targets it. This is allocated ownership, not a
 shared-writer database lease. Existing SSD data and disk settings were preserved.
 
@@ -102,6 +106,8 @@ The owner approved page size 100, maximum 8 requests, minimum start interval 1 s
 budget 120 seconds and hard child stop 180 seconds. These are operating limits, not provider
 permission. Windows `.codex/.env` supplied only ASSEMBLY_API_KEY via an encrypted envelope to
 the private mode-0600 Mac slot; no other values were transferred or printed. Operational
-launcher preflight/watchdog validation remains before the live run. The relay is bounded but
+launcher preflight/watchdog and the single live run passed. The parent is pinned at 7b004bf,
+SHA-256 `33d50df5b38387c9ec7e7908fe168bd15e5dc10a585fc0d3d49be34520701662`. It rejects another
+launch against this nonempty target and never automatically retries. The relay is bounded but
 not client-authenticated; unrelated local clients could consume its capacity. DNS cannot be
 cancelled within the relay. These checks are not comprehensive adversarial isolation.
