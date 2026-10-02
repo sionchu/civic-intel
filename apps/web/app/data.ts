@@ -1,3 +1,5 @@
+import "server-only";
+
 import type {
   ApiErrorCode,
   ApiResult,
@@ -10,8 +12,13 @@ import type {
   Source,
 } from "./types";
 
-const API = process.env.CIVIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const DIRECTORY_REVALIDATE_SECONDS = 60;
+const API_TIMEOUT_MS = 8000;
+const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const PUBLIC_READ_PATH = new RegExp(
+  `^/(?:people(?:/${UUID})?|organizations(?:/${UUID})?|sources/${UUID}|ontology/(?:people|organizations)/${UUID}|gukgam/2026/targets|organizations/${UUID}/money\\?earlier_fiscal_year=[0-9]{4}&later_fiscal_year=[0-9]{4})$`,
+  "i",
+);
 
 const STATUS_CODE: Record<number, ApiErrorCode> = {
   403: "ACCESS_DENIED",
@@ -24,12 +31,35 @@ async function getJson<T>(
   path: string,
   options: { revalidateSeconds?: number } = {},
 ): Promise<ApiResult<T>> {
+  if (!PUBLIC_READ_PATH.test(path)) {
+    return { state: "error", error: {
+      code: "INVALID_INPUT", message: "The public record identifier is invalid.", request_id: null,
+    } };
+  }
   try {
+    const base = new URL(process.env.CIVIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000");
+    if (!["http:", "https:"].includes(base.protocol) || base.username || base.password
+      || base.pathname !== "/" || base.search || base.hash) throw new Error("Invalid API origin");
+    const clientId = process.env.CIVIC_ACCESS_CLIENT_ID ?? "";
+    const clientSecret = process.env.CIVIC_ACCESS_CLIENT_SECRET ?? "";
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (clientId || clientSecret || process.env.CIVIC_ACCESS_ORIGIN) {
+      if (!clientId || !clientSecret || base.protocol !== "https:"
+        || process.env.CIVIC_ACCESS_ORIGIN !== base.origin) throw new Error("Invalid service credential binding");
+      headers["CF-Access-Client-Id"] = clientId;
+      headers["CF-Access-Client-Secret"] = clientSecret;
+    }
     const response = await fetch(
-      `${API}${path}`,
-      options.revalidateSeconds
-        ? { next: { revalidate: options.revalidateSeconds } }
-        : { cache: "no-store" },
+      `${base.origin}${path}`,
+      {
+        method: "GET",
+        headers,
+        redirect: "error",
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
+        ...(options.revalidateSeconds && !clientSecret
+          ? { next: { revalidate: options.revalidateSeconds } }
+          : { cache: "no-store" as const }),
+      },
     );
     if (response.ok) return { state: "success", data: (await response.json()) as T };
     const payload = await response.json().catch(() => null) as {

@@ -30,6 +30,13 @@ Live source/identity/publication effects stay separate and require their actual 
 
 ## Work orders
 
+- PILOT-WEB-API-BRIDGE (base f930a69): MAIN extends the canonical server-side public
+  client in apps/web/app/data.ts with fixed-origin credentials, bounded GET routes,
+  redirect rejection and an eight-second timeout. Owned paths include its runtime tests,
+  web dependency/scripts, integration plan, INDEX and HANDOFF. Fixture requests only;
+  no credential read, tunnel creation, source/DB mutation, Site registration or deployment.
+  Acceptance: actual transport regressions, existing web contracts and full make verify.
+  The later Worker build and real authenticated Site-to-Mac route remain separate.
 - PILOT-OPUS-PACKET: bounded Person presentation proposal/patch only. Allowed paths:
   `apps/web/app/people/[id]/page.tsx` and `.profile-page`-scoped CSS in `styles.css`.
   Read-only context: DESIGN, DTO/data boundary, existing presentation helpers and UI tests.
@@ -85,6 +92,18 @@ reported honestly; no layer is marked PASS from another layer's result.
 
 ## Progress
 
+- Server-read continuation at base f930a69: canonical web client now keeps credentials
+  server-only, binds Access credentials to one HTTPS origin, limits public GET paths,
+  rejects redirects and times out at eight seconds. Actual disposable HTTP and mocked
+  credential/error cases: eight runtime tests PASS; total web tests 34 PASS.
+  Full make verify exit0: 862 Python PASS, four optional PG skips, six SQLite warnings,
+  364.43s; lint/mypy/Golden/architecture/typecheck/Next 16.3.8 build and assets PASS.
+  Security patches within the existing Next major and brace-expansion constraints applied;
+  npm audit reports zero vulnerabilities. Node's typeless-module test warning remains.
+  Independent code and plan reviews found no defect. New Vinext static check remains
+  12 supported/zero issues; Worker build and live authenticated connection remain NOT_RUN.
+  [Connection plan](../../operations/FRONTEND_BACKEND_INTEGRATION.md) and
+  [executed code receipt](../../receipts/web-api-bridge-20261002.json).
 - Baseline pinned at 788ae0c; integrated worktree initially clean. Existing candidate source
   0eb326d and previous test receipts preserved. No operational mutation at activation.
 - Three prior status audits and the proposal's independent consistency review completed.

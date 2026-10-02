@@ -10,20 +10,21 @@
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/check-portrait-assets.mjs && node --test tests/ui.test.mjs"
+    "test": "node scripts/check-portrait-assets.mjs && node --conditions=react-server --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "cytoscape": "3.34.3",
-    "next": "^16.1.0",
+    "next": "^16.3.8",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
-    "eslint-config-next": "^16.1.0",
+    "eslint-config-next": "^16.3.8",
     "typescript": "^5.9.0"
   }
 }

@@ -118,3 +118,7 @@ Confirm any hosting/account cost and access change from its concrete configurati
 
 SDK investigation and local runtime preparation are complete; publication and the full
 Person→Claim→Evidence→Source site acceptance remain incomplete.
+
+The next server-call preparation and frontend/backend choices are documented in
+[the integration plan](FRONTEND_BACKEND_INTEGRATION.md). It extends the same web client;
+the earlier runtime receipt remains unchanged historical evidence.

@@ -1,0 +1,80 @@
+{
+  "recorded_at_utc": "2026-10-02T10:15:30+00:00",
+  "base_commit": "f930a69cd4f6416afc168273c1af4db891e2a337",
+  "effect": "LOCAL_CODE_AND_DELIVERY_PLAN",
+  "web_data_client_sha256": "a361e1707f30f9af076c56353d7f15966669ebc7e0d8fbbe4f5c1b8bf62d518f",
+  "mac_readiness_rechecked": {
+    "ready_http": 200,
+    "people_http": 200,
+    "people_count": 298,
+    "read_only": true
+  },
+  "bridge": {
+    "server_only": true,
+    "public_get_allowlist": true,
+    "exact_https_credential_origin": true,
+    "credential_pair_required": true,
+    "redirects_rejected": true,
+    "timeout_ms": 8000,
+    "authenticated_cache": "NO_STORE",
+    "legacy_uncredentialed_directory_revalidation_seconds": 60,
+    "credentials_created_or_read": false,
+    "credentials_configured": false
+  },
+  "verification": {
+    "canonical_command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "exit_code": 0,
+    "canonical_verify_exit": 0,
+    "python_passed": 862,
+    "optional_postgresql_skipped": 4,
+    "sqlite_datetime_warnings": 6,
+    "python_elapsed_seconds": 364.43,
+    "web_passed": 34,
+    "transport_tests": 8,
+    "mypy_source_files": 146,
+    "ruff": "PASS",
+    "golden_quality": "PASS",
+    "architecture": "PASS",
+    "web_lint_typecheck_standalone_build_assets": "PASS",
+    "next_version": "16.3.8",
+    "node_test_warning": "MODULE_TYPELESS_PACKAGE_JSON",
+    "npm_audit_command": "npm audit --json",
+    "npm_audit_exit": 0,
+    "npm_audit_reported_vulnerabilities": 0,
+    "vinext_static_check": {
+      "version": "1.0.1",
+      "supported": 12,
+      "partial": 0,
+      "issues": 0,
+      "exit_code": 0
+    }
+  },
+  "dependency_changes": {
+    "server_only": "0.0.1",
+    "next": "16.3.8",
+    "eslint_config_next": "16.3.8",
+    "existing_brace_expansion_patches": true,
+    "next_patch_reference": "https://github.com/vercel/next.js/releases/tag/v16.3.6"
+  },
+  "independent_reviews": {
+    "code": "NO_DEFECT_FOUND",
+    "independent_web_tests_passed": 34,
+    "plan": "NO_DEFECT_FOUND",
+    "live_mac_or_cloud_reproduced_by_reviewers": false
+  },
+  "proposed_connection": "SITES_SERVER_TO_ACCESS_TUNNEL_MAC_SSD",
+  "connection_preference": "RECOMMENDATION_ONLY_PENDING_OWNER_PREFERENCE",
+  "not_executed": {
+    "source_fetch": true,
+    "claim_publication": true,
+    "cloud_database_write": true,
+    "mac_runtime_change": true,
+    "live_access_tunnel_connection": true,
+    "workers_build": true,
+    "workers_runtime": true,
+    "browser_visual_acceptance": true,
+    "site_registration": true,
+    "site_deployment": true,
+    "public_push": true
+  }
+}
