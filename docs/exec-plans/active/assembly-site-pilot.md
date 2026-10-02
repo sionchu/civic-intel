@@ -7,6 +7,13 @@ Current topology decision: Mac SSD DB/API, cloud web on Sites later; implementat
 `0865e5d`. The local SSD runtime is verified. Publication, Sites connectivity/Workers output
 and rendered/mobile acceptance remain incomplete.
 
+Owner priority update, 2026-10-02: Gukgam audited institutions first; retain the Assembly
+capture, DRAFTs and conflict without publication. The existing Gukgam page/API and exact local
+reviewed packets are reused under the [Gukgam work order](gukgam-2026-ontology-research.md).
+Mac read-only inventory found zero Organizations/public audit targets. Institution bindings
+and official witness/reference lists require their separate gates; legislators are audit actors.
+Current continuation: [frontend/backend plan](../../operations/FRONTEND_BACKEND_INTEGRATION.md#국감-우선-진행).
+
 ## Scope and ownership
 
 Prove one National Assembly current-roster site slice using the owner-selected Mac SSD

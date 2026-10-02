@@ -2,11 +2,12 @@
 
 ## Objective
 
-Continue the Assembly site pilot with owner-selected option1: canonical DB/API on the Mac
-external SSD, cloud web on Sites later. The SSD runtime milestone and official Sites SDK
-investigation are complete. The pilot is IN_PROGRESS: 298 identity-linked DRAFT Claims are
-private; Claim publication, cloud connectivity, Workers output and rendered/mobile acceptance
-remain incomplete. Prior Opus UI code and the existing Railway corpus are preserved.
+Owner priority, 2026-10-02: Gukgam audited institutions first, with canonical DB/API on the
+Mac external SSD and cloud web on Sites later. Preserve the Assembly site pilot's 298
+identity-linked private DRAFT Claims and one OPEN conflict, prior Opus UI and Railway corpus.
+The SSD runtime and official Sites SDK investigation are complete. The pilot is IN_PROGRESS;
+institution identity/source/publication gates, cloud connectivity, Workers output and
+rendered/mobile acceptance remain incomplete. Legislators are audit actors, not audit subjects.
 The canonical server-side authenticated public-read bridge and frontend/backend delivery
 plan are prepared and verified locally; no live connection or publication is implied.
 
@@ -42,6 +43,15 @@ Branch codex/architecture-current-master, isolated architecture-current-master w
 SSD implementation base 0865e5dec85b043574640dc02132366631ce7b11.
 UI commit af46132d49d0e8106851c473bfcda69c50f89345, on approved work-order commit 4c947e9.
 Current plan: docs/exec-plans/active/assembly-site-pilot.md.
+Current Gukgam work order: docs/exec-plans/active/gukgam-2026-ontology-research.md.
+Current Gukgam evidence: docs/receipts/gukgam-priority-20261002.json.
+Gukgam continuation base: 8efb059c32ddc0b0b28c0125f6660a69f6d48eb7.
+Mac API refresh: Organizations 0; public Gukgam targets/committees 0/0. Seven reviewed local
+committee packets retain exact inventory hashes: 57 schedule rows, 390 target mentions,
+359 distinct source labels, no witness/reference-person rows included. These are neither
+canonical Organization identities nor a complete national list. Latest plans were not fetched.
+Historical 41 draft bindings and 70 MOIS proposals remain target-specific review references;
+do not blindly apply their staging IDs to the empty Mac Organization target.
 Current code/plan receipt: docs/receipts/web-api-bridge-20261002.json.
 Mac runtime receipt: docs/receipts/mac-ssd-site-20261002.json.
 Runtime/delivery guide: docs/operations/MAC_SSD_SITE.md.
@@ -92,6 +102,17 @@ Official OpenAI Sites/Vite tooling and Vinext are the later Worker delivery path
 compatibility check does not prove a build or private Mac network connection.
 
 ## Verification evidence
+
+Gukgam continuation: final canonical make verify exit0, CANONICAL_VERIFY_EXIT=0;
+862 Python PASS, four optional PG skips, six SQLite warnings, 302.86s; 34 web PASS;
+types/lint/Golden/architecture/Next standalone build/assets PASS. No dependency/schema change.
+Independent UI and seven-packet data reviews found no remaining actionable defect.
+Actual Aside desktop fixtures confirm empty/published/error separation, pointer hero anchor
+clear of sticky header, Organization navigation/Claim/Evidence/Source and keyboard Evidence
+disclosure. Three viewport screenshots opened/inspected; no horizontal overflow at 1425px.
+Full-page capture repeated viewport pixels; mobile mutation API absent. Visual acceptance is
+INCOMPLETE; test data is not Mac publication. All owned fixture processes/listeners and the
+temporary Aside launch task are removed. Receipt pins final page/CSS and packet hashes.
 
 Bridge continuation: canonical make verify runner exit0, CANONICAL_VERIFY_EXIT=0;
 862 Python PASS, four optional PG skips, six SQLite warnings, 364.43s; 34 web tests PASS
@@ -165,7 +186,7 @@ assembly-one-shot-live-audit-20261002.json and one-shot-profile-7b004bf.json.
 ## Not executed
 
 Current-branch remote CI, cloud DB identity/admin writes, Claim publication, scheduling,
-full rendered/mobile acceptance, conflict/loading/transport-error browser states, Docker build,
+full rendered/mobile acceptance, Person conflict/loading/transport-error browser states, Docker build,
 push/PR/merge, Sites registration/deployment, Worker build/runtime, authenticated HTTPS cloud
 connection, cloud corpus migration, resize/plan or public access changes. No source retry.
 Actual Mac logout/reboot and physical disk unplug; current optional PG runtime tests.
@@ -175,13 +196,16 @@ Actual Mac logout/reboot and physical disk unplug; current optional PG runtime t
 Sites cannot reach Mac loopback. A concrete authenticated HTTPS route, Worker artifact and
 verified Site-to-Mac reads are required before cloud delivery. Sites inspected capabilities do
 not establish private LAN connectivity. Claim/profile publication selection remains separate;
-the OPEN birth-date conflict fails closed. Aside capture/mobile limitations block visual
+the OPEN birth-date conflict fails closed. Aside full-page capture/mobile limitations block full visual
 acceptance. The preserved Railway volume is full, but resizing is no longer the selected path.
 Allocated ownership is not a DB-enforced shared-writer lease; old ALIO/MOIS RUNNING records
 remain preserved and do not authorize recurring writers.
 
 ## Modified files
 
+Gukgam continuation changes the existing page and scoped sticky-anchor CSS, copy-coupled
+UI checks, integration/active plans/INDEX/HANDOFF and a sanitized receipt. No new DTO, feeder,
+persistence path or real identity/publication effect; disposable local UI fixtures only.
 The bridge continuation edits web app/data.ts, its package/lock and adds executed transport
 tests; adds the integration plan and updates current plan/INDEX/operations/HANDOFF.
 This milestone adds scripts/mac_ssd_api.py and its focused regression coverage, SSD/Sites
@@ -192,10 +216,9 @@ remain outside Git. Original root master/user contracts.py edits remain untouche
 
 ## Next concrete action
 
-Prepare the exact Claim/profile publication selection while preserving the OPEN identity
-conflict; retain DRAFT until the separate publication gate is satisfied. Adapt the canonical
-UI to Worker output using official Sites/Vinext tooling without replacing its architecture.
-Complete actual Aside desktop/mobile acceptance. Prepare and review the concrete authenticated
-HTTPS connection, cost/access and public-code scope before the later private Sites delivery.
-Use native Sites registration/build/archive/save/deploy/status only at that later stage.
-Preserve the frozen source capture, private service DB, healthy loopback API and Railway backup.
+Prepare the exact Mac-target institution identity/source work order and no-write preflight
+from the seven reviewed Gukgam packets. Resolve creation/binding authority and actual human
+decisions before separate canonical effects; institution heads do not become witnesses by title.
+Retain Assembly DRAFTs/OPEN conflict, frozen capture, loopback API and Railway backup.
+The delivery plan keeps later Aside mobile acceptance, Workers output, reviewed authenticated
+HTTPS connection and private Sites delivery as distinct unfinished gates.

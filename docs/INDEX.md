@@ -55,6 +55,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Mac SSD API and Sites delivery route](operations/MAC_SSD_SITE.md)
 - [Frontend/backend connection and delivery plan](operations/FRONTEND_BACKEND_INTEGRATION.md)
 - [Server API bridge verification](receipts/web-api-bridge-20261002.json)
+- [Gukgam-first UI and reviewed-packet coverage verification](receipts/gukgam-priority-20261002.json)
 - [Mac SSD service runtime evidence](receipts/mac-ssd-site-20261002.json)
 - [Executed staging Assembly source request](operations/staging-assembly-one-shot-request.json)
 - [Completed latest-master architecture execution plan](exec-plans/completed/architecture-current-master.md)

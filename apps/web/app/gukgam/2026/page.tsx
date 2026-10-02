@@ -28,8 +28,8 @@ export default async function Gukgam2026Page({
     getGukgamTargets(),
   ]);
 
-  const peopleCount = peopleResult.state === "success" ? peopleResult.data.length : null;
-  const organizationCount = organizationsResult.state === "success" ? organizationsResult.data.length : null;
+  const targetCount = targetsResult.state === "success" ? targetsResult.data.target_count : null;
+  const committeeCount = targetsResult.state === "success" ? targetsResult.data.committee_count : null;
 
   return (
     <div className="site-page gukgam-page">
@@ -38,31 +38,32 @@ export default async function Gukgam2026Page({
           <p className="eyebrow">Civic Intel / Event surface</p>
           <h1>국감 <em>2026</em></h1>
           <p className="lede">
-            국정감사에서 등장하는 인물과 기관을 기존 공개 기록과 공식 Evidence에 연결해 살펴봅니다.
-            일정·피감기관·증인·참고인 정보는 출처 정책과 검증을 통과한 범위만 순차 반영합니다.
+            위원회별 공식 계획서에 올라온 피감기관과 감사일정을 먼저 확인합니다.
+            기관장·증인·참고인은 공식 명단과 신원 근거가 확인된 범위에서 연결합니다.
           </p>
           <div className="hero-actions">
-            <Link className="primary-action" href="/people">인물 탐색 <span aria-hidden="true">↗</span></Link>
+            <Link className="primary-action" href="#gukgam-published-targets-title">피감기관 보기 <span aria-hidden="true">↓</span></Link>
             <Link className="inline-action" href="/organizations">기관 탐색 <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
         <aside className="gukgam-method" aria-label="국감 화면의 공개 원칙">
           <span className="micro-label">Launch principle</span>
           <strong>공식 기록상 연결만</strong>
+          <p>피감기관은 감사 대상 기관입니다. 기관증인·일반증인·참고인은 각 공식 출석 명단으로 구분합니다. 국회의원 명부는 감사 주체의 기록입니다.</p>
           <p>같은 이름, 같은 학교명 또는 단순한 동시 등장만으로 관계를 만들지 않습니다. 각 연결은 Claim과 Evidence를 따라 원문까지 확인할 수 있어야 합니다.</p>
         </aside>
       </header>
 
-      <section className="gukgam-coverage-strip" aria-label="현재 Civic Intel 공개 범위">
+      <section className="gukgam-coverage-strip" aria-label="현재 국감 피감기관 공개 범위">
         <div>
-          <span className="micro-label">People</span>
-          <strong>{peopleCount ?? "—"}</strong>
-          <small>현재 공개 Person 기록</small>
+          <span className="micro-label">피감기관 일정</span>
+          <strong>{targetCount ?? "—"}</strong>
+          <small>공개 Claim으로 연결된 건수 · 같은 기관의 여러 일정 포함</small>
         </div>
         <div>
-          <span className="micro-label">Organizations</span>
-          <strong>{organizationCount ?? "—"}</strong>
-          <small>현재 공개 기관 기록</small>
+          <span className="micro-label">위원회</span>
+          <strong>{committeeCount ?? "—"}</strong>
+          <small>현재 공개된 피감기관 일정이 있는 위원회</small>
         </div>
         <div>
           <span className="micro-label">Evidence path</span>
@@ -78,7 +79,7 @@ export default async function Gukgam2026Page({
         <div className="section-intro">
           <div>
             <span className="eyebrow">Published / Claim-backed</span>
-            <h2 id="gukgam-published-targets-title">공개된 피감대상</h2>
+            <h2 id="gukgam-published-targets-title">공개된 피감기관</h2>
           </div>
           <p>
             공식 계획서의 피감대상 가운데 canonical Organization에 검토 연결되고
@@ -92,7 +93,7 @@ export default async function Gukgam2026Page({
           <div className="empty-state" role="status">
             <span className="empty-state-mark" aria-hidden="true">∅</span>
             <div>
-              <strong>현재 공개된 피감대상 Claim이 없습니다.</strong>
+              <strong>현재 공개된 피감기관 Claim이 없습니다.</strong>
               <p>
                 감사대상이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 아직 없다는 뜻입니다.
               </p>
@@ -146,21 +147,17 @@ export default async function Gukgam2026Page({
         )}
       </section>
 
-      <GukgamSearch
-        initialQuery={initialQuery}
-        people={
-          peopleResult.state === "success"
-            ? peopleResult.data.map(({ id, canonical_name, discovery }) => ({
-                id,
-                canonical_name,
-                discovery,
-              }))
-            : []
-        }
-        organizations={
-          organizationsResult.state === "success" ? organizationsResult.data : []
-        }
-      />
+      {peopleResult.state === "success" && organizationsResult.state === "success" && (
+        <GukgamSearch
+          initialQuery={initialQuery}
+          people={peopleResult.data.map(({ id, canonical_name, discovery }) => ({
+            id,
+            canonical_name,
+            discovery,
+          }))}
+          organizations={organizationsResult.data}
+        />
+      )}
 
       <section className="gukgam-entry-section" aria-labelledby="gukgam-entry-title">
         <div className="section-intro">
@@ -168,26 +165,26 @@ export default async function Gukgam2026Page({
             <span className="eyebrow">Explore</span>
             <h2 id="gukgam-entry-title">어디서 시작할까요?</h2>
           </div>
-          <p>그래프 전체를 한 번에 펼치지 않고, 인물이나 기관에서 시작해 필요한 관계만 좁혀 봅니다.</p>
+          <p>피감기관의 공식 일정과 근거부터 읽고, 기관과 관련 인물의 공개 기록으로 이어갑니다. 인물 검색은 기존 공개 기록 탐색입니다.</p>
         </div>
         <div className="gukgam-entry-grid">
-          <Link className="gukgam-entry" href="/people">
-            <span className="entry-index">01</span>
-            <strong>인물에서 시작</strong>
-            <p>현재 공개된 Person을 선택하고 경력·공직 기록과 Evidence를 읽습니다.</p>
-            <span className="entry-action">People <span aria-hidden="true">↗</span></span>
-          </Link>
           <Link className="gukgam-entry" href="/organizations">
-            <span className="entry-index">02</span>
+            <span className="entry-index">01</span>
             <strong>기관에서 시작</strong>
-            <p>피감기관으로 이어질 수 있는 공공기관·기관 임원 기록과 공개 Claim을 확인합니다.</p>
+            <p>기관의 현재 공개 Claim과 출처를 읽고 공식 계획서상 감사대상 여부를 확인합니다.</p>
             <span className="entry-action">Organizations <span aria-hidden="true">↗</span></span>
           </Link>
           <Link className="gukgam-entry" href="/people">
+            <span className="entry-index">02</span>
+            <strong>인물 기록 보기</strong>
+            <p>신원이 확인된 Person의 경력·공직 기록을 읽습니다. 증인·참고인 구분은 공식 명단을 따릅니다.</p>
+            <span className="entry-action">People <span aria-hidden="true">↗</span></span>
+          </Link>
+          <Link className="gukgam-entry" href="#gukgam-published-targets-title">
             <span className="entry-index">03</span>
-            <strong>공식 연결 보기</strong>
-            <p>Person 상세의 local graph에서 현재 Evidence Core가 지원하는 공식 연결을 확인합니다.</p>
-            <span className="entry-action">Connections <span aria-hidden="true">↗</span></span>
+            <strong>감사대상 근거 보기</strong>
+            <p>공개된 피감기관 일정에서 Claim·Evidence·Source를 따라 공식 계획서의 근거를 확인합니다.</p>
+            <span className="entry-action">Evidence <span aria-hidden="true">↑</span></span>
           </Link>
         </div>
       </section>

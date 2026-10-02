@@ -1,0 +1,222 @@
+{
+  "recorded_at_utc": "2026-10-02T11:03:21.129067+00:00",
+  "base_commit": "8efb059c32ddc0b0b28c0125f6660a69f6d48eb7",
+  "effect": "LOCAL_GUKGAM_UI_PRIORITY_AND_READ_ONLY_DATA_PLAN",
+  "coverage": {
+    "semantics": "LOCAL_REVIEWED_PACKET_COVERAGE_NOT_PUBLIC_TARGET_OR_PERSON_IDENTITIES",
+    "packet_count": 7,
+    "packets": [
+      {
+        "committee": "국회운영위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_steering_plan_reviewed_packet.json",
+        "content_hash": "a70b01b4a9d7e6866ae6be5971c24ff999c88acc6d4d48db26c97a5e28e894a2",
+        "inventory_hash_matches": true,
+        "schedule_rows": 3,
+        "target_mentions": 10,
+        "distinct_labels": 10,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-16"
+      },
+      {
+        "committee": "재정경제기획위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_finance_plan_reviewed_packet.json",
+        "content_hash": "5b73bd4fe6be4e52c5fa01417fcc476a89f425eb743e47d8a4b18c55703175f1",
+        "inventory_hash_matches": true,
+        "schedule_rows": 10,
+        "target_mentions": 48,
+        "distinct_labels": 32,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-17"
+      },
+      {
+        "committee": "과학기술정보방송통신위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json",
+        "content_hash": "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d",
+        "inventory_hash_matches": true,
+        "schedule_rows": 8,
+        "target_mentions": 96,
+        "distinct_labels": 91,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-15"
+      },
+      {
+        "committee": "국방위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_defense_plan_reviewed_packet.json",
+        "content_hash": "2b53b491a4d453ed6f3490ada15297077587deb7cad929f66a92d7e0e04c3a53",
+        "inventory_hash_matches": true,
+        "schedule_rows": 9,
+        "target_mentions": 73,
+        "distinct_labels": 71,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-10"
+      },
+      {
+        "committee": "행정안전위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_adminhom_plan_reviewed_packet.json",
+        "content_hash": "b04504c596b81316d507fcf19a41c96958244f8e3e5bf7f51f6b097f5ce064ee",
+        "inventory_hash_matches": true,
+        "schedule_rows": 12,
+        "target_mentions": 45,
+        "distinct_labels": 38,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-16"
+      },
+      {
+        "committee": "문화체육관광위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_culture_plan_reviewed_packet.json",
+        "content_hash": "13ea6574f5ebfc277ff698f247651c4195ad0a63e1dd88caae29cd14967f2eaa",
+        "inventory_hash_matches": true,
+        "schedule_rows": 7,
+        "target_mentions": 69,
+        "distinct_labels": 69,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-16"
+      },
+      {
+        "committee": "농림축산식품해양수산위원회",
+        "packet_path": "tests/fixtures/gukgam_2026_agri_plan_reviewed_packet.json",
+        "content_hash": "e8e3d884098cdf060e6ac30f966f74b7bf25012f2a45909621691ab94fc35b07",
+        "inventory_hash_matches": true,
+        "schedule_rows": 8,
+        "target_mentions": 49,
+        "distinct_labels": 49,
+        "witness_rows_included": false,
+        "source_published_date": "2026-09-17"
+      }
+    ],
+    "schedule_rows": 57,
+    "target_mentions": 390,
+    "distinct_source_labels": 359,
+    "witness_or_reference_person_rows": 0,
+    "latest_official_source_refetched": false,
+    "mac_public_target_count": 0,
+    "mac_public_committee_count": 0,
+    "mac_organization_count": 0,
+    "source_fetch_executed": false,
+    "database_write_executed": false,
+    "publication_executed": false
+  },
+  "coverage_limits": [
+    "Distinct source labels are not canonical Organization identities or national completeness.",
+    "Witness/reference-person rows are not included; real witness absence is not asserted.",
+    "Existing reviewed packet hashes were rechecked; latest committee documents were not refetched.",
+    "Historic 41 draft bindings and 70 MOIS proposals are review-only and target-specific; Mac has zero Organizations."
+  ],
+  "verification": {
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "exit_code": 0,
+    "canonical_verify_exit": 0,
+    "python_passed": 862,
+    "optional_postgresql_skipped": 4,
+    "sqlite_datetime_warnings": 6,
+    "python_elapsed_seconds": 302.86,
+    "web_passed": 34,
+    "transport_tests": 8,
+    "mypy_source_files": 146,
+    "ruff_types_golden_architecture_web_lint_build_assets": "PASS",
+    "next_version": "16.3.8",
+    "node_test_warning": "MODULE_TYPELESS_PACKAGE_JSON",
+    "page_and_scoped_css_sha256_lf": {
+      "apps/web/app/gukgam/2026/page.tsx": "9fb76cdbb8d26e6723e8fa18b4650e9d23017e0d2638ab5edf723fed696240cf",
+      "apps/web/app/styles.css": "247653e4c0a142ad9adc267a1c30e5e85dfd69e84f4d64ae16724dd4b5b3aca3"
+    },
+    "independent_reviews": [
+      "UI/semantics diff read-only review, no remaining actionable defect",
+      "Data contract and seven canonical packet hash/count recheck, no contradiction"
+    ]
+  },
+  "ui_qa": {
+    "mechanism": "ASIDE_ONLY_CANONICAL_BUILT_NEXT_STANDALONE",
+    "data": "DISPOSABLE_CANONICAL_SQLITE_FIXTURES_EMPTY_AND_ONE_PUBLISHED_TARGET",
+    "desktop_viewport": {
+      "width": 1425,
+      "height": 900
+    },
+    "empty_published_error_states": "CONFIRMED_DOM_AND_INSPECTED_VIEWPORT_CAPTURE",
+    "hero_pointer_anchor": {
+      "hash": "#gukgam-published-targets-title",
+      "targetTop": 112.671875,
+      "headerBottom": 73,
+      "scrollY": 802,
+      "scrollWidth": 1425,
+      "clientWidth": 1425
+    },
+    "keyboard_evidence_details": {
+      "open": true,
+      "summaryFocused": true,
+      "hasSnapshot": true,
+      "hasObservation": true
+    },
+    "organization_pointer_navigation": "CONFIRMED",
+    "organization_claim_evidence_source_visible": true,
+    "organization_keyboard_navigation": "NOT_CONFIRMED_IN_FIRST_IMMEDIATE_SNAPSHOT",
+    "service_error_not_empty_target_or_zero_search": true,
+    "desktop_horizontal_overflow": false,
+    "mobile": "NOT_RUN_WRITABLE_VIEWPORT_API_UNAVAILABLE",
+    "full_page_capture": "UNRELIABLE_REPEATED_VIEWPORT_PIXELS_OPENED_AND_REJECTED",
+    "rendered_acceptance": "INCOMPLETE",
+    "artifacts": {
+      "published_target_desktop": {
+        "path": ".tools/gukgam-priority-evidence/gukgam-final-target-fixture.png",
+        "sha256": "bc3ff6189d6f1cdda8086afc5612e894a5a4d6daa04ff43cbd012924dd0324ca",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "opened_and_inspected": true,
+        "scope": "ASIDE_VIEWPORT_CAPTURE_LOCAL_FIXTURE_ONLY"
+      },
+      "service_error_desktop": {
+        "path": ".tools/gukgam-priority-evidence/gukgam-error-fixture.png",
+        "sha256": "e6abcdd3c75ef2a6044af53cf570f8327792e8554af5ae8607710f5e9026010a",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "opened_and_inspected": true,
+        "scope": "ASIDE_VIEWPORT_CAPTURE_LOCAL_FIXTURE_ONLY"
+      },
+      "empty_desktop": {
+        "path": ".tools/gukgam-priority-evidence/gukgam-final-empty-fixture.png",
+        "sha256": "8e690aaef4aaaa51065aded0ca0a610828b8d38a25aad74293b1937729c684ca",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "opened_and_inspected": true,
+        "scope": "ASIDE_VIEWPORT_CAPTURE_LOCAL_FIXTURE_ONLY"
+      },
+      "published_dom": {
+        "path": ".tools/gukgam-priority-evidence/gukgam-final-published-browser.json",
+        "sha256": "802d60163d4efaea32046a8bff09e6a77df91cad9ca3e13fb3fb5199ec877e56"
+      },
+      "error_dom": {
+        "path": ".tools/gukgam-priority-evidence/gukgam-error-browser.json",
+        "sha256": "27db49f7065b2c4c183863f3d9648d3e97f22dcfa502bec025a50b5ec1a2a0db"
+      },
+      "organization_navigation_dom": {
+        "path": ".tools/gukgam-priority-evidence/gukgam-organization-flow-browser.json",
+        "sha256": "0091755e09091c126033007ee8e4c773a785d66ded5d5e9182d91a91ee077c9f"
+      }
+    },
+    "aside_recovery": "ONE_INTERACTIVE_TASK_LAUNCH_READY_TEMP_TASK_REMOVED_PROFILES_PRESERVED",
+    "owned_fixture_processes_and_listeners_remaining": 0
+  },
+  "operational_effects": {
+    "source_fetch": false,
+    "database_write": false,
+    "identity_binding": false,
+    "human_attestation": false,
+    "claim_publication": false,
+    "credentials_read_or_created": false,
+    "deployment_or_push": false,
+    "sites_registration": false,
+    "cloud_connection": false
+  },
+  "local_fixture_effects": {
+    "alembic_migration": true,
+    "test_observation_and_test_claim_publication": true,
+    "not_evidence_of_ssd_publication": true
+  },
+  "next_action": "Prepare the exact Mac-target Organization identity/source work order and no-write preflight before separately gated effects."
+}

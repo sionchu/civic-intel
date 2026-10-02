@@ -1,9 +1,20 @@
 # Gukgam 2026 ontology research and public-gate plan
 
-Status: IN PROGRESS — bounded research and review only. This plan does not authorize source
-collection, database changes, production infrastructure, broader public access or indexing.
+Status: IN PROGRESS — bounded research, local UI and review. This plan does not authorize
+operational source collection/database changes, production infrastructure, broader public access or indexing.
 The full historical execution chronology is preserved in
 [the archived original plan](../../history/gukgam-2026-governance-ontology-visual-explorer-v0.md).
+
+Owner priority, 2026-10-02: continue the Mac SSD/Sites preparation with Gukgam first.
+Current work order (base 8efb059): MAIN reorders the existing Gukgam UI around Claim-backed
+audited Organizations and distinguishes the audit subject from witness/reference-person
+records. Owned paths: existing Gukgam page/scoped anchor CSS, copy-coupled UI checks, reviewed-packet coverage
+receipt, operations/INDEX and HANDOFF. Reuse DESIGN/components; no new DTO or persistence.
+Read-only Mac API and local canonical packet validation are allowed. No source retrieval,
+operational DB writes, identity bindings, human attestation, Claim publication or deployment is authorized.
+Disposable local regression/UI fixtures may be migrated/seeded under the original work order;
+their test publication is never operational publication or real identity approval.
+Require full make verify and Aside desktop/mobile acceptance; report browser failure separately.
 
 ## Purpose and Evidence Core boundary
 
@@ -15,7 +26,35 @@ MOIS proposal membership, schedule text or a plan mention alone never authorizes
 or publication.
 
 The earlier beta target date (2026-09-29) is historical, not evidence of release completion. No
-current runtime, database, live-source or deployment state was refreshed for this summary.
+current live-source or deployment state was refreshed for that historical summary. The bounded
+2026-10-02 Mac API refresh and local packet check below are separate current evidence.
+
+## Mac SSD priority checkpoint, 2026-10-02
+
+- Mac read-only API refresh: `/organizations` returned 0 entries; `/gukgam/2026/targets`
+  returned target_count=0, committee_count=0 and no items. The 298 existing Persons are
+  legislators, not audited institutions or an official witness/reference-person list.
+- All seven canonical local packets parse and match their recorded inventory content hashes.
+  They contain 57 schedule rows, 390 target mentions and 359 distinct source labels. These
+  labels do not establish canonical Organization identities or national completeness.
+  Witness/reference-person rows are absent from these packets; actual witness absence is not asserted.
+- Existing Gukgam UI now leads with audited institutions, counts public target occurrences
+  and committees, and keeps service errors distinct from zero public Claims. No DTO/schema change.
+- The prior 41 draft pairs and 70 MOIS proposals below remain review-only and target-specific.
+  Mac has no Organizations: historic IDs cannot be blindly copied into its canonical DB.
+  Prepare the exact Mac target/source/identity work order before separate creation/binding gates.
+- No latest committee document retrieval, operational source run/database write, human attestation,
+  publication, infrastructure or deployment effect was performed in this checkpoint.
+- Final canonical `make verify` exit0: 862 Python PASS, four optional PostgreSQL skips,
+  six SQLite warnings, 302.86s; 34 web PASS, types/lint/Golden/architecture/standalone build/assets PASS.
+  Independent UI/data reviews found no remaining actionable defect. Actual Aside desktop
+  fixtures confirmed empty/published/service-error states, pointer anchor placement and
+  Organization navigation plus keyboard Evidence disclosure. Three reliable viewport
+  screenshots were opened and inspected. Full-page captures repeated viewport pixels and
+  were rejected; writable mobile viewport API is unavailable. Full visual acceptance is INCOMPLETE.
+  Disposable fixture processes/listeners and temporary Aside launch task are removed.
+  [Current receipt](../../receipts/gukgam-priority-20261002.json) pins code/packet hashes,
+  executed checks, fixture effects and incomplete gates.
 
 ## Source and rights gates
 
@@ -101,7 +140,10 @@ source run, migration or database write is authorized by this plan.
 
 ## Next review packet
 
-1. Obtain the human decision on the exact 41 draft pairs; preserve the DRAFT if not approved.
+1. Prepare the exact Mac target/source/Organization identity work order, using the 41 historic
+   draft pairs only as review references. Do not reuse staging IDs in the empty Mac target.
+   For the historic batch, obtain the human decision on its exact 41 pairs before its separate
+   manifest gate; preserve DRAFT if not approved.
 2. Independently review the 70-item MOIS proposal and its provider-ID/provenance mapping; keep it
    review-only until a separate source-specific contract is approved.
 3. Reassess the official schedule API’s authenticated sample and operation-specific policy before
@@ -109,5 +151,6 @@ source run, migration or database write is authorized by this plan.
 4. Route any infrastructure spend, public domain, public API or indexing decision through its
    own explicit approval and exact-master verification boundary.
 
-All counts, artifacts and prior test/deployment claims above are transcribed from the archived
-chronology. They are not newly reproduced in this documentation task.
+Historical binding/staging counts, artifacts and prior test/deployment claims are transcribed
+from the archived chronology and were not reproduced in this continuation. The dated Mac SSD
+priority checkpoint is newly checked evidence, with its own receipt and verification limits.

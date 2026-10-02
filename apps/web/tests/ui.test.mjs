@@ -344,7 +344,10 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
 
   assert.match(page, /getGukgamTargets/);
-  assert.match(page, /공개된 피감대상/);
+  assert.match(page, /공개된 피감기관/);
+  assert.match(page, /targetsResult\.data\.target_count/);
+  assert.match(page, /targetsResult\.data\.committee_count/);
+  assert.match(page, /국회의원 명부는 감사 주체의 기록입니다/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
   assert.match(page, /기관 Claim \/ Evidence 보기/);
   assert.match(page, /Claim \/ Evidence audit trace/);
