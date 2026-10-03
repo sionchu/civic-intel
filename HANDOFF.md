@@ -40,24 +40,21 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
-2026-10-03 second db heartbeat (received06:18:58 UTC, base3971d47): three agents found no
-checked implementation/research/prepared-artifact or gate drift. Canonical parsing retains
-412 research rows and370/42/32/15 DRAFT packets. One Commander snapshot06:20:24–06:20:25 UTC
-matches the prior schema0008/mode0600/quick_checkok/FK0,298People/298DRAFTClaims/0Organizations,
-299observations/3snapshots/1SUCCESSrun/0RUNNING/witness/MOISruns, valid checkpoint/cursor and
-health200. Existing local proof DB monitor exits0/hash unchanged.0RUNNING is not writer exclusion.
-No product code or operational changes; previous970Python/34web gate is not rerun/current evidence.
-Approved plan item3 advances only artifact-internal preparation: recorded70-item MOIS JSON
-semantic hash matches,70 unique provider-key/code pairs and UUID-format observation refs,
-74 unique occurrence refs and declared counts,0ambiguous/159unmatched. Source bytes unchanged.
-The initial diagnostic import-path failure was corrected; final audit exits0. Reviewer checked
-script/aggregate result only and found no defect; it did not reproduce the audit or inspect rows.
-Historical artifact Organization count374 is not the Mac's current0. Source/snapshot/checkpoint
-and canonical identity are NOT_REVALIDATED; independent substantive proposal review remains partial.
-Exact Mac identity work order remains REVIEW_PREPARATION_ONLY, decisions NOT_DECIDED. No raw
-PDFs/private single-code review file/credentials were opened; no provider rows reached AI output.
-Actual witness field review still holds R2 acquisition; identity/publication/delivery remain gates.
-Both heartbeat checks are preserved in docs/receipts/collection-status-20261003.json.
+2026-10-03 third db heartbeat (received 07:19:59 UTC, base 2a7091c): three agents found no
+checked parser/research/prepared-artifact or execution-gate drift. Code and artifact hashes
+match; canonical parsing retains 412 research rows and 370/42/32/15 DRAFT packets. One
+Commander snapshot at 07:21:35 UTC matches the previous schema 0008, mode 0600, quick_check
+ok, FK 0, 298 People/298 DRAFT Claims/0 Organizations, 299 observations/3 snapshots and
+1 SUCCESS run. RUNNING, witness and MOIS runs remain 0; checkpoint/cursor checks match and
+health returns HTTP 200. The existing local proof DB monitor at 07:22:58 UTC exits 0 with
+unchanged bytes. Zero RUNNING rows do not prove writer exclusion. No new safe local
+implementation was identified; no product or operational changes occurred. Prior full
+verification and the 70-item artifact-internal audit were not repeated and remain dated
+evidence. Current proposal Source/Snapshot/checkpoint and canonical identities remain
+NOT_REVALIDATED; actual witness field review holds R2 acquisition. The Mac identity work
+order remains REVIEW_PREPARATION_ONLY with NOT_DECIDED decisions; identity/publication/
+delivery remain separate gates. No provider rows, raw PDFs or credentials reached AI output.
+All three dated checks are preserved in docs/receipts/collection-status-20261003.json.
 
 2026-10-03 parser/DB monitoring slice (base d8a8093): canonical `inspect collection-status`
 uses the existing administration read UoW, explicit target and forced existing-file SQLite

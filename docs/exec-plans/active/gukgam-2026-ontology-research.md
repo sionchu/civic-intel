@@ -27,6 +27,23 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Third read-only heartbeat, 2026-10-03
+
+Received `db` heartbeat 2026-10-03T07:19:59.389Z, base `2a7091c`. Three independent agents
+checked parser/provenance hashes, Mac DB/runtime aggregates and execution/privacy gates;
+no checked drift or new safe local implementation was identified. Canonical parsing retains
+412 research rows and 370/42/32/15 DRAFT packets. One Commander snapshot at 07:21:35 UTC
+matches the preceding schema, integrity, counts, run/checkpoint/cursor and HTTP 200 checks.
+The existing local proof DB monitor at 07:22:58 UTC exits 0 with unchanged DB bytes.
+
+Product code is unchanged and no new failure warrants tests/full verification. The prior
+70-item artifact-internal row audit is not repeated; current DB proposal provenance and
+canonical identities remain unverified. Actual witness field review, plan/version evidence,
+writer/import readiness and publication/delivery gates remain. No source fetch, operational
+write, migration, restart, identity decision, human attestation or deployment occurred.
+MAIN appends fresh times, comparisons and next gates to the
+[existing monitor receipt](../../receipts/collection-status-20261003.json).
+
 ### Second heartbeat and MOIS artifact-internal preparation, 2026-10-03
 
 Received `db` heartbeat2026-10-03T06:18:58.361Z, base3971d47. Parser/provenance, Mac DB and
