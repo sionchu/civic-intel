@@ -76,6 +76,14 @@ The owner requested ongoing checks on 2026-10-03. Thread automation `db`, named
 future scheduled execution is separate evidence. It continues authorized local work and
 coordinates up to three read-only agents without recursive delegation:
 
+After the owner's 2026-10-03 correction, the actual saved heartbeat compares HEAD and relevant
+input hashes first. Unchanged inputs do not justify repeating parsing, three-agent audits,
+full verification or documentation-only monitoring commits. One bounded fresh Mac aggregate
+read is retained; unchanged observations stay in existing ignored `.tools` logs. Changed
+inputs, failures or a concrete authorized implementation trigger the necessary deep checks.
+If no independent authorized task is runnable, report the exact review gate as waiting;
+monitoring success is not acquisition or implementation progress. Cadence remains hourly.
+
 | Responsibility | Fresh evidence |
 |---|---|
 | Parsing and provenance | SourcePolicy, snapshot/observation hashes, versions, idempotency and committed checkpoints; offline fixtures only |

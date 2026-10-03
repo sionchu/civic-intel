@@ -41,6 +41,16 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+Owner correction, 2026-10-03: repeated unchanged monitoring was not pipeline progress.
+The actual `db` heartbeat prompt is updated and its saved configuration verified; hourly
+cadence/thread/ACTIVE status are preserved. Unchanged inputs no longer trigger repeated
+parsing, three-agent audits or documentation-only monitoring commits. Fresh unchanged reads
+go to existing ignored `.tools` logs. Deep checks require changes/failures or a runnable task.
+R2 remains WAITING_FOR_ACTUAL_SOURCE_FIELD_REVIEW, not actively collecting. The existing
+47-row review preparation is the concrete next input; identity and delivery gates stay separate.
+One fresh Commander read at 12:11:29 UTC matches the 10:28 baseline. No parsing rerun,
+source fetch or operational effect; the first future run with the revised prompt is NOT_RUN.
+
 2026-10-03 sixth db heartbeat (received 10:26:32 UTC, base 94e927f): three independent
 agents find no parser/DB/execution drift. Canonical parsing at 10:27:45 UTC retains 412
 research rows and 370/42/32/15 DRAFT packets, with all recorded hashes matched. MAIN and

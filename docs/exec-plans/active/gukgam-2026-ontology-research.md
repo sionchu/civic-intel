@@ -27,6 +27,18 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Owner correction: delta-based monitoring, 2026-10-03
+
+The owner challenged repeated checks without material progress. MAIN updates the actual
+`db` automation prompt and verifies the saved configuration, preserving hourly ACTIVE/thread
+settings. Unchanged code/inputs no longer cause repeated parsing, three-agent audits or
+monitoring-document commits; a bounded fresh Mac read remains, with unchanged logs outside Git.
+Changes/failures or a runnable authorized task trigger deep checks and actual implementation.
+R2 is WAITING_FOR_ACTUAL_SOURCE_FIELD_REVIEW, not collecting. Its existing 47-row review
+preparation is the next concrete input; no human attestation or source/identity grant is added.
+One fresh Mac read at 12:11:29 UTC matches the previous baseline. No new parser or product
+verification is claimed; execution of the next revised scheduled run remains NOT_RUN.
+
 ### Sixth read-only heartbeat, 2026-10-03
 
 Received `db` heartbeat 10:26:32.478 UTC, base `94e927fa388faf0aef4858ec9788bf10e0803833`.
