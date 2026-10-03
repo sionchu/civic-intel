@@ -106,6 +106,22 @@ pipeline/order reference; this checkpoint does not launch new collection or data
   Assembly runner's request/time budget is not inherited by committee documents or other APIs.
   Source agents prepare bounded requests without keys; MAIN owns the single pinned SSD writer.
 
+## Mac R2 preparation checkpoint, 2026-10-03
+
+Verified code d560efb was packaged from its Git archive and transferred through Commander.
+Full bundle SHA and all 11 file hashes match. New pinned-wheel inspection on Mac verifies exact
+raw PDF bytes and DRAFT packets 370+42 / 32+15; no DB was opened by packet inspection.
+The same checks pass under a read-only sandbox whose actual network, credential-file-open and
+filewrite denial canaries pass. Only that child-process boundary was tested; no general tool
+isolation or shared DB writer lease is claimed.
+The external SSD's consistent 1409024-byte backup verifies schema0008, quick_checkok and exact
+counts. An exact disposable restored copy and live read-only DB both load under the new reader,
+with 298 People, 0 Organizations, 298 DRAFT Claims and 0 witness rows. A read-only write canary
+on the restore is rejected. Existing API/runtime/operational rows stay unchanged; HTTP200.
+Actual field review remains absent; continuation approval is not fabricated review evidence.
+R2 acquisition remains HOLD, with fresh writer exclusion/readiness required at import time.
+[Executed Mac preparation receipt](../../receipts/gukgam-witness-mac-preflight-20261003.json).
+
 ## Purpose and Evidence Core boundary
 
 Continue the Gukgam research surface over canonical Evidence Core records. An audit-target Claim

@@ -40,6 +40,24 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 R2 preparation follows verified code d560efb5f288d438e29e09aff9b078f5100575d7.
+Commander transfer resumed only after the 524288-byte existing prefix hash matched locally;
+all 749050 bundle bytes and 11 entries matched exact hashes. Mac pinned-wheel inspections PASS:
+full370+42 and pilot32+15, original PDF hashes verified, all four packets still DRAFT.
+Sandbox child canaries PASS: network denied, known source-key file OPEN denied (no value read),
+all filewrites denied; identical read-only packet checks still PASS. This is child-process proof,
+not general agent privileges or OS-wide single-writer exclusion. Existing API service is unchanged.
+Consistent external-SSD backup: witness-preflight-20261003T013559Z.sqlite, 1409024 bytes,
+SHA8df7458d4567d809a62dea8632053c59b7ed9e093bee13820ee2535cd7f35ba7, mode0600/schema0008/quick_checkok.
+New pinned reader reads live SSD and the exact disposable restored backup; counts match
+298People/0Organizations/298DRAFTClaims, witnessrows0. Read-only write canary on restore rejects.
+0 active source runs observed; writer exclusion must be freshly verified at actual import time.
+Receipt: docs/receipts/gukgam-witness-mac-preflight-20261003.json. No canonical SSD rows changed.
+Independent packaging/scope review matched every payload/hash, minimized DRAFT status/count,
+read-only script and held 47-row request, with no actionable defect or scope contradiction.
+The reviewer did not reproduce Mac/SSD execution. Helper scope flags are declarations;
+actual child negative canaries are separate evidence. Actual field review remains absent.
+
 Branch codex/architecture-current-master, isolated architecture-current-master worktree.
 SSD implementation base 0865e5dec85b043574640dc02132366631ce7b11.
 UI commit af46132d49d0e8106851c473bfcda69c50f89345, on approved work-order commit 4c947e9.
@@ -258,10 +276,12 @@ remain outside Git. Original root master/user contracts.py edits remain untouche
 
 ## Next concrete action
 
-Roadmap R2 preparation: package the verified witness implementation at a fixed commit, transfer
-the DRAFT packets/exact artifacts through Commander and execute read-only pinned-runtime checks.
-Keep research DRAFT; actual reviewed field manifests, consistent SSD backup/sole-writer and
-target readiness are required before acquisition. Identity/publication remain separate effects.
+Roadmap R2: pinned package/Commander transfer/read-only checks/consistent backup and disposable
+restore are complete. Actual human field review of the exact 47-row source manifest is still
+absent; source gate forbids manufacturing that attestation from agent review or continuation.
+Keep packets DRAFT and acquisition on HOLD until that factual review exists. At acquisition time
+revalidate the exact packet/artifact hashes, schema, unchanged target and sole-writer exclusion.
+Then import only reviewed observations; identity and Claim publication remain separate effects.
 Use the seven plan packets as references and verify their current editions before operational use;
 institution heads do not become witnesses by title.
 Retain Assembly DRAFTs/OPEN conflict, frozen capture, loopback API and Railway backup.

@@ -37,6 +37,14 @@ made no human-review attestation. The remaining observation is OPEN with
 
 ## Runtime and recovery
 
+On 2026-10-03, witness preparation at code d560efb was copied separately without replacing
+this existing API service. Exact full/pilot DRAFT packets and PDFs pass inspection from the new
+pinned wheel, including network/key-file-open/filewrite-denied child canaries. A consistent SSD
+backup and byte-identical disposable restored reader check pass; operational data remains
+298 Persons / 298 DRAFT legislative Claims and no witness rows. Zero active SourceRuns does
+not prove global writer exclusion. Actual human field review and the acquisition-time sole-writer
+gate remain pending. [Mac preparation receipt](../receipts/gukgam-witness-mac-preflight-20261003.json).
+
 The API reuses the installed wheel at code `333aa26` because its API/application/persistence
 code is identical to current base `0865e5d`; all 147 installed Python files match the pinned
 wheel. The web UI is a separate artifact and is not installed by that Python wheel.

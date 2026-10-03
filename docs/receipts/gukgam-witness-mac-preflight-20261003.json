@@ -1,0 +1,218 @@
+{
+  "effect": "PINNED_MAC_READ_ONLY_PREPARATION_AND_CONSISTENT_BACKUP",
+  "code_commit": "d560efb5f288d438e29e09aff9b078f5100575d7",
+  "checked_at_utc": "2026-10-03 01:42:28 UTC",
+  "bundle": {
+    "bytes": 749050,
+    "sha256": "3f1730a8f5182b140a60de57b04a9c985433ed9c2000543d3d150f61cf1ffa16",
+    "wheel_sha256": "f52e7dea8420cccdd2599499768a7d69fd1a0df4b84c904ecfd441433db05e48",
+    "exact_file_count": 11,
+    "partial_transfer_resume": "16 committed chunks / 524288 bytes matched exact local prefix SHA before appending remaining 7"
+  },
+  "inspection": [
+    {
+      "status": "PINNED_READ_ONLY_PREPARATION_PASS",
+      "code_commit": "d560efb5f288d438e29e09aff9b078f5100575d7",
+      "wheel_sha256": "f52e7dea8420cccdd2599499768a7d69fd1a0df4b84c904ecfd441433db05e48",
+      "code_origin": "PINNED_WHEEL",
+      "runtime_versions": {
+        "pydantic": "2.13.4",
+        "sqlalchemy": "2.0.54"
+      },
+      "results": [
+        {
+          "packet": "science-1-draft.json",
+          "rows": 370,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        },
+        {
+          "packet": "science-2-draft.json",
+          "rows": 42,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        },
+        {
+          "packet": "msit-1-draft.json",
+          "rows": 32,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        },
+        {
+          "packet": "msit-2-draft.json",
+          "rows": 15,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        }
+      ],
+      "database_opened": false,
+      "source_fetch": false,
+      "human_attestation": false,
+      "identity_effect": false,
+      "publication_effect": false
+    }
+  ],
+  "backup": [
+    {
+      "status": "CONSISTENT_SSD_BACKUP_VERIFIED",
+      "recorded_at_utc": "2026-10-03T01:36:00.233151+00:00",
+      "backup_name": "witness-preflight-20261003T013559Z.sqlite",
+      "backup_bytes": 1409024,
+      "backup_sha256": "8df7458d4567d809a62dea8632053c59b7ed9e093bee13820ee2535cd7f35ba7",
+      "backup_mode": "0o600",
+      "schema": "0008",
+      "quick_check": "ok",
+      "counts": {
+        "people": 298,
+        "organizations": 0,
+        "claims": 298,
+        "source_runs": 1,
+        "source_snapshots": 3,
+        "feeder_observations": 299,
+        "person_observation_links": 298,
+        "identity_review_items": 1
+      },
+      "active_source_runs": 0,
+      "sole_writer_exclusion_proven": false,
+      "public_api_status": 200,
+      "public_target_count": 0,
+      "operational_rows_modified": false,
+      "actual_human_review": false
+    }
+  ],
+  "pinned_reader_and_disposable_restore": [
+    {
+      "status": "PINNED_READER_AND_DISPOSABLE_RESTORE_PASS",
+      "code_commit": "d560efb5f288d438e29e09aff9b078f5100575d7",
+      "wheel_sha256": "f52e7dea8420cccdd2599499768a7d69fd1a0df4b84c904ecfd441433db05e48",
+      "targets": [
+        {
+          "target": "live_read_only",
+          "schema": "0008",
+          "people": 298,
+          "organizations": 0,
+          "claims": 298,
+          "witness_rows": 0
+        },
+        {
+          "target": "disposable_restore",
+          "schema": "0008",
+          "people": 298,
+          "organizations": 0,
+          "claims": 298,
+          "witness_rows": 0
+        }
+      ],
+      "restored_backup_hash_matches": true,
+      "read_only_write_canary_rejected": true,
+      "live_database_writes": false,
+      "source_acquisition": false,
+      "human_attestation": false
+    }
+  ],
+  "sandbox_canaries": [
+    {
+      "status": "READ_ONLY_SANDBOX_CANARIES",
+      "network_denied": true,
+      "known_credential_path_open_denied": true,
+      "file_writes_denied": true,
+      "credential_values_read": false
+    },
+    {
+      "status": "PINNED_READ_ONLY_PREPARATION_PASS",
+      "code_commit": "d560efb5f288d438e29e09aff9b078f5100575d7",
+      "wheel_sha256": "f52e7dea8420cccdd2599499768a7d69fd1a0df4b84c904ecfd441433db05e48",
+      "code_origin": "PINNED_WHEEL",
+      "runtime_versions": {
+        "pydantic": "2.13.4",
+        "sqlalchemy": "2.0.54"
+      },
+      "results": [
+        {
+          "packet": "science-1-draft.json",
+          "rows": 370,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        },
+        {
+          "packet": "science-2-draft.json",
+          "rows": 42,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        },
+        {
+          "packet": "msit-1-draft.json",
+          "rows": 32,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        },
+        {
+          "packet": "msit-2-draft.json",
+          "rows": 15,
+          "raw_bytes_verified": true,
+          "review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+        }
+      ],
+      "database_opened": false,
+      "source_fetch": false,
+      "human_attestation": false,
+      "identity_effect": false,
+      "publication_effect": false
+    }
+  ],
+  "pending": [
+    "actual human source-field review",
+    "fresh sole-writer exclusion and revalidation at actual import time",
+    "acquisition-only 47-row import",
+    "source-backed Organization/Person identity decisions",
+    "Claim/Evidence publication and public DTO/UI",
+    "Sites connection/deployment"
+  ],
+  "limits": [
+    "Sandbox canaries prove this child process only; no general agent/tool privilege isolation or OS-wide writer lease proof.",
+    "Zero active SourceRuns is an observation, not proof of absence of every possible external writer.",
+    "DRAFT packets were inspected, not imported or human reviewed.",
+    "Existing Mac API service and its installed runtime were not replaced.",
+    "No API key contents, .env contents, raw PDF full text or secrets were read into reports.",
+    "The read-only helper's database_opened/source_fetch flags declare code scope; they are not independent instrumentation. Static CLI review/tests and the separate actual sandbox canaries provide boundary evidence."
+  ],
+  "operational_effects": {
+    "source_fetch": false,
+    "canonical_database_write": false,
+    "human_attestation": false,
+    "identity_binding": false,
+    "claim_publication": false,
+    "credential_values_read": false,
+    "deployment": false
+  },
+  "local_mac_file_effects": {
+    "bundle_copy": true,
+    "private_preparation_files": true,
+    "consistent_sqlite_backup": true,
+    "disposable_restore_copy": true
+  },
+  "postflight": {
+    "claim_status_counts": {
+      "DRAFT": 298
+    },
+    "witness_source_runs": 0,
+    "active_source_runs": 0
+  },
+  "verification": {
+    "code_hashes_unchanged_since_canonical_make_verify": true,
+    "relative_document_links_checked": 131,
+    "full_make_verify_for_code_commit": {
+      "python_passed": 898,
+      "web_passed": 34,
+      "exit": 0
+    },
+    "new_full_make_verify": "NOT_RERUN_DOCS_AND_RUNTIME_ARTIFACT_ONLY_CHECKPOINT",
+    "independent_runtime_review": {
+      "result": "NO_PACKAGING_DEFECT_OR_SCOPE_CONTRADICTION",
+      "local_checks": "Exact ZIP/member/manifest hashes, wheel/code pin, minimized DRAFT packet shapes/counts, read-only script and held request",
+      "mac_results_independently_reproduced": false,
+      "no_pdf_fulltext_read": true,
+      "no_remote_or_operational_access": true
+    }
+  }
+}

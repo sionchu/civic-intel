@@ -82,7 +82,8 @@ checkpoint는 같은 트랜잭션에서 확정한다. SourceSnapshot은 원문 �
 | R7 감사 이후 | 공식 출석·회의록·결과의 새로운 출처 계약 | 실제 출석/발언/결과를 각 근거로 검증; 명단의 요구 일시만으로 참석/문제/위법을 추정하지 않음 |
 
 현재는 [R1 증인 계약·검토 경로](../architecture/GUKGAM_WITNESS_PACKET.md)의 구현·오프라인 검증을
-완료하고 R2 실행 패키지를 준비하는 단계다. 전체 `make verify`가 통과했다.
+완료했다. 전체 `make verify`가 통과했으며, R2의 고정 패키지 전달·맥 원문/패킷 점검·읽기 전용
+경계 검사·SSD 백업/복원 읽기 검증도 완료했다.
 실제 연구 자료는 사람 검토 전 DRAFT이며, 운영 SSD 관측 인입·신원·공개는 아직 없다.
 필드별 검토를 기다리는 동안 독립적인 구현·회귀와 실행 패키지 준비를 계속한다.
 R2의 행 manifest가 일부이면 그 일부만 인입·완료로 보고한다. L2는 승인된 사람 지원 묶음의 검증·인입
@@ -168,4 +169,5 @@ API lane의 요청 수·간격·timeout·run budget은 출처별 정책과 정�
 코드 milestone은 targeted regression과 `make verify`, persistence 변경은 Alembic round trip,
 UI milestone은 실제 Aside 검증을 요구한다. 수집 성공·코드 통과·사이트 배포 완료는 별도 판정한다.
 
-현재 다음 단위는 **R2 준비: 고정 패키지·47행/412행 DRAFT 묶음의 맥 읽기 전용 검증**이다.
+현재 다음 단위는 **R2 인입: 실제 원문 필드 검토 후 정확한 47행 manifest의 관측 인입**이다.
+그 전 준비는 [맥 실행 증거](../receipts/gukgam-witness-mac-preflight-20261003.json)에 기록했다.
