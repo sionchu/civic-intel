@@ -51,6 +51,10 @@ export type Claim = {
   qualifiers: Record<string, string>;
   evidence: Evidence[];
   source_ids: string[];
+  valid_from?: string | null;
+  valid_to?: string | null;
+  recorded_at?: string | null;
+  source_conflict?: boolean;
 };
 
 export type Organization = {

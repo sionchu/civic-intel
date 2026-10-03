@@ -203,7 +203,9 @@ export default async function Gukgam2026Page({
                         ))}
                       </ul>
                       {committeeByName.has(committee.committee) && (
-                        <CommitteeMembers committee={committeeByName.get(committee.committee)!} />
+                        <Link className="gukgam-committee-members-link" href={`#${committeeAnchor(committee.committee)}`}>
+                          감사 위원 {committeeByName.get(committee.committee)!.member_count}명 <span aria-hidden="true">→</span>
+                        </Link>
                       )}
                     </div>
                   ))}

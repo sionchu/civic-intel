@@ -105,13 +105,14 @@ test("Visual System v2 keeps Home editorial and People content-first", async () 
 });
 
 test("UI exposes explicit provenance and a read-only review surface", async () => {
-  const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8")
+    + await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
   const review = await readFile(new URL("../app/admin/review/page.tsx", import.meta.url), "utf8");
   const throughput = await readFile(new URL("../app/admin/review/gukgam-review-throughput.tsx", import.meta.url), "utf8");
   const actions = await readFile(new URL("../app/admin/review/actions/route.ts", import.meta.url), "utf8");
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.match(profile, /SOURCE CONFLICT/);
-  assert.match(profile, /trace\.stance/);
+  assert.match(profile, /item\.stance|trace\.stance/);
   assert.match(profile, /snapshot_id/);
   assert.match(profile, /policy_summary/);
   assert.match(review, /requireOperator/);
@@ -132,7 +133,8 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
 });
 
 test("organization page consumes the existing direct-ID evidence contract", async () => {
-  const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8")
+    + await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
   const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
   assert.match(page, /getOrganization\(id\)/);
   assert.match(page, /getOrganizationMoney\(id\)/);
@@ -462,7 +464,9 @@ test("Gukgam schedule keeps scope limits and evidence links visible", async () =
   assert.match(page, /근거 계획서 공개일/);
   assert.match(page, /aria-label="감사일별 이동"/);
   const organization = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
-  assert.match(organization, /id=\{`claim-\$\{claim\.id\}`\}/);
+  const panel = await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
+  assert.match(organization, /<EvidencePanel/);
+  assert.match(panel, /id=\{`claim-\$\{claim\.id\}`\}/);
   assert.doesNotMatch(page + schedule, /score|rank|probability|confidence|위험도|의혹/i);
 });
 
@@ -482,7 +486,8 @@ test("Gukgam committee members stay Claim-backed, roster-scoped and unranked", a
   const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
   assert.match(page, /getGukgamCommittees/);
-  assert.match(page, /<CommitteeMembers committee=\{committeeByName\.get\(committee\.committee\)!\} \/>/);
+  assert.match(page, /<CommitteeMembers committee=\{committee\} label="위원 명단" \/>/);
+  assert.match(page, /감사 위원 \{committeeByName\.get\(committee\.committee\)!\.member_count\}명/);
   assert.match(page, /위원회별 감사 위원/);
   assert.match(page, /id=\{committeeAnchor\(committee\.committee_name\)\}/);
   assert.match(page, /감사 당일 출석이 아닙니다/);
@@ -527,4 +532,88 @@ test("Person ontology links a committee to Gukgam only when it is a Gukgam commi
   assert.match(person, /getGukgamCommittees\(\)/);
   assert.match(person, /gukgamCommittees=\{gukgamCommittees\}/);
   assert.doesNotMatch(graph, /"use client"|onClick|confidence|score|probability/);
+});
+
+
+test("one shared evidence panel renders every Claim on Person and Organization pages", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [person, organization, panel, opener, factBox, state] = await Promise.all([
+    read("../app/people/[id]/page.tsx"),
+    read("../app/organizations/[id]/page.tsx"),
+    read("../app/components/evidence-panel.tsx"),
+    read("../app/components/open-target-details.tsx"),
+    read("../app/components/fact-box.tsx"),
+    read("../app/components/read-state.tsx"),
+  ]);
+  for (const page of [person, organization]) {
+    assert.match(page, /<EvidencePanel/);
+    assert.match(page, /<OpenTargetDetails \/>/);
+    assert.match(page, /<FactBox rows=\{factRows\} \/>/);
+    assert.match(page, /<PendingLanes/);
+    assert.match(page, /className="page-anchors"/);
+    assert.doesNotMatch(page, /Evidence trace|Audit trace|className="evidence-trace"/);
+  }
+  assert.match(person, /<aside className="profile-index"/);
+  assert.match(panel, /id=\{`claim-\$\{claim\.id\}`\}/);
+  assert.match(panel, /<details className="evidence-disclosure">/);
+  assert.match(panel, /근거 열기/);
+  assert.match(panel, /SOURCE CONFLICT/);
+  assert.match(panel, /종료일 없음/);
+  assert.match(panel, /공개일 미기재/);
+  assert.match(panel, /현실 세계의 사건 시각이 아닙니다/);
+  assert.match(panel, /출처가 말한 범위까지만 표시합니다/);
+  assert.match(panel, /terms_checked_at/);
+  assert.match(panel, /policy_summary/);
+  assert.match(panel, /snapshot_id/);
+  for (const label of ["기록", "상태", "유효 기간", "기록 시각", "근거", "출처", "원문 값", "처리 방식", "출처 정책", "한계", "감사 ID"]) {
+    assert.ok(panel.includes(label), label);
+  }
+  // Ordered definition list; IDs only inside the nested audit disclosure, never in the summary line.
+  assert.ok(panel.indexOf("<dt>기록</dt>") < panel.indexOf("<dt>유효 기간</dt>"));
+  assert.ok(panel.indexOf("<dt>출처 정책</dt>") < panel.indexOf("<dt>한계</dt>"));
+  assert.ok(panel.indexOf("<dt>한계</dt>") < panel.indexOf("evidence-audit"));
+  const summary = panel.slice(panel.indexOf("<summary>"), panel.indexOf("</summary>"));
+  assert.doesNotMatch(summary, /claim\.id|source\.id|evidence\.id|item\.id|_id|snapshot|observation/);
+  assert.match(opener, /"use client"/);
+  assert.match(opener, /hashchange/);
+  assert.match(opener, /details\.evidence-disclosure/);
+  assert.match(factBox, /href=\{`#claim-\$\{row\.claim\.id\}`\}/);
+  assert.match(factBox, /집계/);
+  assert.match(state, /<summary>요청 ID<\/summary>/);
+  assert.doesNotMatch(state, /<small>Request ID/);
+});
+
+test("Person page adds Gukgam committee context and drops empty lanes into one line", async () => {
+  const person = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const lanes = await readFile(new URL("../app/components/pending-lanes.tsx", import.meta.url), "utf8");
+  const org = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  assert.match(person, /getGukgamTargets\(\)/);
+  assert.match(person, /id="gukgam-2026"/);
+  assert.match(person, /위원회 소속 기록이며 해당 기관 질의 여부를 뜻하지 않습니다/);
+  assert.match(person, /\/gukgam\/2026#audit-\$\{date\}/);
+  assert.match(person, /\/organizations\/\$\{organization\.id\}/);
+  assert.match(person, /memberCommittees\.length > 0/);
+  assert.match(person, /section\.entries\.length === 0/);
+  assert.match(person, /section\.entries\.length === 0 \? null/);
+  assert.match(lanes, /아직 수집되지 않은 기록/);
+  assert.match(lanes, /소스 레인 미개통/);
+  assert.match(org, /pendingLanes/);
+  assert.doesNotMatch(org + person, /현재 임원 이름 공개 기록이 없습니다|검토된 항목이 없습니다/);
+});
+
+test("Gukgam schedule links to the single committee member list instead of repeating it per date", async () => {
+  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  assert.equal((page.match(/<CommitteeMembers/g) ?? []).length, 1);
+  assert.match(page, /gukgam-committee-members-link/);
+  assert.match(page, /href=\{`#\$\{committeeAnchor\(committee\.committee\)\}`\}/);
+  assert.match(page, /id=\{committeeAnchor\(committee\.committee_name\)\}/);
+});
+
+test("evidence panel and fact box keep status chips readable and avoid unsupported surfaces", async () => {
+  const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
+  const panel = await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
+  const factBox = await readFile(new URL("../app/components/fact-box.tsx", import.meta.url), "utf8");
+  assert.match(styles, /\.evidence-panel \.status, \.fact-table \.status[^{]*\{ font-size: 11px; \}/);
+  assert.match(styles, /\.evidence-panel:target/);
+  assert.doesNotMatch(panel + factBox, /confidence|faction|influence|probability|score|rank/i);
 });

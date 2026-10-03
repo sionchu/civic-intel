@@ -34,7 +34,12 @@ export default function ReadState({ error }: { error: ApiError }) {
       <span className="status">{error.code}</span>
       <strong>{copy.title}</strong>
       <p>{copy.detail}</p>
-      {error.request_id && <small>Request ID {error.request_id}</small>}
+      {error.request_id && (
+        <details className="audit-details">
+          <summary>요청 ID</summary>
+          <small>{error.request_id}</small>
+        </details>
+      )}
     </div>
   );
 }
