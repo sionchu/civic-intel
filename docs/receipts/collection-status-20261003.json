@@ -229,6 +229,189 @@
         "tests_or_make_verify_reexecuted": false,
         "work_order_relative_links_exist": 10
       }
+    },
+    {
+      "automation_id": "db",
+      "base_commit": "3971d47aaec3af7b4a1786a075231b3b8fc7048f",
+      "canonical_mac_read_only": {
+        "active_running_runs": 0,
+        "checkpoints": {
+          "count": 1,
+          "latest_run_matches": 1,
+          "missing_run_references": 0,
+          "null_run_references": 0,
+          "scope_mismatches": 0,
+          "valid_same_scope_and_cursor_match": 1
+        },
+        "claim_publication_status_counts": {
+          "DRAFT": 298
+        },
+        "compared_to_previous_heartbeat": "ALL_CHECKED_VALUES_MATCH",
+        "counts": {
+          "claims": 298,
+          "evidence": 298,
+          "observations": 299,
+          "organizations": 0,
+          "people": 298,
+          "runs": 1,
+          "snapshots": 3,
+          "sources": 3
+        },
+        "file_mode": "0600",
+        "finished_at_utc": "2026-10-03T06:20:24.834983Z",
+        "foreign_key_violations": 0,
+        "health_body_read": false,
+        "loopback_health_http_status": 200,
+        "mois_runs": 0,
+        "overall_budget_seconds": 20,
+        "query_only": true,
+        "quick_check": "ok",
+        "schema_revision": "0008",
+        "snapshot_count": 1,
+        "sole_writer_exclusion_proven": false,
+        "source_run_status_counts": {
+          "SUCCESS": 1
+        },
+        "sqlite_mode": "ro",
+        "sqlite_timeout_seconds": 5,
+        "started_at_utc": "2026-10-03T06:20:24.394043Z",
+        "status": "READ_ONLY_AGGREGATES_COMPLETE",
+        "target_alias": "canonical-mac-ssd",
+        "transport": "Remote Desktop Commander",
+        "witness_runs": 0
+      },
+      "effects": {
+        "canonical_identity_changes": 0,
+        "claims_created_or_published": 0,
+        "deployment": false,
+        "human_attestations_created": 0,
+        "migrations": 0,
+        "official_source_fetches": 0,
+        "operational_db_writes": 0,
+        "service_restarts": 0
+      },
+      "execution_privacy": {
+        "actionable_findings": 0,
+        "checked_at_utc": "2026-10-03T06:21:00Z",
+        "gate_drift_found": false,
+        "local_artifact_audit_script_and_aggregate_result_review": "NO_ACTIONABLE_FINDING",
+        "reviewer_read_provider_rows": false,
+        "reviewer_reproduced_artifact_audit": false,
+        "reviewer_reproduced_remote_snapshot": false,
+        "tests_executed": 0
+      },
+      "local_artifact_audit": {
+        "active_plan_item": "70_ITEM_MOIS_PROVIDER_ID_PROVENANCE_REVIEW_PARTIAL_PREPARATION",
+        "current_db_provenance_revalidated": false,
+        "executed_by": "MAIN",
+        "final_exit_code": 0,
+        "identity_decision_created": false,
+        "initial_exit_code": 1,
+        "initial_runner_failure": "MODULE_SEARCH_PATH_UNAVAILABLE",
+        "plan_item_fully_completed": false,
+        "report_file": "mois-proposal-aggregate-audit-20261003T061858.json",
+        "report_sha256": "0d0fd5928d86923c99e3fd0bc77f5c626882fd715aec88367b620242ddfc9d23",
+        "result": {
+          "ambiguous_count": 0,
+          "artifact_bytes_unchanged": true,
+          "artifact_hash_matches_recorded_reference": true,
+          "artifact_historical_organization_count": 374,
+          "byte_sha256": "318f1c90b2f04347166273bc2353389e0d4b7de856cc18dbaf77971af09300ab",
+          "canonical_target_identity_revalidated": false,
+          "finished_at_utc": "2026-10-03T06:26:45.554876+00:00",
+          "human_identity_decision_created": false,
+          "occurrence_count": 74,
+          "proposal_count": 70,
+          "provider_id_namespace_equivalence_asserted": false,
+          "provider_rows_transmitted_to_ai": false,
+          "semantic_sha256": "e7a208d1236517dd10d0768d1af8e25f5fc088925733b7039cbac794d9d99964",
+          "snapshot_and_checkpoint_provenance_revalidated": false,
+          "source_fetch_performed": false,
+          "started_at_utc": "2026-10-03T06:26:44.682873+00:00",
+          "status": "ARTIFACT_INTERNAL_CHECKS_PASS_NOT_CURRENT_DB_VALIDATION",
+          "unique_occurrence_references": 74,
+          "unmatched_distinct_target_count": 159,
+          "valid_unique_provider_key_code_pairs": 70,
+          "valid_unique_provider_observation_references": 70,
+          "write_performed": false
+        },
+        "runner_failure_corrected": true,
+        "script_file": "IGNORED_LOCAL_DIAGNOSTIC",
+        "script_sha256": "53e38b8770451cb4ded4910fc376f899d4224437d1dbdf2d830bd893c5ad5a94",
+        "status": "ARTIFACT_INTERNAL_CHECKS_PASS_NOT_CURRENT_DB_VALIDATION"
+      },
+      "local_existing_proof_db_cli": {
+        "before_after_hash_match": true,
+        "checked_at_utc": "2026-10-03T06:27:38.269613+00:00",
+        "counts": {
+          "checkpoints": 1,
+          "claims": 0,
+          "evidence": 0,
+          "observation_keys": 1,
+          "observations": 1,
+          "organizations": 0,
+          "people": 0,
+          "running_runs": 0,
+          "runs": 1,
+          "snapshots": 1,
+          "sources": 1
+        },
+        "database_sha256": "5fa57b1840312fcc5afb3c617cc41d70ab6633f4973ee6afc09c51b26bec627d",
+        "exit_code": 0,
+        "log_sha256": "ca1982be204dec92f7e229319368b1c9f4ef17882ea4ef862f0adb9cefc2ce4b",
+        "schema_revision": "0008",
+        "status": "OBSERVED",
+        "target_alias": "LOCAL_CODE_FIRST_PAGE"
+      },
+      "parser_provenance": {
+        "all_packets": "DRAFT_NOT_HUMAN_REVIEWED",
+        "canonical_parser_validation": "PASS",
+        "checked_at_utc": "2026-10-03T06:20:16Z",
+        "drift_found": false,
+        "latest_monitor_code_lf_hashes_matched": 8,
+        "mois_code_lf_hashes_matched": 2,
+        "pdfs_reopened": false,
+        "prepared_artifact_byte_hashes_matched": 4,
+        "prepared_packet_counts": [
+          370,
+          42,
+          32,
+          15
+        ],
+        "private_single_code_mois_review_artifact_read": false,
+        "research_category_counts": [
+          370,
+          29,
+          13
+        ],
+        "research_hashes_matched": 2,
+        "research_row_count": 412,
+        "tests_executed": 0,
+        "witness_core_lf_hashes_matched": 6
+      },
+      "privacy": {
+        "credentials_transmitted_to_ai": false,
+        "local_checked_in_proposal_processed_without_row_output": true,
+        "provider_rows_or_raw_source_transmitted_to_ai": false
+      },
+      "received_at_utc": "2026-10-03T06:18:58.361Z",
+      "recorded_at_utc": "2026-10-03T06:29:17.108501+00:00",
+      "remaining_gates": [
+        "ACTUAL_WITNESS_FIELD_REVIEW",
+        "CURRENT_PLAN_VERSION_EVIDENCE",
+        "CURRENT_DB_SOURCE_SNAPSHOT_CHECKPOINT_PROVENANCE",
+        "REVIEWED_CANONICAL_IDENTITIES",
+        "OPERATIONAL_RUNNER_AND_WRITER_READINESS",
+        "PUBLICATION_AND_DELIVERY"
+      ],
+      "scope": "READ_ONLY_MONITORING_AND_BOUNDED_LOCAL_ARTIFACT_INTERNAL_AUDIT",
+      "status": "CHECKED_NO_OBSERVED_DRIFT",
+      "verification": {
+        "diagnostic_import_failure_corrected_and_audit_executed": true,
+        "previous_code_gate": "HISTORICAL_970_PYTHON_34_WEB_4_OPTIONAL_POSTGRESQL_SKIPS_NOT_REEXECUTED",
+        "reason": "UNCHANGED_PRODUCT_CODE_SUCCESSFUL_CANONICAL_PARSE_AND_NO_PRODUCT_REGRESSION",
+        "tests_or_make_verify_reexecuted": false
+      }
     }
   ],
   "implementation": {

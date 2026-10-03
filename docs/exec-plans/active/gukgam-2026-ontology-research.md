@@ -27,6 +27,27 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Second heartbeat and MOIS artifact-internal preparation, 2026-10-03
+
+Received `db` heartbeat2026-10-03T06:18:58.361Z, base3971d47. Parser/provenance, Mac DB and
+execution/privacy agents report no observed drift. Fresh Commander snapshot06:20:24–25 UTC
+matches the first heartbeat's schema/integrity/counts/run/checkpoint/health; local monitor
+exits0 with unchanged proof-DB bytes. Canonical parsing and pinned hashes match. No product
+code, source or operational effect changes; tests/full verify are not repeated.
+
+MAIN advances next-review item3 only through bounded local artifact-internal checks of the
+existing70-item proposal. The canonical semantic digest matches its recorded reference;
+70 provider-key/code pairs and UUID-format observation references are unique,74 occurrence
+references/counts match,0ambiguous/159unmatched and the artifact bytes are unchanged. No row
+values are emitted. One helper import-path failure was corrected; the final audit exits0.
+Independent risk review of the script and aggregate result finds no actionable issue; it
+does not reproduce the audit or inspect provider rows. Historical374 Organizations is not
+the Mac's0; current Source/Snapshot/checkpoint and canonical identities are not revalidated.
+This is partial preparation, not completion of substantive provider/provenance review.
+Keep the proposal REVIEW_ONLY and avoid repeating its row audit for an unchanged digest.
+Actual field review, current plan/version proof, identities and writer/import readiness
+remain gates. Fresh evidence is appended to the [monitor receipt](../../receipts/collection-status-20261003.json).
+
 ### Heartbeat continuation and Mac identity preparation, 2026-10-03
 
 First `db` heartbeat received2026-10-03T05:18:27.451Z. MAIN / record curator, base
@@ -382,8 +403,9 @@ source run, migration or database write is authorized by this plan.
    draft pairs only as review references. Do not reuse staging IDs in the empty Mac target.
    For the historic batch, obtain the human decision on its exact 41 pairs before its separate
    manifest gate; preserve DRAFT if not approved.
-3. Independently review the 70-item MOIS proposal and its provider-ID/provenance mapping; keep it
-   review-only until a separate source-specific contract is approved.
+3. Complete the independent70-item MOIS provider-ID/provenance review. Artifact-internal
+   digest/reference checks are complete; current-DB provenance and substantive identity
+   decisions remain unverified. Keep it review-only until its source-specific contract is approved.
 4. Reassess the official schedule API’s authenticated sample and operation-specific policy before
    any L2 or collection request; keep committee HTML automation blocked.
 5. Route any infrastructure spend, public domain, public API or indexing decision through its

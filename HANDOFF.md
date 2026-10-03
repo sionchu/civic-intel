@@ -40,21 +40,24 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
-2026-10-03 first db heartbeat (received05:18:27 UTC, base7b539a4): three independent agents
-rechecked parsing/provenance, Mac aggregates and execution/privacy. No checked code/research/
-prepared-artifact drift;412 research rows and370/42/32/15 packets remain DRAFT. Original
-PDFs/private MOIS review artifacts were not reopened. Existing local proof DB monitor at05:21
-exited0 and file hash is unchanged. One Commander snapshot at05:21:21–05:21:22 UTC matches
-the prior schema0008/mode0600/quick_checkok/FK0,298People/298DRAFTClaims/0Organizations,
-299observations/3snapshots/1SUCCESSrun/0RUNNING/witness/MOISruns, checkpoint/cursor and health200.
-0RUNNING does not prove writer exclusion. No tests/full verify rerun for unchanged implementation;
-previous970Python/34web gate remains historical evidence. No source/operational write/restart.
-Approved local next-review preparation is now documented in
-docs/operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md: exact service target,47-row pilot source
-versions, historical-only41 draft references and NOT_DECIDED identity/effect gates. No runtime
-manifest, staging IDs or provider rows are introduced. Real field review still holds R2
-acquisition; identity, publication and delivery remain separate. This is the first executed
-heartbeat check, recorded in the existing docs/receipts/collection-status-20261003.json.
+2026-10-03 second db heartbeat (received06:18:58 UTC, base3971d47): three agents found no
+checked implementation/research/prepared-artifact or gate drift. Canonical parsing retains
+412 research rows and370/42/32/15 DRAFT packets. One Commander snapshot06:20:24–06:20:25 UTC
+matches the prior schema0008/mode0600/quick_checkok/FK0,298People/298DRAFTClaims/0Organizations,
+299observations/3snapshots/1SUCCESSrun/0RUNNING/witness/MOISruns, valid checkpoint/cursor and
+health200. Existing local proof DB monitor exits0/hash unchanged.0RUNNING is not writer exclusion.
+No product code or operational changes; previous970Python/34web gate is not rerun/current evidence.
+Approved plan item3 advances only artifact-internal preparation: recorded70-item MOIS JSON
+semantic hash matches,70 unique provider-key/code pairs and UUID-format observation refs,
+74 unique occurrence refs and declared counts,0ambiguous/159unmatched. Source bytes unchanged.
+The initial diagnostic import-path failure was corrected; final audit exits0. Reviewer checked
+script/aggregate result only and found no defect; it did not reproduce the audit or inspect rows.
+Historical artifact Organization count374 is not the Mac's current0. Source/snapshot/checkpoint
+and canonical identity are NOT_REVALIDATED; independent substantive proposal review remains partial.
+Exact Mac identity work order remains REVIEW_PREPARATION_ONLY, decisions NOT_DECIDED. No raw
+PDFs/private single-code review file/credentials were opened; no provider rows reached AI output.
+Actual witness field review still holds R2 acquisition; identity/publication/delivery remain gates.
+Both heartbeat checks are preserved in docs/receipts/collection-status-20261003.json.
 
 2026-10-03 parser/DB monitoring slice (base d8a8093): canonical `inspect collection-status`
 uses the existing administration read UoW, explicit target and forced existing-file SQLite
@@ -356,6 +359,9 @@ single-code candidate is local review evidence, with no canonical decision or Ma
 Use docs/operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md for the exact service target/source/identity
 review boundaries. Continue the hourly read-only checks; any later source effect needs its own
 fresh request, unchanged target proof and operational runner/writer readiness.
+The historical70-item proposal's artifact-internal digest/reference checks are complete;
+do not repeat its row audit for unchanged bytes. Current-DB provenance and substantive
+provider identity review are still pending; keep the proposal review-only and target-specific.
 
 Roadmap R2: pinned package/Commander transfer/read-only checks/consistent backup and disposable
 restore are complete. Actual human field review of the exact 47-row source manifest is still
