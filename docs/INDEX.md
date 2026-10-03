@@ -19,6 +19,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Gukgam witness-to-Person read-only DRAFT Claim preparation evidence](receipts/gukgam-witness-claim-preparation-20261004.json)
 - [Gukgam private reviewed witness link and DRAFT persistence evidence](receipts/gukgam-witness-reviewed-admin-20261004.json)
 - [Gukgam current-source Claim review request preflight evidence](receipts/gukgam-witness-review-preflight-20261004.json)
+- [Gukgam stored Claim read-only release inspection evidence](receipts/gukgam-witness-release-inspection-20261004.json)
 - [Gukgam bounded MOIS lookup and source-chain audit evidence](receipts/gukgam-mois-lookup-20261003.json)
 - [Read-only parsing and DB monitoring verification](receipts/collection-status-20261003.json)
 - [Mac Gukgam Organization identity review work order](operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md)

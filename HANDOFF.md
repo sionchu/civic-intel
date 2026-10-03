@@ -41,34 +41,33 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
-2026-10-04 witness current-source Claim review preflight (basea0e732e): existing private admin
-SUBMIT_REVIEW checks current checkpoint/packet/provenance, current resolved Person, unique active
-reviewed link/latest resolved review, original LINK_PERSON command/immutable audit and current
-official bridge/aliases. The persisted Claim/Evidence must equal the canonical listing-only pair.
-All dependencies bind signed preview and confirmed commit; fixture writes only DRAFT/WITHHELD
-to REVIEW plus atomic audit. No human publication approval, new identity review or truth
-promotion occurs. Witness PUBLISH/CORRECT_CLAIM remain blocked. Canonical SourceSnapshot
-routing fixes the independently found compound marker/provenance bypass; all six probes pass.
-All 158 targeted regression checks passed. Full `make verify` exited 0: 1,130 Python PASS,
-4 optional PostgreSQL skips and 6 warnings (543.46s), 34 web checks and 12 Worker synthetic
+2026-10-04 stored witness Claim read-only release inspection (base ebbaf05b): the existing
+`civic inspect gukgam-witness-claim --database-url <existing-approved-db> --claim-id <uuid>`
+checks one stored REVIEW Claim in one read UoW. Current source, resolved identity, original
+LINK_PERSON audit, official bridge and complete canonical Claim/Evidence must match; the exact
+latest immutable SUBMIT_REVIEW transition is required. The publication gate uses an in-memory
+visibility copy only. IDs/hashes/safe failure codes describe eligibility for future human release
+review. No approval, signed publication token, audit/write or attendance assertion is created.
+The four-input DRAFT preparation remains; witness PUBLISH/CORRECT_CLAIM remain blocked.
+All 228 targeted regression checks passed. Full `make verify` exited 0: 1,160 Python PASS,
+4 optional PostgreSQL skips and 6 warnings (635.71s), 34 web checks and 12 Worker synthetic
 HTTP checks PASS. Lint, types, Golden Set, architecture, Next and Worker builds passed.
-The 88 witness admin cases include 55 new review regressions. Browser NOT_RUN: no UI change;
-live PostgreSQL NOT_RUN: sanitized runner has no POSTGRES_TEST_URL. Original user edit and
-47-row packet/template hashes are unchanged. One Commander aggregate read at 20:32:52 UTC
-on 2026-10-03 confirms schema 0008, mode 0600, quick_check ok, no FK violations and HTTP 200:
-298 People, 298 DRAFT Claims, 0 Organizations, 299 observations, 1 run and 0 canonical
-witness/MOIS runs. Actual source field review,
-operational import/identity/DRAFT/review/publication, runtime upgrade and deployment remain
-unexecuted. Entry: existing private admin preview/commit with SUBMIT_REVIEW Claim UUIDs and
-reason; explicit confirmation requests review, it does not supply approval. Real workflow needs
-reviewed fields/exact47-row import manifest and separately attested official bridge IDs/basis
-for current Person/Observation. Preparation guide remains
-.tools/gukgam-witness-draft-preparation-20261004/README.md. Next independent local slice:
-source-specific release eligibility contract and synthetic regressions; keep operational
-publication closed. Latest intentional admin/test pins and current evidence:
-docs/receipts/gukgam-witness-review-preflight-20261004.json. Retain prior unchanged-file pins.
-The prior reviewed witness LINK_PERSON/DRAFT milestone remains recorded in
-docs/receipts/gukgam-witness-reviewed-admin-20261004.json.
+The 118 witness admin cases include 30 new stored-inspection regressions. Independent read-only
+review found and verified the denied-metadata policy failure-code fix. Browser NOT_RUN: no UI
+change; live PostgreSQL NOT_RUN: sanitized runner has no POSTGRES_TEST_URL. Original user edit
+and 47-row packet/template hashes are preserved. The single Commander aggregate read at
+2026-10-03 21:34:31 UTC confirms schema 0008/mode 0600/quick_check ok/FK 0/HTTP 200 and unchanged
+298 People, 298 DRAFT Claims, 0 Organizations, 299 observations, 1 run and 0 exact witness/MOIS runs.
+This local work order is complete; actual collection, identity decisions, review requests,
+publication, SSD writes, migration, restart and deployment did not advance. Operational state:
+REVIEW_INPUTS_REQUIRED. Required materials are the reviewed exact 47-row source manifest plus
+separately attested official bridge Evidence IDs/basis for current Person/Observation. Existing
+guide: .tools/gukgam-witness-draft-preparation-20261004/README.md. No additional independent local
+implementation is specified at this checkpoint. Skip unchanged parsing/audit/test/document
+commits; resume implementation for changed reviewed inputs or a concrete approved work order.
+Current receipt and seven intentional code/test pins: docs/receipts/gukgam-witness-release-inspection-20261004.json.
+Historical preflight/identity evidence remains in docs/receipts/gukgam-witness-review-preflight-20261004.json
+and docs/receipts/gukgam-witness-reviewed-admin-20261004.json; retain unchanged-file pins.
 
 Preceding completed local preparation milestone:
 2026-10-04 witness-to-Person DRAFT preparation (base2a19006): canonical
@@ -335,6 +334,10 @@ compatibility check does not prove a build or private Mac network connection.
 
 ## Verification evidence
 
+Current stored-inspection evidence: docs/receipts/gukgam-witness-release-inspection-20261004.json;
+targeted 228 PASS and full
+1,160 Python / 34 web / 12 Worker checks PASS, with 4 optional live PostgreSQL tests NOT_RUN.
+
 Witness R1: canonical `python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify`
 exit0, CANONICAL_VERIFY_EXIT=0; 898 Python PASS, 4 optional PG skips, 6 warnings, 442.39s;
 34 web PASS; Ruff, mypy150 files, Golden, architecture, web lint/types/build/standalone assets PASS.
@@ -438,6 +441,10 @@ Actual Mac logout/reboot and physical disk unplug; current optional PG runtime t
 
 ## Blockers
 
+The actual witness pipeline is REVIEW_INPUTS_REQUIRED: substantive review of the exact 47-row
+source manifest and official identity bridge attestations are absent. Technical local inspection
+does not supply them; no additional independent local work order is specified for this checkpoint.
+
 Sites cannot reach Mac loopback. A concrete authenticated HTTPS route, Worker artifact and
 verified Site-to-Mac reads are required before cloud delivery. Sites inspected capabilities do
 not establish private LAN connectivity. Claim/profile publication selection remains separate;
@@ -447,6 +454,10 @@ Allocated ownership is not a DB-enforced shared-writer lease; old ALIO/MOIS RUNN
 remain preserved and do not authorize recurring writers.
 
 ## Modified files
+
+Stored witness release inspection changes the existing Administration port/service/adapter, admin
+workflow and Claim CLI selector/dispatch, synthetic regressions and governing docs/receipt. No
+schema, new route, API/UI or operational runtime change.
 
 The local Workers slice changes canonical web build dependencies/configuration and adds one
 guarded Worker entry, a serialized build wrapper and synthetic HTTP checker. Existing data
@@ -473,6 +484,11 @@ remain outside Git. Original root master/user contracts.py edits remain untouche
 
 ## Next concrete action
 
+For the witness pipeline, obtain substantive review of the existing exact 47-row source manifest
+and separately attested official bridge IDs/basis. Keep current packets DRAFT and operational
+effects unexecuted. This checkpoint awaits changed reviewed inputs or a concrete approved local
+work order; do not repeat unchanged parsing, agents, full verification or documentation commits.
+
 Local Next/Worker build and synthetic HTTP acceptance are complete. Sites metadata packaging
 needs the real registered manifest; authenticated Site-to-Mac reads and Aside visual/mobile
 acceptance remain separate. Keep the unresolved build-tool audit visible before any release.
@@ -484,7 +500,7 @@ Independent R3 source-to-plan and bounded MOIS lookup preparation are complete. 
 versioned occurrence ref; do not choose from the pilot's two plan dates automatically. The
 single-code candidate is local review evidence, with no canonical decision or Mac MOIS capture.
 Use docs/operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md for the exact service target/source/identity
-review boundaries. Continue the hourly read-only checks; any later source effect needs its own
+review boundaries. Use change-only monitoring; any later source effect needs its own
 fresh request, unchanged target proof and operational runner/writer readiness.
 The historical70-item proposal's artifact-internal digest/reference checks are complete;
 do not repeat its row audit for unchanged bytes. Current-DB provenance and substantive

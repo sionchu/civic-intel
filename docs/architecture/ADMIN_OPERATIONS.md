@@ -48,6 +48,14 @@ moves DRAFT/WITHHELD to REVIEW with its request audit; it does not supply human 
 approval or change identity/truth. Publication and correction remain blocked. See
 [current-source review requests](GUKGAM_WITNESS_PACKET.md#current-source-claim-review-requests).
 
+The read-only Administration inspector checks an existing witness REVIEW Claim against its
+exact current source/identity pair, original link audit and latest immutable review-request
+transition, then the canonical publication gate on an in-memory visibility copy. Its output is
+only technical eligibility for a future human release review. It neither signs a publish
+preview nor mutates/audits/approves anything. The exclusive `--claim-id` mode of the existing
+Claim inspection CLI uses one read UoW; publication/correction remain closed. See
+[stored Claim release inspection](GUKGAM_WITNESS_PACKET.md#stored-claim-release-inspection).
+
 Supported actions:
 - HOLD / EXCLUDE / REOPEN on named ALIO source records;
 - REGISTER_PERSON / LINK_PERSON;

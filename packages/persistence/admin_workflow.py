@@ -69,7 +69,7 @@ from packages.verification.nec_person_materialization import (
     NecPersonMaterializationError,
     validate_nec_candidate_source_context,
 )
-from packages.verification.policy import PolicyAction, require_policy
+from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
 SAFE_CHANGE_FIELDS = {
     "id",
@@ -769,6 +769,98 @@ def _witness_review_preflight(plan: Plan, claim_row: Any, evidence_rows: list[An
         "packet_hash": prepared.packet_hash, "observation_hash": prepared.observation_hash,
         "publication_enabled": False, "attendance_state": "NOT_VERIFIED",
     }
+
+
+def inspect_gukgam_witness_release(session: Session, claim_id: UUID) -> dict[str, Any]:
+    # This internal query context is never reported, signed, applied or stored as a command.
+    command = AdminCommand(
+        request_id=uuid5(claim_id, "read-only-witness-release-inspection"),
+        action=AdminAction.SUBMIT_REVIEW, record_ids=(claim_id,),
+        reason="Read-only stored release inspection; no review request or human approval.",
+    )
+    plan = Plan(session, command)
+    result: dict[str, Any] = {
+        "claim_id": str(claim_id), "publication_enabled": False, "human_approval": False,
+        "write_performed": False, "network_fetch": False,
+    }
+    try:
+        if not admin_schema_ready(session):
+            raise AdminError("ADMIN_SCHEMA_REQUIRED", "기존 변경 이력 스키마가 필요합니다.")
+        row = plan.get(db.ClaimRow, claim_id)
+        if row.superseded_at is not None:
+            raise AdminError("SUPERSEDED_CLAIM", "대체된 Claim은 공개 검토할 수 없습니다.")
+        evidence_rows = plan.query(db.ClaimEvidenceRow, db.ClaimEvidenceRow.claim_id == row.id)
+        preflight = _witness_review_preflight(plan, row, evidence_rows)
+        if row.publication_status != PublicationStatus.REVIEW.value:
+            raise AdminError("WITNESS_REVIEW_REQUIRED", "현재 검토 요청 상태가 필요합니다.")
+        operations = plan.query(
+            db.AdminOperationRow,
+            db.AdminOperationRow.action.in_({
+                AdminAction.SUBMIT_REVIEW.value, AdminAction.PUBLISH.value,
+                AdminAction.WITHDRAW.value, AdminAction.CORRECT_CLAIM.value,
+            }),
+            cast(db.AdminOperationRow.targets, String).contains(str(claim_id)),
+        )
+        latest = max(operations, key=lambda item: (item.created_at, item.id)) if operations else None
+        if latest is None or latest.action != AdminAction.SUBMIT_REVIEW.value:
+            raise AdminError("WITNESS_REQUEST_AUDIT_REQUIRED", "현재 Claim의 최신 검토 요청 이력이 필요합니다.")
+        if sum(item.created_at == latest.created_at for item in operations) != 1:
+            raise AdminError("WITNESS_REQUEST_AUDIT_CONFLICT", "최신 요청 이력의 순서가 불명확합니다.")
+        try:
+            if (
+                not isinstance(latest.result, dict) or not isinstance(latest.changes, list)
+                or not isinstance(latest.targets, list)
+                or not isinstance(latest.result.get("human_verified"), bool)
+            ):
+                raise TypeError("invalid request audit shape")
+            original = AdminCommand(
+                request_id=UUID(latest.id), action=AdminAction.SUBMIT_REVIEW,
+                record_ids=tuple(UUID(item) for item in latest.targets), reason=latest.reason,
+                human_verified=latest.result["human_verified"],
+            )
+            changes = [item for item in latest.changes
+                       if item.get("table") == "claims" and item.get("id") == row.id]
+            outcomes = [item for item in latest.result["outcomes"]
+                        if item.get("record_id") == row.id]
+            before = changes[0]["before"]["publication_status"]
+            expected_change = {
+                "table": "claims", "id": row.id, "operation": "UPDATE",
+                "before": {"publication_status": before}, "after": {"publication_status": "REVIEW"},
+            }
+            expected_outcome = {
+                "record_id": row.id, "before": before, "after": "REVIEW",
+                "epistemic_status_unchanged": "CLAIM", **preflight,
+            }
+            review = plan.get(db.IdentityReviewItemRow, row.qualifiers["identity_review_id"])
+            if (
+                str(claim_id) not in latest.targets
+                or latest.command_hash != digest(original.model_dump(mode="json"))
+                or latest.result.get("write_performed") is not True
+                or latest.result.get("review_evidence_ids") != []
+                or latest.result.get("identity_basis") is not None
+                or latest.result.get("changed_rows") != len(original.record_ids)
+                or len(latest.changes) != len(original.record_ids)
+                or before not in {"DRAFT", "WITHHELD"}
+                or changes != [expected_change] or outcomes != [expected_outcome]
+                or latest.created_at < review.resolved_at
+            ):
+                raise ValueError("request audit differs from stored transition")
+        except (ValueError, KeyError, TypeError, AttributeError, IndexError):
+            raise AdminError("WITNESS_REQUEST_AUDIT_CONFLICT", "기록된 검토 요청과 현재 Claim이 일치하지 않습니다.") from None
+        candidate = Claim.model_validate(row, from_attributes=True).model_copy(
+            update={"publication_status": PublicationStatus.PUBLISHED},
+        )
+        _publication_gate(plan, candidate, evidence_rows)
+        result.update(
+            status="ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW", failure_codes=[],
+            person_id=row.person_id, review_request_id=latest.id, **preflight,
+        )
+    except (AdminError, PolicyDenied) as error:
+        code = error.code if isinstance(error, AdminError) else "SOURCE_POLICY_DENIED"
+        result.update(status="NOT_ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW", failure_codes=[code])
+    if plan.changes:
+        raise AdminError("INSPECTION_EFFECT_CONFLICT", "읽기 전용 검사에 변경 계획이 포함되었습니다.")
+    return {**result, "state_hash": plan.state_hash()}
 
 
 def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> None:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -96,6 +97,12 @@ class AdministrationRepository:
         session = self._session
         with session.no_autoflush:
             return build_plan(session, command).report()
+
+    def inspect_gukgam_witness_release(self, claim_id: UUID) -> dict[str, Any]:
+        from packages.persistence.admin_workflow import inspect_gukgam_witness_release
+
+        with self._session.no_autoflush:
+            return inspect_gukgam_witness_release(self._session, claim_id)
 
     def admin_commit(self, command, actor: str, state_hash: str) -> dict[str, Any]:
         from packages.persistence.admin_workflow import commit_command

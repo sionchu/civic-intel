@@ -27,6 +27,48 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Stored witness Claim release inspection, 2026-10-04
+
+MAIN continues the planned release eligibility slice at base
+`ebbaf05bbc7ec550ce12b808e7d39844e2ae298b`. Extend the existing READ_ONLY
+`inspect gukgam-witness-claim` with an exclusive stored Claim UUID selector; preserve the current
+four-input in-memory DRAFT preparation mode. One coherent read UoW reuses the admin current
+source/identity/original-link-audit/official-bridge/complete Claim-Evidence preflight. A stored
+REVIEW Claim additionally needs its exact latest immutable SUBMIT_REVIEW request history and
+the canonical publication gate. Return IDs, hashes and eligibility for human release review only;
+the inspection is no approval, signed publication preview, audit receipt or publication command.
+Keep witness PUBLISH/CORRECT_CLAIM blocked. No new route, API/UI, schema, source fetch, actual
+review/identity, operational DB write, migration, restart or deployment. MAIN owns existing
+Administration ports/service/adapter, admin workflow, CLI arguments/dispatch, synthetic witness
+admin regressions, witness/admin/command docs, this plan, HANDOFF, INDEX and one receipt.
+One bounded read-only child maps existing seams and reviews the final diff, without recursion,
+provider rows, secrets, remote resources, edits or test execution. MAIN runs required new-code
+regressions and make verify, inspects the diff, preserves root edits/47-row inputs and commits.
+
+Completed local slice: the existing READ_ONLY Claim inspection accepts an exclusive stored
+Claim UUID and reuses one canonical Administration read UoW. Exact current source/identity/
+original-link-audit/official-bridge/complete Claim-Evidence preflight is joined to the latest
+immutable SUBMIT_REVIEW transition; ambiguous, stale or inconsistent history fails closed.
+The publication gate checks only an in-memory visibility copy. Output is IDs/hashes/safe
+codes and eligibility for human release review, never approval, a signed publish token or a
+write/audit. Four-input DRAFT preparation is preserved; witness PUBLISH/CORRECT_CLAIM stay closed.
+All 228 targeted regression checks passed; 30 added cases bring witness admin coverage to 118.
+Full `make verify` exited 0: 1,160 Python PASS, 4 optional PostgreSQL skips and 6 warnings
+(635.71s), 34 web checks and 12 Worker synthetic HTTP checks PASS. Lint, types, Golden Set,
+architecture, Next and Worker builds passed.
+Independent read-only review found a denied-metadata policy exception mapping gap; its safe
+SOURCE_POLICY_DENIED mapping and regression are now verified. Original user edit and 47-row
+packet/template hashes are unchanged. One Commander aggregate read at 2026-10-03 21:34:31 UTC
+confirms schema 0008, mode 0600, quick_check ok, no FK violations and HTTP 200: 298 People,
+298 DRAFT Claims, 0 Organizations, 299 observations, 1 run and 0 exact witness/MOIS runs.
+This completes this independent local work order. Actual field review, witness import, official
+identity bridge decisions, operational review/publication and deployment remain unexecuted.
+The actual pipeline awaits the reviewed 47-row source manifest and separately attested official
+bridge IDs/basis for current Person/Observation. No further independent local implementation is
+specified for this checkpoint; mark REVIEW_INPUTS_REQUIRED and skip unchanged repeated audits.
+[Stored Claim release inspection evidence](../../receipts/gukgam-witness-release-inspection-20261004.json)
+records seven intentionally changed code/test pins. Historical receipts and unchanged pins remain.
+
 ### Witness Claim current-source review preflight continuation, 2026-10-04
 
 MAIN continues at base `a0e732e6242772f184e41175b85f6539ff75b6c3` with the planned local

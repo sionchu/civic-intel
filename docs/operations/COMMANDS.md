@@ -89,6 +89,14 @@ The transaction changes only DRAFT/WITHHELD to REVIEW with audit. This is neithe
 publication approval nor a CLI write command; witness PUBLISH/CORRECT_CLAIM remain closed.
 See [current-source review requests](../architecture/GUKGAM_WITNESS_PACKET.md#current-source-claim-review-requests).
 
+For an already stored Claim, `civic inspect gukgam-witness-claim --database-url
+<existing-approved-db> --claim-id <uuid>` selects read-only release inspection instead of the
+four-input in-memory preparation. Mixing selectors is rejected before dispatch. A current
+REVIEW Claim needs its exact latest immutable request transition and current source/identity/
+evidence gates. The result is eligibility for human release review, not approval, a signed
+publication token or a write. PUBLISH/CORRECT_CLAIM remain unavailable. See
+[stored Claim release inspection](../architecture/GUKGAM_WITNESS_PACKET.md#stored-claim-release-inspection).
+
 ### Offline witness correction preparation
 
 The existing single-packet inspect command additionally accepts `--write-draft-edits

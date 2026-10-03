@@ -1,0 +1,154 @@
+{
+  "base_commit": "ebbaf05bbc7ec550ce12b808e7d39844e2ae298b",
+  "canonical_mac_read_only": {
+    "active_running_runs": 0,
+    "claim_publication_status_counts": {
+      "DRAFT": 298
+    },
+    "counts": {
+      "claims": 298,
+      "evidence": 298,
+      "observations": 299,
+      "organizations": 0,
+      "people": 298,
+      "runs": 1,
+      "snapshots": 3,
+      "sources": 3
+    },
+    "exact_feeder_run_counts": {
+      "mois": 0,
+      "witness": 0
+    },
+    "file_mode": "0o600",
+    "finished_at_utc": "2026-10-03T21:34:31.152756+00:00",
+    "foreign_key_violations": 0,
+    "health_http_status": 200,
+    "process_exit_code": 0,
+    "quick_check": "ok",
+    "schema_revision": "0008",
+    "snapshot_status": "READ_ONLY_AGGREGATES_COMPLETE",
+    "source_run_status_counts": {
+      "SUCCESS": 1
+    },
+    "started_at_utc": "2026-10-03T21:34:31.068553+00:00"
+  },
+  "effects": {
+    "deployment": 0,
+    "human_review": 0,
+    "identity": 0,
+    "operational_migration": 0,
+    "publication": 0,
+    "restart": 0,
+    "source_fetch": 0,
+    "ssd_write": 0
+  },
+  "implementation": {
+    "audit_write": false,
+    "dependency_hash": "SNAPSHOT_DESCRIPTION_NOT_APPROVAL_OR_SIGNED_PUBLICATION_TOKEN",
+    "entrypoint": "existing READ_ONLY inspect gukgam-witness-claim --claim-id <uuid>",
+    "gate": "CANONICAL_PUBLICATION_VALIDATOR_ON_IN_MEMORY_VISIBILITY_COPY_ONLY",
+    "history_limit": 250,
+    "human_approval": false,
+    "latest_timestamp_ties": "FAIL_CLOSED",
+    "multi_claim_request": "SUPPORTED",
+    "negative_status": "NOT_ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW",
+    "new_api_ui_or_cli_route": false,
+    "new_schema": false,
+    "output": "IDS_HASHES_SAFE_GATE_CODES_ONLY",
+    "positive_status": "ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW",
+    "preparation_mode": "EXCLUSIVE_FOUR_INPUT_IN_MEMORY_DRAFT_MODE_PRESERVED",
+    "publication_enabled": false,
+    "request_history": "EXACT_LATEST_IMMUTABLE_SUBMIT_REVIEW_COMMAND_HASH_TARGET_TRANSITION_OUTCOME_AND_ORDERING",
+    "source_identity_evidence": "REUSES_EXACT_CURRENT_SOURCE_RESOLVED_PERSON_LINK_REVIEW_ORIGINAL_LINK_AUDIT_OFFICIAL_BRIDGE_CANONICAL_CLAIM_EVIDENCE",
+    "source_person_checkpoint_or_identity_review_mutation": false,
+    "unit_of_work": "ONE_COHERENT_CANONICAL_READ_ONLY_ADMINISTRATION_UOW",
+    "witness_publication_or_correction_enabled": false
+  },
+  "independent_review": {
+    "fix": "SAFE_SOURCE_POLICY_DENIED_CODE_WITH_REVOKED_METADATA_PERMISSION_REGRESSION",
+    "provider_data_or_remote_resources": false,
+    "remaining_concrete_defects": 0,
+    "status": "SOURCE_POLICY_DENIAL_MAPPING_FOUND_FIXED_AND_REVIEWED",
+    "tests_run_by_reviewer": false
+  },
+  "next_local_implementation": "NO_FURTHER_APPROVED_INDEPENDENT_LOCAL_WORK_ORDER_AT_THIS_CHECKPOINT; WAIT_FOR_NEW_REVIEWED_INPUT_OR_EXPLICIT_LOCAL_WORK_ORDER",
+  "not_executed": [
+    "ACTUAL_SOURCE_FIELD_REVIEW",
+    "OPERATIONAL_WITNESS_IMPORT",
+    "ACTUAL_OFFICIAL_IDENTITY_BRIDGE_REVIEW",
+    "OPERATIONAL_REVIEWED_LINK",
+    "OPERATIONAL_DRAFT_PERSISTENCE",
+    "OPERATIONAL_CLAIM_REVIEW_REQUEST",
+    "HUMAN_PUBLICATION_REVIEW",
+    "CLAIM_PUBLICATION",
+    "DEPLOYMENT"
+  ],
+  "operational_required_inputs": "REVIEWED_SOURCE_FIELDS_EXACT_47_ROW_IMPORT_MANIFEST_CURRENT_PERSON_AND_OBSERVATION_SEPARATELY_ATTESTED_OFFICIAL_BRIDGE_IDS_AND_BASIS",
+  "original_user_contract_edit": "PRESERVED",
+  "pilot_input_hashes_unchanged": [
+    {
+      "packet_and_edit_template_unchanged": true,
+      "source": 1
+    },
+    {
+      "packet_and_edit_template_unchanged": true,
+      "source": 2
+    }
+  ],
+  "prior_receipts_rewritten": false,
+  "prior_unchanged_code_pins": "VERIFIED",
+  "recorded_at_utc": "2026-10-03T22:07:45.558121+00:00",
+  "source_files_lf_sha256": {
+    "apps/cli/adapters.py": "46d0be30004d359081eb29256475bbe29f92d7937242095a2bc051767b5c59ec",
+    "apps/cli/main.py": "683d978c87958781c195cbbd0b99899f9143e39cf4435c94de1890545a5e49e6",
+    "packages/application/administration.py": "f84ca4dd91fae4998cc8a0462cf54c8042272981bf91ff0ecfa18883245dc066",
+    "packages/application/ports.py": "cc1d34ccebb2fbeac8ad9c4032f3902e16a1e44a942ccbb55552faa688ace62c",
+    "packages/persistence/admin_workflow.py": "6a6a76bac5b992ec671f04119497cb93b145baf98c4bba35893700251a0f1506",
+    "packages/persistence/administration.py": "4c0400f44f1b9e6850b0071f583f9f237ccea5b7b1f815dfbb545a3d63a425a6",
+    "tests/test_gukgam_witness_admin.py": "d2a1e4322089d899013aafc0f975b877cda75f849d1f6b55eb53b4483f0fcb87"
+  },
+  "status": "LOCAL_STORED_WITNESS_RELEASE_INSPECTION_VERIFIED_NOT_OPERATIONAL",
+  "task_id": "gukgam-witness-release-inspection",
+  "verification": {
+    "added_stored_release_cases": 30,
+    "architecture": "PASS",
+    "browser": "NOT_RUN_NO_UI_CHANGE",
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "environment": "ALLOWLISTED_LOCAL_SYNTHETIC_DISPOSABLE_FIXTURES",
+    "exit_code": 0,
+    "golden": "PASS",
+    "initial_attempts": [
+      {
+        "exit_code": 4,
+        "reason": "NONEXISTENT_TEST_FILENAME_CORRECTED",
+        "status": "NOT_RUN"
+      },
+      {
+        "failed": 1,
+        "passed": 224,
+        "reason": "CLI_HELPER_ALREADY_UNWRAPS_RESULT",
+        "status": "FIXED_TEST_ASSERTION"
+      }
+    ],
+    "live_postgresql": "NOT_RUN_POSTGRES_TEST_URL_NOT_CONFIGURED_IN_SANITIZED_RUNNER",
+    "log": ".tools/gukgam-witness-release-inspection-20261004-verify.log",
+    "log_sha256": "6d48661f3dd94453148ac092fb6f7f4fc4d01004bb4114e9c31308cd60e306fe",
+    "mypy": "PASS_153_SOURCE_FILES",
+    "optional_postgresql_skipped": 4,
+    "python_passed": 1160,
+    "python_seconds": 635.71,
+    "ruff": "PASS",
+    "targeted_existing_path_regression": {
+      "exit_code": 0,
+      "log": ".tools/gukgam-witness-release-inspection-20261004-regression-final.log",
+      "log_sha256": "e829ef4eee545ecf6d88251f8a7e30017901398baaaa96a6350588e67f311db5",
+      "passed": 228,
+      "seconds": 181.14
+    },
+    "warnings": 6,
+    "web_lint_types_next_and_worker_builds": "PASS",
+    "web_passed": 34,
+    "witness_admin_cases_in_full_suite": 118,
+    "worker_http_checks": 12
+  }
+}

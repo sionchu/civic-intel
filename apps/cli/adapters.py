@@ -177,6 +177,8 @@ def observe(a: argparse.Namespace) -> Any:
 def dispatch(a: argparse.Namespace) -> Any:
     if a.lane == "gukgam-witness-claim":
         r = repository(argparse.Namespace(database_url=_read_only_monitor_url(a.database_url)))
+        if a.claim_id is not None:
+            return r.administration.inspect_gukgam_witness_release(a.claim_id)
         return r.onboarding.prepare_gukgam_witness_claim(
             person_id=a.person_id, observation_id=a.observation_id,
             expected_observation_hash=a.expected_observation_hash,

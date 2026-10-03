@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import Any
+from uuid import UUID
 
 from packages.application.ports import UnitOfWorkFactory
 
@@ -77,6 +78,11 @@ class AdministrationService:
         with self.uows(read_only=True) as uow:
             result = uow.administration.admin_preview(command)
             return result
+
+    def inspect_gukgam_witness_release(self, claim_id: UUID) -> dict[str, Any]:
+        self.uows.assert_ready()
+        with self.uows(read_only=True) as uow:
+            return uow.administration.inspect_gukgam_witness_release(claim_id)
 
     def admin_commit(self, command, actor: str, state_hash: str) -> dict[str, Any]:
         self.uows.assert_ready()

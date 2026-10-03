@@ -247,6 +247,33 @@ The request audit retains `human_verified=false`; the prior identity attestation
 record. PUBLISH and CORRECT_CLAIM stay rejected. Real field review, import, official identity
 judgments, operational requests, publication and deployment are separate unexecuted steps.
 
+## Stored Claim release inspection
+
+`civic inspect gukgam-witness-claim --database-url <existing-approved-db> --claim-id <uuid>`
+inspects an already stored Claim in one coherent read-only UoW. This selector is exclusive with
+the four-input DRAFT preparation mode above, which remains available. The existing SQLite URI
+read-only file check and PostgreSQL read transaction apply. No new route or write verb is added.
+
+The Administration service reuses the current-source, exact resolved identity, original
+LINK_PERSON audit, official bridge and complete Claim/Evidence preflight. Eligibility requires
+current REVIEW state and the latest Claim-targeted operation to be SUBMIT_REVIEW. It verifies
+that immutable request's reconstructed command hash, complete target list, selected Claim's
+DRAFT/WITHHELD-to-REVIEW change and exact preflight outcome, change count and ordering after
+identity review. A batch request is permitted; another Claim's receipt, an older request after
+withdrawal or an ambiguous latest timestamp cannot establish eligibility. Audit history is
+bounded by the existing 250-row impact limit. Compatible admin history schema is required;
+inspection never creates or migrates it.
+
+The canonical publication validator runs on an in-memory copy with PUBLISHED visibility. The
+stored Claim stays REVIEW/CLAIM/non-asserted. A successful result means
+`ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW`; expected blockers return
+`NOT_ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW` with safe failure codes. IDs, hashes and gate state are
+the only output. Neither result approves publication, attests a human review, emits a signed
+publish preview or stores an audit. The internal query context is never signed, applied or
+persisted as a command. Its dependency hash describes the inspected snapshot and cannot grant
+publication. Actual PUBLISH/CORRECT_CLAIM still fail closed, including after a successful
+inspection. Real source/import/identity/publication/deployment work orders remain separate.
+
 ## Evidence boundary
 
 Offline tests cover real DRAFT 412 rows / the 47-row sample, missing dates, category separation,

@@ -135,10 +135,11 @@ def build_parser() -> argparse.ArgumentParser:
             ):
                 p.add_argument("--database-url", required=lane == "gukgam-witness-claim")
             if lane == "gukgam-witness-claim":
-                p.add_argument("--person-id", type=UUID, required=True)
-                p.add_argument("--observation-id", type=UUID, required=True)
-                p.add_argument("--expected-observation-hash", type=sha256, required=True)
-                p.add_argument("--expected-packet-hash", type=sha256, required=True)
+                p.add_argument("--claim-id", type=UUID)
+                p.add_argument("--person-id", type=UUID)
+                p.add_argument("--observation-id", type=UUID)
+                p.add_argument("--expected-observation-hash", type=sha256)
+                p.add_argument("--expected-packet-hash", type=sha256)
             if lane == "claim":
                 p.add_argument("--claim-id", type=UUID, required=True)
             if lane == "gukgam-plan":
@@ -298,6 +299,14 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
         )
     if getattr(args, "resolution_note", None) is not None and not args.resolution_note.strip():
         parser.error("resolution note must not be blank")
+    if args.lane == "gukgam-witness-claim":
+        preparation = (args.person_id, args.observation_id,
+                       args.expected_observation_hash, args.expected_packet_hash)
+        if args.claim_id is not None:
+            if any(item is not None for item in preparation):
+                parser.error("stored Claim inspection cannot mix preparation inputs")
+        elif any(item is None for item in preparation):
+            parser.error("provide --claim-id or all four witness Claim preparation inputs")
     for flag in ("page_size", "page_no", "page_index", "max_pages", "row_count"):
         if getattr(args, flag, 1) < 1:
             parser.error(f"{flag.replace('_', '-')} must be positive")

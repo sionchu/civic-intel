@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
@@ -10,14 +11,16 @@ from pydantic import ValidationError
 from sqlalchemy import event, func, select, text
 
 from apps.api.main import create_app
+from apps.cli.main import main, parse_command
 from packages.connectors.gukgam_witness_packet import canonical_hash
 from packages.domain.admin import AdminCommand
 from packages.domain.contracts import Claim, ClaimEvidence, Person, Source, SourcePolicy
 from packages.domain.enums import IdentityStatus
 from packages.persistence import models as db
-from packages.persistence.admin_workflow import AdminError
+from packages.persistence.admin_workflow import AdminError, digest
 from packages.rendering.gukgam_witness_claim import GUKGAM_WITNESS_LISTING_PREDICATE
 from packages.rendering.gukgam_witness_review import load_current_gukgam_witness_documents
+from tests.cli_support import cli_payload
 from tests.test_gukgam_reviewed_plan_import import migrated_repository
 from tests.test_gukgam_witness import ARTIFACT, capture, synthetic_packet
 from workers.gukgam_witness_import import persist_capture
@@ -772,3 +775,196 @@ def test_review_cannot_borrow_another_rows_immutable_link_audit(scenario):
     with pytest.raises(AdminError) as error:
         repository.admin_preview(review_request(claim_id))
     assert error.value.code == "WITNESS_AUDIT_CONFLICT" and state(repository) == before
+
+
+def submitted_claim(scenario, index=0):
+    repository = scenario[0]
+    claim_id = linked_claim(scenario, index)
+    command = review_request(claim_id)
+    preview = repository.admin_preview(command)
+    repository.admin_commit(command, ACTOR, preview["state_hash"])
+    return claim_id, command
+
+
+@pytest.mark.parametrize("index", [0, 1, 2])
+def test_stored_release_inspection_is_current_read_only_and_never_approval(scenario, index):
+    repository, document, people, _, _, _ = scenario
+    claim_id, command = submitted_claim(scenario, index)
+    before, originals = state(repository), immutable_rows(repository)
+    statements = []
+    listener = lambda connection, cursor, statement, *args: statements.append(statement)
+    event.listen(repository.engine, "before_cursor_execute", listener)
+    try:
+        result = repository.administration.inspect_gukgam_witness_release(claim_id)
+    finally:
+        event.remove(repository.engine, "before_cursor_execute", listener)
+    assert statements and all(sql.lstrip().upper().startswith(("SELECT", "BEGIN")) for sql in statements)
+    assert result["status"] == "ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW"
+    assert result["failure_codes"] == [] and result["review_request_id"] == str(command.request_id)
+    assert result["packet_hash"] == document.packet.content_hash
+    assert result["person_id"] == str(people[index].id)
+    assert result["publication_enabled"] is result["human_approval"] is result["write_performed"] is False
+    assert result["network_fetch"] is False and result["attendance_state"] == "NOT_VERIFIED"
+    assert state(repository) == before and immutable_rows(repository) == originals
+    assert repository.administration.inspect_gukgam_witness_release(claim_id) == result
+    release = AdminCommand(request_id=uuid4(), action="PUBLISH", record_ids=(claim_id,),
+                           reason="Synthetic release remains closed after inspection.")
+    with pytest.raises(AdminError) as error:
+        repository.admin_commit(release, ACTOR, result["state_hash"])
+    assert error.value.code == "WITNESS_RELEASE_NOT_ENABLED" and state(repository) == before
+
+
+@pytest.mark.parametrize("change", [
+    "draft", "withheld", "review_without_audit", "restored_after_withdraw", "latest_review_open",
+    "link_inactive", "bridge_revoked", "bridge_metadata_denied", "claim_attendance", "evidence_extra", "run_failed",
+    "source_replaced", "generic_claim", "missing_claim",
+])
+def test_release_inspection_reports_current_failure_without_writes(scenario, change):
+    repository, document, _, bridges, policy, _ = scenario
+    if change in {"draft", "review_without_audit"}:
+        claim_id = linked_claim(scenario)
+    else:
+        claim_id, _ = submitted_claim(scenario)
+    if change in {"withheld", "restored_after_withdraw"}:
+        command = AdminCommand(request_id=uuid4(), action="WITHDRAW", record_ids=(claim_id,),
+                               reason="Synthetic withdrawal after review request.")
+        preview = repository.admin_preview(command)
+        repository.admin_commit(command, ACTOR, preview["state_hash"])
+    if change == "source_replaced":
+        artifact, raw = ARTIFACT + b"replacement", synthetic_packet()
+        raw["attachment_sha256"] = hashlib.sha256(artifact).hexdigest()
+        persist_capture(repository, capture(raw, artifact))
+    with repository() as uow:
+        if change in {"review_without_audit", "restored_after_withdraw"}:
+            uow._session.get(db.ClaimRow, str(claim_id)).publication_status = "REVIEW"
+        elif change == "latest_review_open":
+            review = uow._session.scalars(select(db.IdentityReviewItemRow)).one()
+            review.status = "OPEN"
+        elif change == "link_inactive":
+            uow._session.scalars(select(db.PersonObservationLinkRow)).one().superseded_at = datetime.now(UTC)
+        elif change == "bridge_revoked":
+            uow._session.get(db.SourcePolicyRow, str(policy.id)).can_fetch = False
+        elif change == "bridge_metadata_denied":
+            uow._session.get(db.SourcePolicyRow, str(policy.id)).can_store_metadata = False
+        elif change == "claim_attendance":
+            uow._session.get(db.ClaimRow, str(claim_id)).proposition += " actually attended"
+        elif change == "evidence_extra":
+            uow._session.add(db.ClaimEvidenceRow(
+                id=str(uuid4()), claim_id=str(claim_id), source_id=str(document.contexts[0][2].id),
+                snapshot_id=None, feeder_observation_id=None, stance="SUPPORT", excerpt=None,
+            ))
+        elif change == "run_failed":
+            uow._session.scalars(select(db.SourceRunRow)).one().status = "FAILED"
+        uow.commit()
+    if change == "generic_claim":
+        claim_id = bridges[0].claim_id
+    elif change == "missing_claim":
+        claim_id = uuid4()
+    before = state(repository)
+    result = repository.administration.inspect_gukgam_witness_release(claim_id)
+    assert result["status"] == "NOT_ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW" and result["failure_codes"]
+    assert result["publication_enabled"] is result["human_approval"] is result["write_performed"] is False
+    assert state(repository) == before
+    if change == "draft" or change == "withheld":
+        assert result["failure_codes"] == ["WITNESS_REVIEW_REQUIRED"]
+    elif change in {"review_without_audit", "restored_after_withdraw"}:
+        assert result["failure_codes"] == ["WITNESS_REQUEST_AUDIT_REQUIRED"]
+    elif change == "bridge_metadata_denied":
+        assert result["failure_codes"] == ["SOURCE_POLICY_DENIED"]
+
+
+@pytest.mark.parametrize("change", ["command_hash", "outcome", "changes", "count", "timestamp", "tie"])
+def test_release_inspection_requires_exact_latest_request_audit(scenario, change):
+    repository = scenario[0]
+    claim_id, command = submitted_claim(scenario)
+    # Insert a deliberately inconsistent synthetic history row; never weaken audit UPDATE/DELETE guards.
+    with repository() as uow:
+        current = uow._session.get(db.AdminOperationRow, str(command.request_id))
+        values = {column.key: getattr(current, column.key) for column in db.AdminOperationRow.__table__.columns}
+        original = command.model_copy(update={"request_id": uuid4()})
+        values.update(id=str(original.request_id), command_hash=digest(original.model_dump(mode="json")),
+                      created_at=current.created_at + timedelta(seconds=1))
+        if change == "command_hash":
+            values["command_hash"] = "f" * 64
+        elif change == "outcome":
+            values["result"] = {**current.result, "outcomes": [{**current.result["outcomes"][0], "packet_hash": "f" * 64}]}
+        elif change == "changes":
+            values["changes"] = [{**current.changes[0], "before": {"publication_status": "PUBLISHED"}}]
+        elif change == "count":
+            values["result"] = {**current.result, "changed_rows": 0}
+        elif change == "timestamp":
+            values["created_at"] = current.created_at - timedelta(seconds=1)
+            # It cannot replace the latest actual request, so this older forged row is ignored.
+        elif change == "tie":
+            values["created_at"] = current.created_at
+        uow._session.add(db.AdminOperationRow(**values))
+        uow.commit()
+    before = state(repository)
+    result = repository.administration.inspect_gukgam_witness_release(claim_id)
+    expected = "ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW" if change == "timestamp" else "NOT_ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW"
+    assert result["status"] == expected and state(repository) == before
+    if change != "timestamp":
+        assert result["failure_codes"] == ["WITNESS_REQUEST_AUDIT_CONFLICT"]
+
+
+def test_stored_release_inspection_supports_a_batched_request(scenario):
+    repository = scenario[0]
+    claim_ids = tuple(linked_claim(scenario, index) for index in (0, 1))
+    command = review_request(*claim_ids)
+    preview = repository.admin_preview(command)
+    repository.admin_commit(command, ACTOR, preview["state_hash"])
+    before = state(repository)
+    results = [repository.administration.inspect_gukgam_witness_release(item) for item in claim_ids]
+    assert all(item["status"] == "ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW" for item in results)
+    assert all(item["review_request_id"] == str(command.request_id) for item in results)
+    assert state(repository) == before
+
+
+def test_stored_release_cli_only_emits_metadata_and_opens_existing_sqlite_read_only(scenario, capsys):
+    repository = scenario[0]
+    claim_id, _ = submitted_claim(scenario)
+    path = repository.engine.url.database
+    before = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    args = ["inspect", "gukgam-witness-claim", "--database-url", f"sqlite:///{path}",
+            "--claim-id", str(claim_id)]
+    assert parse_command(args).effect.value == "READ_ONLY"
+    assert main(args) == 0
+    output = cli_payload(capsys.readouterr().out)
+    assert output["status"] == "ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW"
+    assert output["write_performed"] is False
+    assert "changes" not in output and "preview_token" not in output
+    assert "canonical_name" not in str(output) and "proposition" not in str(output)
+    assert "reason" not in output and "actor" not in output
+    assert hashlib.sha256(Path(path).read_bytes()).hexdigest() == before
+
+
+@pytest.mark.parametrize("extra", [[], ["--person-id", str(uuid4())], ["--expected-packet-hash", "f" * 64]])
+def test_stored_release_cli_rejects_incomplete_or_mixed_selectors(extra):
+    args = ["inspect", "gukgam-witness-claim", "--database-url", "sqlite:///unused.db"]
+    if extra:
+        args += ["--claim-id", str(uuid4()), *extra]
+    with pytest.raises(SystemExit) as error:
+        parse_command(args)
+    assert error.value.code == 2
+
+
+@pytest.mark.parametrize("change", ["alias", "source_title"])
+def test_release_inspection_hash_tracks_current_dependencies_without_granting_authority(scenario, change):
+    repository, _, people, _, _, source = scenario
+    claim_id, _ = submitted_claim(scenario)
+    first = repository.administration.inspect_gukgam_witness_release(claim_id)
+    with repository() as uow:
+        if change == "alias":
+            uow._session.add(db.PersonAliasRow(
+                id=str(uuid4()), person_id=str(people[0].id), name="새 합성 별칭",
+                valid_from=datetime.now(UTC), recorded_at=datetime.now(UTC),
+            ))
+        else:
+            uow._session.get(db.SourceRow, str(source.id)).title += " updated"
+        uow.commit()
+    before = state(repository)
+    second = repository.administration.inspect_gukgam_witness_release(claim_id)
+    assert first["status"] == second["status"] == "ELIGIBLE_FOR_HUMAN_RELEASE_REVIEW"
+    assert first["state_hash"] != second["state_hash"]
+    assert second["human_approval"] is second["publication_enabled"] is second["write_performed"] is False
+    assert state(repository) == before
