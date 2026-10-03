@@ -5,10 +5,18 @@ import { useMemo, useState } from "react";
 
 import type { OrganizationSummary, Person } from "../types";
 
-export type GukgamSearchPerson = Pick<
-  Person,
-  "id" | "canonical_name" | "discovery"
->;
+// Search receives only the displayed facet values (not evidence IDs) to keep the page light.
+export type GukgamSearchFacets = {
+  role: { value: string } | null;
+  party: { value: string } | null;
+  district: { value: string } | null;
+  committees: { value: string } | null;
+  reelection: { value: string } | null;
+};
+
+export type GukgamSearchPerson = Pick<Person, "id" | "canonical_name"> & {
+  discovery?: { facets: GukgamSearchFacets };
+};
 
 const INITIAL_RESULT_LIMIT = 6;
 const RESULT_PAGE_SIZE = 12;

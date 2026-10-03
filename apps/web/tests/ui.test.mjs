@@ -617,3 +617,12 @@ test("evidence panel and fact box keep status chips readable and avoid unsupport
   assert.match(styles, /\.evidence-panel:target/);
   assert.doesNotMatch(panel + factBox, /confidence|faction|influence|probability|score|rank/i);
 });
+
+
+test("Gukgam search receives only displayed facet values, not evidence IDs", async () => {
+  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  const search = await readFile(new URL("../app/components/gukgam-search.tsx", import.meta.url), "utf8");
+  assert.match(page, /facets: searchFacets\(discovery\.facets\)/);
+  assert.match(page, /return facet \? \{ value: facet\.value \} : null;/);
+  assert.match(search, /export type GukgamSearchFacets/);
+});

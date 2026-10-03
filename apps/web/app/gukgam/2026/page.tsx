@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import GukgamSearch from "../../components/gukgam-search";
+import GukgamSearch, { type GukgamSearchFacets } from "../../components/gukgam-search";
+import type { Person } from "../../types";
 import CommitteeMembers from "../../components/committee-members";
 import ReadState from "../../components/read-state";
 import { getGukgamCommittees, getGukgamTargets, getOrganizations, getPeople } from "../../data";
@@ -10,6 +11,22 @@ import { committeeAnchor } from "./committees";
 import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./schedule";
 
 export const dynamic = "force-dynamic";
+
+type FacetSource = NonNullable<Person["discovery"]>["facets"];
+
+function facetValue(facet: { value: string } | null): { value: string } | null {
+  return facet ? { value: facet.value } : null;
+}
+
+function searchFacets(facets: FacetSource): GukgamSearchFacets {
+  return {
+    role: facetValue(facets.role),
+    party: facetValue(facets.party),
+    district: facetValue(facets.district),
+    committees: facetValue(facets.committees),
+    reelection: facetValue(facets.reelection),
+  };
+}
 
 export const metadata = buildPageMetadata({
   title: "국감 2026",
@@ -287,7 +304,7 @@ export default async function Gukgam2026Page({
             ? peopleResult.data.map(({ id, canonical_name, discovery }) => ({
                 id,
                 canonical_name,
-                discovery,
+                discovery: discovery ? { facets: searchFacets(discovery.facets) } : undefined,
               }))
             : []
         }
