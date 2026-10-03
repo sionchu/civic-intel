@@ -129,6 +129,14 @@ def observe(a: argparse.Namespace) -> Any:
             report_code=a.report_code,
         )
         return w.OpenDartCorporateStager(c).stage()
+    if a.lane == "mois-organization-lookup":
+        w = worker("mois_organization_codes")
+        c = w.MoisOrganizationCodeConnector(
+            page_no=1, page_size=a.page_size, full_name=a.full_name, org_code=a.org_code
+        )
+        return w.MoisOrganizationLookup(
+            c, repository(a), expected_full_name=a.expected_full_name
+        ).capture()
     if a.lane == "mois-organizations":
         w = worker("mois_organization_codes")
         c = w.MoisOrganizationCodeConnector(page_no=1, page_size=a.page_size)

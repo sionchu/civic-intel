@@ -1,0 +1,237 @@
+{
+  "canonical_mac_read_only_refresh": {
+    "active_runs": 0,
+    "checked_at_utc": "2026-10-03T03:04:14.419538+00:00",
+    "claim_status_counts": {
+      "DRAFT": 298
+    },
+    "counts": {
+      "claim_evidence": 298,
+      "claims": 298,
+      "feeder_observations": 299,
+      "organizations": 0,
+      "people": 298,
+      "source_runs": 1,
+      "source_snapshots": 3,
+      "sources": 3
+    },
+    "file_mode": "0600",
+    "mois_runs": 0,
+    "quick_check": "ok",
+    "schema_revision": "0008",
+    "sole_writer_exclusion_proven": false,
+    "source_fetches": 0,
+    "target_alias": "canonical-mac-ssd",
+    "transport": "Remote Desktop Commander",
+    "witness_runs": 0,
+    "writes_requested": 0
+  },
+  "code_file_lf_sha256": {
+    "apps/cli/adapters.py": "91de0439fd93dbc759c8c23d973321494d8e8ae6edddcd687c8f244f1bad7e83",
+    "apps/cli/main.py": "52bef89c47d84be9c06ac141aaa4e0f03d258c6197336e3b9ab6f3905163ae88",
+    "tests/test_cli_effects.py": "35a8d5864a6241837f8e3ce9d33cb9bc49e7980e92bc7478db86921d33eb7993",
+    "tests/test_mois_organization_lookup.py": "62c0040090dacf3d525202d7930f057ed8ef34fba36bf93e2cced048deb814bf",
+    "workers/mois_organization_codes.py": "87e33b468ed18092c2df9b213e3713511b662eb085f4361463830b210292fb0e"
+  },
+  "effects": {
+    "canonical_organizations_created": 0,
+    "canonical_people_created": 0,
+    "claims_created_or_published": 0,
+    "deployment": false,
+    "human_field_review_attested": false,
+    "local_source_observations_created": 101,
+    "operational_source_writes": 0,
+    "source_namespace_equivalence_asserted": false,
+    "witness_affiliation_or_attendance_asserted": false
+  },
+  "implementation": {
+    "command": "observe mois-organization-lookup",
+    "connector_fetches_per_capture": 1,
+    "effect": "SOURCE_INGESTION",
+    "identity_hints": {},
+    "max_page_size": 100,
+    "operational_installation_or_execution": "NOT_RUN",
+    "page_no": 1,
+    "resume": false,
+    "schema_change": false,
+    "single_filter": true,
+    "status": "LOCALLY_VERIFIED",
+    "unfiltered_l3_scope_modified": false
+  },
+  "implementation_base_commit": "5a5fcad6c66d8ce8ed8d8a413bf70c5f108d50b5",
+  "live_source_proofs": {
+    "automatic_retry": false,
+    "captures": [
+      {
+        "captured_rows": 100,
+        "coverage": "ONE_FILTERED_PAGE_ONLY_NOT_NATIONAL_OR_L3",
+        "database_sha256": "a122cbb11f659ae2831347cd0cfd772fe5b927b1f664f354b4f5e1f179876b5c",
+        "exact_full_name_matches_in_capture": 0,
+        "fulltext_count": 0,
+        "post_counts": {
+          "claim_evidence": 0,
+          "claims": 0,
+          "feeder_observations": 100,
+          "organizations": 0,
+          "people": 0,
+          "source_runs": 1,
+          "source_snapshots": 1,
+          "sources": 1
+        },
+        "provider_filtered_total": 3670,
+        "request_attempts": 1,
+        "run_id": "187ef28e-8c59-4b60-b54e-0bbd0b8ab5d3",
+        "schema_revision": "0008",
+        "scope_key": "lookup:current:stop_selt=0:full_name_sha256:e244342fc79432d9b1e88145ee77e39d12089c6912e54559c6087ef4c5748ef4",
+        "snapshot_content_hash": "06db70518ec6de683cdd13d1793405e49981b9f4003583efbe9f6856adac0028",
+        "snapshot_hash_semantics": "CANONICAL_NORMALIZED_CAPTURE_NOT_RAW_HTTP_BYTES",
+        "snapshot_id": "e9944a4c-7b06-4498-a045-555691730b6c",
+        "status": "SUCCESS",
+        "target_alias": "LOCAL_NAME_FIRST_PAGE"
+      },
+      {
+        "captured_rows": 1,
+        "coverage": "ONE_FILTERED_PAGE_ONLY_NOT_NATIONAL_OR_L3",
+        "database_sha256": "5fa57b1840312fcc5afb3c617cc41d70ab6633f4973ee6afc09c51b26bec627d",
+        "exact_full_name_matches_in_capture": 1,
+        "fulltext_count": 0,
+        "post_counts": {
+          "claim_evidence": 0,
+          "claims": 0,
+          "feeder_observations": 1,
+          "organizations": 0,
+          "people": 0,
+          "source_runs": 1,
+          "source_snapshots": 1,
+          "sources": 1
+        },
+        "provider_filtered_total": 1,
+        "request_attempts": 1,
+        "run_id": "37172704-e8bd-4dc5-80d5-6c66415f76c1",
+        "schema_revision": "0008",
+        "scope_key": "lookup:current:stop_selt=0:org_code_sha256:249cf0231e846b26ef524739ff468e8f9c2c7e33a35ec4f629689e570d4e648b",
+        "snapshot_content_hash": "4c28fd1ac28bab2fe76a2932f9449c8a8dbb9065e96d9d7caccfbba4c70653a3",
+        "snapshot_hash_semantics": "CANONICAL_NORMALIZED_CAPTURE_NOT_RAW_HTTP_BYTES",
+        "snapshot_id": "a46bd501-e62f-4b42-9330-7492824ee14f",
+        "status": "SUCCESS",
+        "target_alias": "LOCAL_CODE_FIRST_PAGE"
+      }
+    ],
+    "executed_code_commit": "d560efb5f288d438e29e09aff9b078f5100575d7",
+    "execution": "FROZEN_CONNECTOR_AND_CANONICAL_SOURCE_LIFECYCLE_IN_LOCAL_PROOF_HELPER",
+    "http_operation_timeout_seconds": 15,
+    "national_or_l3_coverage_claimed": false,
+    "parent_hard_timeout_seconds": 30,
+    "total_requests": 2,
+    "wheel_sha256": "f52e7dea8420cccdd2599499768a7d69fd1a0df4b84c904ecfd441433db05e48"
+  },
+  "local_review_artifact": {
+    "file_name": "MSIT_CURRENT_CODE_REVIEW.md",
+    "location": "IGNORED_LOCAL_USER_REVIEW_ONLY",
+    "open_in_codex": "QUEUED_NOT_VISUALLY_VERIFIED",
+    "sha256": "e38190c87c0f3bb61b5ff7ee25c77f25a5b7cd481c34f7f05716977866a89530"
+  },
+  "privacy": {
+    "credential_transmitted_to_ai": false,
+    "credentials_absent_in_db_columns_and_bytes": true,
+    "provider_codes_or_row_payload_in_this_receipt": false,
+    "provider_payload_transmitted_to_ai": false,
+    "raw_fulltext_stored": false
+  },
+  "read_only_proof_audit": {
+    "audits": [
+      {
+        "captured_rows": 100,
+        "checkpoint_manifest_verified": true,
+        "credential_absent_in_columns_and_db_bytes": true,
+        "database_sha256": "a122cbb11f659ae2831347cd0cfd772fe5b927b1f664f354b4f5e1f179876b5c",
+        "exact_name_matches": 0,
+        "identity_and_claim_rows": 0,
+        "local_user_review_sha256": null,
+        "normalized_hashes_verified": true,
+        "provider_total_count": 3670,
+        "query_coverage": "FIRST_FILTERED_PAGE_ONLY",
+        "raw_fulltext_stored": false,
+        "read_only_database_hash_unchanged": true,
+        "run_id": "187ef28e-8c59-4b60-b54e-0bbd0b8ab5d3",
+        "snapshot_id": "e9944a4c-7b06-4498-a045-555691730b6c",
+        "source_chain_verified": true
+      },
+      {
+        "captured_rows": 1,
+        "checkpoint_manifest_verified": true,
+        "credential_absent_in_columns_and_db_bytes": true,
+        "database_sha256": "5fa57b1840312fcc5afb3c617cc41d70ab6633f4973ee6afc09c51b26bec627d",
+        "exact_name_matches": 1,
+        "identity_and_claim_rows": 0,
+        "local_user_review_sha256": "e38190c87c0f3bb61b5ff7ee25c77f25a5b7cd481c34f7f05716977866a89530",
+        "normalized_hashes_verified": true,
+        "provider_total_count": 1,
+        "query_coverage": "FIRST_FILTERED_PAGE_ONLY",
+        "raw_fulltext_stored": false,
+        "read_only_database_hash_unchanged": true,
+        "run_id": "37172704-e8bd-4dc5-80d5-6c66415f76c1",
+        "snapshot_id": "a46bd501-e62f-4b42-9330-7492824ee14f",
+        "source_chain_verified": true
+      }
+    ],
+    "checked_at_utc": "2026-10-03T02:54:55.658501+00:00",
+    "live_requests": 0,
+    "method": "READ_ONLY_SQL_AND_FROZEN_NORMALIZED_HASH",
+    "operational_mac_db_opened": false,
+    "provider_values_to_ai": false,
+    "status": "PASS",
+    "target": "DISPOSABLE_LOCAL_ONLY"
+  },
+  "recorded_at_utc": "2026-10-03T03:08:33.590683+00:00",
+  "remaining_gates": [
+    "actual witness source-field review",
+    "current packet and plan edition review",
+    "separately approved Organization materialization contract and exact target",
+    "source-row Person identity decisions",
+    "fresh operational runner and sole-writer checks",
+    "Claim/Evidence publication",
+    "Sites connectivity and Aside acceptance"
+  ],
+  "task_id": "gukgam-mois-bounded-lookup-20261003",
+  "verification": {
+    "browser_ui": "NOT_RUN_NO_UI_CHANGE",
+    "ci": "NOT_RUN",
+    "deployment": "NOT_RUN",
+    "full": {
+      "architecture": true,
+      "command": "python .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+      "exit_code": 0,
+      "golden": true,
+      "log_sha256": "92c5aa5feabdfd034741658cf8bb76d990429555273fcf1d3f090466a03d5200",
+      "mypy": true,
+      "optional_postgresql_skipped": 4,
+      "production_build_and_assets": true,
+      "python_passed": 945,
+      "python_seconds": 303.9,
+      "python_warnings": 6,
+      "ruff": true,
+      "status": "PASS",
+      "web_lint_typecheck": true,
+      "web_tests_passed": 34
+    },
+    "independent_quality": {
+      "finding": "NO_ACTIONABLE_DEFECT",
+      "focused_offline_tests_exit_code": 0,
+      "full_suite_run": false,
+      "provider_or_operational_data_access": false
+    },
+    "independent_risk": {
+      "finding": "NO_ACTIONABLE_DEFECT",
+      "provider_or_operational_data_access": false,
+      "tests_run": false
+    },
+    "targeted": {
+      "command": "python .tools/run_fixture_verification.py python -m pytest -q tests/test_mois_organization_lookup.py tests/test_batch_mois_organization_codes.py tests/test_cli_effects.py",
+      "count_verified_by_collect_only": true,
+      "exit_code": 0,
+      "status": "PASS",
+      "tests": 104
+    }
+  }
+}

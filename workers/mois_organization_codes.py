@@ -31,6 +31,16 @@ class MoisOrganizationEnumerationResult:
     unique_records: int
 
 
+@dataclass(frozen=True)
+class MoisOrganizationLookupResult:
+    run: SourceRun
+    captured_rows: int
+    provider_total_count: int
+    exact_name_matches_in_capture: int
+    filtered_query_complete: bool
+    coverage: str = "FIRST_FILTERED_PAGE_ONLY_NOT_L3"
+
+
 def normalized_mois_organization(record: MoisOrganizationCodeRecord) -> dict[str, object]:
     return {
         "org_code": record.org_code,
@@ -90,7 +100,7 @@ def _require_policy_reconciled_schema(repository: Application) -> None:
     revision = repository.uows.schema_revision()
     if revision != "0008":
         raise MoisOrganizationCoverageError(
-            "MOIS L3 writes require schema revision 0008 policy reconciliation"
+            "MOIS writes require schema revision 0008 policy reconciliation"
         )
 
 
@@ -340,3 +350,148 @@ class MoisOrganizationEnumerator:
         except Exception as exc:
             lifecycle.fail(exc)
             raise
+
+
+class MoisOrganizationLookup:
+    """One filtered page for source review, never the L3 universe or an identity decision."""
+
+    def __init__(
+        self,
+        connector: MoisOrganizationCodeConnector,
+        repository: Application,
+        *,
+        expected_full_name: str,
+        policy: SourcePolicy | None = None,
+    ) -> None:
+        if connector.page_no != 1 or not 1 <= connector.page_size <= 100:
+            raise MoisOrganizationCoverageError("MOIS lookup requires page 1 and at most 100 rows")
+        if bool(connector.full_name) == bool(connector.org_code):
+            raise MoisOrganizationCoverageError("MOIS lookup requires exactly one name/code filter")
+        if not expected_full_name.strip() or (
+            connector.full_name is not None and connector.full_name != expected_full_name
+        ):
+            raise MoisOrganizationCoverageError("MOIS lookup requires an exact expected full name")
+        self.connector = connector
+        self.repository = repository
+        self.policy = policy or mois_organization_code_policy()
+        self.expected_full_name = expected_full_name
+        kind, value = (
+            ("full_name", connector.full_name)
+            if connector.full_name
+            else ("org_code", connector.org_code)
+        )
+        assert value is not None
+        self.scope_key = (
+            f"lookup:current:stop_selt=0:{kind}_sha256:"
+            + hashlib.sha256(value.encode("utf-8")).hexdigest()
+        )
+
+    def capture(self) -> MoisOrganizationLookupResult:
+        if self.policy.domain != self.connector.HOST:
+            raise PolicyDenied("SourcePolicy domain does not match the MOIS connector")
+        require_policy(self.policy, PolicyAction.FETCH)
+        require_policy(self.policy, PolicyAction.STORE_METADATA)
+        if self.policy.can_store_fulltext or self.policy.can_send_to_ai:
+            raise PolicyDenied("MOIS lookup requires metadata-only, non-AI SourcePolicy")
+        _require_policy_reconciled_schema(self.repository)
+        lifecycle = SourceLifecycle(
+            self.repository.acquisition,
+            self.policy,
+            error_summary="Bounded MOIS organization-code lookup did not complete",
+        )
+        run = lifecycle.start(
+            MoisOrganizationEnumerator.FEEDER,
+            self.scope_key,
+            {
+                "source_contract": MoisOrganizationEnumerator.SOURCE_CONTRACT,
+                "capture_scope": "FILTERED_SINGLE_PAGE_PROOF",
+                "max_requests": 1,
+                "expected_full_name_sha256": hashlib.sha256(
+                    self.expected_full_name.encode("utf-8")
+                ).hexdigest(),
+            },
+        )
+        try:
+            urls = self.connector.discover()
+            if len(urls) != 1:
+                raise MoisOrganizationCoverageError("MOIS lookup requires one source URL")
+            document = self.connector.fetch(urls[0])
+            metadata = document.metadata
+            for field, expected in (
+                ("source_contract", MoisOrganizationEnumerator.SOURCE_CONTRACT),
+                ("stop_selt", "0"),
+                ("page_no", "1"),
+                ("page_size", str(self.connector.page_size)),
+                ("provider_page_no", "1"),
+                ("provider_page_size", str(self.connector.page_size)),
+            ):
+                if metadata.get(field) != expected:
+                    raise MoisOrganizationCoverageError("MOIS lookup page metadata is inconsistent")
+            filter_key = "full_nm" if self.connector.full_name else "org_cd"
+            filter_value = self.connector.full_name or self.connector.org_code
+            if metadata.get(filter_key) != filter_value:
+                raise MoisOrganizationCoverageError("MOIS lookup filter metadata is inconsistent")
+            total = int(metadata["total_count"])
+            records = self.connector.parse_organizations(document)
+            if total < 0 or len(records) != min(total, self.connector.page_size):
+                raise MoisOrganizationCoverageError("MOIS lookup page row count is incomplete")
+            if len({record.org_code for record in records}) != len(records):
+                raise MoisOrganizationCoverageError("MOIS lookup contains duplicate provider keys")
+            if self.connector.org_code and any(
+                record.org_code != self.connector.org_code for record in records
+            ):
+                raise MoisOrganizationCoverageError("MOIS lookup returned a different provider key")
+            ingestion = IngestionPipeline(self.connector).ingest_document(document, self.policy)
+            observations = []
+            for record in records:
+                normalized = normalized_mois_organization(record)
+                normalized["lookup_source_snapshot_hash"] = ingestion.snapshot.content_hash
+                observations.append(
+                    FeederObservation(
+                        feeder=MoisOrganizationEnumerator.FEEDER,
+                        scope_key=self.scope_key,
+                        provider_record_key=record.org_code,
+                        snapshot_id=ingestion.snapshot.id,
+                        run_id=run.id,
+                        provider_observed_at=_provider_observed_at(record),
+                        semantic_scope=MoisOrganizationEnumerator.SEMANTIC_SCOPE,
+                        identity_hints={},
+                        normalized=normalized,
+                        content_hash=mois_organization_content_hash(normalized),
+                    )
+                )
+            lifecycle.commit_page(
+                run_id=run.id,
+                policy=self.policy,
+                source=ingestion.source,
+                snapshot=ingestion.snapshot,
+                observations=observations,
+                cursor="1",
+                checkpoint_metadata={
+                    "source_contract": MoisOrganizationEnumerator.SOURCE_CONTRACT,
+                    "capture_scope": "FILTERED_SINGLE_PAGE_PROOF",
+                    "page_no": 1,
+                    "page_size": self.connector.page_size,
+                    "provider_total_count": total,
+                    "row_count": len(records),
+                    "snapshot_hash": ingestion.snapshot.content_hash,
+                    "row_manifest": [
+                        {"record_key": row.provider_record_key, "content_hash": row.content_hash}
+                        for row in observations
+                    ],
+                },
+            )
+            completed = lifecycle.succeed()
+            return MoisOrganizationLookupResult(
+                run=completed,
+                captured_rows=len(records),
+                provider_total_count=total,
+                exact_name_matches_in_capture=sum(
+                    record.full_name == self.expected_full_name for record in records
+                ),
+                filtered_query_complete=len(records) == total,
+            )
+        except Exception as exc:  # noqa: BLE001 - sanitize every operational lookup failure.
+            failure = MoisOrganizationCoverageError("Bounded MOIS organization-code lookup failed")
+            lifecycle.fail(exc)
+            raise failure from None

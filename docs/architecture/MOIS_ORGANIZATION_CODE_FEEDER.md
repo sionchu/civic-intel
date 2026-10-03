@@ -28,6 +28,31 @@ Required request parameters are `ServiceKey`, `pageNo`, `numOfRows` and `type`. 
 `type=json` and defaults to `stop_selt=0` so contract discovery remains current-institution only.
 Optional `full_nm` and `org_cd` filters are permitted for bounded review pulls.
 
+The canonical `observe mois-organization-lookup` path captures exactly the first filtered
+page (1–100 rows, one connector fetch, existing 15-second HTTP operation timeout, no retry,
+resume or pagination loop). It requires exactly one filter and an explicit expected full name.
+The name filter must equal that expected name; a code filter must return only that code.
+Provider page/size/total and first-page row count must agree before any Source data commits.
+The HTTP timeout is not an end-to-end process deadline; a live runner must also enforce its
+own hard process budget and exact target DB. No recurring execution is added.
+
+The lookup uses a distinct `lookup:current:stop_selt=0:<filter>_sha256:<digest>` scope and
+metadata-only SourceSnapshot. Normalized observations reuse the existing field allowlist,
+retain `lookup_source_snapshot_hash` in their version hash, and carry empty identity hints.
+Source/Snapshot/observations and the exact first-page manifest commit through the existing
+SourceLifecycle/UoW. Identical normalized snapshot content is a no-op observation rerun;
+a changed snapshot hash preserves a new immutable provenance version even if the permitted
+row fields match. This is the canonical normalized SourceSnapshot hash, not an HTTP-byte hash.
+The existing unfiltered L3 enumerator, scope, resume and coverage rules are unchanged.
+
+The aggregate result reports captured count, provider filtered-query total, exact full-name
+matches **within the capture**, and whether that single page covers the reported filtered
+query. `SUCCESS` means the bounded page capture succeeded; it is not national/L3 coverage.
+Zero captured exact names is not institution nonexistence, and one match in a truncated page
+is not unique identity. Neither code equality across source namespaces nor an exact name
+grants canonical Organization materialization, witness affiliation or Person identity.
+The command result contains no provider rows/codes/names; it does not transmit payloads to AI.
+
 `ServiceKey` is injected only at request time. Discovery URLs, Source URLs, metadata, normalized
 records, errors and fixtures must never contain it. The source-specific runtime variable is
 `MOIS_ORG_CODE_API_KEY`. A credentialed read-only live audit completed on 2026-09-26 without
@@ -129,3 +154,15 @@ Current maturity is `L3 PERSISTENT_CURRENT_UNIVERSE_VERIFIED`:
 
 A separate reviewed Organization materialization contract is still required before any of the
 MOIS proposals may become canonical Organizations.
+
+## Gukgam pilot lookup evidence, 2026-10-03
+
+Two separate one-request proofs used the verified `d560efb` wheel and new disposable local
+schema0008 databases. The first captured 100 of a reported 3670 filtered rows with no exact
+pilot institution name in that page. The second narrowed a historical org.go discovery code
+through the MOIS code filter and captured 1 of 1 with an exact pilot institution name. Source
+namespace equivalence is not asserted. No provider payload was sent to AI, no fulltext was
+stored and no canonical identity or Claim was created. Read-only chain/hash/manifest and
+credential-exclusion audits passed; neither proof opened the operational Mac database.
+These live proofs precede the new canonical worker and do not prove that worker is installed
+or has run on Mac. See [the lookup receipt](../receipts/gukgam-mois-lookup-20261003.json).

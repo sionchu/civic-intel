@@ -92,6 +92,16 @@ R3의 독립 준비로 기존 `inspect gukgam-witness`에 계획 패킷 비교�
 47행 파일럿은 모두 일정 후보 2개를 유지한다. 기관·인물 신원이나 정확한 일정 선택의 승인이
 아니며, 계획의 원문 바이트/현재판 확인과 실제 원문 필드 검토는 별도다.
 [계획 연결 구현·검토 증거](../receipts/gukgam-witness-plan-review-20261003.json).
+이어 공식 MOIS API의 기관명/코드 필터를 각각 1회 조회했다. 로컬 검증 DB에서 이름 검색은
+첫 100행/제공자 3670행에 완전 일치가 없었고, 발견용 코드로 좁힌 조회는 1행/1행의 완전 일치
+후보를 확인했다. 첫 페이지의 미발견을 기관 부재로 승격하지 않는다. 기존 MOIS worker/CLI에
+최대 100행의 첫 페이지만 관측하는 경로를 추가했고, 별도 scope·정규화 snapshot provenance·
+빈 identity hints를 유지한다. 실제 조회는 기존 고정 wheel의 로컬 source proof이며, 새 경로의
+맥 설치·실행 증거와 다르다. 코드 후보는 기관 신원 승인 또는 org.go/MOIS namespace 동일성이
+아니다. [조회·검증 증거](../receipts/gukgam-mois-lookup-20261003.json).
+2026-10-03 03:04 UTC 맥 SSD 읽기 전용 재점검은 schema0008/quick_check 정상,
+인물 298명/DRAFT Claim 298건, Organization 0건, 증인·MOIS run 0건을 확인했다.
+활성 run 0건은 전체 writer 배제 증거가 아니다. 운영 인입 전 sole-writer 조건은 별도 확인한다.
 R2의 행 manifest가 일부이면 그 일부만 인입·완료로 보고한다. L2는 승인된 사람 지원 묶음의 검증·인입
 증거로 판정한다. 전국/L3 완료는 전 위원회 universe와 접근 계약, coverage·resume 등 모든 조건을
 충족해야 하며 47행 또는 412행 파일럿으로 대신하지 않는다. 정기 동기화/L4는 이 로드맵에서 실행하지 않는다.

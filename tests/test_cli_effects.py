@@ -11,6 +11,47 @@ from apps.cli import adapters
 from apps.cli.main import ROUTES, CommandEffect, main, parse_command
 
 
+@pytest.mark.parametrize("flags", [
+    [], ["--org-code", "A123456", "--resume"],
+    ["--org-code", "A123456", "--max-pages", "2"],
+    ["--org-code", "A123456", "--full-name", "synthetic"],
+    ["--org-code", "bad"], ["--full-name", " "],
+    ["--full-name", "different"], ["--org-code", "A123456", "--page-size", "101"],
+])
+def test_lookup_invalid_scope_rejected_before_worker_or_database(monkeypatch, flags):
+    def forbidden(_):
+        pytest.fail("invalid lookup was dispatched")
+
+    monkeypatch.setattr(adapters, "dispatch", forbidden)
+    with pytest.raises(SystemExit) as exc:
+        main(["observe", "mois-organization-lookup", "--allow-effect", "SOURCE_INGESTION",
+              "--expected-full-name", "synthetic", *flags])
+    assert exc.value.code == 2
+
+
+def test_lookup_dispatch_uses_only_bounded_capture(monkeypatch, capsys):
+    calls = []
+
+    class Lookup:
+        def __init__(self, connector, repo, *, expected_full_name):
+            calls.append((connector, repo, expected_full_name))
+
+        def capture(self):
+            calls.append("one-page capture")
+            return {"coverage": "FIRST_FILTERED_PAGE_ONLY_NOT_L3"}
+
+    w = SimpleNamespace(MoisOrganizationCodeConnector=lambda **kw: kw,
+                        MoisOrganizationLookup=Lookup)
+    monkeypatch.setattr(adapters, "worker", lambda name: w)
+    monkeypatch.setattr(adapters, "repository", lambda args: "fake isolated DB")
+    assert main(["observe", "mois-organization-lookup", "--allow-effect", "SOURCE_INGESTION",
+                 "--org-code", "A123456", "--expected-full-name", "synthetic",
+                 "--page-size", "10"]) == 0
+    assert calls == [({"page_no": 1, "page_size": 10, "org_code": "A123456", "full_name": None},
+                      "fake isolated DB", "synthetic"), "one-page capture"]
+    assert json.loads(capsys.readouterr().out)["effect"] == "SOURCE_INGESTION"
+
+
 @pytest.mark.parametrize(
     "verb,lane,effect",
     [(verb, lane, effect) for verb, (effect, lanes) in ROUTES.items() for lane in lanes],

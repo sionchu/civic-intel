@@ -15,6 +15,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Gukgam witness packet, acquisition and private review contract](architecture/GUKGAM_WITNESS_PACKET.md)
 - [Gukgam witness pinned Mac checks, SSD backup and disposable restore evidence](receipts/gukgam-witness-mac-preflight-20261003.json)
 - [Gukgam witness source-to-plan review preparation evidence](receipts/gukgam-witness-plan-review-20261003.json)
+- [Gukgam bounded MOIS lookup and source-chain audit evidence](receipts/gukgam-mois-lookup-20261003.json)
 - [Career facets](architecture/CAREER_FACETS.md)
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)

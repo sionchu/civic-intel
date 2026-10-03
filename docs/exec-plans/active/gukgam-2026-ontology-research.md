@@ -27,6 +27,41 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Bounded MOIS lookup work order, 2026-10-03
+
+MAIN / Development, base `5a5fcad6c66d8ce8ed8d8a413bf70c5f108d50b5`: extend the existing
+MOIS worker and explicit-effect CLI with one filtered first-page capture. Exactly one
+name/code filter, at most 100 rows and one connector fetch; no resume or full-universe
+claim. Reuse SourcePolicy, normalized fields, SourceLifecycle and the canonical UoW.
+Keep the existing unfiltered L3 enumerator unchanged. Preserve exact snapshot lineage,
+partial-query coverage, empty identity hints and zero identity/publication effects.
+Owned paths: MOIS worker, CLI composition, deterministic offline regressions and the
+existing plan/operations/source contract/receipts/HANDOFF. No schema, UI or dependency change.
+Independent review is read-only and limited to code/aggregate evidence; provider rows,
+credentials, live requests and operational databases are excluded.
+
+Two bounded official requests were executed before implementation using the verified
+`d560efb` wheel in fresh disposable local databases: name query first100/provider3670
+with zero exact names in that page; code query first1/provider1 with one exact-name
+candidate. The historical org.go code is discovery-only, not namespace equivalence or
+canonical identity approval. Read-only audits verify Source/Policy/Snapshot/Observation/
+Checkpoint links and hashes, secret exclusion and zero identity/Claim rows. API payloads
+were not passed to AI or stored as fulltext. No operational Mac database was opened.
+These live proofs do not establish execution of the new canonical lookup worker.
+Subsequent verification is offline only; do not repeat live requests for tests.
+
+Completed local checkpoint:104 focused tests PASS; canonical `make verify` exit0 with
+945 Python PASS,4 optional PostgreSQL skips,6 warnings,303.90s and34 web PASS. Ruff/mypy151,
+Golden, architecture, lint/typecheck and standalone production build/assets PASS. Independent
+quality ran focused mock/disposable tests with exit0; risk reviewed code only. Neither found
+an actionable defect. The new worker was not installed or executed on Mac; no UI/CI/deployment
+acceptance is claimed. [Aggregate live-proof, audit and code receipt](../../receipts/gukgam-mois-lookup-20261003.json).
+A separate Commander read-only refresh at2026-10-03 03:04 UTC confirms the canonical SSD
+schema0008/quick_checkok,298People/298DRAFTClaims/0Organizations,0witness/MOISruns and0activeRuns.
+No source request or operational write was made by that refresh.0activeRuns does not prove
+sole-writer exclusion. The held witness import still needs actual source-field review; a
+MOIS exact-name/code candidate does not authorize canonical identity or publication.
+
 ### Active witness implementation work order
 
 Task `gukgam-witness-R1`, MAIN / Development, base

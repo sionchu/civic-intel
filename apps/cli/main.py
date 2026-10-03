@@ -34,6 +34,7 @@ ROUTES = {
             "dart",
             "dart-executives",
             "mois-organizations",
+            "mois-organization-lookup",
             "alio-item4",
             "alio-item12",
             "gukgam-plan",
@@ -156,6 +157,7 @@ def build_parser() -> argparse.ArgumentParser:
                     p.add_argument("--fetch-deadline-seconds", type=float)
                 if lane not in (
                     "gukgam-witness",
+                    "mois-organization-lookup",
                     "policy-research",
                     "assembly-page",
                     "legislative-person",
@@ -164,6 +166,12 @@ def build_parser() -> argparse.ArgumentParser:
                     "gukgam-schedule-probe",
                 ):
                     p.add_argument("--resume", action="store_true")
+                if lane == "mois-organization-lookup":
+                    filters = p.add_mutually_exclusive_group(required=True)
+                    filters.add_argument("--full-name")
+                    filters.add_argument("--org-code")
+                    p.add_argument("--expected-full-name", required=True)
+                    p.add_argument("--page-size", type=int, default=100)
                 if lane in (
                     "assembly",
                     "assembly-page",
@@ -294,6 +302,15 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
             parser.error("witness packet inspection requires its exact local artifact")
         if args.research and args.artifact:
             parser.error("research inspection does not accept an artifact for multiple sources")
+    if args.lane == "mois-organization-lookup":
+        if args.page_size > 100 or not args.expected_full_name.strip():
+            parser.error("MOIS lookup requires an expected full name and at most 100 rows")
+        if args.full_name is not None and (
+            not args.full_name.strip() or args.full_name != args.expected_full_name
+        ):
+            parser.error("MOIS name filter must equal the expected full name")
+        if args.org_code is not None and not re.fullmatch(r"[0-9A-Z]{7}", args.org_code):
+            parser.error("MOIS org-code requires seven uppercase alphanumeric characters")
     if args.lane == "gwanbo" and args.from_date > args.to_date:
         parser.error("from-date must precede to-date")
     if args.lane == "gukgam-schedule-probe" and (

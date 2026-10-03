@@ -41,6 +41,18 @@ DRAFT Claims. Claim publication is a separate explicit operation. For a reviewed
 gate is revalidated in the transaction that changes its status. Base-profile publication is a
 separate source-specific operation. `civic inspect commands` inventories all current routes.
 
+`civic observe mois-organization-lookup --allow-effect SOURCE_INGESTION --database-url
+<exact-disposable-or-assigned-database> --full-name <exact-name> --expected-full-name
+<same-exact-name> --page-size 100` captures one filtered first page for institution-code
+review. Alternatively replace `--full-name` with `--org-code <seven-character-provider-code>`
+and retain the expected full name. Exactly one filter is required; page size is 1–100.
+There is no `--resume`, `--max-pages`, materialization or publication option. The distinct
+lookup scope cannot advance the unfiltered `mois-organizations` L3 checkpoint. The output
+contains aggregate coverage and exact-name counts in the capture; no exact name in a
+truncated page does not mean absence. SourcePolicy/schema gates run before fetch; one
+fetch uses the existing 15-second HTTP timeout. A live runner additionally needs its own
+hard process budget and target/writer checks. See [the MOIS contract](../architecture/MOIS_ORGANIZATION_CODE_FEEDER.md).
+
 `civic inspect gukgam-witness --allow-effect READ_ONLY --research
 docs/research/gukgam_2026_science_witness_linkage_2026-10-02.json --plan-packet
 tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json` prepares a local source-to-plan

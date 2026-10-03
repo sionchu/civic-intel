@@ -40,6 +40,23 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 bounded R3 source preparation (base5a5fcad): new explicit-effect
+`observe mois-organization-lookup` captures one filtered first page, max100 rows, one fetch;
+no resume, full-universe claim, identity hints or materialization/publication. SourcePolicy/
+schema and provider coverage checks precede source commit; snapshot hash/row manifest preserve
+the canonical normalized capture provenance. Existing unfiltered L3 scope remains unchanged.
+Two earlier frozen-d560efb local proofs captured100/provider3670 (no exact name in that page)
+and1/provider1 (one exact pilot-name/code candidate). Read-only source-chain/hash/manifest,
+DB integrity and credential-exclusion audits PASS; no provider payload reached AI/fulltext.
+Private current-code review table is prepared outside Git. The new worker has not run on Mac.
+Canonical make verify exit0:945 Python PASS,4 optional PG skips,6 warnings,303.90s;34 web PASS,
+Ruff/types/Golden/architecture/standalone build/assets PASS.104 focused tests PASS; independent
+quality/risk found no actionable defect. Commander read-only SSD refresh at03:04 UTC confirms
+schema0008/quick_checkok,298People/298DRAFTClaims/0Organizations,0witness/MOISruns and0activeRuns;
+activeRuns0 is not sole-writer exclusion. Receipt:docs/receipts/gukgam-mois-lookup-20261003.json.
+Actual witness-field review, reviewed Organization/Person identities and operational runner
+readiness remain separate gates. No operational row, publication or deployment change.
+
 2026-10-03 independent R3 preparation (base28859fe): existing read-only witness inspect accepts
 repeatable --plan-packet and produces an exact-label source-to-plan candidate report. Same explicit
 committee and source/audit year only; all occurrences retained, no date fill or identity/attendance.
