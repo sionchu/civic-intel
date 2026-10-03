@@ -104,11 +104,57 @@ def test_person_role_projects_to_evidence_backed_ontology_edge() -> None:
     assert "projection must never copy this excerpt" not in str(payload)
 
 
+def test_assembly_committee_projects_claim_scoped_committee_without_label_merge() -> None:
+    claim = role_claim(predicate="ASSEMBLY_COMMITTEES").model_copy(
+        update={
+            "proposition": "김온톨로지의 국회 명부상 위원회 표기는 법제사법위원회, 예산결산특별위원회이다.",
+            "object_text": "법제사법위원회, 예산결산특별위원회",
+            "qualifiers": {
+                "source_contract": "assembly_member_roster",
+                "field_name": "committees",
+            },
+        }
+    )
+
+    graph = build_person_governance_ontology(
+        person(),
+        [claim],
+        {claim.id: [evidence()]},
+    )
+    payload = graph.to_dict()
+
+    assert len(payload["nodes"]) == 2
+    assert payload["nodes"][1]["id"] == f"committee:{claim.id}"
+    assert payload["nodes"][1]["kind"] == "COMMITTEE"
+    assert payload["nodes"][1]["canonical_id"] is None
+    assert payload["nodes"][1]["label"] == "법제사법위원회, 예산결산특별위원회"
+    assert payload["edges"][0]["relation_type"] == "SERVED_ON"
+
+
+def test_assembly_committee_projection_requires_exact_roster_contract() -> None:
+    claim = role_claim(predicate="ASSEMBLY_COMMITTEES").model_copy(
+        update={
+            "object_text": "법제사법위원회",
+            "qualifiers": {
+                "source_contract": "unrelated_source",
+                "field_name": "committees",
+            },
+        }
+    )
+
+    with pytest.raises(GovernanceOntologyError, match="invalid source contract"):
+        build_person_governance_ontology(
+            person(),
+            [claim],
+            {claim.id: [evidence()]},
+        )
+
+
+
 @pytest.mark.parametrize(
     "predicate",
     [
         "ASSEMBLY_PARTY",
-        "ASSEMBLY_COMMITTEES",
         "NOMINATED_AS",
         "DESIGNATED_AS",
         "APPOINTED_AS",
