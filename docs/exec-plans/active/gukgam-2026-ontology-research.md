@@ -27,6 +27,18 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Sixth read-only heartbeat, 2026-10-03
+
+Received `db` heartbeat 10:26:32.478 UTC, base `94e927fa388faf0aef4858ec9788bf10e0803833`.
+Three independent read-only agents find no parser/DB/execution drift or new runnable local
+milestone. Canonical parsing at 10:27:45 UTC retains 412 rows and four DRAFT packets;
+35 latest code hashes match. Commander snapshot at 10:28:00 UTC matches the prior schema,
+integrity, counts, checkpoint and HTTP200. Local proof DB monitoring at 10:28:10 UTC
+exits0/hash unchanged. No product changes/failures warrant tests or full verification.
+Actual source-field review, source versions, identities/import readiness and delivery gates
+remain. No source or operational effects. MAIN appends fresh evidence to the
+[existing monitor receipt](../../receipts/collection-status-20261003.json).
+
 ### Fifth read-only heartbeat, 2026-10-03
 
 Received `db` heartbeat 09:26:31.456 UTC, base `fef4d57e451092a6e562c9b6b9c34ccebe346684`.

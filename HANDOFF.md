@@ -41,17 +41,17 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
-2026-10-03 fifth db heartbeat (received 09:26:31 UTC, base fef4d57): three independent
-agents find no parser/DB/execution drift. Canonical parsing at 09:29:50 UTC retains 412
+2026-10-03 sixth db heartbeat (received 10:26:32 UTC, base 94e927f): three independent
+agents find no parser/DB/execution drift. Canonical parsing at 10:27:45 UTC retains 412
 research rows and 370/42/32/15 DRAFT packets, with all recorded hashes matched. MAIN and
 parser review match 35 latest code hashes, including the intentional Worker witness-test pin.
-One Commander snapshot at 09:27:57 UTC confirms the prior schema0008/mode0600/integrity/FK0,
+One Commander snapshot at 10:28:00 UTC confirms the prior schema0008/mode0600/integrity/FK0,
 298 People/298 DRAFT Claims/0 Organizations, 299 observations/3 snapshots/1 SUCCESS run,
 valid checkpoint/cursor and HTTP200. RUNNING/witness/MOIS runs remain0; writer exclusion
-is not proven. Local proof DB monitoring at 09:28:15 UTC exits0/hash unchanged. No failures,
+is not proven. Local proof DB monitoring at 10:28:10 UTC exits0/hash unchanged. No failures,
 product code changes or newly runnable local milestone; no full-test repetition. Worker
 970 Python/34 web/7 HTTP results remain dated evidence. Previous artifact-contract correction
-and all five checks are preserved in docs/receipts/collection-status-20261003.json. Actual
+and all six checks are preserved in docs/receipts/collection-status-20261003.json. Actual
 witness field review/current plan evidence precede acquisition; identities/import/publication/
 delivery remain separate gates. No source fetch, operational mutation or human attestation.
 
