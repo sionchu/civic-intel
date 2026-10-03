@@ -1,4 +1,4 @@
-.PHONY: test lint typecheck quality architecture migrate api-dev web-dev web-verify verify
+.PHONY: test lint typecheck quality architecture migrate api-dev web-dev web-verify worker-verify verify
 
 test:
 	python -m pytest
@@ -30,5 +30,9 @@ web-verify:
 	npm --prefix apps/web test
 	npm --prefix apps/web run build
 
-verify: lint typecheck test quality architecture web-verify
+worker-verify:
+	npm --prefix apps/web run build:worker
+	npm --prefix apps/web run check:worker
+
+verify: lint typecheck test quality architecture web-verify worker-verify
 

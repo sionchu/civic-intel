@@ -104,6 +104,12 @@ reported 12 supported checks, zero partials/issues, five supported import famili
 pages. This is a static compatibility result, not a Workers build, runtime or visual acceptance.
 It did not modify package manifests/lockfiles, initialize Vinext or create a parallel frontend.
 
+The subsequent 2026-10-03 local delivery slice adds a separate `build:worker`/`check:worker`
+path to the same canonical UI and retains Next standalone. Worker runtime checks use only
+synthetic HTTP data. `build:sites` uses the published zero-argument `sites()` API and refuses
+to run without the registered Site's manifest. No identity, registration or cloud connection
+is inferred from these local artifacts. See the updated [integration guide](FRONTEND_BACKEND_INTEGRATION.md).
+
 Sites documentation/capabilities checked here do not establish private Mac/LAN connectivity.
 A cloud Worker cannot reach the Mac's loopback address. Before connection, prepare and review
 an authenticated HTTPS route to the same Mac API: fixed origin, server-held credentials,

@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import "server-only";
+import portraitManifest from "../public/portraits/manifest.json";
 
 import type { Person } from "./types";
 
@@ -50,8 +50,7 @@ export async function getReviewedPortrait(person: Person): Promise<ReviewedPortr
   if (person.identity_status !== "RESOLVED") return null;
 
   try {
-    const manifestPath = join(process.cwd(), "public", "portraits", "manifest.json");
-    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as PortraitManifest;
+    const manifest = portraitManifest as PortraitManifest;
     const portrait = manifest.portraits.find((candidate) => (
       candidate.person_id === person.id
       && candidate.review_status === "ELIGIBLE"

@@ -38,7 +38,7 @@ test("authenticated public reads bind credentials to one HTTPS origin and preser
   assert.equal(calls[0].options.method, "GET");
   assert.equal(calls[0].options.headers["CF-Access-Client-Secret"], "fixture-secret");
   assert.equal(calls[0].options.cache, "no-store");
-  assert.equal(calls[0].options.redirect, "error");
+  assert.equal(calls[0].options.redirect, "manual");
 });
 
 test("credentials fail closed for missing pair, HTTP or mismatched destination", async () => {

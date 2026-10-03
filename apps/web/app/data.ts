@@ -54,13 +54,14 @@ async function getJson<T>(
       {
         method: "GET",
         headers,
-        redirect: "error",
+        redirect: "manual",
         signal: AbortSignal.timeout(API_TIMEOUT_MS),
         ...(options.revalidateSeconds && !clientSecret
           ? { next: { revalidate: options.revalidateSeconds } }
           : { cache: "no-store" as const }),
       },
     );
+    if (response.status >= 300 && response.status < 400) throw new Error("API redirect rejected");
     if (response.ok) return { state: "success", data: (await response.json()) as T };
     const payload = await response.json().catch(() => null) as {
       error?: { code?: ApiErrorCode; message?: string; request_id?: string };

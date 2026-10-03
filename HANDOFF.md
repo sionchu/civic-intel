@@ -7,7 +7,7 @@ people, with canonical DB/API on the
 Mac external SSD and cloud web on Sites later. Preserve the Assembly site pilot's 298
 identity-linked private DRAFT Claims and one OPEN conflict, prior Opus UI and Railway corpus.
 The SSD runtime and official Sites SDK investigation are complete. The pilot is IN_PROGRESS;
-institution identity/source/publication gates, cloud connectivity, Workers output and
+institution identity/source/publication gates, cloud connectivity, Sites packaging and
 rendered/mobile acceptance remain incomplete. Legislators are audit actors, not audit subjects.
 The canonical server-side authenticated public-read bridge and frontend/backend delivery
 plan are prepared and verified locally; no live connection or publication is implied.
@@ -25,7 +25,8 @@ Current pilot acceptance: full code/Golden gates, canonical source coverage/prov
 gated identities/Claims, exact SSD identity/schema/read-only runtime, actual Aside desktop/
 mobile/keyboard evidence, and verified Site-to-Mac reads at a reported deployed commit.
 Code, original capture coverage, private identity/DRAFT construction and local API checks
-passed. Publication, cloud reachability, Workers build, visual acceptance and deployment
+passed. Local Workers output/runtime now pass. Publication, cloud reachability, Sites metadata,
+visual acceptance and deployment
 have not passed. Earlier PostgreSQL backup/restore evidence remains historical evidence.
 
 ## Completed
@@ -40,21 +41,28 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
-2026-10-03 third db heartbeat (received 07:19:59 UTC, base 2a7091c): three agents found no
-checked parser/research/prepared-artifact or execution-gate drift. Code and artifact hashes
-match; canonical parsing retains 412 research rows and 370/42/32/15 DRAFT packets. One
-Commander snapshot at 07:21:35 UTC matches the previous schema 0008, mode 0600, quick_check
-ok, FK 0, 298 People/298 DRAFT Claims/0 Organizations, 299 observations/3 snapshots and
-1 SUCCESS run. RUNNING, witness and MOIS runs remain 0; checkpoint/cursor checks match and
-health returns HTTP 200. The existing local proof DB monitor at 07:22:58 UTC exits 0 with
-unchanged bytes. Zero RUNNING rows do not prove writer exclusion. No new safe local
-implementation was identified; no product or operational changes occurred. Prior full
-verification and the 70-item artifact-internal audit were not repeated and remain dated
-evidence. Current proposal Source/Snapshot/checkpoint and canonical identities remain
-NOT_REVALIDATED; actual witness field review holds R2 acquisition. The Mac identity work
-order remains REVIEW_PREPARATION_ONLY with NOT_DECIDED decisions; identity/publication/
-delivery remain separate gates. No provider rows, raw PDFs or credentials reached AI output.
-All three dated checks are preserved in docs/receipts/collection-status-20261003.json.
+2026-10-03 local Workers delivery (base 63ae6dd): the same canonical UI now builds an ESM
+Worker and passes 7 actual local HTTP checks against synthetic API data. Next standalone
+remains; serialized Worker builds restore Next generated inputs. The Worker blocks decoded
+admin paths and writes before dispatch. Workerd rejected redirect:error at runtime; manual
+redirect plus explicit all-3xx rejection preserves destination-fetch denial. Reviewed portrait
+metadata is server-only bundled rather than read from a Node filesystem. No UI/DTO/schema change.
+Final make verify exits 0: 970 Python PASS, 4 optional PG skips, 6 warnings, 354.89s; 34 web PASS,
+Ruff/mypy 152/Golden/architecture/lint/types/Next/Worker PASS. Independent quality executes
+8 API-client tests and the corrected witness test; risk/config research find no remaining
+actionable local bypass. First full run had one false-positive privacy assertion: random
+request UUID digits matched 99. A deterministic request ID and exact error-envelope/message
+checks fix the test without changing API behavior. Use this receipt's intentional test hash
+over the older R1 test pin; source/parser bytes and historical receipts are preserved.
+fflate 0.8.3 removes 3 moderate advisories; 8 unpatched build/dev-tool advisories remain,
+so dependency security and release do not pass. Sites metadata requires an actual registered
+manifest and was not built. No registration, cloud-to-Mac connection, browser/mobile check,
+source/operational write, human attestation or publication occurred. Previous generated Node
+artifact cleanup was policy-denied; only dist/server and dist/client are Worker candidates.
+Receipt: docs/receipts/gukgam-worker-build-20261003.json. Latest Mac observation remains the
+07:21:35 UTC read-only heartbeat; its 298 DRAFT Claims/0 Organizations/0 witness runs and all
+three dated checks are preserved in docs/receipts/collection-status-20261003.json. R2 still
+needs actual field review; identities/publication/delivery remain separate gates.
 
 2026-10-03 parser/DB monitoring slice (base d8a8093): canonical `inspect collection-status`
 uses the existing administration read UoW, explicit target and forced existing-file SQLite
@@ -314,7 +322,7 @@ assembly-one-shot-live-audit-20261002.json and one-shot-profile-7b004bf.json.
 
 Current-branch remote CI, cloud DB identity/admin writes, Claim publication, scheduling,
 full rendered/mobile acceptance, Person conflict/loading/transport-error browser states, Docker build,
-push/PR/merge, Sites registration/deployment, Worker build/runtime, authenticated HTTPS cloud
+push/PR/merge, Sites registration/deployment/metadata packaging, authenticated HTTPS cloud
 connection, cloud corpus migration, resize/plan or public access changes. No source retry.
 Actual Mac logout/reboot and physical disk unplug; current optional PG runtime tests.
 
@@ -329,6 +337,11 @@ Allocated ownership is not a DB-enforced shared-writer lease; old ALIO/MOIS RUNN
 remain preserved and do not authorize recurring writers.
 
 ## Modified files
+
+The local Workers slice changes canonical web build dependencies/configuration and adds one
+guarded Worker entry, a serialized build wrapper and synthetic HTTP checker. Existing data
+transport/portrait loading adapt to Workers; one flaky witness privacy regression is corrected.
+Makefile verification now includes Worker build/runtime. No source/parser/DB/schema/UI layout change.
 
 Current independent R3 preparation adds one pure rendering projection and focused regressions,
 extends only the existing witness inspect CLI/worker, and updates the canonical contract, command
@@ -349,6 +362,13 @@ Diagnostic helpers, runtime databases/keys, raw model/browser outputs and privat
 remain outside Git. Original root master/user contracts.py edits remain untouched.
 
 ## Next concrete action
+
+Local Next/Worker build and synthetic HTTP acceptance are complete. Sites metadata packaging
+needs the real registered manifest; authenticated Site-to-Mac reads and Aside visual/mobile
+acceptance remain separate. Keep the unresolved build-tool audit visible before any release.
+For monitoring, read the new Worker receipt's intentional witness-test hash rather than
+treating the old R1 test hash mismatch as an unexplained parser change. No new field-review,
+identity or publication approval is created by local build success.
 
 Independent R3 source-to-plan and bounded MOIS lookup preparation are complete. Preserve every
 versioned occurrence ref; do not choose from the pilot's two plan dates automatically. The

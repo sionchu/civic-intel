@@ -62,6 +62,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Frontend/backend connection and delivery plan](operations/FRONTEND_BACKEND_INTEGRATION.md)
 - [Gukgam institution/witness pipeline and collection-order roadmap](operations/GUKGAM_COLLECTION_ROADMAP.md)
 - [Server API bridge verification](receipts/web-api-bridge-20261002.json)
+- [Local Worker build, synthetic HTTP acceptance and verification](receipts/gukgam-worker-build-20261003.json)
 - [Gukgam-first UI and reviewed-packet coverage verification](receipts/gukgam-priority-20261002.json)
 - [Official Science witness lists and institution/person connection work order](research/gukgam_2026_science_witness_linkage_2026-10-02.md)
 - [Science witness source-scoped research candidates](research/gukgam_2026_science_witness_linkage_2026-10-02.json)

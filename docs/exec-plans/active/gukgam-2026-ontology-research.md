@@ -27,6 +27,41 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Local Workers delivery work order, 2026-10-03
+
+Owner continuation after the monitoring-only checkpoint: MAIN / Development, task
+`gukgam-worker-build`, base `63ae6dd62aeebbf63f6339f1e4e5202c98e652bb`, advances the already
+planned Workers output independently of actual source-field/identity/publication review.
+Owned paths: canonical `apps/web` build configuration, dependencies/lockfile, Worker entry,
+artifact checks and the existing delivery plan/HANDOFF/receipt. Preserve Next standalone,
+current UI/DESIGN, public DTOs and the Mac DB/API; do not scaffold a second frontend.
+The verification gate also owns Makefile and a deterministic correction to the existing
+witness safe-error test when its random request UUID causes a false-positive substring match.
+
+Local dependency installation, build and disposable HTTP-only runtime checks are permitted.
+No Site registration, source synchronization, hosting manifest identity, deployment, tunnel,
+domain, source fetch, operational DB write or secret access is part of this milestone.
+Research and risk children are read-only, have no DB/credentials/browser access and no children.
+MAIN owns integration and execution. Acceptance requires a callable ESM Worker fetch entry,
+public routes/assets and explicit error states against synthetic HTTP data, closed admin/write
+routes, preserved server credential boundary, full `make verify` and an inspected coherent diff.
+Local runtime/build evidence does not establish browser, cloud-to-Mac or deployment acceptance.
+
+Completed local checkpoint: final `make verify` exits 0 with 970 Python tests, 4 optional
+PostgreSQL skips, 6 warnings (354.89s), 34 web tests and 7 actual Worker HTTP checks. Next
+standalone and Worker builds both pass. Workerd's unsupported redirect:error option is
+replaced by manual mode plus explicit all-3xx rejection; no redirect destination is fetched.
+The reviewed public portrait manifest remains server-only and exact-ID gated. Build inputs
+do not inherit operational environment, and Next generated types are restored after serial builds.
+Independent quality runs 8 API-client tests and the corrected witness privacy test; SDK and
+risk reviews remain advisory. First full verification failed only the random-request-ID
+substring assertion; its deterministic exact-envelope/message fix preserves the API contract.
+Use the new receipt's witness-test hash for future comparison; historical evidence is unchanged.
+fflate 0.8.3 patches 3 moderate advisories; 8 unpatched build/dev-tool advisories remain.
+Sites metadata packaging stops before Vite when the real registered manifest is absent.
+No browser/source/operational/publication/deployment effect is added. Details and file hashes:
+[local Worker receipt](../../receipts/gukgam-worker-build-20261003.json).
+
 ### Third read-only heartbeat, 2026-10-03
 
 Received `db` heartbeat 2026-10-03T07:19:59.389Z, base `2a7091c`. Three independent agents

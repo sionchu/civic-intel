@@ -284,11 +284,17 @@ def test_checkpoint_corruption_fails_closed_with_safe_api_error(tmp_path, monkey
         with pytest.raises(GukgamWitnessReviewError):
             load_current_gukgam_witness_review(uow.acquisition)
     monkeypatch.setattr(AcquisitionRepository, "source_checkpoints", lambda self, _: [checkpoint])
+    request_id = "99999999-1111-4111-8111-111111111111"
+    monkeypatch.setattr("apps.api.main.uuid4", lambda: request_id)
     with TestClient(create_app(repository, enable_review_surface=True)) as client:
         response = client.get("/admin/gukgam/2026/witnesses")
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "SOURCE_VERSION_CONFLICT"
-    assert "99" not in response.text
+    payload = response.json()
+    assert set(payload) == {"error"}
+    assert set(payload["error"]) == {"code", "message", "request_id"}
+    assert payload["error"]["code"] == "SOURCE_VERSION_CONFLICT"
+    assert payload["error"]["request_id"] == request_id
+    assert "99" not in payload["error"]["message"]
 
 
 def test_research_heading_count_corruption_is_rejected():

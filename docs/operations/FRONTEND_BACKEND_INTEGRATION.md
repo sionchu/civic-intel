@@ -141,6 +141,21 @@ Access의 Service Auth 정책은 허용한 서비스 토큰만 받도록 구성�
 
 ## 이번에 준비한 호출 경계
 
+2026-10-03 로컬 Workers 구현에서는 기존 Next 화면을 그대로 빌드하는 경로를 추가했다.
+`npm --prefix apps/web run build:worker`와 `check:worker`로 생성한 Worker의 HTTP 동작을
+합성 API에 연결해 검사한다. Next standalone 경로도 유지한다. 이 검사는 실제 SSD 데이터,
+브라우저 표시, Sites 배포나 cloud-to-Mac 연결의 검증을 대신하지 않는다.
+
+Worker는 관리자 경로와 GET/HEAD 외 요청을 입구에서 거절한다. 공개 읽기는 기존
+server-only API 경계를 사용한다. Workers에서 지원하지 않는 `redirect: error`는
+`manual`과 모든 3xx의 명시적 거절로 바꿔 목적지 조회 금지 의미를 유지했다.
+검토된 공개 사진 manifest도 서버 번들에서 읽어 일반 파일시스템에 의존하지 않는다.
+
+빌드는 로컬 환경 파일과 운영 환경변수를 받지 않는다. Vinext가 쓰는 Next 생성 타입은
+빌드 전 바이트로 복구하므로 Next와 Worker 빌드는 동시에 실행하지 않는다.
+실제 Sites 등록 manifest가 생긴 뒤 `build:sites`로 공식 Sites SDK의 metadata를 묶는다.
+현재 manifest가 없으면 빌드 전에 중단하며 Site ID를 임의로 만들지 않는다.
+
 정본 프론트엔드의 app/data.ts에 server-only 경계를 추가했다.
 기존 로컬 호출은 그대로 가능하며 HTTPS 서비스 연결을 위한 설정을 준비했다.
 

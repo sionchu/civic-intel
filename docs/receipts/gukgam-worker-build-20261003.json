@@ -1,0 +1,130 @@
+{
+  "base_commit": "63ae6dd62aeebbf63f6339f1e4e5202c98e652bb",
+  "dependency_audit": {
+    "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "existing_shared_dependency_versions_changed": 0,
+    "moderate_after": 0,
+    "moderate_before": 3,
+    "patched_fflate": "0.8.3",
+    "remaining_critical": 0,
+    "remaining_high": 8,
+    "remaining_root": "UNPATCHED_BRACES_BUILD_DEV_TOOL_CHAIN",
+    "security_or_release_pass": false
+  },
+  "effects": {
+    "claims_published": 0,
+    "human_attestations": 0,
+    "identity_changes": 0,
+    "mac_service_restarts": 0,
+    "official_source_fetches": 0,
+    "operational_db_writes": 0,
+    "operational_migrations": 0,
+    "push_or_deployment": false
+  },
+  "first_full_verification": {
+    "corrected_file": "tests/test_gukgam_witness.py",
+    "exit_code": 2,
+    "failed": 1,
+    "failure_code": "FALSE_POSITIVE_REQUEST_ID_SUBSTRING_IN_WITNESS_ERROR_TEST",
+    "optional_postgresql_skipped": 4,
+    "python_passed": 969,
+    "runtime_error_contract_changed": false,
+    "targeted_after_fix_exit_code": 0
+  },
+  "independent_checks": {
+    "quality": {
+      "api_client_tests_passed": 8,
+      "full_verify_or_worker_runtime_reproduced": false,
+      "targeted_witness_test_passed": 1
+    },
+    "research": "READ_ONLY_SDK_CONFIG_TYPEGEN_REVIEW",
+    "risk": "NO_ADMIN_OR_CLIENT_SECRET_BYPASS_FOUND_ENV_ALLOWLIST_REQUIRED_AND_IMPLEMENTED"
+  },
+  "monitoring_baseline_update": {
+    "historical_receipts_rewritten": false,
+    "tests/test_gukgam_witness.py": "INTENTIONAL_TEST_ONLY_PRIVACY_ASSERTION_FIX_USE_THIS_RECEIPT_HASH",
+    "witness_parser_or_source_bytes_changed": false
+  },
+  "not_executed": [
+    "ASIDE_VISUAL_MOBILE_ACCEPTANCE",
+    "SITES_METADATA_ARTIFACT",
+    "SITE_TO_MAC_AUTHENTICATED_CONNECTION",
+    "LIVE_WITNESS_IMPORT",
+    "CANONICAL_INSTITUTION_PERSON_IDENTITY",
+    "PUBLICATION",
+    "DEPLOYMENT"
+  ],
+  "recorded_at_utc": "2026-10-03T08:18:52.888621+00:00",
+  "sites": {
+    "api": "sites()",
+    "deployment": false,
+    "metadata_build_status": "NOT_RUN_MISSING_REGISTERED_MANIFEST",
+    "metadata_gate_invocation_exit_code": 1,
+    "registered_manifest_exists": false,
+    "registration": false,
+    "sdk": "@openai/sites-vite-plugin@0.2.0",
+    "site_id_invented": false
+  },
+  "source_files_lf_sha256": {
+    ".gitignore": "b848db89cced511e6c89674592c52f9f1c468802705515f2d5a036bf7f75ade5",
+    "Makefile": "2c040af34a30d535e7417fd13ee2cda6dc2f039854acbb1fc62217685d67b7f1",
+    "apps/web/app/data.ts": "e71420bb72c8430475a7b7ac3fcd6b89ca20dcac7efb2de444732d2d61668d3c",
+    "apps/web/app/portrait.ts": "c82b09e1a9c0e933466713da2bf0d45cd6c79fdb8b438caa0598efd16b98d55e",
+    "apps/web/eslint.config.mjs": "d47d86cac2f9502911b1e54403ce44a05094e9b66275e999d7eeca8778304b39",
+    "apps/web/next.config.ts": "a1f400de788a8321debaca0fa4908a5eef58e18696ac752f3f673563ee76518e",
+    "apps/web/package-lock.json": "9e09603e8d401a350d506d4b0dfd5e51933f0ec44e819bb81eedd5b401c43293",
+    "apps/web/package.json": "923eff66ae34e4d6a13f37adecad997f1d5c75f6dbc750d73c5b67e6ea52d89e",
+    "apps/web/scripts/build-worker.mjs": "9ce53ae4062361ee26e54ebd2ad80a26ff6b99c5e35df285c4eb1a3aeca805ed",
+    "apps/web/scripts/check-worker.mjs": "97a6fe6ab41114f1a0bfd1db3044b2f236f8ff85a6d15e89f47641ce88c016fb",
+    "apps/web/tests/api-client.test.mjs": "3fe8d74907a32dd223989912fb829827377253719494adc30b3a63301c942724",
+    "apps/web/vite.config.ts": "1baab48a1526409cb615f8989e77a5337be639706c3bbe2311554698ff2694d1",
+    "apps/web/worker.ts": "a0d20ef9d5689fba9ed6980ce43e50d723c2d67b55a166065f80377d45ba7840",
+    "tests/test_gukgam_witness.py": "df8ffd500a071252b387cdd575269a8348021ea092967c8917da54b8dd0eea35"
+  },
+  "status": "LOCAL_WORKER_VERIFIED_NOT_DEPLOYED",
+  "task_id": "gukgam-worker-build",
+  "verification": {
+    "architecture": "PASS",
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "exit_code": 0,
+    "golden_quality": "PASS",
+    "log_sha256": "3b159e20f63f1fd05ffe4e048e427a407bfb8e8a22166fb0b4d04c86e64bfab3",
+    "mypy_files": 152,
+    "next_standalone_build": "PASS",
+    "optional_postgresql_skipped": 4,
+    "python_passed": 970,
+    "python_seconds": 354.89,
+    "python_warnings": 6,
+    "ruff": "PASS",
+    "web_lint": "PASS",
+    "web_passed": 34,
+    "web_typecheck": "PASS",
+    "worker_build": "PASS",
+    "worker_http": {
+      "browser_verification": "NOT_RUN",
+      "database_writes": 0,
+      "deployment": false,
+      "environment": "LOCAL_WORKER_SYNTHETIC_HTTP_ONLY",
+      "source_fetches": 0,
+      "status": "PASS",
+      "worker_http_checks": 7
+    }
+  },
+  "worker_artifacts": {
+    "candidate_directories": [
+      "apps/web/dist/server",
+      "apps/web/dist/client"
+    ],
+    "config_sha256": "3a29353810cea8f1ebc6aa001c4f2f0820e1172667f05775a7e044f3fa386133",
+    "default_callable_fetch_proven_by_local_runtime": true,
+    "main_sha256": "1ae2c78d5c51c1cf5ebbc51cd283c84a939a557107189a91923e625c5ae40ff5",
+    "next_generated_files_restored_after_serial_worker_build": true,
+    "obsolete_generated_node_bundle_cleanup": "NOT_EXECUTED_POLICY_DENIED",
+    "obsolete_node_bundle_in_candidate_directories": false
+  },
+  "worker_runtime_fixes": [
+    "MANUAL_REDIRECT_AND_EXPLICIT_ALL_3XX_REJECTION_WITHOUT_DESTINATION_FETCH",
+    "SERVER_ONLY_PUBLIC_PORTRAIT_MANIFEST_WITH_EXACT_RESOLVED_PERSON_ID_GATE",
+    "DECODED_ADMIN_PATH_404_AND_NON_GET_HEAD_405_BEFORE_DISPATCH"
+  ]
+}
