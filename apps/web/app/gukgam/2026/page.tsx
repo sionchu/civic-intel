@@ -5,6 +5,7 @@ import GukgamSearch from "../../components/gukgam-search";
 import ReadState from "../../components/read-state";
 import { getGukgamTargets, getOrganizations, getPeople } from "../../data";
 import { buildPageMetadata } from "../../site-metadata";
+import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,18 @@ export default async function Gukgam2026Page({
   const peopleCount = peopleResult.state === "success" ? peopleResult.data.length : null;
   const organizationCount = organizationsResult.state === "success" ? organizationsResult.data.length : null;
 
+  const today = seoulDate(new Date());
+  const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
+  const scheduleGroups = groupByDateAndCommittee(targetItems, today);
+  const nextDate = focusDate(scheduleGroups);
+  const coveredCommittees = [...new Set(targetItems.map((item) => item.committee_name))].sort(
+    (left, right) => left.localeCompare(right, "ko"),
+  );
+  const planDates = [...new Set(targetItems.map((item) => item.source_published_date))].sort();
+  const planDateRange = planDates.length === 0
+    ? null
+    : planDates.length === 1 ? planDates[0] : `${planDates[0]} ~ ${planDates[planDates.length - 1]}`;
+
   return (
     <div className="site-page gukgam-page">
       <header className="gukgam-hero">
@@ -42,7 +55,10 @@ export default async function Gukgam2026Page({
             일정·피감기관·증인·참고인 정보는 출처 정책과 검증을 통과한 범위만 순차 반영합니다.
           </p>
           <div className="hero-actions">
-            <Link className="primary-action" href="/people">인물 탐색 <span aria-hidden="true">↗</span></Link>
+            <a className="primary-action" href={nextDate ? `#audit-${nextDate}` : "#gukgam-published-targets-title"}>
+              {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"} <span aria-hidden="true">↓</span>
+            </a>
+            <Link className="inline-action" href="/people">인물 탐색 <span aria-hidden="true">↗</span></Link>
             <Link className="inline-action" href="/organizations">기관 탐색 <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
@@ -52,6 +68,143 @@ export default async function Gukgam2026Page({
           <p>같은 이름, 같은 학교명 또는 단순한 동시 등장만으로 관계를 만들지 않습니다. 각 연결은 Claim과 Evidence를 따라 원문까지 확인할 수 있어야 합니다.</p>
         </aside>
       </header>
+
+      <section className="gukgam-entry-section" aria-labelledby="gukgam-published-targets-title">
+        <div className="section-intro">
+          <div>
+            <span className="eyebrow">Audit schedule / Claim-backed</span>
+            <h2 id="gukgam-published-targets-title">감사일별 공개된 피감대상</h2>
+          </div>
+          <p>
+            위원회 공식 계획서의 피감대상 가운데 기관 기록에 검토 연결되고 Claim과 Evidence까지
+            갖춘 일정만 날짜 → 위원회 → 기관 순으로 보여줍니다. 기관을 누르면 공개 기록과 근거로 이어집니다.
+          </p>
+        </div>
+
+        {targetsResult.state === "error" ? (
+          <ReadState error={targetsResult.error} />
+        ) : targetsResult.data.items.length === 0 ? (
+          <div className="empty-state" role="status">
+            <span className="empty-state-mark" aria-hidden="true">∅</span>
+            <div>
+              <strong>현재 공개된 피감대상 Claim이 없습니다.</strong>
+              <p>
+                감사대상이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 아직 없다는 뜻입니다.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <dl className="gukgam-scope" aria-label="공개 일정의 범위와 기준 시점">
+              <div>
+                <dt>공개 범위</dt>
+                <dd>{targetsResult.data.target_count}건 · {coveredCommittees.length}개 위원회</dd>
+              </div>
+              <div>
+                <dt>포함 위원회</dt>
+                <dd>{coveredCommittees.join(" · ")}</dd>
+              </div>
+              <div>
+                <dt>근거 계획서 공개일</dt>
+                <dd>{planDateRange ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>오늘 (KST)</dt>
+                <dd>{formatAuditDate(today)}</dd>
+              </div>
+            </dl>
+            <p className="gukgam-scope-note">
+              전체 감사대상 목록이 아닙니다. 위에 없는 위원회·기관은 아직 공개 기준을 통과하지 않았을 뿐이며,
+              감사가 없다는 뜻이 아닙니다. 각 항목은 공식 계획서상 일정(계획 사실)이며 감사가 실제로
+              열렸거나 어떤 결과가 나왔다는 기록이 아닙니다. 일정은 위원회 의결로 바뀔 수 있습니다.
+            </p>
+
+            <nav className="gukgam-date-index" aria-label="감사일별 이동">
+              <ol>
+                {scheduleGroups.map((group) => (
+                  <li key={group.date} className={group.relation}>
+                    <a
+                      href={`#audit-${group.date}`}
+                      aria-current={group.date === nextDate ? "date" : undefined}
+                    >
+                      <span>{formatAuditDate(group.date)}</span>
+                      <small>
+                        {group.relation === "today" ? "오늘 · " : group.date === nextDate ? "다음 · " : ""}
+                        {group.count}건
+                      </small>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+
+            <div className="gukgam-schedule" id="gukgam-schedule">
+              {scheduleGroups.map((group) => (
+                <section
+                  key={group.date}
+                  id={`audit-${group.date}`}
+                  className={`gukgam-day ${group.relation}`}
+                  aria-labelledby={`audit-${group.date}-title`}
+                >
+                  <header className="gukgam-day-heading">
+                    <h3 id={`audit-${group.date}-title`}>{formatAuditDate(group.date)}</h3>
+                    <span>
+                      {group.relation === "today"
+                        ? "오늘 열리는 감사 일정"
+                        : group.relation === "past"
+                          ? "지난 일정 · 계획 기준"
+                          : group.date === nextDate ? "다음 감사일" : "예정"}
+                      {" · "}{group.count}건
+                    </span>
+                  </header>
+                  {group.committees.map((committee) => (
+                    <div className="gukgam-committee" key={committee.committee}>
+                      <h4>{committee.committee}</h4>
+                      <ul className="gukgam-target-rows">
+                        {committee.items.map((item) => (
+                          <li className="gukgam-target-row" key={item.claim_id}>
+                            <div className="gukgam-target-main">
+                              <Link href={`/organizations/${item.organization.id}`}>
+                                {item.organization.name}
+                              </Link>
+                              <p>
+                                {item.time_text ?? "시간 미기재"}
+                                {item.venue ? ` · ${item.venue}` : ""}
+                              </p>
+                            </div>
+                            <div className="gukgam-target-evidence">
+                              <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
+                              <small>
+                                공식 계획서 {item.source_published_date} 공개 · {item.section} · p.{item.page_number}
+                              </small>
+                              <Link
+                                className="inline-action"
+                                href={`/organizations/${item.organization.id}#claim-${item.claim_id}`}
+                              >
+                                이 일정의 Claim / Evidence 보기 <span aria-hidden="true">↗</span>
+                              </Link>
+                              <details className="audit-details">
+                                <summary>Claim / Evidence audit trace</summary>
+                                <small>
+                                  Claim {item.claim_id}<br />
+                                  Evidence {item.evidence_ids.join(", ")}<br />
+                                  Source {item.source_ids.join(", ")}<br />
+                                  SourceSnapshot {item.snapshot_ids.join(", ")}<br />
+                                  FeederObservation {item.observation_ids.join(", ")}
+                                </small>
+                              </details>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </section>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
 
       <section className="gukgam-coverage-strip" aria-label="현재 Civic Intel 공개 범위">
         <div>
@@ -73,78 +226,6 @@ export default async function Gukgam2026Page({
 
       {peopleResult.state === "error" && <ReadState error={peopleResult.error} />}
       {organizationsResult.state === "error" && <ReadState error={organizationsResult.error} />}
-
-      <section className="gukgam-entry-section" aria-labelledby="gukgam-published-targets-title">
-        <div className="section-intro">
-          <div>
-            <span className="eyebrow">Published / Claim-backed</span>
-            <h2 id="gukgam-published-targets-title">공개된 피감대상</h2>
-          </div>
-          <p>
-            공식 계획서의 피감대상 가운데 canonical Organization에 검토 연결되고
-            published Claim과 Evidence까지 갖춘 일정만 표시합니다.
-          </p>
-        </div>
-
-        {targetsResult.state === "error" ? (
-          <ReadState error={targetsResult.error} />
-        ) : targetsResult.data.items.length === 0 ? (
-          <div className="empty-state" role="status">
-            <span className="empty-state-mark" aria-hidden="true">∅</span>
-            <div>
-              <strong>현재 공개된 피감대상 Claim이 없습니다.</strong>
-              <p>
-                감사대상이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 아직 없다는 뜻입니다.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="organization-claim-list">
-            {targetsResult.data.items.map((item) => (
-              <article className="claim organization-claim-card" key={item.claim_id}>
-                <div className="claim-heading">
-                  <span className="claim-kind">GUKGAM AUDIT PLAN</span>
-                  <span className="status FACT">FACT</span>
-                </div>
-                <div className="organization-claim-meta">
-                  <span>{item.committee_name}</span>
-                  <span>감사일정 {item.audit_date}</span>
-                  <span>계획서 공개 {item.source_published_date}</span>
-                </div>
-                <h3 className="claim-title">{item.organization.name}</h3>
-                <p className="resolution">
-                  공식 계획서상 피감대상 · {item.section}
-                  {item.time_text ? ` · ${item.time_text}` : ""}
-                  {item.venue ? ` · ${item.venue}` : ""}
-                </p>
-                <Link
-                  className="inline-action"
-                  href={`/organizations/${item.organization.id}#claims`}
-                >
-                  기관 Claim / Evidence 보기 <span aria-hidden="true">↗</span>
-                </Link>
-                <details className="audit-details">
-                  <summary>Claim / Evidence audit trace</summary>
-                  <small>
-                    Claim {item.claim_id}<br />
-                    Evidence {item.evidence_ids.join(", ")}<br />
-                    Source {item.source_ids.join(", ")}<br />
-                    SourceSnapshot {item.snapshot_ids.join(", ")}<br />
-                    FeederObservation {item.observation_ids.join(", ")}
-                  </small>
-                </details>
-              </article>
-            ))}
-          </div>
-        )}
-
-        {targetsResult.state === "success" && (
-          <p className="gukgam-search-share-note">
-            현재 공개 범위 {targetsResult.data.target_count}건 · published Claim only ·
-            전체 감사대상 목록이 아닙니다. 미공개·미연결 대상은 추정해 채우지 않습니다.
-          </p>
-        )}
-      </section>
 
       <GukgamSearch
         initialQuery={initialQuery}

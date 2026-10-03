@@ -101,7 +101,7 @@ function OrganizationClaimCard({
   const fiscalYear = claim.qualifiers.fiscal_year ?? "연도 미기재";
 
   return (
-    <article className="claim organization-claim-card">
+    <article className="claim organization-claim-card" id={`claim-${claim.id}`}>
       <div className="claim-heading">
         <span className="claim-kind">ORGANIZATION CLAIM</span>
         <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>

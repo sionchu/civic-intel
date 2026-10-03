@@ -355,9 +355,9 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(page, /getGukgamTargets/);
   assert.match(page, /공개된 피감대상/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
-  assert.match(page, /기관 Claim \/ Evidence 보기/);
+  assert.match(page, /이 일정의 Claim \/ Evidence 보기/);
   assert.match(page, /Claim \/ Evidence audit trace/);
-  assert.match(page, /organizations\/\$\{item\.organization\.id\}#claims/);
+  assert.match(page, /organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}/);
   assert.match(data, /getJson\("\/gukgam\/2026\/targets"\)/);
   assert.match(types, /PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1/);
   assert.match(types, /BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY/);
@@ -419,4 +419,49 @@ test("playbook prepares exact reference drafts and never pretends to dispatch", 
   assert.match(route, /work_order_draft: "playbook\/draft"/);
   assert.match(route, /Object\.hasOwn/);
   assert.doesNotMatch(playbook, /CIVIC_OPERATOR_TOKEN|DATABASE_URL|child_process|spawn\(/);
+});
+
+
+test("Gukgam schedule groups published targets by date and committee without adding items", async () => {
+  const { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } = await import(
+    "../app/gukgam/2026/schedule.ts"
+  );
+  const item = (claim_id, audit_date, committee_name, name, time_text = null) => ({
+    claim_id, audit_date, committee_name, time_text, organization: { id: `org-${claim_id}`, name },
+  });
+  const items = [
+    item("c3", "2026-10-07", "국방위원회", "나기관", "10:00"),
+    item("c1", "2026-10-06", "행정안전위원회", "가기관", "10:00"),
+    item("c4", "2026-10-07", "국방위원회", "가기관", "10:00"),
+    item("c2", "2026-10-07", "과학기술정보방송통신위원회", "다기관"),
+  ];
+  const groups = groupByDateAndCommittee(items, "2026-10-07");
+  assert.deepEqual(groups.map((group) => [group.date, group.relation, group.count]), [
+    ["2026-10-06", "past", 1],
+    ["2026-10-07", "today", 3],
+  ]);
+  assert.deepEqual(groups[1].committees.map((group) => group.committee), [
+    "과학기술정보방송통신위원회",
+    "국방위원회",
+  ]);
+  assert.deepEqual(groups[1].committees[1].items.map((row) => row.claim_id), ["c4", "c3"]);
+  assert.equal(groups.flatMap((group) => group.committees.flatMap((c) => c.items)).length, items.length);
+  assert.equal(focusDate(groups), "2026-10-07");
+  assert.equal(focusDate(groupByDateAndCommittee(items, "2026-10-30")), null);
+  assert.equal(formatAuditDate("2026-10-06"), "10월 6일 (화)");
+  assert.equal(seoulDate(new Date("2026-10-05T15:30:00Z")), "2026-10-06");
+});
+
+test("Gukgam schedule keeps scope limits and evidence links visible", async () => {
+  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  const schedule = await readFile(new URL("../app/gukgam/2026/schedule.ts", import.meta.url), "utf8");
+  assert.match(page, /groupByDateAndCommittee\(targetItems, today\)/);
+  assert.match(page, /감사가 없다는 뜻이 아닙니다/);
+  assert.match(page, /계획 사실/);
+  assert.match(page, /오늘 \(KST\)/);
+  assert.match(page, /근거 계획서 공개일/);
+  assert.match(page, /aria-label="감사일별 이동"/);
+  const organization = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  assert.match(organization, /id=\{`claim-\$\{claim\.id\}`\}/);
+  assert.doesNotMatch(page + schedule, /score|rank|probability|confidence|위험도|의혹/i);
 });

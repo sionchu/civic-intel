@@ -365,7 +365,8 @@ main { flex: 1; }
 .organization-overview-card > div { display: grid; gap: 8px; min-width: 0; padding: 20px 22px; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); }
 .organization-overview-card strong { overflow-wrap: anywhere; font-family: "Noto Serif KR", Georgia, serif; font-size: 25px; letter-spacing: -.05em; line-height: 1.25; }
 .organization-claim-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.organization-claim-card { margin-top: 0; }
+.organization-claim-card { margin-top: 0; scroll-margin-top: 96px; }
+.organization-claim-card:target { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-soft); }
 .organization-claim-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 14px; color: var(--color-ink-muted); font-size: 11px; }
 .organization-claim-meta span:first-child { color: var(--color-accent); font-weight: 800; }
 .executive-name { margin: 19px 0 2px; font-family: "Noto Serif KR", Georgia, serif; font-size: 28px; letter-spacing: -.05em; line-height: 1.15; }
@@ -749,4 +750,51 @@ main { flex: 1; }
 .gukgam-search-more:focus-visible {
   outline: 3px solid var(--color-accent-soft);
   outline-offset: 4px;
+}
+
+/* Gukgam audit schedule: date → committee → institution, flat editorial rows. */
+.gukgam-scope { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--color-line-strong); border-bottom: 1px solid var(--color-line); }
+.gukgam-scope > div { min-width: 0; padding: 16px 16px 16px 0; }
+.gukgam-scope > div + div { padding-left: 16px; border-left: 1px solid var(--color-line); }
+.gukgam-scope dt { color: var(--color-ink-muted); font-size: 12px; font-weight: 700; }
+.gukgam-scope dd { margin: 6px 0 0; overflow-wrap: anywhere; font-size: 15px; line-height: 1.5; }
+.gukgam-scope-note { max-width: 72ch; margin: 16px 0 0; color: var(--color-ink-muted); font-size: 14px; line-height: 1.7; }
+.gukgam-date-index { position: sticky; top: 72px; z-index: 5; margin: 32px 0 0; padding: 8px 0; border-bottom: 1px solid var(--color-line); background: var(--color-canvas); }
+.gukgam-date-index ol { display: flex; gap: 8px; margin: 0; padding: 0 0 4px; overflow-x: auto; list-style: none; scrollbar-width: thin; }
+.gukgam-date-index a { display: grid; min-width: 96px; min-height: 44px; gap: 2px; padding: 8px 12px; border: 1px solid var(--color-line); border-radius: 6px; color: var(--color-ink); font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.gukgam-date-index small { color: var(--color-ink-muted); font-size: 12px; font-weight: 500; }
+.gukgam-date-index .past a { color: var(--color-ink-muted); }
+.gukgam-date-index a[aria-current="date"] { border-color: var(--color-accent); background: var(--color-accent-soft); }
+.gukgam-date-index a:hover { border-color: var(--color-line-strong); }
+.gukgam-date-index a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.gukgam-day { padding: 32px 0 8px; scroll-margin-top: 160px; }
+.gukgam-day-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; padding-bottom: 12px; border-bottom: 2px solid var(--color-ink); }
+.gukgam-day-heading h3 { margin: 0; font-family: "Noto Serif KR", "Batang", Georgia, serif; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.04em; }
+.gukgam-day-heading span { color: var(--color-ink-muted); font-size: 13px; font-weight: 700; }
+.gukgam-day.today .gukgam-day-heading span { color: var(--color-accent); }
+.gukgam-day.past .gukgam-day-heading { border-bottom-color: var(--color-line-strong); }
+.gukgam-committee { display: grid; grid-template-columns: minmax(160px, 220px) minmax(0, 1fr); gap: 8px 24px; padding: 16px 0; border-bottom: 1px solid var(--color-line); }
+.gukgam-committee h4 { margin: 12px 0 0; color: var(--color-accent); font-size: 14px; line-height: 1.5; }
+.gukgam-target-rows { margin: 0; padding: 0; list-style: none; }
+.gukgam-target-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 8px 24px; padding: 12px 0; }
+.gukgam-target-row + .gukgam-target-row { border-top: 1px solid var(--color-line); }
+.gukgam-target-main a { color: var(--color-ink); font-family: "Noto Serif KR", "Batang", Georgia, serif; font-size: 18px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; text-decoration-color: var(--color-line-strong); text-underline-offset: 4px; }
+.gukgam-target-main a:hover { text-decoration-color: var(--color-accent); }
+.gukgam-target-main p { margin: 4px 0 0; color: var(--color-ink-muted); font-size: 14px; overflow-wrap: anywhere; }
+.gukgam-target-evidence { display: grid; align-content: start; justify-items: start; gap: 6px; min-width: 0; }
+.gukgam-target-evidence > small { color: var(--color-ink-muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.gukgam-target-evidence .audit-details small { display: block; overflow-wrap: anywhere; }
+@media (max-width: 820px) {
+  .gukgam-scope { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gukgam-scope > div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .gukgam-scope > div:nth-child(n + 3) { border-top: 1px solid var(--color-line); }
+  .gukgam-committee { grid-template-columns: 1fr; }
+  .gukgam-committee h4 { margin-top: 0; }
+}
+@media (max-width: 600px) {
+  .gukgam-date-index { top: 68px; }
+  .gukgam-scope { grid-template-columns: 1fr; }
+  .gukgam-scope > div, .gukgam-scope > div + div { padding: 12px 0; border-left: 0; }
+  .gukgam-scope > div + div { border-top: 1px solid var(--color-line); }
+  .gukgam-target-row { grid-template-columns: 1fr; }
 }
