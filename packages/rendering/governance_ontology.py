@@ -15,6 +15,9 @@ from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_base_profile import (
+    ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
+)
 
 
 class GovernanceOntologyError(ValueError):
@@ -96,7 +99,16 @@ class OntologyGraph:
 
 _RELATION_MAPPING: dict[str, tuple[str, str]] = {
     "HELD_ROLE": ("HELD_ROLE", "OFFICE"),
+    "ASSEMBLY_COMMITTEES": ("SERVED_ON", "COMMITTEE"),
 }
+
+
+def split_assembly_committee_names(object_text: str) -> tuple[str, ...]:
+    """Split a roster committee string into trimmed, de-duplicated official names."""
+
+    return tuple(
+        dict.fromkeys(name.strip() for name in object_text.split(",") if name.strip())
+    )
 
 
 def _iso(value) -> str | None:
@@ -146,6 +158,15 @@ def build_person_governance_ontology(
     )
 
     for claim in eligible_claims:
+        is_committee = claim.predicate == "ASSEMBLY_COMMITTEES"
+        if is_committee and (
+            claim.qualifiers.get("source_contract") != ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
+            or claim.qualifiers.get("field_name") != "committees"
+        ):
+            raise GovernanceOntologyError(
+                f"Assembly committee Claim has invalid source contract: {claim.id}"
+            )
+
         evidence = tuple(evidence_by_claim.get(claim.id, ()))
         if not evidence:
             raise GovernanceOntologyError(
@@ -157,33 +178,42 @@ def build_person_governance_ontology(
             )
 
         relation_type, target_kind = _RELATION_MAPPING[claim.predicate]
-        target_id = f"{target_kind.casefold()}:{claim.id}"
-        nodes.append(
-            OntologyNode(
-                id=target_id,
-                kind=target_kind,
-                label=claim.object_text.strip(),
-                claim_ids=(claim.id,),
-            )
+        # A committee Claim lists several official names; each becomes its own
+        # Claim-scoped COMMITTEE node and SERVED_ON edge sharing the Claim evidence.
+        labels = (
+            split_assembly_committee_names(claim.object_text)
+            if is_committee
+            else (claim.object_text.strip(),)
         )
         stances = {item.stance for item in evidence}
-        edges.append(
-            OntologyEdge(
-                id=f"edge:{claim.id}",
-                source=center.id,
-                target=target_id,
-                relation_type=relation_type,
-                label=claim.predicate,
-                claim_id=claim.id,
-                evidence_ids=tuple(item.id for item in evidence),
-                source_ids=_ordered_unique(tuple(item.source_id for item in evidence)),
-                epistemic_status=claim.epistemic_status.value,
-                publication_status=claim.publication_status.value,
-                source_conflict={EvidenceStance.SUPPORT, EvidenceStance.REFUTE} <= stances,
-                valid_from=_iso(claim.valid_from),
-                valid_to=_iso(claim.valid_to),
+        for index, label in enumerate(labels):
+            suffix = f":{index}" if is_committee else ""
+            target_id = f"{target_kind.casefold()}:{claim.id}{suffix}"
+            nodes.append(
+                OntologyNode(
+                    id=target_id,
+                    kind=target_kind,
+                    label=label,
+                    claim_ids=(claim.id,),
+                )
             )
-        )
+            edges.append(
+                OntologyEdge(
+                    id=f"edge:{claim.id}{suffix}",
+                    source=center.id,
+                    target=target_id,
+                    relation_type=relation_type,
+                    label=claim.predicate,
+                    claim_id=claim.id,
+                    evidence_ids=tuple(item.id for item in evidence),
+                    source_ids=_ordered_unique(tuple(item.source_id for item in evidence)),
+                    epistemic_status=claim.epistemic_status.value,
+                    publication_status=claim.publication_status.value,
+                    source_conflict={EvidenceStance.SUPPORT, EvidenceStance.REFUTE} <= stances,
+                    valid_from=_iso(claim.valid_from),
+                    valid_to=_iso(claim.valid_to),
+                )
+            )
 
     return OntologyGraph(
         center_node_id=center.id,

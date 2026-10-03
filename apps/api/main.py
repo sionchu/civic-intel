@@ -26,6 +26,9 @@ from packages.rendering.governance_ontology import (
     build_organization_governance_ontology,
     build_person_governance_ontology,
 )
+from packages.rendering.gukgam_committee_members import (
+    build_gukgam_committee_members_projection,
+)
 from packages.rendering.gukgam_organization_binding_review import (
     GukgamOrganizationBindingPreflightError,
     build_gukgam_organization_binding_preflight,
@@ -471,8 +474,7 @@ def create_app(
             )
         return sorted(payload, key=lambda item: (item["name"], item["id"]))
 
-    @app.get("/gukgam/2026/targets")
-    def gukgam_2026_targets() -> dict:
+    def gukgam_target_projection():
         current_organizations = target.public_organizations()
         contexts = target.published_organization_claim_contexts(
             item.id for item in current_organizations
@@ -513,6 +515,31 @@ def create_app(
             sources=source_map,
             policies=policy_map,
             year=2026,
+        )
+
+    @app.get("/gukgam/2026/targets")
+    def gukgam_2026_targets() -> dict:
+        return gukgam_target_projection().to_dict()
+
+    @app.get("/gukgam/2026/committees")
+    def gukgam_2026_committees() -> dict:
+        targets = gukgam_target_projection()
+        public_people = target.public_people()
+        contexts = target.published_person_claim_contexts(item.id for item in public_people)
+        all_evidence = [
+            evidence
+            for _, evidence_by_claim in contexts.values()
+            for evidence_items in evidence_by_claim.values()
+            for evidence in evidence_items
+        ]
+        source_map = target.sources(evidence.source_id for evidence in all_evidence)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
+        return build_gukgam_committee_members_projection(
+            targets,
+            public_people,
+            contexts,
+            sources=source_map,
+            policies=policy_map,
         ).to_dict()
 
     @app.get("/people/{person_id}/claims")

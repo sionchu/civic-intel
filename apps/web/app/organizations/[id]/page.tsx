@@ -3,13 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
+  getGukgamCommittees,
+  getGukgamTargets,
   getOrganization,
   getOrganizationMoney,
   getOrganizationOntology,
   getSource,
 } from "../../data";
+import CommitteeMembers from "../../components/committee-members";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import ReadState from "../../components/read-state";
+import { committeeHref } from "../../gukgam/2026/committees";
+import { formatAuditDate } from "../../gukgam/2026/schedule";
 import { buildPageMetadata } from "../../site-metadata";
 import type { Claim, Evidence, MoneyProjection, Source } from "../../types";
 
@@ -237,10 +242,12 @@ export default async function OrganizationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [organizationResult, moneyResult, ontologyResult] = await Promise.all([
+  const [organizationResult, moneyResult, ontologyResult, targetsResult, committeesResult] = await Promise.all([
     getOrganization(id),
     getOrganizationMoney(id),
     getOrganizationOntology(id),
+    getGukgamTargets(),
+    getGukgamCommittees(),
   ]);
   if (organizationResult.state === "error") {
     if (organizationResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
@@ -261,6 +268,20 @@ export default async function OrganizationPage({
       : moneyResult.state === "error" && moneyResult.error.code === "SOURCE_VERSION_CONFLICT"
         ? "comparison blocked"
         : "service unavailable";
+
+  const gukgamItems = targetsResult.state === "success"
+    ? targetsResult.data.items
+        .filter((item) => item.organization.id === organization.id)
+        .sort((left, right) => left.audit_date.localeCompare(right.audit_date) || left.claim_id.localeCompare(right.claim_id))
+    : [];
+  const gukgamCommitteeNames = [...new Set(gukgamItems.map((item) => item.committee_name))];
+  const committeeByName = new Map(
+    (committeesResult.state === "success" ? committeesResult.data.committees : []).map((committee) => [
+      committee.committee_name,
+      committee,
+    ]),
+  );
+  const gukgamReadError = targetsResult.state === "error" ? targetsResult.error : null;
 
   const claims = organization.claims ?? [];
   const executiveClaims = claims.filter((claim) => claim.predicate === ALIO_EXECUTIVE_PREDICATE);
@@ -332,6 +353,54 @@ export default async function OrganizationPage({
           <div><span className="micro-label">Current executive disclosures</span><strong>{executiveClaims.length}건</strong></div>
         </div>
       </section>
+
+      {(gukgamItems.length > 0 || gukgamReadError) && (
+        <section className="organization-section" id="gukgam-2026" aria-labelledby="organization-gukgam-title">
+          <div className="section-intro">
+            <div><span className="eyebrow">Gukgam 2026 / Claim-backed</span><h2 id="organization-gukgam-title">2026 국정감사</h2></div>
+            <p>공식 위원회 계획서에 피감대상으로 기재된 일정과, 그 위원회에 기재된 국회 명부상 위원을 보여줍니다.</p>
+          </div>
+          {gukgamReadError ? (
+            <ReadState error={gukgamReadError} />
+          ) : (
+            <>
+              <ul className="organization-gukgam-rows">
+                {gukgamItems.map((item) => (
+                  <li key={item.claim_id}>
+                    <strong>{formatAuditDate(item.audit_date)}</strong>
+                    <span>
+                      <Link href={committeeHref(item.committee_name)}>{item.committee_name}</Link>
+                      {item.time_text ? ` · ${item.time_text}` : ""}
+                      {item.venue ? ` · ${item.venue}` : ""}
+                    </span>
+                    <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
+                    <Link className="inline-action" href={`#claim-${item.claim_id}`}>Claim / Evidence <span aria-hidden="true">↓</span></Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="gukgam-scope-note">
+                계획서상 일정이며 감사가 실제로 열렸거나 결과가 나왔다는 기록이 아닙니다.
+                위원은 국회 명부 기준이며 이 기관을 질의했다는 뜻이 아닙니다.
+              </p>
+              {gukgamCommitteeNames.map((name) => {
+                const committee = committeeByName.get(name);
+                return committee ? (
+                  <div className="organization-gukgam-committee" key={name}>
+                    <h3>{name}</h3>
+                    <CommitteeMembers committee={committee} />
+                  </div>
+                ) : committeesResult.state === "error" ? (
+                  <ReadState key={name} error={committeesResult.error} />
+                ) : null;
+              })}
+              <p className="gukgam-scope-note">
+                이 기관의 임원은 <Link href="#executives">현재 임원현황</Link>의 공시상 이름이며,
+                위 위원 인물과 자동으로 연결하지 않습니다.
+              </p>
+            </>
+          )}
+        </section>
+      )}
 
       <section className="organization-section ontology-section" id="official-connections" aria-labelledby="organization-ontology-title">
         <div className="section-intro">

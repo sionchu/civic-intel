@@ -465,3 +465,66 @@ test("Gukgam schedule keeps scope limits and evidence links visible", async () =
   assert.match(organization, /id=\{`claim-\$\{claim\.id\}`\}/);
   assert.doesNotMatch(page + schedule, /score|rank|probability|confidence|위험도|의혹/i);
 });
+
+
+test("Gukgam committee anchors derive only from the official committee name", async () => {
+  const { committeeAnchor, committeeHref } = await import("../app/gukgam/2026/committees.ts");
+  assert.equal(committeeAnchor("국방위원회"), "committee-국방위원회");
+  assert.equal(committeeAnchor(" 연금개혁 특별위원회 "), "committee-연금개혁-특별위원회");
+  assert.equal(committeeHref("행정안전위원회"), "/gukgam/2026#committee-행정안전위원회");
+  assert.notEqual(committeeAnchor("기획재정위원회"), committeeAnchor("재정경제기획위원회"));
+});
+
+test("Gukgam committee members stay Claim-backed, roster-scoped and unranked", async () => {
+  const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
+  const members = await readFile(new URL("../app/components/committee-members.tsx", import.meta.url), "utf8");
+  const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
+  const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
+  assert.match(page, /getGukgamCommittees/);
+  assert.match(page, /<CommitteeMembers committee=\{committeeByName\.get\(committee\.committee\)!\} \/>/);
+  assert.match(page, /위원회별 감사 위원/);
+  assert.match(page, /id=\{committeeAnchor\(committee\.committee_name\)\}/);
+  assert.match(page, /감사 당일 출석이 아닙니다/);
+  assert.match(page, /질의했다는 뜻도 아닙니다/);
+  assert.match(page, /합치지 않아/);
+  assert.match(members, /감사 위원/);
+  assert.match(members, /href=\{`\/people\/\$\{member\.person\.id\}`\}/);
+  assert.match(members, /href=\{`\/people\/\$\{member\.person\.id\}#claim-\$\{member\.claim_id\}`\}/);
+  assert.match(members, /member\.epistemic_status/);
+  assert.match(members, /key=\{member\.person\.id\}/);
+  assert.doesNotMatch(members, /\.sort\(|score|rank|probability|confidence|"use client"|onClick/i);
+  assert.match(data, /getJson\("\/gukgam\/2026\/committees"\)/);
+  assert.match(types, /PUBLIC_CLAIM_BACKED_GUKGAM_COMMITTEE_MEMBERS_V1/);
+  assert.match(types, /MEMBER_ROSTER_SNAPSHOT_NOT_AUDIT_DAY_ATTENDANCE/);
+  assert.match(styles, /\.committee-member-list/);
+  assert.match(styles, /\.committee-index/);
+});
+
+test("Organization detail shows the 2026 Gukgam section without linking executives to People", async () => {
+  const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /getGukgamTargets\(\)/);
+  assert.match(page, /getGukgamCommittees\(\)/);
+  assert.match(page, /item\.organization\.id === organization\.id/);
+  assert.match(page, /id="gukgam-2026"/);
+  assert.match(page, /2026 국정감사/);
+  assert.match(page, /<CommitteeMembers committee=\{committee\} \/>/);
+  assert.match(page, /href="#executives"/);
+  assert.match(page, /자동으로 연결하지 않습니다/);
+  assert.match(page, /gukgamItems\.length > 0/);
+  assert.doesNotMatch(page, /href=\{`\/people\/\$\{(claim|qualifiers)/);
+});
+
+test("Person ontology links a committee to Gukgam only when it is a Gukgam committee", async () => {
+  const graph = await readFile(new URL("../app/components/ontology-local-graph.tsx", import.meta.url), "utf8");
+  const person = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  assert.match(graph, /gukgamCommittees = \[\]/);
+  assert.match(graph, /new Set\(gukgamCommittees\)/);
+  assert.match(graph, /target\?\.kind === "COMMITTEE" && gukgamCommitteeNames\.has\(target\.label\)/);
+  assert.match(graph, /committeeHref\(target\.label\)/);
+  assert.match(graph, /edge\.relation_type === "SERVED_ON"/);
+  assert.match(graph, /`claim-\$\{edge\.claim_id\}`/);
+  assert.match(person, /getGukgamCommittees\(\)/);
+  assert.match(person, /gukgamCommittees=\{gukgamCommittees\}/);
+  assert.doesNotMatch(graph, /"use client"|onClick|confidence|score|probability/);
+});

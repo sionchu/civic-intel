@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import GukgamSearch from "../../components/gukgam-search";
+import CommitteeMembers from "../../components/committee-members";
 import ReadState from "../../components/read-state";
-import { getGukgamTargets, getOrganizations, getPeople } from "../../data";
+import { getGukgamCommittees, getGukgamTargets, getOrganizations, getPeople } from "../../data";
 import { buildPageMetadata } from "../../site-metadata";
+import { committeeAnchor } from "./committees";
 import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./schedule";
 
 export const dynamic = "force-dynamic";
@@ -23,15 +25,18 @@ export default async function Gukgam2026Page({
   const params = await searchParams;
   const initialQuery = typeof params.q === "string" ? params.q.slice(0, 80) : "";
 
-  const [peopleResult, organizationsResult, targetsResult] = await Promise.all([
+  const [peopleResult, organizationsResult, targetsResult, committeesResult] = await Promise.all([
     getPeople(),
     getOrganizations(),
     getGukgamTargets(),
+    getGukgamCommittees(),
   ]);
 
   const peopleCount = peopleResult.state === "success" ? peopleResult.data.length : null;
   const organizationCount = organizationsResult.state === "success" ? organizationsResult.data.length : null;
 
+  const committees = committeesResult.state === "success" ? committeesResult.data.committees : [];
+  const committeeByName = new Map(committees.map((committee) => [committee.committee_name, committee]));
   const today = seoulDate(new Date());
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
   const scheduleGroups = groupByDateAndCommittee(targetItems, today);
@@ -197,11 +202,57 @@ export default async function Gukgam2026Page({
                           </li>
                         ))}
                       </ul>
+                      {committeeByName.has(committee.committee) && (
+                        <CommitteeMembers committee={committeeByName.get(committee.committee)!} />
+                      )}
                     </div>
                   ))}
                 </section>
               ))}
             </div>
+          </>
+        )}
+      </section>
+
+      <section className="gukgam-entry-section" id="gukgam-committees" aria-labelledby="gukgam-committees-title">
+        <div className="section-intro">
+          <div>
+            <span className="eyebrow">Committee members / Claim-backed</span>
+            <h2 id="gukgam-committees-title">위원회별 감사 위원</h2>
+          </div>
+          <p>
+            공개된 피감대상 Claim이 있는 위원회마다, 국회 명부 Claim에 그 위원회가 기재된 현재 공개 의원을
+            보여줍니다. 위원 이름은 인물 기록으로, 근거는 해당 Claim으로 이어집니다.
+          </p>
+        </div>
+        {committeesResult.state === "error" ? (
+          <ReadState error={committeesResult.error} />
+        ) : committees.length === 0 ? (
+          <div className="empty-state" role="status">
+            <span className="empty-state-mark" aria-hidden="true">∅</span>
+            <div>
+              <strong>공개된 위원회 구성 Claim이 없습니다.</strong>
+              <p>위원이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 없다는 뜻입니다.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="gukgam-scope-note">
+              국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 위원이라는 사실이 그 의원이 특정
+              피감기관을 질의했다는 뜻도 아닙니다. 위원회 이름은 공식 표기와 정확히 일치할 때만 연결하며,
+              이전·변경된 위원회 이름은 합치지 않아 일부 의원이 빠질 수 있습니다.
+            </p>
+            <ul className="committee-index">
+              {committees.map((committee) => (
+                <li key={committee.committee_name} id={committeeAnchor(committee.committee_name)}>
+                  <div className="committee-index-heading">
+                    <h3>{committee.committee_name}</h3>
+                    <span>피감대상 {committee.target_count}건 · 위원 {committee.member_count}명</span>
+                  </div>
+                  <CommitteeMembers committee={committee} label="위원 명단" />
+                </li>
+              ))}
+            </ul>
           </>
         )}
       </section>
