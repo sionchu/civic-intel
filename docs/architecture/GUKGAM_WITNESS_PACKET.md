@@ -205,9 +205,47 @@ same deterministic pair after an actual completed link. Exact request replay ret
 original receipt, and an insertion failure rolls back all domain writes and audit.
 
 This implementation opens no witness publication or correction lane: those operations reject
-the new listing predicate until its separate current-source release contract is implemented.
+the witness source path until its separate current-source release contract is implemented.
 Actual source review/import, identity decisions, SSD writes, public UI and release still require
 their operational work orders. Synthetic fixtures are not human attestations about real people.
+
+## Current-source Claim review requests
+
+The existing private `SUBMIT_REVIEW` command accepts exact stored witness Claim UUIDs and a
+substantive request reason. It requests review; it does not attest that a reviewer approved the
+Claim. The same read-only preview, actor/command-bound signature, explicit confirmation and
+private write opt-in apply. No new CLI command, API, schema or public route is added.
+
+Before requesting review, the stored single Evidence must select an exact current witness
+observation from the successful checkpoint. The current RESOLVED Person, unique active
+REVIEWED_LINK / REVIEWED_BRIDGE and latest matching RESOLVED review must rebuild the same
+canonical pair. The original LINK_PERSON command is reconstructed from that review's recorded
+request, reason, Person/observation IDs and official evidence/basis. Its command hash, targets,
+timestamp, human attestation and exact resulting Claim outcome must match the immutable original
+operation receipt. Another row's receipt, changed review note/hash or missing attestation cannot
+supply this authority. Current official bridge policies, provenance and target aliases are
+revalidated using that original attested command, not a new review-request attestation.
+
+The entire persisted Claim and exact single Evidence must match the canonical listing-only
+builder, including IDs, subject, literal qualifiers, time and Source/Snapshot/Observation. Only
+the existing DRAFT/WITHHELD publication state is normalized for this comparison; SQLite's UTC
+DateTime columns are compared with their dropped timezone metadata restored. No other semantics
+are weakened. The source-series checkpoint/run/observations, source chain, Person/aliases,
+review/link, original audit and bridge evidence enter the existing preview dependency fingerprint
+and commit locks. Changed dependencies invalidate the preview, and an invalid batch or audit
+insertion failure leaves every Claim state unchanged.
+
+Witness routing also checks the canonical source contract and feeder provenance. If Claim markers
+and Evidence observation/snapshot references are corrupted together, an existing witness
+SourceSnapshot for the same Evidence Source still keeps the source-specific boundary closed.
+Such corruption cannot select the generic SUBMIT_REVIEW/PUBLISH/CORRECT_CLAIM path.
+
+A successful confirmed fixture transaction changes only DRAFT/WITHHELD to REVIEW and appends
+its request audit. It does not modify the original identity review/link or Source records, perform
+human publication review, strengthen CLAIM into FACT, assert attendance, or publish anything.
+The request audit retains `human_verified=false`; the prior identity attestation remains its own
+record. PUBLISH and CORRECT_CLAIM stay rejected. Real field review, import, official identity
+judgments, operational requests, publication and deployment are separate unexecuted steps.
 
 ## Evidence boundary
 

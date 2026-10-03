@@ -39,6 +39,15 @@ only the exact reviewed link/review and canonical DRAFT listing Claim/Evidence w
 Witness publication and correction fail closed in this milestone. The ALIO queue and operations
 are unchanged. See [the source contract](GUKGAM_WITNESS_PACKET.md#private-reviewed-witness-linking).
 
+Witness SUBMIT_REVIEW additionally requires an exact current source, resolved latest identity
+review/link, the matching immutable original LINK_PERSON audit and its still-valid official
+bridge. The stored Claim/Evidence must equal the canonical listing-only pair. All dependencies
+enter signed preview/commit revalidation. SourceSnapshot provenance keeps this witness boundary
+even when mutable Claim markers and Evidence references are stripped. Confirmed commit only
+moves DRAFT/WITHHELD to REVIEW with its request audit; it does not supply human publication
+approval or change identity/truth. Publication and correction remain blocked. See
+[current-source review requests](GUKGAM_WITNESS_PACKET.md#current-source-claim-review-requests).
+
 Supported actions:
 - HOLD / EXCLUDE / REOPEN on named ALIO source records;
 - REGISTER_PERSON / LINK_PERSON;

@@ -58,7 +58,10 @@ from packages.verification.cross_lane_identity import (
     CrossLaneIdentityEvidence,
     resolve_cross_lane_identity,
 )
-from packages.verification.gukgam_witness_import import GUKGAM_WITNESS_FEEDER
+from packages.verification.gukgam_witness_import import (
+    GUKGAM_WITNESS_FEEDER,
+    GUKGAM_WITNESS_SOURCE_CONTRACT,
+)
 from packages.verification.identity import IdentityCandidate
 from packages.verification.nec_person_materialization import (
     NEC_CANDIDACY_PREDICATE,
@@ -520,8 +523,12 @@ def _nec_person_record(plan: Plan, identifier: UUID):
     return row, context, source_row
 
 
-def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) -> list[Any]:
-    rows = [plan.get(db.ClaimEvidenceRow, identifier) for identifier in plan.command.evidence_ids]
+def _bridge(
+    plan: Plan, left: IdentityCandidate, target: Any, from_role: str,
+    *, reviewed_command: AdminCommand | None = None,
+) -> list[Any]:
+    command = reviewed_command or plan.command
+    rows = [plan.get(db.ClaimEvidenceRow, identifier) for identifier in command.evidence_ids]
     evidence, sources, policies = _evidence_context(plan, rows)
     aliases = plan.query(
         db.PersonAliasRow,
@@ -544,10 +551,10 @@ def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) ->
             )
         bridge_items.append(
             CrossLaneIdentityEvidence(
-                evidence_type=CrossLaneIdentityEvidenceType(plan.command.identity_basis or ""),
+                evidence_type=CrossLaneIdentityEvidenceType(command.identity_basis or ""),
                 source_ref=str(source.id),
                 from_role=from_role,
-                to_role=plan.command.reason,
+                to_role=command.reason,
             )
         )
     decision = resolve_cross_lane_identity(
@@ -566,8 +573,7 @@ def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) ->
     return rows
 
 
-def _link_witness(plan: Plan, observation: Any) -> None:
-    from packages.persistence import mapping
+def _current_witness_record(plan: Plan, observation: Any):
     from packages.persistence.acquisition import AcquisitionRepository
 
     # Lock/fingerprint the exact source series before using the shared canonical reader.
@@ -605,7 +611,13 @@ def _link_witness(plan: Plan, observation: Any) -> None:
     ]
     if len(selected) != 1:
         raise AdminError("WITNESS_NOT_CURRENT", "현재 검토 완료 명단에 포함된 증인 행이 필요합니다.")
-    document, index = selected[0]
+    return selected[0]
+
+
+def _link_witness(plan: Plan, observation: Any) -> None:
+    from packages.persistence import mapping
+
+    document, index = _current_witness_record(plan, observation)
     linked = plan.query(
         db.PersonObservationLinkRow,
         db.PersonObservationLinkRow.observation_id == observation.id,
@@ -667,6 +679,96 @@ def _link_witness(plan: Plan, observation: Any) -> None:
         "packet_hash": prepared.packet_hash, "observation_hash": prepared.observation_hash,
         "attendance_state": "NOT_VERIFIED",
     })
+
+
+def _witness_review_preflight(plan: Plan, claim_row: Any, evidence_rows: list[Any]) -> dict[str, Any]:
+    from packages.persistence import mapping
+
+    if len(evidence_rows) != 1 or not evidence_rows[0].feeder_observation_id:
+        raise AdminError("WITNESS_EVIDENCE_CONFLICT", "증인 명단의 정확한 단일 행 근거가 필요합니다.")
+    observation = plan.get(db.FeederObservationRow, evidence_rows[0].feeder_observation_id)
+    document, index = _current_witness_record(plan, observation)
+    target = _current_person(plan, claim_row.person_id)
+    links = plan.query(
+        db.PersonObservationLinkRow,
+        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.superseded_at.is_(None),
+    )
+    if len(links) != 1 or not links[0].review_item_id:
+        raise AdminError("WITNESS_IDENTITY_CONFLICT", "증인 행의 단일 활성 검토 연결이 필요합니다.")
+    latest_review = _review_row(plan, observation.id)
+    if latest_review is None or latest_review.id != links[0].review_item_id:
+        raise AdminError("WITNESS_REVIEW_CONFLICT", "증인 행의 최신 신원 검토가 연결과 일치하지 않습니다.")
+    try:
+        link = mapping._person_observation_link(links[0])
+        review = mapping._identity_review_item(latest_review)
+        prepared = build_gukgam_witness_claim(
+            document, index, person=Person.model_validate(target, from_attributes=True),
+            link=link, review=review,
+        )
+        original_command = AdminCommand(
+            request_id=UUID(review.details["operator_request_id"]),
+            action=AdminAction.LINK_PERSON,
+            record_ids=(UUID(observation.id),),
+            target_person_id=UUID(target.id),
+            reason=review.resolution_note or "",
+            evidence_ids=tuple(UUID(item) for item in review.details["review_evidence_ids"]),
+            identity_basis=review.details["identity_basis"],
+            human_verified=True,
+        )
+    except (ValueError, KeyError, TypeError, AttributeError):
+        raise AdminError("WITNESS_IDENTITY_CONFLICT", "증인 행의 검토 신원·근거 계약이 일치하지 않습니다.") from None
+    entry = plan.get(db.AdminOperationRow, original_command.request_id)
+    expected_outcome = {
+        "observation_id": observation.id, "person_id": target.id, "disposition": "REGISTERED",
+        "claim_id": str(prepared.claim.id), "publication_status": "DRAFT",
+        "identity_action": "REVIEWED_LINK", "category": document.packet.rows[index].category,
+        "packet_hash": prepared.packet_hash, "observation_hash": prepared.observation_hash,
+        "attendance_state": "NOT_VERIFIED",
+    }
+    if (
+        not isinstance(entry.result, dict)
+        or entry.action != AdminAction.LINK_PERSON.value
+        or entry.command_hash != digest(original_command.model_dump(mode="json"))
+        or entry.targets != [observation.id]
+        or entry.reason != review.resolution_note
+        or entry.created_at != latest_review.resolved_at
+        or entry.created_at != links[0].linked_at
+        or entry.result.get("write_performed") is not True
+        or entry.result.get("human_verified") is not True
+        or entry.result.get("identity_basis") != original_command.identity_basis
+        or entry.result.get("review_evidence_ids") != [str(item) for item in original_command.evidence_ids]
+        or entry.result.get("outcomes") != [expected_outcome]
+        or review.details.get("reviewed_packet_hash") != prepared.packet_hash
+        or review.details.get("immutable_observation_hash") != prepared.observation_hash
+    ):
+        raise AdminError("WITNESS_AUDIT_CONFLICT", "증인 신원 검토와 원래 연결 작업의 변경 이력이 일치하지 않습니다.")
+    _bridge(
+        plan, IdentityCandidate(canonical_name=document.packet.rows[index].printed_name), target,
+        document.packet.source.committee_name + " / " + document.packet.rows[index].category,
+        reviewed_command=original_command,
+    )
+    try:
+        actual = Claim.model_validate(claim_row, from_attributes=True).model_dump(mode="python")
+        actual_evidence = ClaimEvidence.model_validate(evidence_rows[0], from_attributes=True)
+    except ValueError:
+        raise AdminError("WITNESS_CLAIM_CONFLICT", "저장된 증인 Claim·근거 계약이 유효하지 않습니다.") from None
+    expected = prepared.claim.model_dump(mode="python")
+    actual["publication_status"] = PublicationStatus.DRAFT
+    if plan.session.get_bind().dialect.name == "sqlite":
+        # SQLite drops timezone metadata from the canonical UTC DateTime columns.
+        for values in (actual, expected):
+            for key in ("valid_from", "valid_to", "recorded_at", "superseded_at"):
+                value = values[key]
+                if value is not None and value.tzinfo is None:
+                    values[key] = value.replace(tzinfo=UTC)
+    if actual != expected or actual_evidence != prepared.evidence:
+        raise AdminError("WITNESS_CLAIM_CONFLICT", "저장된 증인 Claim·근거가 현재 명단과 검토 연결에 일치하지 않습니다.")
+    return {
+        "witness_preflight": "CURRENT_SOURCE_IDENTITY_CLAIM_EVIDENCE_VERIFIED",
+        "packet_hash": prepared.packet_hash, "observation_hash": prepared.observation_hash,
+        "publication_enabled": False, "attendance_state": "NOT_VERIFIED",
+    }
 
 
 def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> None:
@@ -810,8 +912,21 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
         raise AdminError("SUPERSEDED_CLAIM", "이미 대체된 Claim은 수정·공개하지 않습니다.")
     evidence_rows = plan.query(db.ClaimEvidenceRow, db.ClaimEvidenceRow.claim_id == row.id)
     action = plan.command.action
-    if (
+    is_witness = (
         row.predicate == GUKGAM_WITNESS_LISTING_PREDICATE
+        or row.qualifiers.get("source_contract") == GUKGAM_WITNESS_SOURCE_CONTRACT
+        or any(
+            plan.get(db.FeederObservationRow, item.feeder_observation_id).feeder == GUKGAM_WITNESS_FEEDER
+            for item in evidence_rows if item.feeder_observation_id
+        )
+        or bool(plan.query(
+            db.SourceSnapshotRow,
+            db.SourceSnapshotRow.source_id.in_({item.source_id for item in evidence_rows}),
+            db.SourceSnapshotRow.metadata_json["source_contract"].as_string() == GUKGAM_WITNESS_SOURCE_CONTRACT,
+        ))
+    )
+    if (
+        is_witness
         and action in {AdminAction.PUBLISH, AdminAction.CORRECT_CLAIM}
     ):
         raise AdminError(
@@ -876,6 +991,11 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
         raise AdminError("NO_CHANGE", "이미 요청한 상태입니다.")
     if action == AdminAction.SUBMIT_REVIEW and row.publication_status not in {"DRAFT", "WITHHELD"}:
         raise AdminError("INVALID_TRANSITION", "초안 또는 비공개 상태만 검토 요청할 수 있습니다.")
+    witness_preflight = (
+        _witness_review_preflight(plan, row, evidence_rows)
+        if action == AdminAction.SUBMIT_REVIEW and is_witness
+        else {}
+    )
     if action == AdminAction.PUBLISH:
         if row.publication_status not in {"REVIEW", "DRAFT", "WITHHELD"}:
             raise AdminError("INVALID_TRANSITION", "공개할 수 없는 상태입니다.")
@@ -920,6 +1040,7 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
             "before": row.publication_status,
             "after": new_status,
             "epistemic_status_unchanged": row.epistemic_status,
+            **witness_preflight,
         }
     )
 

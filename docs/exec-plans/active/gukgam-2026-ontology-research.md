@@ -27,6 +27,44 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Witness Claim current-source review preflight continuation, 2026-10-04
+
+MAIN continues at base `a0e732e6242772f184e41175b85f6539ff75b6c3` with the planned local
+release preflight inside existing private admin SUBMIT_REVIEW. Reuse the shared current witness
+source loader, exact resolved review/link, immutable original LINK_PERSON audit and official bridge
+resolver. Compare the persisted Claim/Evidence to the canonical listing-only builder and bind all
+current source, identity, review, audit and evidence dependencies into signed preview/revalidation.
+Preview remains read-only; explicitly confirmed disposable-fixture commit may move DRAFT to REVIEW
+with audit. It provides no human publication approval and PUBLISH/CORRECT_CLAIM remain blocked.
+No new schema, route, CLI, UI, Person/Organization, source fetch, operational import/review/identity/
+SSD write/service restart or deployment. Owned paths: existing admin workflow, synthetic witness
+admin regressions, witness/admin/command contracts, this plan, HANDOFF, INDEX and one receipt.
+One read-only bounded child reviews invariants/diff without recursion, external resources, provider
+rows or secrets. MAIN preserves original edits and47-row inputs, runs targeted checks and full
+make verify only for this new behavior, inspects the diff and makes a coherent local commit.
+
+Completed local slice: existing private SUBMIT_REVIEW now revalidates the exact current witness
+source, current Person, latest resolved review/link, reconstructed original LINK_PERSON command
+and immutable audit, current official bridge and complete canonical Claim/Evidence equality.
+Signed preview/confirmed commit bind those dependencies. It requests REVIEW with atomic audit;
+it performs no human publication approval and preserves CLAIM/non-asserted listing semantics.
+SourceSnapshot provenance closes the compound marker/reference routing bypass found in the
+read-only independent review; six regressions cover all three actions with/without snapshot refs.
+All 158 targeted regression checks passed. Full `make verify` exited 0: 1,130 Python PASS,
+4 optional PostgreSQL skips and 6 warnings (543.46s), 34 web checks and 12 Worker synthetic
+HTTP checks PASS. Lint, types, Golden Set, architecture, Next and Worker builds passed.
+Original user edit and 47-row packet/template hashes are unchanged. One Commander read at
+2026-10-03 20:32:52 UTC confirms schema 0008, mode 0600, quick_check ok, no FK violations and
+HTTP 200: 298 People, 298 DRAFT Claims, 0 Organizations, 299 observations, 1 run and 0 exact
+canonical witness/MOIS runs.
+No actual field review, source import, identity decision, operational review request, publication,
+SSD write, migration, restart or deployment occurred. Required actual inputs remain the reviewed
+47-row source manifest plus separately attested official identity bridge IDs/basis and current
+Person/Observation. Next independent local slice: source-specific release eligibility contract
+and synthetic regressions, with operational publication closed.
+[Current-source review preflight evidence](../../receipts/gukgam-witness-review-preflight-20261004.json)
+supersedes only the intentional admin/test pins; unchanged files and historical receipts remain.
+
 ### Private reviewed witness identity continuation, 2026-10-04
 
 MAIN continues the next local slice at base `8c7c449c02af1ade8b6c42b0283e92b969fdca59`:

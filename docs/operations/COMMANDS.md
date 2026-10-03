@@ -82,6 +82,13 @@ persists the exact review/link and a DRAFT listing Claim/Evidence with audit. It
 witness Person or publish/correct its Claim. No CLI verb, public endpoint or automatic review is
 added. See [private reviewed witness linking](../architecture/GUKGAM_WITNESS_PACKET.md#private-reviewed-witness-linking).
 
+Its existing private `SUBMIT_REVIEW` operation also revalidates a persisted witness Claim's
+current source, exact resolved review/link, original attested LINK_PERSON receipt, current
+official bridge and canonical Claim/Evidence before a signed, confirmed review request.
+The transaction changes only DRAFT/WITHHELD to REVIEW with audit. This is neither a human
+publication approval nor a CLI write command; witness PUBLISH/CORRECT_CLAIM remain closed.
+See [current-source review requests](../architecture/GUKGAM_WITNESS_PACKET.md#current-source-claim-review-requests).
+
 ### Offline witness correction preparation
 
 The existing single-packet inspect command additionally accepts `--write-draft-edits

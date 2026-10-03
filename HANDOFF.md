@@ -41,31 +41,34 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
-2026-10-04 reviewed witness identity/DRAFT continuation (base8c7c449): existing private admin
-`LINK_PERSON` now accepts one exact current HUMAN_REVIEWED 2026 witness observation and an
-already current RESOLVED Person, using explicit official continuity evidence and human identity
-attestation. Scoped canonical packet validation and existing signed preview/confirmed commit
-bind source-series dependencies, policy, target/aliases, evidence and review/link state. One
-transaction persists the exact resolved review/link, canonical listing-only DRAFT Claim/Evidence
-and append-only audit. Witness Person creation and publication/correction are rejected. Existing
-ALIO behavior, automatic identity writer, schema, source rows, checkpoints and public routes stay
-unchanged. Targeted33PASS plus existing-path regressions; full make verify exit0:1075 Python PASS,
-4 optional PG skips,6 warnings(519.00s),34 web/12 Worker synthetic HTTP PASS, all lint/type/Golden/
-architecture/Next/Worker gatesPASS. Independent read-only review found no concrete defect; the
-additional source-version/scoped-selection regression gap was covered. No browser UI change.
-Original user edit and47-row packet/template hashes are preserved. One Commander aggregate
-read at2026-10-03 19:34:05–06UTC confirms schema0008/mode0600/quick_check ok/FK0/HTTP200,
-People298,DRAFT Claims298,Organizations0,observations299,runs1,witness0 and exact canonical MOIS
-runs0. This corrects the preceding NOT_RUN counter's query coverage without a second snapshot.
-No actual source field review, operational import/identity/DRAFT/publication, runtime upgrade,
-browser acceptance or deployment occurred. Entry: existing private admin preview/commit using
-the documented reviewed witness link contract. Actual inputs need reviewed source fields plus
-current Person/Observation and separately reviewed official Evidence IDs/basis; the unchanged
-47-row guide remains .tools/gukgam-witness-draft-preparation-20261004/README.md.
-Next independent local slice: current-source and exact reviewed-identity release preflight;
-keep witness release closed until its source-specific contract/regression is complete.
-Receipt and latest intentional code/test hash pins:
-docs/receipts/gukgam-witness-reviewed-admin-20261004.json. Retain prior pins for unchanged files.
+2026-10-04 witness current-source Claim review preflight (basea0e732e): existing private admin
+SUBMIT_REVIEW checks current checkpoint/packet/provenance, current resolved Person, unique active
+reviewed link/latest resolved review, original LINK_PERSON command/immutable audit and current
+official bridge/aliases. The persisted Claim/Evidence must equal the canonical listing-only pair.
+All dependencies bind signed preview and confirmed commit; fixture writes only DRAFT/WITHHELD
+to REVIEW plus atomic audit. No human publication approval, new identity review or truth
+promotion occurs. Witness PUBLISH/CORRECT_CLAIM remain blocked. Canonical SourceSnapshot
+routing fixes the independently found compound marker/provenance bypass; all six probes pass.
+All 158 targeted regression checks passed. Full `make verify` exited 0: 1,130 Python PASS,
+4 optional PostgreSQL skips and 6 warnings (543.46s), 34 web checks and 12 Worker synthetic
+HTTP checks PASS. Lint, types, Golden Set, architecture, Next and Worker builds passed.
+The 88 witness admin cases include 55 new review regressions. Browser NOT_RUN: no UI change;
+live PostgreSQL NOT_RUN: sanitized runner has no POSTGRES_TEST_URL. Original user edit and
+47-row packet/template hashes are unchanged. One Commander aggregate read at 20:32:52 UTC
+on 2026-10-03 confirms schema 0008, mode 0600, quick_check ok, no FK violations and HTTP 200:
+298 People, 298 DRAFT Claims, 0 Organizations, 299 observations, 1 run and 0 canonical
+witness/MOIS runs. Actual source field review,
+operational import/identity/DRAFT/review/publication, runtime upgrade and deployment remain
+unexecuted. Entry: existing private admin preview/commit with SUBMIT_REVIEW Claim UUIDs and
+reason; explicit confirmation requests review, it does not supply approval. Real workflow needs
+reviewed fields/exact47-row import manifest and separately attested official bridge IDs/basis
+for current Person/Observation. Preparation guide remains
+.tools/gukgam-witness-draft-preparation-20261004/README.md. Next independent local slice:
+source-specific release eligibility contract and synthetic regressions; keep operational
+publication closed. Latest intentional admin/test pins and current evidence:
+docs/receipts/gukgam-witness-review-preflight-20261004.json. Retain prior unchanged-file pins.
+The prior reviewed witness LINK_PERSON/DRAFT milestone remains recorded in
+docs/receipts/gukgam-witness-reviewed-admin-20261004.json.
 
 Preceding completed local preparation milestone:
 2026-10-04 witness-to-Person DRAFT preparation (base2a19006): canonical
