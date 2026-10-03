@@ -67,9 +67,24 @@ QUESTIONED
 AUDITED_BY
 ```
 
-The first executable slice maps only the canonical `HELD_ROLE` predicate to a Claim-scoped
-`OFFICE` target. The wider vocabulary is reserved for later source slices and becomes executable
-only after each exact predicate and target-identity contract exists.
+The executable Person projection maps canonical `HELD_ROLE` to a Claim-scoped `OFFICE` target
+and the exact current-roster `ASSEMBLY_COMMITTEES` Claim (`source_contract=assembly_member_roster`,
+`field_name=committees`; any other contract fails closed) to Claim-scoped `COMMITTEE` targets.
+The comma-separated official committee names are split and trimmed; each name becomes one
+`COMMITTEE` node and one `SERVED_ON` edge that carries the same Claim and Evidence ids. Committee
+nodes have no canonical id: names are never normalized, renamed or merged (for example a former
+committee name is not mapped to its apparent successor), and the projection creates no
+cross-Person paths.
+
+`GET /gukgam/2026/committees` is a separate read-only projection
+(`PUBLIC_CLAIM_BACKED_GUKGAM_COMMITTEE_MEMBERS_V1`). For each committee name used by published
+Gukgam target Claims it lists the public RESOLVED People whose published `ASSEMBLY_COMMITTEES`
+Claim names that committee exactly, with the party from the published `ASSEMBLY_PARTY` Claim. The
+roster is a member-roster snapshot, not audit-day attendance, and membership does not mean a
+member questioned any audited institution.
+
+The wider vocabulary is reserved for later source slices and becomes executable only after each
+exact predicate and target-identity contract exists.
 
 Appointment, election, nomination and designation events are not rewritten as `HELD_ROLE`.
 

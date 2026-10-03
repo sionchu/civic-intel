@@ -103,6 +103,33 @@ export type GukgamTargetProjection = {
   limitations: string[];
 };
 
+export type GukgamCommitteeMember = {
+  person: { id: string; name: string };
+  party: string | null;
+  party_claim_id: string | null;
+  claim_id: string;
+  epistemic_status: Status;
+  evidence_ids: string[];
+  source_ids: string[];
+};
+
+export type GukgamCommittee = {
+  committee_name: string;
+  target_count: number;
+  member_count: number;
+  members: GukgamCommitteeMember[];
+};
+
+export type GukgamCommitteeProjection = {
+  semantics: "PUBLIC_CLAIM_BACKED_GUKGAM_COMMITTEE_MEMBERS_V1";
+  coverage: "BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY";
+  roster_semantics: "MEMBER_ROSTER_SNAPSHOT_NOT_AUDIT_DAY_ATTENDANCE";
+  year: number;
+  committee_count: number;
+  committees: GukgamCommittee[];
+  limitations: string[];
+};
+
 export type ChangeTracePoint = {
   claim_id: string;
   order_key: string;

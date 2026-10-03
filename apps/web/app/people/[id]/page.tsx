@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getPerson, getPersonOntology, getSource } from "../../data";
+import { getGukgamCommittees, getPerson, getPersonOntology, getSource } from "../../data";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import ReadState from "../../components/read-state";
 import { getReviewedPortrait } from "../../portrait";
@@ -44,10 +44,14 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
   }
   const person = personResult.data;
-  const [portrait, ontologyResult] = await Promise.all([
+  const [portrait, ontologyResult, committeesResult] = await Promise.all([
     getReviewedPortrait(person),
     getPersonOntology(id),
+    getGukgamCommittees(),
   ]);
+  const gukgamCommittees = committeesResult.state === "success"
+    ? committeesResult.data.committees.map((committee) => committee.committee_name)
+    : [];
   const ontology = ontologyResult.state === "success" ? ontologyResult.data : null;
 
   const sectionSourceIds =
@@ -293,7 +297,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         {ontologyResult.state === "error" ? (
           <ReadState error={ontologyResult.error} />
         ) : ontology && ontology.edges.length > 0 ? (
-          <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} />
+          <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} gukgamCommittees={gukgamCommittees} />
         ) : (
           <p className="empty-state" role="status">
             <span className="empty-state-mark" aria-hidden="true">∅</span>

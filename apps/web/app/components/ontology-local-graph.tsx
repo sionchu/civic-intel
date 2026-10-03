@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { committeeHref } from "../gukgam/2026/committees";
 import type { OntologyGraph } from "../types";
 
 const RELATION_LABELS: Record<string, string> = {
@@ -23,10 +24,13 @@ function shortLabel(value: string, length = 16): string {
 export default function OntologyLocalGraph({
   graph,
   sourceTitles,
+  gukgamCommittees = [],
 }: {
   graph: OntologyGraph;
   sourceTitles: Record<string, string>;
+  gukgamCommittees?: string[];
 }) {
+  const gukgamCommitteeNames = new Set(gukgamCommittees);
   const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
   const center = nodeById.get(graph.center_node_id);
   const visibleEdges = graph.edges.slice(0, 6);
@@ -71,16 +75,31 @@ export default function OntologyLocalGraph({
       </div>
 
       <div className="ontology-relations" aria-label="공식 기록상 연결 목록">
-        {graph.edges.map((edge) => {
+        {graph.edges.map((edge, edgeIndex) => {
           const target = nodeById.get(edge.source === graph.center_node_id ? edge.target : edge.source);
           const firstSource = edge.source_ids[0];
           return (
-            <article className="ontology-relation" key={edge.id}>
+            <article
+              className="ontology-relation"
+              key={edge.id}
+              id={
+                edge.relation_type === "SERVED_ON"
+                  && graph.edges.findIndex((item) => item.claim_id === edge.claim_id) === edgeIndex
+                  ? `claim-${edge.claim_id}`
+                  : undefined
+              }
+            >
               <div className="ontology-relation-heading">
                 <span className="micro-label">{RELATION_LABELS[edge.relation_type] ?? edge.relation_type}</span>
                 <span className={`status ${edge.epistemic_status}`}>{edge.epistemic_status}</span>
               </div>
-              <strong>{target?.label ?? "연결 대상"}</strong>
+              <strong>
+                {target?.kind === "COMMITTEE" && gukgamCommitteeNames.has(target.label) ? (
+                  <Link href={committeeHref(target.label)}>{target.label}</Link>
+                ) : (
+                  target?.label ?? "연결 대상"
+                )}
+              </strong>
               <p>
                 {edge.valid_from ? `기록 시작 ${edge.valid_from.slice(0, 10)}` : "기간 정보 없음"}
                 {edge.valid_to ? ` · 종료 ${edge.valid_to.slice(0, 10)}` : ""}

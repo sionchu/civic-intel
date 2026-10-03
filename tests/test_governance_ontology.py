@@ -104,11 +104,71 @@ def test_person_role_projects_to_evidence_backed_ontology_edge() -> None:
     assert "projection must never copy this excerpt" not in str(payload)
 
 
+def committee_claim(object_text: str, **qualifiers: str) -> Claim:
+    return role_claim(predicate="ASSEMBLY_COMMITTEES").model_copy(
+        update={
+            "object_text": object_text,
+            "qualifiers": {
+                "source_contract": "assembly_member_roster",
+                "field_name": "committees",
+                **qualifiers,
+            },
+        }
+    )
+
+
+def test_assembly_committees_split_into_typed_committee_nodes_and_served_on_edges() -> None:
+    claim = committee_claim(" 연금개혁 특별위원회 ,보건복지위원회, ,보건복지위원회")
+
+    payload = build_person_governance_ontology(
+        person(), [claim], {claim.id: [evidence()]}
+    ).to_dict()
+
+    committee_nodes = [node for node in payload["nodes"] if node["kind"] == "COMMITTEE"]
+    assert [node["label"] for node in committee_nodes] == [
+        "연금개혁 특별위원회",
+        "보건복지위원회",
+    ]
+    assert all(node["canonical_id"] is None for node in committee_nodes)
+    assert len({node["id"] for node in committee_nodes}) == 2
+    assert [edge["relation_type"] for edge in payload["edges"]] == ["SERVED_ON", "SERVED_ON"]
+    assert len({edge["id"] for edge in payload["edges"]}) == 2
+    for edge, node in zip(payload["edges"], committee_nodes, strict=True):
+        assert edge["target"] == node["id"]
+        assert edge["claim_id"] == str(CLAIM_ID)
+        assert edge["evidence_ids"] == [str(EVIDENCE_ID)]
+        assert edge["source_ids"] == [str(SOURCE_ID)]
+    assert "projection must never copy this excerpt" not in str(payload)
+
+
+@pytest.mark.parametrize(
+    "qualifiers",
+    [
+        {"source_contract": "unrelated_source"},
+        {"field_name": "party"},
+    ],
+)
+def test_assembly_committee_claim_fails_closed_on_unexpected_contract(
+    qualifiers: dict[str, str],
+) -> None:
+    claim = committee_claim("보건복지위원회", **qualifiers)
+
+    with pytest.raises(GovernanceOntologyError, match="invalid source contract"):
+        build_person_governance_ontology(person(), [claim], {claim.id: [evidence()]})
+
+
+def test_assembly_committee_claim_without_evidence_fails_closed() -> None:
+    claim = committee_claim("보건복지위원회")
+
+    with pytest.raises(GovernanceOntologyError, match="lacks ClaimEvidence"):
+        build_person_governance_ontology(person(), [claim], {})
+
+
+
 @pytest.mark.parametrize(
     "predicate",
     [
         "ASSEMBLY_PARTY",
-        "ASSEMBLY_COMMITTEES",
         "NOMINATED_AS",
         "DESIGNATED_AS",
         "APPOINTED_AS",
