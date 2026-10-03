@@ -4,14 +4,17 @@
 
 - Merged: #161 review-throughput telemetry (`5ce874e`), #162 `/gukgam/2026` audit schedule view
   (`5ab146f`). Open: #163 hosted-snapshot refresh script/runbook.
-- Data model for hosting (owner decision): Mac mini PostgreSQL is the only canonical write DB;
-  the Railway staging DB is a read snapshot refreshed with `deploy/refresh-staging-db.sh`.
+- Hosting direction (owner, 2026-10-04): serve directly from the Mac mini, which already holds the
+  canonical DB. Running locally at exact master `5ab146f`: API `127.0.0.1:8100` (worktree
+  `/Users/lee/Projects/civic-intel-deploy`), standalone Web `127.0.0.1:3200`, operator console off
+  (`/admin/review` 404), noindex. Public ingress (Tailscale Funnel) was briefly enabled and then
+  turned off pending explicit owner confirmation of internet exposure. `deploy/refresh-staging-db.sh`
+  remains the fallback for a hosted read snapshot.
 - Mac canonical (schema `0008`): People `9120`, Organizations `374`, Claims/Evidence
   `14397/14397`, public Claim-backed Gukgam targets `110` (6 committees, 2026-10-06..10-23).
 - Railway staging still runs the 2026-09-20/23 images over the older DB; its Gukgam target section
-  renders `SERVICE_UNAVAILABLE` until refresh + redeploy. Pending owner action: `railway login` on
-  the Mac (MCP returns DB secrets redacted). A temporary staging Postgres TCP proxy was created for
-  the copy and must be removed after it.
+  renders `SERVICE_UNAVAILABLE`. A temporary staging Postgres TCP proxy created on 2026-10-04 has a
+  staged removal that Railway did not apply (MCP timeout); remove it in the dashboard.
 - Open data decisions (unchanged): 41-item Gukgam Claim DRAFT, 70-item MOIS proposal, orphan
   `RUNNING` ALIO SourceRun `560c8e62…` (2026-09-18) needing an explicit close decision.
 - The canonical checkout `/Users/lee/Projects/civic-intel` still holds an uncommitted pre-format
