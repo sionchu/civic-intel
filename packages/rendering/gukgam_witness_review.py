@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
 from packages.connectors.gukgam_witness_packet import (
     HUMAN_REVIEWED,
     WITNESS_PACKET_SCHEMA,
+    GukgamWitnessPacket,
     GukgamWitnessPacketError,
     canonical_hash,
     parse_gukgam_witness_packet,
@@ -72,10 +74,17 @@ def _row(context: Context, *, scope_key: str, attachment_hash: str) -> dict:
     return normalized
 
 
-def load_current_gukgam_witness_review(
+@dataclass(frozen=True)
+class CurrentGukgamWitnessDocument:
+    packet: GukgamWitnessPacket
+    contexts: tuple[Context, ...]
+
+
+def load_current_gukgam_witness_documents(
     repository: GukgamWitnessReviewRepository, *, year: int = 2026,
-) -> dict:
-    documents: list[dict] = []
+) -> tuple[CurrentGukgamWitnessDocument, ...]:
+    """Recover exact checkpoint-selected packets and provenance for private use cases."""
+    documents: list[CurrentGukgamWitnessDocument] = []
     for checkpoint in repository.source_checkpoints(GUKGAM_WITNESS_FEEDER):
         if not checkpoint.scope_key.startswith(f"{year}:"):
             continue
@@ -106,8 +115,15 @@ def load_current_gukgam_witness_review(
             raise GukgamWitnessReviewError("witness checkpoint row keys are duplicated")
         observations = repository.feeder_observations(GUKGAM_WITNESS_FEEDER, checkpoint.scope_key)
         contexts = repository.feeder_observation_contexts(item.id for item in observations)
-        selected = {(item.provider_record_key, item.content_hash): contexts.get(item.id)
-                    for item in observations}
+        selected: dict[tuple[str, str], Context | None] = {}
+        for item in observations:
+            key = (item.provider_record_key, item.content_hash)
+            if key in selected:
+                raise GukgamWitnessReviewError("witness observation versions are duplicated")
+            context = contexts.get(item.id)
+            if context is not None and context[0] != item:
+                raise GukgamWitnessReviewError("witness observation context differs")
+            selected[key] = context
         current: list[Context] = []
         for identity in expected:
             context = selected.get(identity)
@@ -132,6 +148,17 @@ def load_current_gukgam_witness_review(
         expected_scope = f"{year}:{packet.source.committee_name}:{packet.source_key}"
         if checkpoint.scope_key != expected_scope or packet.content_hash != meta["reviewed_packet_hash"]:
             raise GukgamWitnessReviewError("witness reviewed packet hash or scope differs")
+        documents.append(CurrentGukgamWitnessDocument(packet, tuple(current)))
+    return tuple(documents)
+
+
+def load_current_gukgam_witness_review(
+    repository: GukgamWitnessReviewRepository, *, year: int = 2026,
+) -> dict:
+    documents: list[dict] = []
+    for document in load_current_gukgam_witness_documents(repository, year=year):
+        packet, current = document.packet, document.contexts
+        snapshot, source = current[0][1], current[0][2]
         documents.append({
             "committee_name": packet.source.committee_name,
             "source_published_date": packet.source.published_date.isoformat(),

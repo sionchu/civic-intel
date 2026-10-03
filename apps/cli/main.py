@@ -72,6 +72,7 @@ ROUTES = {
         (
             "commands",
             "collection-status",
+            "gukgam-witness-claim",
             "alio-item4",
             "gukgam-plan",
             "gukgam-witness",
@@ -132,7 +133,12 @@ def build_parser() -> argparse.ArgumentParser:
                 "dart",
                 "gukgam-schedule-probe",
             ):
-                p.add_argument("--database-url")
+                p.add_argument("--database-url", required=lane == "gukgam-witness-claim")
+            if lane == "gukgam-witness-claim":
+                p.add_argument("--person-id", type=UUID, required=True)
+                p.add_argument("--observation-id", type=UUID, required=True)
+                p.add_argument("--expected-observation-hash", type=sha256, required=True)
+                p.add_argument("--expected-packet-hash", type=sha256, required=True)
             if lane == "claim":
                 p.add_argument("--claim-id", type=UUID, required=True)
             if lane == "gukgam-plan":

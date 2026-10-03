@@ -140,6 +140,41 @@ The DTO contains literal rows and exact source/snapshot/observation references, 
 `SOURCE_SCOPED_IDENTITY_REVIEW_REQUIRED` and `NOT_VERIFIED` attendance. Incoherent versions
 return safe `SOURCE_VERSION_CONFLICT`. Public web transport routes remain unchanged.
 
+## Witness-to-Person DRAFT Claim preparation
+
+`civic inspect gukgam-witness-claim --database-url <existing-approved-db> --person-id <id>
+--observation-id <id> --expected-observation-hash <sha256> --expected-packet-hash <sha256>`
+is a READ_ONLY preflight. It prepares one in-memory canonical Claim/Evidence pair and emits
+IDs, hashes, category and gate state only. It does not persist or export the pair and has no
+observe/materialize/publish/review counterpart. SQLite requires an existing file and opens it
+in URI read-only mode; PostgreSQL uses the existing coherent read-only transaction.
+
+The existing witness checkpoint validation is shared by private review and Claim preparation.
+The selected row must still belong to the current successful checkpoint's exact reviewed packet.
+Caller-supplied observation and packet hashes must match. Old versions and rows removed by an
+explicit subset are ineligible even when they retain historical identity links. Duplicate
+observation versions or mismatched recovered contexts fail closed.
+
+One application UoW verifies the existing current RESOLVED Person, unique active observation
+binding and exactly one REVIEWED_LINK / REVIEWED_BRIDGE carrying a matching RESOLVED review.
+The review must reference the same observation and Person, with an actual resolution timestamp
+and nonblank note. Names, printed institution headings and nearby roles cannot supply this
+authority. A shared name cell's second role row still needs its own exact reviewed bridge.
+This preflight creates no such link or review. The generic automatic identity writer is unchanged;
+the existing reviewed admin mutation lane supports ALIO and does not gain witness support here.
+
+The predicate `LISTED_IN_GUKGAM_WITNESS_ATTACHMENT` means only an official source listing.
+The pair remains DRAFT / CLAIM / `asserted_as_true=false`; it is not publication approval or
+FACT conversion. Categories remain separate. Literal optional fields remain absent when null;
+institution group headings do not become employment, target Organization IDs or planned dates.
+Valid time is source publication, not requested attendance. Claim qualifiers bind exact packet,
+raw attachment, observation and reviewed identity references; deterministic IDs separate source
+versions, Persons, categories and role rows. Evidence keeps exact Source/Snapshot/Observation
+and has no excerpt. Canonical evidence checks run while the publication gate remains closed.
+
+This completes local R4 preparation only. Real witness field review, SSD acquisition, source-row
+identity decisions, DRAFT persistence, publication and public UI/deployment remain separate steps.
+
 ## Evidence boundary
 
 Offline tests cover real DRAFT 412 rows / the 47-row sample, missing dates, category separation,

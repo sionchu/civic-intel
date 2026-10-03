@@ -1,0 +1,139 @@
+{
+  "base_commit": "2a190060eb42bd2b1a38c6cd3468cd8f92a36826",
+  "canonical_mac_read_only": {
+    "active_running_runs": 0,
+    "claim_publication_status_counts": {
+      "DRAFT": 298
+    },
+    "counts": {
+      "claims": 298,
+      "evidence": 298,
+      "observations": 299,
+      "organizations": 0,
+      "people": 298,
+      "runs": 1,
+      "snapshots": 3,
+      "sources": 3
+    },
+    "exact_feeder_run_count_limitations": "The MOIS query used a noncanonical feeder name; its zero is discarded. No second remote read was run.",
+    "exact_feeder_run_counts": {
+      "mois": "NOT_RUN",
+      "witness": 0
+    },
+    "file_mode": "0600",
+    "finished_at_utc": "2026-10-03T18:34:52.207752+00:00",
+    "foreign_key_violations": 0,
+    "health_http_status": 200,
+    "process_exit_code": 0,
+    "quick_check": "ok",
+    "schema_revision": "0008",
+    "snapshot_status": "READ_ONLY_AGGREGATES_PARTIAL_MOIS_COUNTER_NOT_RUN",
+    "source_run_status_counts": {
+      "SUCCESS": 1
+    },
+    "started_at_utc": "2026-10-03T18:34:51.684666+00:00"
+  },
+  "effects": {
+    "claims_persisted": 0,
+    "claims_published": 0,
+    "deployment": false,
+    "human_attestations": 0,
+    "identity_changes": 0,
+    "operational_db_writes": 0,
+    "operational_migrations": 0,
+    "service_restarts": 0,
+    "source_fetches": 0
+  },
+  "implementation": {
+    "asserted_as_true": false,
+    "canonical_entrypoint": "civic inspect gukgam-witness-claim",
+    "coherent_uow": true,
+    "effect": "READ_ONLY",
+    "epistemic_status": "CLAIM",
+    "excerpt": null,
+    "identity_binding": "UNIQUE_ACTIVE_REVIEWED_LINK_REVIEWED_BRIDGE_AND_EXACT_RESOLVED_REVIEW",
+    "new_schema_or_identity_writer": false,
+    "optional_literal_nulls_preserved": true,
+    "predicate": "LISTED_IN_GUKGAM_WITNESS_ATTACHMENT",
+    "publication_status": "DRAFT",
+    "result_storage": "IN_MEMORY_ONLY",
+    "source_binding": "CURRENT_SUCCESS_CHECKPOINT_EXACT_PACKET_OBSERVATION_HASHES",
+    "stdout": "IDENTIFIERS_HASHES_CATEGORY_GATE_STATE_ONLY",
+    "subject": "EXPLICIT_CURRENT_RESOLVED_PERSON"
+  },
+  "monitoring_baseline_update": {
+    "historical_receipts_rewritten": false,
+    "rule": "Use these six LF hashes for the intentionally changed/new modules and test. Unchanged DRAFT inputs and prior remaining code pins retain their existing baseline; do not rerun unchanged research or this full verification."
+  },
+  "not_executed": [
+    "ACTUAL_WITNESS_FIELD_REVIEW",
+    "OPERATIONAL_WITNESS_ACQUISITION",
+    "WITNESS_IDENTITY_DECISION_AND_MUTATION",
+    "DRAFT_PERSISTENCE",
+    "CLAIM_PUBLICATION",
+    "BROWSER_ACCEPTANCE",
+    "CLOUD_CONNECTION",
+    "DEPLOYMENT"
+  ],
+  "recorded_at_utc": "2026-10-03T18:51:47.796731+00:00",
+  "source_files_lf_sha256": {
+    "apps/cli/adapters.py": "9e372f9e10449e08393753c9f8f7fe3772327385d180620e0ddea8ad7b43f80b",
+    "apps/cli/main.py": "924186b97222e880b30ac46a50cded9c4f4545ce386503870e85a02a3641a573",
+    "packages/application/onboarding.py": "bc4db39bea5d5361bbcd7eb95ec867924407ddd57e5eb1dffd42e64a9a0f80f8",
+    "packages/rendering/gukgam_witness_claim.py": "51da1f3a88c9fe85a5a2fd932da9bc88f16bccfeabfc4bfe1daef4cc488d6ed9",
+    "packages/rendering/gukgam_witness_review.py": "70915dbaf1ca9c913b9917a97878b043ff37b79662fbd80a32d94d2b3bea71c7",
+    "tests/test_gukgam_witness_claim.py": "db0101201be6f89d087b2ac7b1bd2432fe2f398dfb43a0c693808d76181259b0"
+  },
+  "status": "LOCAL_WITNESS_DRAFT_CLAIM_PREPARATION_VERIFIED_NOT_OPERATIONAL_IDENTITY",
+  "verification": {
+    "additional_provenance": {
+      "command": "python -X utf8 .tools/run_fixture_verification.py python -m pytest tests/test_gukgam_witness_claim.py -k recovered_observation",
+      "exit_code": 0,
+      "log": ".tools/gukgam-witness-claim-20261004-provenance.log",
+      "passed": 2
+    },
+    "db_file_bytes_unchanged_and_public_claim_source_exclusion": "PASS_SYNTHETIC_SQLITE",
+    "full": {
+      "code_golden_architecture_lint_typecheck_next_worker_build": "PASS",
+      "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+      "exit_code": 0,
+      "log": ".tools/gukgam-witness-claim-preparation-20261004-verify.log",
+      "log_sha256": "efcee4c1e19265be2f274592002405a44c061706ad07e12e848befc082c84871",
+      "mypy_source_files": 153,
+      "optional_postgresql_skipped": 4,
+      "python_passed": 1042,
+      "python_seconds": 479.41,
+      "python_warnings": 6,
+      "web_passed": 34,
+      "worker_synthetic_http_passed": 12
+    },
+    "independent_review": {
+      "mode": "READ_ONLY_SOURCE_AND_SYNTHETIC_TEST_DEFINITIONS",
+      "operational_gap": "WITNESS_REVIEWED_IDENTITY_MUTATION_LANE_NOT_IMPLEMENTED",
+      "status": "NO_ACTIONABLE_IMPLEMENTATION_DEFECT_FOUND",
+      "tests_run": false
+    },
+    "initial_targeted_failures": "Synthetic fixture used automatic link writer without review reference, then wrong API constructor keyword, then an incorrect 404 expectation for existing resolved source-linked empty profiles. Fixture/call/assertions corrected; identity writer and public profile behavior unchanged.",
+    "interrupted_test_output": "NOT_AVAILABLE; owned process was no longer running before captured regression rerun",
+    "original_user_contract_edit": "PRESERVED",
+    "research_parser_reexecuted": false,
+    "targeted": {
+      "command": "python -X utf8 .tools/run_fixture_verification.py python -m pytest tests/test_gukgam_witness_claim.py tests/test_gukgam_witness.py tests/test_cli_effects.py",
+      "exit_code": 0,
+      "log": ".tools/gukgam-witness-claim-20261004-targeted-complete.log",
+      "passed": 180
+    },
+    "unchanged_pilot_inputs": [
+      {
+        "edit_template_hash_unchanged": true,
+        "packet_file_hash_unchanged": true,
+        "source": 1
+      },
+      {
+        "edit_template_hash_unchanged": true,
+        "packet_file_hash_unchanged": true,
+        "source": 2
+      }
+    ]
+  }
+}

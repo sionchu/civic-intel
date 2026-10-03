@@ -175,6 +175,13 @@ def observe(a: argparse.Namespace) -> Any:
 
 
 def dispatch(a: argparse.Namespace) -> Any:
+    if a.lane == "gukgam-witness-claim":
+        r = repository(argparse.Namespace(database_url=_read_only_monitor_url(a.database_url)))
+        return r.onboarding.prepare_gukgam_witness_claim(
+            person_id=a.person_id, observation_id=a.observation_id,
+            expected_observation_hash=a.expected_observation_hash,
+            expected_packet_hash=a.expected_packet_hash,
+        ).to_dict()
     if a.lane == "collection-status":
         from packages.rendering.collection_status import build_collection_status
 

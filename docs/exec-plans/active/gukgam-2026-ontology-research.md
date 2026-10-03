@@ -27,6 +27,41 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Witness-to-Person DRAFT Claim preparation continuation, 2026-10-04
+
+Owner requests continued implementation at base `2a190060eb42bd2b1a38c6cd3468cd8f92a36826`.
+MAIN closes the roadmap R4 local preparation gap: one explicit current witness observation and
+already RESOLVED Person, pinned observation/packet hashes, unique active REVIEWED_LINK /
+REVIEWED_BRIDGE and its resolved exact review record produce an in-memory DRAFT Claim/Evidence.
+Reuse the canonical witness checkpoint loader and one read-only application UoW. The proposition
+means official source listing with its category, never attendance, employment or target identity.
+Keep nullable printed fields absent, exact Source/Snapshot/Observation provenance, and no excerpt.
+Expose one READ_ONLY CLI inspection with IDs/hashes/gate state only. No write/export command,
+new identity rule, schema, importer, public API/UI, operational DB access or deployment.
+Owned paths: canonical witness review loader, one source-specific Claim builder, existing
+Onboarding service and CLI, deterministic synthetic tests, witness/command docs, this plan,
+HANDOFF and receipt. One read-only child inventories then reviews; no recursive delegation,
+source payloads, credentials, remote/browser resources or external network. MAIN runs targeted
+checks and make verify, inspects the diff, preserves the original worktree and commits.
+
+Completed local slice: canonical `inspect gukgam-witness-claim` prepares one exact in-memory
+DRAFT/CLAIM/non-asserted pair; no identity writer, persistence or public route is added.
+Targeted witness/CLI checks180PASS and two additional provenance checksPASS. Full make verify
+exits0:1042 Python PASS,4 optional PostgreSQL skips,6 warnings(479.41s),34 web and12 Worker
+synthetic HTTP PASS; lint/type/Golden/architecture/Next/Worker build gatesPASS. Initial targeted
+failures were synthetic fixture/API-call/public-profile assumptions; corrected tests now verify
+the unchanged generic identity writer and existing empty public profile behavior. Independent
+read-only review finds no implementation defect and identifies the still absent witness reviewed
+identity mutation lane. Pilot packet/template hashes and original user edit are unchanged.
+One Commander read at18:34:51–52 UTC confirms schema0008/mode0600/quick_check ok/FK0, People298,
+DRAFT Claims298, Organizations0, witness runs0 and HTTP200. The MOIS-specific counter is NOT_RUN
+because its query used a noncanonical feeder name; its zero was discarded without a second read.
+No operational source/DB/identity/publication/deployment effect. Source-field review and actual
+row identity decisions remain required; next independent local work is the existing private
+reviewed-identity workflow's witness input validation, with exact official bridge evidence and
+its signed preview/commit boundary preserved. This receipt does not authorize operational use:
+[local witness Claim preparation evidence](../../receipts/gukgam-witness-claim-preparation-20261004.json).
+
 ### Offline witness field-review preparation continuation, 2026-10-04
 
 Owner requests continuation after delivery commit `7abef5f0d47fb71c34c20ced0fdc0faca7facf82`.

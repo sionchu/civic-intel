@@ -61,6 +61,20 @@ label crosswalk. `--plan-packet` is repeatable on this inspect path only. The si
 schedule occurrences remain candidates, source dates stay separate and raw plan bytes/current
 editions remain unverified. See [the witness contract](../architecture/GUKGAM_WITNESS_PACKET.md).
 
+### Witness DRAFT Claim inspection
+
+`civic inspect gukgam-witness-claim --database-url <existing-approved-db> --person-id <id>
+--observation-id <id> --expected-observation-hash <sha256> --expected-packet-hash <sha256>`
+consumes one current successful witness observation and its already reviewed Person bridge.
+Use the exact observation content hash and current checkpoint reviewed-packet hash from the
+private operator records; a bare row key or printed name is insufficient. All inputs are required.
+It opens one coherent read-only UoW and returns identifiers/hashes/category/gate state, never
+the proposition, printed fields or identity-review notes. SQLite must already exist and is
+opened read-only. DRAFT / CLAIM / non-asserted pairs are prepared in memory only; no record is
+saved. There is no witness Claim write, identity or publication command. A new version, removed
+row, unresolved Person, ambiguous link or unmatched review fails closed with the existing
+redacted command error. See [the witness contract](../architecture/GUKGAM_WITNESS_PACKET.md).
+
 ### Offline witness correction preparation
 
 The existing single-packet inspect command additionally accepts `--write-draft-edits

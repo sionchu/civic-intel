@@ -41,6 +41,29 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-04 witness-to-Person DRAFT preparation (base2a19006): canonical
+`civic inspect gukgam-witness-claim` takes an explicit Person/Observation and exact packet/row
+hashes. One coherent read-only UoW reuses current witness checkpoint/policy/provenance validation,
+requires a unique active REVIEWED_LINK/REVIEWED_BRIDGE and matching resolved review, and prepares
+an in-memory DRAFT/CLAIM/non-asserted canonical pair. No writer, schema, public route or identity
+decision is added. Categories/literal nulls/exact evidence are preserved; no attendance,
+employment, plan date or Organization binding is inferred. CLI emits IDs/hashes/gate state only.
+Targeted180+2PASS; full make verify exit0:1042 Python PASS,4 optional PG skips,6 warnings(479.41s),
+34 web/12 Worker synthetic HTTP PASS and all code/build gatesPASS. Independent read-only review
+finds no implementation defect; actual witness reviewed-identity mutation remains absent.
+The original user contract edit and47-row packet/edit-template hashes are preserved.
+Fresh Commander aggregates at2026-10-03 18:34:51–52UTC match prior counts/schema/integrity/health:
+People298, DRAFT Claims298, Organizations0, observations299, witness runs0, HTTP200. MOIS counter
+is NOT_RUN after a noncanonical query name; its zero is discarded. No second remote snapshot.
+No actual source-field review, operational witness import, canonical identity change, DRAFT
+persistence, publication, browser acceptance, cloud connection or deployment is claimed.
+Entry/inputs: [witness DRAFT Claim inspection](docs/operations/COMMANDS.md#witness-draft-claim-inspection); exact existing private
+operator records supply IDs/hashes. Next local work: validate witness inputs through the existing
+private reviewed-identity workflow with explicit official bridge evidence; preserve signed
+preview/commit and operational decision boundaries. Actual pilot review guide remains
+.tools/gukgam-witness-draft-preparation-20261004/README.md.
+Receipt and six updated code/test hash pins: docs/receipts/gukgam-witness-claim-preparation-20261004.json.
+
 2026-10-04 offline witness DRAFT preparation (base 7abef5f): the existing single-packet
 inspect command now exports exact-hash-bound edit templates and validates explicit selection/
 literal corrections into the canonical DRAFT packet. Locators/categories/rights/review state
