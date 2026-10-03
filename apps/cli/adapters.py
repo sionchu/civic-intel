@@ -21,6 +21,22 @@ def repository(args: argparse.Namespace) -> Any:
     return application(args.database_url)
 
 
+def _read_only_monitor_url(value: str) -> str:
+    from sqlalchemy.engine import make_url
+
+    url = make_url(value)
+    if url.get_backend_name() == "sqlite":
+        if not url.database or url.database == ":memory:" or url.database.startswith("file:"):
+            raise ValueError("collection monitor requires an existing file SQLite URL")
+        path = Path(url.database).resolve()
+        if not path.is_file():
+            raise ValueError("collection monitor database does not exist")
+        url = url.set(database="file:" + path.as_posix(), query={"mode": "ro", "uri": "true"})
+    elif url.get_backend_name() != "postgresql":
+        raise ValueError("collection monitor requires SQLite or PostgreSQL")
+    return url.render_as_string(hide_password=False)
+
+
 def materialize_assembly(repo: Any) -> Any:
     return worker("assembly_roster").materialize_latest_successful(repo)
 
@@ -159,6 +175,17 @@ def observe(a: argparse.Namespace) -> Any:
 
 
 def dispatch(a: argparse.Namespace) -> Any:
+    if a.lane == "collection-status":
+        from packages.rendering.collection_status import build_collection_status
+
+        r = repository(argparse.Namespace(database_url=_read_only_monitor_url(a.database_url)))
+        r.uows.assert_ready()
+        revision = r.uows.schema_revision()
+        report = build_collection_status(
+            r.administration.operator_summary(monitoring=True),
+            running_age_minutes=a.running_age_minutes,
+        )
+        return {"schema_revision": revision, "schema_check_scope": "BEFORE_READ_SNAPSHOT"} | report
     if a.lane == "gukgam-witness":
         w = worker("gukgam_witness_import")
         if a.verb == "inspect":

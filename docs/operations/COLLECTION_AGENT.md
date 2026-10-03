@@ -69,6 +69,33 @@ Abrupt process termination can leave RUNNING state; inspect and reconcile it bef
 The approved first request is acquisition only. The separate agent prepares source-specific
 implementation and fixtures; MAIN owns the single operational execution and audits its receipt.
 
+## Parser and database monitoring
+
+The owner requested ongoing checks on 2026-10-03. Thread automation `db`, named
+`국감 파싱·DB 점검`, is ACTIVE with an hourly cadence. Its configuration was confirmed;
+future scheduled execution is separate evidence. It continues authorized local work and
+coordinates up to three read-only agents without recursive delegation:
+
+| Responsibility | Fresh evidence |
+|---|---|
+| Parsing and provenance | SourcePolicy, snapshot/observation hashes, versions, idempotency and committed checkpoints; offline fixtures only |
+| Mac database and runtime | Remote Desktop Commander, bounded read-only SQLite snapshot, schema, integrity, FK violations, aggregate counts and loopback health |
+| Execution and privacy review | Effect separation, target/read boundaries, identity/publication gates, omitted data and error redaction |
+
+MAIN owns integration, exact code/test evidence and the latest HANDOFF. Source ingestion,
+operational writes, migrations, service restarts, human attestations, publication and deployment
+are not scheduled by this monitoring task. Zero RUNNING records do not establish sole-writer
+exclusion. A failed query is reported separately from a database outage; an unavailable remote
+system retains `UNAVAILABLE`/`NOT_RUN`, rather than zero counts or prior evidence presented as fresh.
+
+The canonical local aggregate command is `civic inspect collection-status --database-url
+<assigned-target>`. Follow its [argument and status contract](COMMANDS.md#read-only-collection-monitoring).
+It shares the existing administration query and read UoW; it does not replace source-specific
+parser tests, SQLite physical integrity/FK checks or runtime health probes. The new command
+has not been installed or executed on Mac. Preserve the existing pinned service while that
+separate runtime delivery step is prepared. Current evidence is in the
+[monitoring receipt](../receipts/collection-status-20261003.json).
+
 ## Mac preparation checkpoint, 2026-10-02
 
 The verified package and 22 pinned dependencies are installed in a dedicated Python 3.12.14 venv

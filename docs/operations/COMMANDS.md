@@ -77,6 +77,35 @@ commit or guarantee process recovery. A budget stop records FAILED before any co
 or PARTIAL after prior committed pages, retaining the last committed checkpoint. Numeric limits
 do not grant source rights or permission to resume, materialize or publish.
 
+## Read-only collection monitoring
+
+```powershell
+civic inspect collection-status --database-url 'sqlite:///C:/assigned/collector.sqlite' --running-age-minutes 60
+```
+
+Use an explicit, existing-file SQLite URL or the assigned PostgreSQL connection. SQLite
+is opened with URI `mode=ro`; missing files, in-memory databases and caller-supplied `file:`
+URI forms are rejected before connecting. The CLI replaces SQLite query options with its
+read-only options. PostgreSQL uses the canonical read-only application UoW. Connection
+values are never included in the result. Read-compatible schemas 0006/0007/0008 are checked
+before the aggregate read snapshot; this command does not migrate or create tables.
+
+The result includes aggregate counts, hashed lane references, latest run status, separate
+last-success time and checkpoint lineage/cursor comparisons. A checkpoint belonging to a
+prior successful run is valid after a newer failed attempt. `unrepresented_running_run_rows`
+counts stored RUNNING rows that are not shown as a latest visible-lane row, including older
+attempts on the same lane and runs in omitted lanes. It does not count distinct hidden lanes
+or prove that a process is running. Age is a review threshold (1–10080 minutes), not a kill
+or retry instruction. At most 500 lanes are returned; `lanes_truncated` marks limited detail
+even when `ATTENTION` takes precedence over the `PARTIAL` status.
+
+`OBSERVED` means stored state was read, not verified source freshness or parser correctness.
+`NO_RUNS` means a readable database contains no runs; unavailable targets return `UNAVAILABLE`
+and `COLLECTION_STATUS_UNAVAILABLE` without error text or fabricated zero counts. The command
+does not fetch sources, inspect provider payloads, prove exclusive writer ownership, run
+physical integrity checks, approve identities or publish Claims. See the
+[collection monitoring procedure](COLLECTION_AGENT.md#parser-and-database-monitoring).
+
 ## Complete legacy console-script map
 
 The pinned `77e2767ab043738f00b8dd38be8d99803e5ad7bc` manifest contains **19** installed
@@ -130,7 +159,8 @@ this CLI does not invent a duplicate importer or treat source-context preflights
 permission to import a reviewed bundle containing published Claims.
 
 The explicit effect does not prove execution success. Each CLI receipt carries its
-command and effect; failures carry a stable `COMMAND_FAILED` code without raw exception
-or connection data. Tests use fake adapters and prove CLI boundaries only. Live source,
+command and effect; failures carry `COMMAND_FAILED`, or `COLLECTION_STATUS_UNAVAILABLE`
+for the collection monitor, without raw exception or connection data. CLI boundary tests
+use fake adapters; monitor integration tests additionally use disposable SQLite. Live source,
 operational DB, materialization/publication, migrations, services and deployment require
 separate approved execution and evidence.

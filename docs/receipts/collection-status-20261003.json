@@ -1,0 +1,220 @@
+{
+  "canonical_mac_read_only_audit": {
+    "migration_requested": false,
+    "service_restart_requested": false,
+    "snapshots": [
+      {
+        "counts": {
+          "claim_evidence": 298,
+          "claims": 298,
+          "feeder_observations": 299,
+          "organizations": 0,
+          "people": 298,
+          "source_runs": 1,
+          "source_snapshots": 3,
+          "sources": 3
+        },
+        "file_mode": "0600",
+        "finished_at_utc": "2026-10-03T04:21:31.770123Z",
+        "foreign_key_violations": 0,
+        "health_body_read": false,
+        "loopback_health_http_status": 200,
+        "quick_check": "ok",
+        "remaining_aggregate_query_status": "QUERY_FIELD_NAME_ERROR_NOT_DATABASE_OUTAGE",
+        "schema_revision": "0008",
+        "started_at_utc": "2026-10-03T04:21:31.358500Z"
+      },
+      {
+        "active_running_runs": 0,
+        "checkpoints": {
+          "count": 1,
+          "cursor_matches_checkpoint_after": 1,
+          "latest_run_matches": 1,
+          "missing_run_references": 0,
+          "null_run_references": 0,
+          "scope_mismatches": 0,
+          "valid_same_scope_references": 1
+        },
+        "claim_publication_status_counts": {
+          "DRAFT": 298
+        },
+        "finished_at_utc": "2026-10-03T04:24:40.533304Z",
+        "mois_runs": 0,
+        "purpose": "ONE_CORRECTIVE_READ_ONLY_SNAPSHOT",
+        "source_run_status_counts": {
+          "SUCCESS": 1
+        },
+        "started_at_utc": "2026-10-03T04:24:40.532535Z",
+        "witness_runs": 0
+      }
+    ],
+    "sole_writer_exclusion_proven": false,
+    "source_fetches": 0,
+    "sqlite_mode": "ro",
+    "sqlite_query_only": true,
+    "sqlite_timeout_seconds": 5,
+    "target_alias": "canonical-mac-ssd",
+    "transport": "Remote Desktop Commander",
+    "writes_requested": 0
+  },
+  "code_file_lf_sha256": {
+    "apps/cli/adapters.py": "c4d6fa675c4efc5f47b2d0e352d8cfaae1c86c5fa2f6dc41f9bad2be57179981",
+    "apps/cli/main.py": "bfa0a4939115a385b2dac29dc5ffd59ff1171cd16ebf9052634076e641ff4f09",
+    "packages/application/administration.py": "e5ae9d2c7578d814eda0e3a725ef56a31e8197e5087317aab9fe4425f81564b9",
+    "packages/application/ports.py": "ab9e6e97f14371c5415959cf1d1ebf5e54fb34442c4313e3f35b79a3dda7a870",
+    "packages/persistence/administration.py": "31b43e446b3d6cabfeaa608e01554a939143ef155311b1b0bf4acfdb5ccf2a32",
+    "packages/persistence/operator_queries.py": "653cef0429692e616f5820799471212ed08de83ea87d55695425df5707a69fc5",
+    "packages/rendering/collection_status.py": "9cbf4868c117522596ed1a629577c1dd87f72b1e71483cbe790f51e1a887344c",
+    "tests/test_collection_status.py": "5d2f2ac2e27ebf366a662caa09a6522523e260c08cfd0562f8a5f01773125362"
+  },
+  "effects": {
+    "canonical_identity_changes": 0,
+    "claims_created_or_published": 0,
+    "deployment": false,
+    "live_source_requests": 0,
+    "operational_db_writes": 0,
+    "operational_schema_migrations": 0,
+    "real_witness_human_field_attestation": false,
+    "service_restarts": 0
+  },
+  "implementation": {
+    "canonical_administration_and_uow_reused": true,
+    "command": "inspect collection-status",
+    "default_operator_payload_preserved": true,
+    "dependency_change": false,
+    "effect": "READ_ONLY",
+    "lane_reference": "SHA256_OF_INTERNAL_FEEDER_AND_SCOPE",
+    "max_visible_lanes": 500,
+    "operational_installation_or_execution": "NOT_RUN",
+    "parser_content_checked_by_command": false,
+    "physical_integrity_checked_by_command": false,
+    "read_compatible_schema_revisions": [
+      "0006",
+      "0007",
+      "0008"
+    ],
+    "readiness_scope": "BEFORE_READ_SNAPSHOT",
+    "schema_change": false,
+    "sole_writer_exclusion_proven": false,
+    "source_coverage_assessed": false,
+    "sqlite_existing_file_required": true,
+    "sqlite_mode": "ro",
+    "summary_read_transactions": 1,
+    "summary_selects": 2,
+    "unrepresented_running_semantics": "RUNNING_ROWS_NOT_SHOWN_AS_LATEST_VISIBLE_LANE_ROW_NOT_DISTINCT_LANES"
+  },
+  "implementation_base_commit": "d8a8093169e8ea7f333818e437d9323e17dccf4a",
+  "independent_agents": {
+    "database_runtime": {
+      "query_helper_field_error_corrected": true,
+      "scope": "TWO_BOUNDED_READ_ONLY_REMOTE_SNAPSHOTS",
+      "source_fetches": 0,
+      "writes": false
+    },
+    "execution_risk": {
+      "actionable_findings": 1,
+      "correction": "RENAME_RUNNING_ROW_METRIC_AND_ADD_SAME_LANE_REGRESSION",
+      "correction_rechecked": true,
+      "resolved_findings": 1,
+      "scope": "READ_ONLY_DIFF_REVIEW_NO_TESTS_OR_DATABASE_ACCESS"
+    },
+    "parser_path": {
+      "final_monitor_tests_before_reporting_correction_passed": 23,
+      "focused_tests_passed": 55,
+      "live_access": false,
+      "resolved_findings": 0,
+      "scope": "OFFLINE_PARSER_PROVENANCE_IDEMPOTENCY_AND_REVIEW_GATES"
+    }
+  },
+  "local_existing_proof_database_cli": {
+    "checked_at_utc": "2026-10-03T04:40:24.706872+00:00",
+    "checkpoint_relation": "LATEST_RUN",
+    "counts": {
+      "checkpoints": 1,
+      "claims": 0,
+      "evidence": 0,
+      "observation_keys": 1,
+      "observations": 1,
+      "organizations": 0,
+      "people": 0,
+      "running_runs": 0,
+      "runs": 1,
+      "snapshots": 1,
+      "sources": 1
+    },
+    "database_hash_unchanged": true,
+    "database_sha256": "5fa57b1840312fcc5afb3c617cc41d70ab6633f4973ee6afc09c51b26bec627d",
+    "exit_code": 0,
+    "latest_run_status": "SUCCESS",
+    "schema_revision": "0008",
+    "source_fetches": 0,
+    "status": "OBSERVED",
+    "target_alias": "LOCAL_CODE_FIRST_PAGE",
+    "writes_requested": 0
+  },
+  "local_log_sha256": {
+    "collection-status-final-20261003-verify.log": "b6f525f1e2b36b50e2a96649766c1470a11eb49892fd6cf59d336478e5534010",
+    "collection-status-final-collection-20261003.log": "5e28cd12873298d7f65ca773fc2fc64ade6e614e4c6304a51d0cc45adcaa2e0e",
+    "collection-status-final-targeted-20261003.log": "b6d393b41fc5eba394c2e053e0f2966e8783f79fad8134ca0851f36aa47848d5",
+    "collection-status-local-cli-20261003.log": "933c22b396455f634060d5ec31ef68775959e34299b6d0f34b5c540bfd1d7834"
+  },
+  "ongoing_monitoring": {
+    "automation_id": "db",
+    "cadence": "EVERY_HOUR",
+    "configuration_confirmed": true,
+    "destination": "thread",
+    "identity_or_human_review": false,
+    "kind": "heartbeat",
+    "l4_promotion": false,
+    "max_read_only_agents": 3,
+    "migration": false,
+    "name": "국감 파싱·DB 점검",
+    "operational_writes": false,
+    "publication_or_deployment": false,
+    "recurring_source_collection": false,
+    "recursive_delegation": false,
+    "scheduled_execution_evidence": "NOT_YET_OBSERVED",
+    "service_restart": false,
+    "status": "ACTIVE"
+  },
+  "privacy": {
+    "credentials_transmitted_to_ai": false,
+    "database_urls_or_raw_scope_in_receipt": false,
+    "provider_payload_transmitted_to_ai": false,
+    "raw_error_text_in_receipt": false
+  },
+  "recorded_at_utc": "2026-10-03T04:47:26.062516+00:00",
+  "remaining_gates": [
+    "ACTUAL_WITNESS_SOURCE_FIELD_REVIEW",
+    "REVIEWED_ORGANIZATION_AND_PERSON_IDENTITIES",
+    "OPERATIONAL_IMPORT_RUNNER_READINESS",
+    "PUBLICATION_AND_DELIVERY_ACCEPTANCE"
+  ],
+  "verification": {
+    "architecture": "PASS",
+    "canonical_command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "canonical_verify_exit_code": 0,
+    "cli_effect_tests_in_focused_suite": 76,
+    "focused_exit_code": 0,
+    "focused_main_tests_passed": 120,
+    "golden": "PASS",
+    "monitor_tests_in_focused_suite": 24,
+    "mypy": "PASS_152_SOURCE_FILES",
+    "not_executed": [
+      "LIVE_POSTGRESQL",
+      "BROWSER_ACCEPTANCE",
+      "CI",
+      "MAC_NEW_COMMAND_INSTALL_OR_EXECUTION",
+      "DEPLOYMENT"
+    ],
+    "operator_console_tests_in_focused_suite": 20,
+    "python_duration_seconds": 354.81,
+    "python_tests_passed": 970,
+    "python_tests_skipped": 4,
+    "python_warnings": 6,
+    "ruff": "PASS",
+    "standalone_build_and_assets": "PASS",
+    "web_lint_typecheck": "PASS",
+    "web_tests_passed": 34
+  }
+}

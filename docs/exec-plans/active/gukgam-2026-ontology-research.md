@@ -27,6 +27,49 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Parser and database monitoring work order, 2026-10-03
+
+Owner instruction: continue implementation and use agents to keep parsing and DB management
+under observation. MAIN / Development, base `d8a8093169e8ea7f333818e437d9323e17dccf4a`, owns
+the canonical read-only monitoring slice, CLI integration, offline regressions, documentation,
+receipts and HANDOFF. Reuse existing administration queries, acquisition ports and read UoWs;
+do not add a second DB/session implementation, schema or public endpoint. Check the latest
+run/checkpoint consistency and report unavailable/not-collected separately from verified data.
+No full provider rows, raw metadata, source URLs, credentials or errors in the aggregate report.
+
+Three read-only agents own parser/path audit, Mac DB/runtime aggregate audit and execution/
+privacy boundary review. No edits, commits, children, source fetches, operational writes,
+credential access, migration, service restart, human attestations or publication are assigned.
+Only the Mac audit agent may use Remote Desktop Commander for a bounded read-only snapshot;
+MAIN authorizes and serializes any corrective snapshot. Quality may use mock/disposable offline tests through the
+clean environment wrapper. The current real witness packets remain DRAFT.
+
+The owner's continuing-check request permits an hourly thread heartbeat for the same read-only
+checks and approved local continuation. It is not recurring source collection or L4 promotion.
+Repeat full tests only for new code or unresolved failures; compare fresh evidence with the
+prior checkpoint and record unreachable systems as unavailable. MAIN integrates, verifies,
+inspects the diff and commits each coherent milestone without routine confirmation.
+
+Completed local monitoring checkpoint: `inspect collection-status` shares the canonical
+administration read UoW and two-query snapshot. SQLite requires an existing file and mode=ro;
+schema readiness is checked before that snapshot. Reports separate latest status from past
+success, retain valid prior checkpoints, hash lane labels and flag unrepresented RUNNING rows
+without treating them as distinct hidden lanes. One independent reporting finding was fixed
+and rechecked. Final focused suite120 PASS; canonical `make verify` exit0 with970 Python PASS,
+4 optional PostgreSQL skips,6 warnings,354.81s and34 web PASS. Ruff/mypy152, Golden, architecture,
+web lint/types and standalone build/assets PASS. Existing local proof DB CLI exit0/hash unchanged.
+No source fetch, operational write, migration, restart, identity, publication or deployment.
+
+Mac audit snapshot04:21 UTC verifies schema0008/file0600/quick_checkok/FK0 and existing counts;
+a wrong query field left part of that helper incomplete. One corrective read-only snapshot
+at04:24 UTC verifies298DRAFTClaims,1SUCCESSrun,0RUNNING/witness/MOISruns and one valid same-scope
+checkpoint whose cursor matches checkpoint_after. These are separate snapshots;0RUNNING does
+not prove exclusion. Hourly thread heartbeat `db` / `국감 파싱·DB 점검` is ACTIVE and configuration
+confirmed; scheduled execution has not yet been observed. The new command is not installed
+or executed on Mac. Real witness field review, reviewed identities and operational runner
+readiness remain gates. [Monitoring evidence](../../receipts/collection-status-20261003.json)
+and [ongoing procedure](../../operations/COLLECTION_AGENT.md#parser-and-database-monitoring).
+
 ### Bounded MOIS lookup work order, 2026-10-03
 
 MAIN / Development, base `5a5fcad6c66d8ce8ed8d8a413bf70c5f108d50b5`: extend the existing

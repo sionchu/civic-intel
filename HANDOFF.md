@@ -40,6 +40,28 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 parser/DB monitoring slice (base d8a8093): canonical `inspect collection-status`
+uses the existing administration read UoW, explicit target and forced existing-file SQLite
+mode=ro. It reports hashed lanes, latest attempts separately from historical success,
+checkpoint lineage/cursor checks and unrepresented RUNNING rows; errors remain UNAVAILABLE
+without raw error data or invented counts. No schema, dependency, UI or source-fetch change.
+Final canonical make verify exit0:970 Python PASS,4 optional PG skips,6 warnings,354.81s;
+34 web PASS, Ruff/mypy152/Golden/architecture/lint/types/standalone assets PASS.120 focused
+tests PASS. Existing local source-proof DB CLI exit0; read-only file hash unchanged.
+Three independent agents checked parser paths, Mac DB/runtime and execution/privacy.
+The reporting review found one RUNNING-row metric ambiguity; MAIN fixed it and added a
+same-lane regression, and the risk reviewer confirmed the correction without running tests.
+Commander snapshots at04:21 and04:24 UTC separately verify schema0008/quick_checkok/FK0,
+298People/298DRAFTClaims/0Organizations,299 observations/3snapshots/1SUCCESSrun/0RUNNINGruns,
+0witness/MOISruns and one same-scope cursor-matched checkpoint. A helper's wrong field name
+made the first query partial; one corrective read-only snapshot resolved the omitted fields.
+No operational write/source fetch/restart occurred;0RUNNING is not writer exclusion.
+Hourly thread heartbeat `db` / `국감 파싱·DB 점검` is ACTIVE; configuration is verified,
+future scheduled runs remain separate evidence. It monitors and continues authorized local
+work, with no recurring source ingestion or operational writes. New monitor code is not
+installed/run on Mac; actual witness field review, identity and import readiness remain gates.
+Receipt:docs/receipts/collection-status-20261003.json. No CI/browser/deployment acceptance claimed.
+
 2026-10-03 bounded R3 source preparation (base5a5fcad): new explicit-effect
 `observe mois-organization-lookup` captures one filtered first page, max100 rows, one fetch;
 no resume, full-universe claim, identity hints or materialization/publication. SourcePolicy/

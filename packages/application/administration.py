@@ -10,9 +10,12 @@ class AdministrationService:
     def __init__(self, uows: UnitOfWorkFactory):
         self.uows = uows
 
-    def operator_summary(self) -> dict[str, Any]:
+    def operator_summary(self, *, monitoring: bool = False) -> dict[str, Any]:
         with self.uows(read_only=True) as uow:
-            result = uow.administration.operator_summary()
+            result = (
+                uow.administration.operator_summary(monitoring=True)
+                if monitoring else uow.administration.operator_summary()
+            )
             return result
 
     def operator_records(self, kind: str, **filters: Any) -> dict[str, Any]:

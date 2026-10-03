@@ -7,7 +7,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy import func, or_, select, union
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from packages.persistence import models as db
 
@@ -346,7 +346,7 @@ def records(
     }
 
 
-def summary(session: Session) -> dict[str, Any]:
+def summary(session: Session, *, monitoring: bool = False) -> dict[str, Any]:
     def count(model: Any, *conditions: Any) -> Any:
         return select(func.count()).select_from(model).where(*conditions).scalar_subquery()
 
@@ -400,6 +400,10 @@ def summary(session: Session) -> dict[str, Any]:
                 count(db.IdentityReviewItemRow, db.IdentityReviewItemRow.status == "OPEN").label(
                     "open_reviews"
                 ),
+                *(
+                    [count(db.SourceRunRow, db.SourceRunRow.status == "RUNNING").label("running_runs")]
+                    if monitoring else []
+                ),
             )
         )
         .mappings()
@@ -448,6 +452,19 @@ def summary(session: Session) -> dict[str, Any]:
 
     latest = run_window()
     successful = run_window(True)
+    checkpoint_run = aliased(db.SourceRunRow)
+    monitoring_columns: list[Any] = [
+        checkpoint.id.is_not(None).label("has_checkpoint"),
+        checkpoint.last_run_id.label("checkpoint_run_id"),
+        checkpoint_run.id.is_not(None).label("checkpoint_run_exists"),
+        (
+            (checkpoint_run.feeder == lane_keys.c.feeder)
+            & (checkpoint_run.scope_key == lane_keys.c.scope_key)
+        ).label("checkpoint_run_scope_matches"),
+        (checkpoint.cursor == checkpoint_run.checkpoint_after).label(
+            "checkpoint_cursor_matches_run"
+        ),
+    ] if monitoring else []
 
     def matches(table: Any) -> Any:
         return (table.c.feeder == lane_keys.c.feeder) & (table.c.scope_key == lane_keys.c.scope_key)
@@ -467,6 +484,7 @@ def summary(session: Session) -> dict[str, Any]:
             latest.c.observations_unchanged,
             successful.c.finished_at.label("last_success_at"),
             checkpoint.updated_at.label("checkpoint_updated_at"),
+            *monitoring_columns,
         )
         .select_from(lane_keys)
         .outerjoin(observations, matches(observations))
@@ -477,6 +495,7 @@ def summary(session: Session) -> dict[str, Any]:
             (checkpoint.feeder == lane_keys.c.feeder)
             & (checkpoint.scope_key == lane_keys.c.scope_key),
         )
+        .outerjoin(checkpoint_run, checkpoint_run.id == checkpoint.last_run_id)
         .order_by(lane_keys.c.feeder, lane_keys.c.scope_key)
         .limit(501)
     )

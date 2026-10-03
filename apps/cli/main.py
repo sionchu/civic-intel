@@ -71,6 +71,7 @@ ROUTES = {
         CommandEffect.READ_ONLY,
         (
             "commands",
+            "collection-status",
             "alio-item4",
             "gukgam-plan",
             "gukgam-witness",
@@ -118,6 +119,10 @@ def build_parser() -> argparse.ArgumentParser:
             p.set_defaults(effect=effect)
             p.add_argument("--allow-effect", choices=[x.value for x in CommandEffect])
             if lane == "commands":
+                continue
+            if lane == "collection-status":
+                p.add_argument("--database-url", required=True)
+                p.add_argument("--running-age-minutes", type=int, default=60)
                 continue
             if lane not in (
                 "policy-research",
@@ -311,6 +316,8 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
             parser.error("MOIS name filter must equal the expected full name")
         if args.org_code is not None and not re.fullmatch(r"[0-9A-Z]{7}", args.org_code):
             parser.error("MOIS org-code requires seven uppercase alphanumeric characters")
+    if args.lane == "collection-status" and not 1 <= args.running_age_minutes <= 10080:
+        parser.error("running-age-minutes must be 1 to 10080")
     if args.lane == "gwanbo" and args.from_date > args.to_date:
         parser.error("from-date must precede to-date")
     if args.lane == "gukgam-schedule-probe" and (
@@ -356,8 +363,9 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "effect": args.effect.value,
                     "command": f"{args.verb} {args.lane}",
-                    "status": "FAILED",
-                    "error_code": "COMMAND_FAILED",
+                    "status": "UNAVAILABLE" if args.lane == "collection-status" else "FAILED",
+                    "error_code": "COLLECTION_STATUS_UNAVAILABLE"
+                    if args.lane == "collection-status" else "COMMAND_FAILED",
                 },
                 sort_keys=True,
             )

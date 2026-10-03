@@ -10,11 +10,11 @@ class AdministrationRepository:
     def __init__(self, session: Session):
         self._session = session
 
-    def operator_summary(self) -> dict[str, Any]:
+    def operator_summary(self, *, monitoring: bool = False) -> dict[str, Any]:
         from packages.persistence.operator_queries import summary
 
         session = self._session
-        return summary(session)
+        return summary(session, monitoring=monitoring)
 
     def operator_records(self, kind: str, **filters: Any) -> dict[str, Any]:
         from packages.persistence.operator_queries import records
