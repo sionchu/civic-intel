@@ -41,6 +41,23 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 fourth db heartbeat (received 08:26:30 UTC, base befaf08): parser/DB aggregates
+remain unchanged. Canonical research parsing at 08:38:18 UTC retains 412 rows and four
+370/42/32/15 DRAFT packets. Latest versioned receipts bind all 35 unique code hashes;
+the Worker receipt intentionally supersedes the old witness-test pin. One Commander
+snapshot at 08:38:36 UTC confirms schema0008/mode0600/quick_checkok/FK0, 298 People and
+298 DRAFT Claims, 0 Organizations, 299 observations/3 snapshots/1 SUCCESS run, valid
+checkpoint/cursor and HTTP200. RUNNING/witness/MOIS runs are 0; writer exclusion is not proven.
+The initial bare-python launcher failed before any audit; one MAIN-authorized absolute-path
+correction succeeded. The local proof DB monitor at 08:34:33 UTC exits0/hash unchanged.
+A receipt-field lookup failure in the local hash helper was corrected; no product failure.
+MAIN corrected ARCHITECTURE's missing local Worker artifact contract; independent final
+doc review finds no issue. No product/source/operational effects or human attestations;
+no new safe local runtime task was identified. Full tests are not repeated for this doc-only
+continuation; the Worker receipt's 970 Python/34 web/7 HTTP results remain dated evidence.
+All four checks are preserved in docs/receipts/collection-status-20261003.json. Actual witness
+field review, current plan evidence, canonical identities, import and delivery gates remain.
+
 2026-10-03 local Workers delivery (base 63ae6dd): the same canonical UI now builds an ESM
 Worker and passes 7 actual local HTTP checks against synthetic API data. Next standalone
 remains; serialized Worker builds restore Next generated inputs. The Worker blocks decoded

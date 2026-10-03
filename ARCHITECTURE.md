@@ -70,9 +70,15 @@ is an allowlist and never serializes the complete SourcePolicy. Public read fail
 missing records, insufficient eligible inputs, source-version conflict and service failure;
 transport failure is not an `UNKNOWN` Claim.
 
-The web production artifact is the Next standalone server plus its generated `.next/static` tree
-and optional `public` directory. Artifact verification fails closed when any required runtime part
-is absent; a successful compile alone is not standalone readiness.
+The canonical `apps/web` has two locally verified runtime artifact contracts. Next standalone
+contains its server, generated `.next/static` tree and optional `public` directory. The local
+Worker contains the ESM fetch entry in `dist/server` and assets in `dist/client`; it rejects
+admin paths and non-GET/HEAD requests before dispatch. Next and Worker builds run serially
+because they share generated type inputs. Artifact verification fails closed when required
+runtime parts are absent; compilation alone does not establish runtime or browser acceptance.
+Sites metadata packaging requires the real registered hosting manifest. Packaging, cloud-to-Mac
+connectivity and deployment remain pending; the [local Worker receipt](docs/receipts/gukgam-worker-build-20261003.json)
+records only local synthetic HTTP verification.
 
 ## Deployment, public access and cost gates
 

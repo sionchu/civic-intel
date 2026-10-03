@@ -27,6 +27,30 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Fourth read-only heartbeat and artifact-contract correction, 2026-10-03
+
+Received `db` heartbeat 08:26:30.447 UTC, base `befaf08299bda45bf0cf7344a848f5dad0cce19c`.
+MAIN / record curator owns ARCHITECTURE/HANDOFF, this plan and the existing monitor receipt.
+Three read-only agents audit parser/provenance, Mac aggregate state and execution/privacy;
+no recursive delegation or operational mutation. The prior Worker implementation is an
+intervening verified local slice, not a new source/identity/publication approval.
+
+Fresh parsing at 08:38:18 UTC retains 412 research rows and 370/42/32/15 DRAFT packets.
+Latest receipts bind 35 unique code hashes, including the intentional witness-test override.
+Commander snapshot 08:38:36 UTC matches prior schema/integrity/counts/checkpoint/health.
+The first launcher failed before Python/DB execution; one authorized absolute-path correction
+succeeded. Local proof DB monitoring at 08:34:33 UTC exits0/hash unchanged. One local hash
+helper receipt-field error was corrected without changing product behavior.
+
+Risk identified ARCHITECTURE's missing local Worker artifact contract. MAIN corrects that
+paragraph, preserving the canonical frontend and pending Sites/connectivity/deployment gates;
+independent final doc review finds no issue. No new runnable local task was identified.
+No tests/full verify are repeated: product files match the latest verified receipts and only
+documentation changes here. Prior 970 Python/34 web/7 Worker HTTP results remain dated.
+Actual source-field review, current plan/version evidence, identities, operational readiness,
+publication and delivery remain gates. Fresh times, deltas and attempts are appended to the
+[existing monitor receipt](../../receipts/collection-status-20261003.json).
+
 ### Local Workers delivery work order, 2026-10-03
 
 Owner continuation after the monitoring-only checkpoint: MAIN / Development, task
