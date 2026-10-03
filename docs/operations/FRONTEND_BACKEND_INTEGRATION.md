@@ -40,6 +40,10 @@ Claim·Evidence 화면을 재사용한다. 국회의원 명부를 피감자 명�
 [증인 패킷·관측·비공개 검토 API](../architecture/GUKGAM_WITNESS_PACKET.md)는 R1에서 구현했다.
 현재 DTO는 source-scoped 내부 검토용이다. 실제 자료는 DRAFT이고 신원·Claim 공개·화면 배포는
 미실행이므로, 프론트엔드가 연구 JSON이나 admin API를 공개 데이터로 소비하지 않는다.
+후속 읽기 전용 계획 연결 검토는 명부 412행과 같은 위원회/연도의 계획 표기 후보를 대조한다.
+47행 파일럿은 두 일정 후보를 모두 유지하며 날짜를 채우거나 실제 출석/신원을 주장하지 않는다.
+이 로컬 검토 report는 공개 DTO가 아니다. 별도 신원과 Claim/Evidence 게이트를 통과한 결과만
+기존 국감 API/화면으로 전달한다. [실행 증거](../receipts/gukgam-witness-plan-review-20261003.json).
 
 이전 읽기 전용 점검에서 맥 API의 Organizations와 공개 국감 대상은 각각 0건이었다.
 기존 SSD의 298명은 국회의원이며, 피감 인물 목록이 아니다. 보유한 7개 위원회 검토 패킷은

@@ -1,0 +1,169 @@
+{
+  "base_commit": "28859fee03af2ad901f5a9e9b91caf94f44c50a4",
+  "boundaries": {
+    "R2_acquisition": "HOLD_ACTUAL_FIELD_REVIEW_REQUIRED",
+    "R3_canonical_identity": "NOT_EXECUTED",
+    "R4_claim_publication": "NOT_EXECUTED",
+    "R5_public_delivery": "NOT_EXECUTED",
+    "api_visual_qa": "NOT_EXECUTED_NO_API_OR_WEB_CHANGE",
+    "current_optional_postgresql_runtime": "NOT_RUN",
+    "field_human_review": "ABSENT",
+    "mac_db_status": "NOT_REFRESHED_IN_THIS_CHECKPOINT",
+    "new_mac_code_installed": false
+  },
+  "checked_at_utc": "2026-10-03T02:15:29.131067+00:00",
+  "checkpoint": "GUKGAM_WITNESS_PLAN_REVIEW_R3_PREPARATION",
+  "code_lf_sha256": {
+    "apps/cli/main.py": "a05bea77653c967dfd97892917d0eb786de9760d2e201a5a2bf862e095dab2c2",
+    "packages/rendering/gukgam_witness_plan_review.py": "165bcb904b98870c51c294fd2ce5f3447ba74ac7993250479153b5b4dbba29ae",
+    "tests/test_gukgam_witness_plan_review.py": "259e4e47a36ac33b892b9dc04b1e6890d60da481c8bdc0f95805ee3938e7dc51",
+    "workers/gukgam_witness_import.py": "4a2ed266105209f18b6c4348390c46e41633d50eb80aa2757e1f20073910ca58"
+  },
+  "commands": {
+    "full": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "prepared_artifacts": "python -X utf8 .tools/run_fixture_verification.py python -X utf8 .tools/prepare_witness_plan_review.py",
+    "targeted": "python -X utf8 .tools/run_fixture_verification.py python -X utf8 -m pytest tests/test_gukgam_witness_plan_review.py tests/test_gukgam_witness.py tests/test_cli_effects.py -o addopts= -q"
+  },
+  "effects": {
+    "claim_publication": 0,
+    "deploy_push_merge": false,
+    "identity_links": 0,
+    "operational_db_opened": false,
+    "operational_db_writes": 0,
+    "organization_creation": 0,
+    "person_creation": 0,
+    "provider_fetches": 0,
+    "remote_calls": 0,
+    "schema_dependency_api_web_changes": false
+  },
+  "executed_source_review": {
+    "attendance_verified": false,
+    "full_rows": 412,
+    "match_class_counts": {
+      "EXACT_PLAN_LABEL_OVERLAP_DISCOVERY_ONLY": 288,
+      "MULTIPLE_PLAN_OCCURRENCES_REVIEW_REQUIRED": 108,
+      "NO_EXACT_PLAN_LABEL_OVERLAP": 16
+    },
+    "pilot_categories": {
+      "GENERAL_WITNESS": 13,
+      "INSTITUTION_WITNESS": 32,
+      "REFERENCE_PERSON": 2
+    },
+    "pilot_plan_occurrences": 2,
+    "pilot_rows": 47,
+    "pilot_witness_raw_artifacts_verified": true,
+    "selected_plan_occurrences": 0,
+    "witness_raw_sha256": [
+      "7ef99c6e217dc775cb2878f395a02eebcdd95cb4eecfa852b6d08b94d0217b9f",
+      "bb1cf15928ef93e5e4e974fa2971fad628bedc58a1416ea890a46de9308f861d"
+    ],
+    "witness_requested_datetime_merged_with_plan": false
+  },
+  "independent_reviews": {
+    "quality": {
+      "actionable_findings": 0,
+      "agent": "data_status_plan",
+      "command": "python .tools/run_fixture_verification.py python -m pytest -q tests/test_gukgam_witness_plan_review.py",
+      "focused_tests_passed": 16,
+      "live_or_full_verification_reproduced": false
+    },
+    "risk": {
+      "actionable_findings": 0,
+      "agent": "execution_risk_inventory",
+      "live_sources_credentials_databases_accessed": false,
+      "tests_ran": false
+    }
+  },
+  "input_versions": {
+    "plan_current_edition": "NOT_CURRENT_VERIFIED",
+    "plan_original_artifact_bytes_checked": false,
+    "plan_packet_hashes": [
+      "4f74bf8b7f0dfae52ad6fafff646d0c5f78a2c602a3d53d1bf55796284c8a74d",
+      "a70b01b4a9d7e6866ae6be5971c24ff999c88acc6d4d48db26c97a5e28e894a2",
+      "2b53b491a4d453ed6f3490ada15297077587deb7cad929f66a92d7e0e04c3a53",
+      "b04504c596b81316d507fcf19a41c96958244f8e3e5bf7f51f6b097f5ce064ee",
+      "13ea6574f5ebfc277ff698f247651c4195ad0a63e1dd88caae29cd14967f2eaa",
+      "e8e3d884098cdf060e6ac30f966f74b7bf25012f2a45909621691ab94fc35b07",
+      "5b73bd4fe6be4e52c5fa01417fcc476a89f425eb743e47d8a4b18c55703175f1"
+    ],
+    "witness_research_semantic_hash": "62e393a889a35bfa30393f832600f279d08fa8d136e5eb93e9fb014ba252d0d6",
+    "witness_review_status": "DRAFT_NOT_HUMAN_REVIEWED"
+  },
+  "limitations": [
+    "All exact occurrences are discovery candidates; no schedule or identity selected.",
+    "Raw witness bytes checked for prepared pilot packets; research form does not check raw artifacts.",
+    "Plan raw hash unavailable in this report; plan representation hashes do not prove current original bytes.",
+    "Supplied input review markers and agent review do not attest to actual human source/identity review.",
+    "Scoped socket.connect and repository dispatch guards in local preparation are code guards, not OS or tool isolation.",
+    "No original source research records or operational SSD runtime were changed."
+  ],
+  "organization_code_work_order": {
+    "canonical_ids_copied_from_staging": false,
+    "credential_access": false,
+    "operational_effects_authorized_by_artifact": false,
+    "provider_dataset_reference": "15077870",
+    "provider_query_ran": false,
+    "selected_label_count": 1,
+    "selected_row_count": 47,
+    "status": "UNQUERIED_NONEXECUTING_DRAFT"
+  },
+  "preparation_script": {
+    "input_source_fields": "Reviewed minimized local fields only; no provider payload",
+    "path": ".tools/prepare_witness_plan_review.py",
+    "tracked": false
+  },
+  "prepared_artifacts": {
+    "MSIT_PLAN_LINK_REVIEW.md": {
+      "bytes": 8531,
+      "sha256": "c80bdfa0dbb5d480fd463a1914da374341eedb8bd2427cf38c15a90aa5218add"
+    },
+    "msit-organization-code-work-order-draft.json": {
+      "bytes": 14124,
+      "sha256": "5792e795c0f22e97ec6f8ca2cc7b1928133b6bc0ae502b422b2fa3c0d717c575"
+    },
+    "msit-plan-linkage-review.json": {
+      "bytes": 163596,
+      "sha256": "d20605f1eabc8b9a39d2f9ea5b2edd3ff4febcc79409139412ab3752127465c0"
+    },
+    "science-plan-linkage-review.json": {
+      "bytes": 1076108,
+      "sha256": "2085e9ba7dcbc355714e42430a18181a68b7647c832e6a12cabed3d2dc01261d"
+    }
+  },
+  "scope": "Existing inspect-only source-to-plan review preparation; real field review/identity/publication absent",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED",
+  "verification": {
+    "full": {
+      "architecture": "PASS",
+      "canonical_verify_exit": 0,
+      "exit_code": 0,
+      "golden": "PASS",
+      "mypy": "PASS",
+      "mypy_source_files": 151,
+      "next_standalone_build_assets": "PASS",
+      "optional_postgresql_skipped": 4,
+      "python_passed": 914,
+      "python_seconds": 315.74,
+      "ruff": "PASS",
+      "sqlite_warnings": 6,
+      "web_lint_types": "PASS",
+      "web_passed": 34
+    },
+    "log": {
+      "path": ".tools/gukgam-witness-plan-review-20261003-verify.log",
+      "sha256": "f96095ab2c460867dedbac780219eb1990155c45b1d6f51c9ba66a76621db289"
+    },
+    "post_documentation": {
+      "architecture": "PASS",
+      "code_hashes_unchanged": 4,
+      "diff_whitespace": "PASS",
+      "prepared_hashes_checked": 4,
+      "relative_links_checked": 143
+    },
+    "targeted": {
+      "exit_code": 0,
+      "passed": 115,
+      "seconds": 6.93
+    }
+  }
+}

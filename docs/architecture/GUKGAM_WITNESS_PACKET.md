@@ -45,6 +45,33 @@ Research inspection opens no DB, checks no PDF bytes and fetches no source. Sing
 inspection is `civic inspect gukgam-witness --allow-effect READ_ONLY --packet <packet.json>
 --artifact <exact.pdf>`; it additionally verifies the actual local attachment bytes.
 
+### Source-to-plan review preparation
+
+The existing inspect command also accepts repeated `--plan-packet <reviewed-plan.json>`.
+It adds an offline `plan_linkage_review` using the existing plan parser and
+`gukgam_review_key`; it opens no DB and performs no source retrieval. This is the independent
+R3 preparation slice while actual R2 field review is pending, not identity materialization.
+
+Matches use only an exact trimmed institution-list heading or printed audited-target label,
+the explicit committee and source publication year. The printed plan audit year must also agree.
+Affiliation/role and witness name never participate. Every matching plan occurrence is retained;
+one match is still discovery only, and multiple matches require review. Requested/missing witness
+dates stay literal; no plan date fills a field or establishes attendance. Missing labels and no
+exact candidate are separate outcomes. No canonical UUID, identity or Claim is created.
+
+Each candidate retains its plan packet hash and target occurrence key. Its `occurrence_ref_hash`
+also binds the witness packet hash, raw witness SHA and witness row key. A bare plan review key
+is version-insensitive and must not be used alone downstream. Duplicate attachment series fail
+closed. Different posts may coexist as candidate inputs; current editions and supersession are
+not established. Plan raw SHA is null and `artifact_bytes_verified=false`: the inspect join validates
+the representation, not original plan bytes. Single-packet inspection separately checks witness
+bytes; research inspection does not. Input review markers are not a new human attestation.
+
+The private persisted witness review API is unchanged. This source-to-source report is local
+operator preparation and must not become a public witness/target DTO or identity approval.
+
+### Reviewed acquisition
+
 After actual field review, exact rights review and the pinned sole-writer/backup/runtime
 preflight, the acquisition form is `civic observe gukgam-witness --allow-effect SOURCE_INGESTION
 --packet <reviewed.json> --artifact <exact.pdf> --confirm-exact-attachment-rights

@@ -9,6 +9,7 @@ from collections import Counter
 from sqlalchemy.exc import SQLAlchemyError
 
 from packages.application.context import Application
+from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_plan_packet
 from packages.connectors.gukgam_witness_packet import (
     GukgamWitnessPacket,
     GukgamWitnessPacketError,
@@ -16,6 +17,7 @@ from packages.connectors.gukgam_witness_packet import (
     parse_gukgam_witness_research,
 )
 from packages.domain.enums import SourceRunStatus
+from packages.rendering.gukgam_witness_plan_review import build_gukgam_witness_plan_review
 from packages.verification.gukgam_witness_import import (
     GUKGAM_WITNESS_FEEDER,
     ReviewedGukgamWitnessCapture,
@@ -53,10 +55,18 @@ def inspect_inputs(args: argparse.Namespace) -> dict[str, object]:
         packets = parse_gukgam_witness_research(
             json.loads(args.research.read_text(encoding="utf-8"))
         )
-        return inspection(packets) | {"artifact_bytes_verified": False}
-    packet = load_packet(args)
-    verify_witness_artifact(packet, args.artifact.read_bytes())
-    return inspection((packet,)) | {"artifact_bytes_verified": True}
+        artifact_verified = False
+    else:
+        packet = load_packet(args)
+        verify_witness_artifact(packet, args.artifact.read_bytes())
+        packets = (packet,)
+        artifact_verified = True
+    result = inspection(packets) | {"artifact_bytes_verified": artifact_verified}
+    if args.plan_packet:
+        plans = [parse_reviewed_gukgam_plan_packet(json.loads(path.read_text(encoding="utf-8")))
+                 for path in args.plan_packet]
+        result["plan_linkage_review"] = build_gukgam_witness_plan_review(packets, plans)
+    return result
 
 
 def load_capture(args: argparse.Namespace) -> ReviewedGukgamWitnessCapture:

@@ -40,6 +40,20 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 independent R3 preparation (base28859fe): existing read-only witness inspect accepts
+repeatable --plan-packet and produces an exact-label source-to-plan candidate report. Same explicit
+committee and source/audit year only; all occurrences retained, no date fill or identity/attendance.
+Raw plan bytes/current editions remain unverified; witness raw SHA and packet hashes bind versioned
+occurrence refs. Duplicate series/rights/credential-bearing plan URLs fail closed. Real412 rows:
+288 one-candidate, 108 multiple-candidate, 16 no exact; pilot47 all have two candidates.
+Local 47-row link table, exact PDF checks and one-label unqueried Organization-code DRAFT work order
+are prepared under .tools/gukgam-witness-plan-review-20261003. No operational/remote/source effect.
+Canonical make verify exit0: 914 Python PASS,4 optional PG skips,6 warnings,315.74s;34 web PASS,
+Ruff/types/Golden/architecture/standalone build/assets PASS. Independent quality ran16 focused
+tests; risk reviewed boundaries without tests. Neither found an actionable defect.
+Receipt: docs/receipts/gukgam-witness-plan-review-20261003.json. Real field review remains absent;
+R2 acquisition HOLD, R3 canonical identities/R4 publication/R5 delivery remain incomplete.
+
 2026-10-03 R2 preparation follows verified code d560efb5f288d438e29e09aff9b078f5100575d7.
 Commander transfer resumed only after the 524288-byte existing prefix hash matched locally;
 all 749050 bundle bytes and 11 entries matched exact hashes. Mac pinned-wheel inspections PASS:
@@ -261,6 +275,11 @@ remain preserved and do not authorize recurring writers.
 
 ## Modified files
 
+Current independent R3 preparation adds one pure rendering projection and focused regressions,
+extends only the existing witness inspect CLI/worker, and updates the canonical contract, command
+guide, roadmap, active plan, integration guide, INDEX, HANDOFF and sanitized receipt. No API/UI,
+schema, dependency, source JSON or operational runtime change.
+
 Current roadmap definition adds docs/operations/GUKGAM_COLLECTION_ROADMAP.md and aligns active
 plan, frontend/backend guide, INDEX and this HANDOFF. Product code, schema and research rows unchanged.
 Gukgam continuation changes the existing page and scoped sticky-anchor CSS, copy-coupled
@@ -275,6 +294,10 @@ Diagnostic helpers, runtime databases/keys, raw model/browser outputs and privat
 remain outside Git. Original root master/user contracts.py edits remain untouched.
 
 ## Next concrete action
+
+Independent R3 source-to-plan preparation is complete. Preserve every versioned occurrence ref;
+do not choose from the pilot's two plan dates automatically. The one-label provider-code work order
+is unqueried/nonexecuting and requires a fresh reviewed source request and canonical target proof.
 
 Roadmap R2: pinned package/Commander transfer/read-only checks/consistent backup and disposable
 restore are complete. Actual human field review of the exact 47-row source manifest is still

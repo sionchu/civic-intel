@@ -39,7 +39,15 @@ coverage through `materialize_latest_successful(application)`. It never fetches 
 DRAFT Claims. Claim publication is a separate explicit operation. For a reviewed draft use
 `civic publish claim --allow-effect CLAIM_PUBLICATION --claim-id <draft-claim-id>`; the publication
 gate is revalidated in the transaction that changes its status. Base-profile publication is a
-separate source-specific operation. `civic inspect commands` inventories all 37 current routes.
+separate source-specific operation. `civic inspect commands` inventories all current routes.
+
+`civic inspect gukgam-witness --allow-effect READ_ONLY --research
+docs/research/gukgam_2026_science_witness_linkage_2026-10-02.json --plan-packet
+tests/fixtures/gukgam_2026_science_plan_reviewed_packet.json` prepares a local source-to-plan
+label crosswalk. `--plan-packet` is repeatable on this inspect path only. The single witness
+`--packet` form still requires its exact `--artifact`. No DB/source fetch occurs. All matching
+schedule occurrences remain candidates, source dates stay separate and raw plan bytes/current
+editions remain unverified. See [the witness contract](../architecture/GUKGAM_WITNESS_PACKET.md).
 
 `civic observe gukgam-schedule-probe --allow-effect SOURCE_INGESTION --date YYYY-MM-DD
 --committee <exact-committee> --page-size 10` fetches a bounded schedule sample without persistence.

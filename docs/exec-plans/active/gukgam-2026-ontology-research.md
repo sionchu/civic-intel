@@ -122,6 +122,29 @@ Actual field review remains absent; continuation approval is not fabricated revi
 R2 acquisition remains HOLD, with fresh writer exclusion/readiness required at import time.
 [Executed Mac preparation receipt](../../receipts/gukgam-witness-mac-preflight-20261003.json).
 
+## Independent R3 preparation, 2026-10-03
+
+Work order base: 28859fee03af2ad901f5a9e9b91caf94f44c50a4. The owner requested continuation
+without routine questions. MAIN owns a pure local source-to-plan candidate projection in rendering,
+the existing witness inspect CLI/worker, focused tests and current docs/receipts. Existing source
+JSON, plan packets and R1 full/pilot DRAFT packets are versioned inputs. No source network,
+operational DB/credentials, schema, dependency, API/UI or deployment effect is permitted by this
+preparation slice. Reviewers are read-only, with only sanitized offline tests/caches allowed.
+
+The implemented report compares exact printed context labels under the same explicit committee
+and publication/audit year. It keeps every plan occurrence, source/name-cell/row provenance,
+packet/raw-witness hashes, DRAFT and missing witness fields. Affiliation is never a target; dates,
+identity, attendance, supersession and latest editions are not inferred. Duplicate attachment
+series and unapproved rights/credential-bearing plan URLs fail closed.
+Real 412-row crosswalk: 288 one-candidate / 108 multiple-candidate / 16 no-exact rows. The exact
+47-row pilot has two plan occurrences per row, both retained. No canonical IDs are copied from
+staging. Its one-label Organization-code work order remains unqueried and nonexecuting; it requires
+a fresh source-specific request and current provider/target identity review before any effect.
+
+[Implementation and local review receipt](../../receipts/gukgam-witness-plan-review-20261003.json)
+records executed tests, source/representation limits and prepared artifact hashes. R2 acquisition
+continues HOLD for actual field review; R3 identities and R4/R5 public delivery are not completed.
+
 ## Purpose and Evidence Core boundary
 
 Continue the Gukgam research surface over canonical Evidence Core records. An audit-target Claim

@@ -142,6 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
                     inputs.add_argument("--research", type=Path)
                     inputs.add_argument("--packet", type=Path)
                     p.add_argument("--artifact", type=Path)
+                    p.add_argument("--plan-packet", type=Path, action="append", default=[])
                 else:
                     p.add_argument("--packet", type=Path, required=True)
                     p.add_argument("--artifact", type=Path, required=True)
