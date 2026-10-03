@@ -58,6 +58,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Presidential personnel feeder](architecture/PRESIDENTIAL_PERSONNEL_FEEDER.md)
 - [V0 scope](product/V0_SCOPE.md)
 - [North Star and Derived Intelligence boundaries](product/CIVIC_INTEL_NORTH_STAR.md)
+- [Frontend direction (proposed): encyclopedic pages, evidence panel, ego graph](product/FRONTEND_DIRECTION.md)
 - [CHANGE discovery experience v1 plan](exec-plans/completed/change-discovery-experience-v1.md)
 - [ALIO Item 12 MONEY bounded slice](exec-plans/completed/alio-item12-money-v0.md)
 - [Organization Claim publication v0 plan](exec-plans/completed/organization-claim-publication-v0.md)
