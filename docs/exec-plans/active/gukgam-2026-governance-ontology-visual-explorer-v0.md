@@ -1683,3 +1683,19 @@ Launch cut:
 Public-beta release gate (unchanged, requires owner approval): choose the public topology and
 cost, move the verified canonical data to it, deploy one exact verified master commit, run
 `workers.public_beta_preflight`, then rendered desktop/mobile QA on the deployed origin.
+
+## Current checkpoint — owner-approved review batches (2026-10-04)
+
+- The owner explicitly approved, as whole batches, the 41-item Gukgam Claim DRAFT and the 70-item
+  MOIS Organization proposal. Per-item human review was not performed by the agent; receipts record
+  the batch approval wording. Pre-change custom-format backups were taken.
+- Gukgam Claim batch `9bb202c3…711a9`: preflight 41/41, COMMITTED `claims_created=41`,
+  `organizations_reused=27`. Public Claim-backed targets `110 → 151`, committees `6 → 7`.
+- MOIS: new source-specific `workers/mois_reviewed_organization_commit.py` (derived namespaced
+  Organization IDs; re-verifies each MOIS FeederObservation code/full name; refuses existing exact
+  names and partial states). Manifest `ee4ee534…53e4` over proposal `e7a208d1…9964`: dry run 70/70,
+  COMMITTED `organizations_created=70`; Organizations `374 → 444`. No Claim written.
+- The orphan ALIO SourceRun `560c8e62…` was closed as `FAILED / ABANDONED_NO_ACTIVE_PROCESS`
+  without checkpoint change.
+- Follow-on DRAFT for the now exact-one MOIS-bound occurrences: 74 items / 70 Organizations,
+  manifest `0bbb7d5d…cada`, preflight only. It needs its own Claim approval.
