@@ -23,6 +23,7 @@ from packages.domain.contracts import (
     ClaimEvidence,
     Organization,
     Person,
+    PersonObservationLink,
     Source,
     SourcePolicy,
 )
@@ -30,6 +31,8 @@ from packages.domain.enums import (
     CrossLaneIdentityEvidenceType,
     EpistemicStatus,
     IdentityStatus,
+    MaterializationAction,
+    MaterializationDecisionClass,
     PublicationStatus,
 )
 from packages.persistence import models as db
@@ -37,6 +40,14 @@ from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_FEEDER,
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SCOPE,
+)
+from packages.rendering.gukgam_witness_claim import (
+    GUKGAM_WITNESS_LISTING_PREDICATE,
+    build_gukgam_witness_claim,
+)
+from packages.rendering.gukgam_witness_review import (
+    GukgamWitnessReviewError,
+    load_current_gukgam_witness_documents,
 )
 from packages.verification.alio_person_materialization import (
     AlioPersonMaterializationError,
@@ -47,6 +58,7 @@ from packages.verification.cross_lane_identity import (
     CrossLaneIdentityEvidence,
     resolve_cross_lane_identity,
 )
+from packages.verification.gukgam_witness_import import GUKGAM_WITNESS_FEEDER
 from packages.verification.identity import IdentityCandidate
 from packages.verification.nec_person_materialization import (
     NEC_CANDIDACY_PREDICATE,
@@ -554,7 +566,116 @@ def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) ->
     return rows
 
 
+def _link_witness(plan: Plan, observation: Any) -> None:
+    from packages.persistence import mapping
+    from packages.persistence.acquisition import AcquisitionRepository
+
+    # Lock/fingerprint the exact source series before using the shared canonical reader.
+    # New checkpoint selections and observation versions invalidate an older preview.
+    checkpoints = plan.query(
+        db.SourceCheckpointRow,
+        db.SourceCheckpointRow.feeder == GUKGAM_WITNESS_FEEDER,
+        db.SourceCheckpointRow.scope_key == observation.scope_key,
+        limit=1,
+    )
+    if not checkpoints or not checkpoints[0].last_run_id:
+        raise AdminError("CHECKPOINT_REQUIRED", "검토 완료된 증인 명단 체크포인트가 필요합니다.")
+    plan.get(db.SourceRunRow, checkpoints[0].last_run_id)
+    versions = plan.query(
+        db.FeederObservationRow,
+        db.FeederObservationRow.feeder == GUKGAM_WITNESS_FEEDER,
+        db.FeederObservationRow.scope_key == observation.scope_key,
+        limit=1000,
+    )
+    for version in versions:
+        snapshot = plan.get(db.SourceSnapshotRow, version.snapshot_id)
+        source = plan.get(db.SourceRow, snapshot.source_id)
+        plan.get(db.SourcePolicyRow, source.policy_id)
+    try:
+        documents = load_current_gukgam_witness_documents(
+            AcquisitionRepository(plan.session), scope_key=observation.scope_key,
+        )
+    except GukgamWitnessReviewError:
+        raise AdminError("WITNESS_SOURCE_INVALID", "현재 증인 명단의 출처·버전 검증에 실패했습니다.") from None
+    selected = [
+        (document, index)
+        for document in documents
+        for index, context in enumerate(document.contexts)
+        if str(context[0].id) == observation.id
+    ]
+    if len(selected) != 1:
+        raise AdminError("WITNESS_NOT_CURRENT", "현재 검토 완료 명단에 포함된 증인 행이 필요합니다.")
+    document, index = selected[0]
+    linked = plan.query(
+        db.PersonObservationLinkRow,
+        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.superseded_at.is_(None),
+    )
+    if linked:
+        raise AdminError("ALREADY_LINKED", "이미 인물에 연결된 증인 행입니다.")
+    target = _current_person(plan, plan.command.target_person_id)
+    if target.identity_status != "RESOLVED":
+        raise AdminError("TARGET_NOT_RESOLVED", "연결 대상 인물이 아직 확인되지 않았습니다.")
+    row = document.packet.rows[index]
+    _bridge(
+        plan, IdentityCandidate(canonical_name=row.printed_name), target,
+        document.packet.source.committee_name + " / " + row.category,
+    )
+    review_id = _save_review(plan, observation.id, "RESOLVED", "REGISTERED", target.id)
+    review_values = plan.changes[f"{db.IdentityReviewItemRow.__tablename__}:{review_id}"].after
+    review_values["details_json"] = {
+        **review_values["details_json"],
+        "reviewed_packet_hash": document.packet.content_hash,
+        "immutable_observation_hash": observation.content_hash,
+        "review_evidence_ids": [str(item) for item in plan.command.evidence_ids],
+        "identity_basis": plan.command.identity_basis,
+    }
+    review = mapping._identity_review_item(db.IdentityReviewItemRow(**review_values))
+    link = PersonObservationLink(
+        id=UUID(plan.uid(f"link:{observation.id}")),
+        person_id=UUID(target.id),
+        observation_id=UUID(observation.id),
+        action=MaterializationAction.REVIEWED_LINK,
+        decision_class=MaterializationDecisionClass.REVIEWED_BRIDGE,
+        linked_at=plan.review_time,
+        review_item_id=UUID(review_id),
+    )
+    prepared = build_gukgam_witness_claim(
+        document, index, person=Person.model_validate(target, from_attributes=True),
+        link=link, review=review,
+    )
+    link_values = link.model_dump(mode="python")
+    link_values.update(
+        id=str(link.id), person_id=target.id, observation_id=observation.id,
+        review_item_id=review_id,
+    )
+    plan.create(db.PersonObservationLinkRow, **link_values)
+    claim_values = prepared.claim.model_dump(mode="python")
+    claim_values.update(id=str(prepared.claim.id), person_id=target.id, organization_id=None)
+    plan.create(db.ClaimRow, **claim_values)
+    evidence_values = prepared.evidence.model_dump(mode="python")
+    evidence_values.update(
+        id=str(prepared.evidence.id), claim_id=str(prepared.claim.id),
+        source_id=str(prepared.evidence.source_id), snapshot_id=str(prepared.evidence.snapshot_id),
+        feeder_observation_id=observation.id,
+    )
+    plan.create(db.ClaimEvidenceRow, **evidence_values)
+    plan.outcomes.append({
+        "observation_id": observation.id, "person_id": target.id, "disposition": "REGISTERED",
+        "claim_id": str(prepared.claim.id), "publication_status": "DRAFT",
+        "identity_action": "REVIEWED_LINK", "category": row.category,
+        "packet_hash": prepared.packet_hash, "observation_hash": prepared.observation_hash,
+        "attendance_state": "NOT_VERIFIED",
+    })
+
+
 def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> None:
+    selected = plan.get(db.FeederObservationRow, identifier)
+    if selected.feeder == GUKGAM_WITNESS_FEEDER:
+        if plan.command.action != AdminAction.LINK_PERSON:
+            raise AdminError("WITNESS_LINK_ONLY", "증인 행은 확인된 기존 인물에만 연결할 수 있습니다.")
+        _link_witness(plan, selected)
+        return
     observation, fields, organization, source = _alio_person_record(plan, identifier)
     linked = plan.query(
         db.PersonObservationLinkRow,
@@ -689,6 +810,13 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
         raise AdminError("SUPERSEDED_CLAIM", "이미 대체된 Claim은 수정·공개하지 않습니다.")
     evidence_rows = plan.query(db.ClaimEvidenceRow, db.ClaimEvidenceRow.claim_id == row.id)
     action = plan.command.action
+    if (
+        row.predicate == GUKGAM_WITNESS_LISTING_PREDICATE
+        and action in {AdminAction.PUBLISH, AdminAction.CORRECT_CLAIM}
+    ):
+        raise AdminError(
+            "WITNESS_RELEASE_NOT_ENABLED", "증인 명단 Claim의 공개·정정 경로는 아직 열리지 않았습니다."
+        )
     if action == AdminAction.CORRECT_CLAIM:
         # Draft correction does not remove a currently public record. Replacement occurs on publish.
         extra_rows = [plan.get(db.ClaimEvidenceRow, item) for item in plan.command.evidence_ids]

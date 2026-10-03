@@ -30,6 +30,15 @@ source storage permission and current Organization binding. It creates a reviewe
 Person/link and DRAFT, attributable CLAIM role record with exact Evidence. It does not bulk-promote
 names, issue FACTs, publish automatically or resolve all cross-source duplicates.
 
+The same LINK_PERSON command additionally supports one exact current reviewed 2026 Gukgam
+witness observation and an already RESOLVED Person. It reuses the source-specific current
+checkpoint/packet loader and existing official bridge validator, with separate human identity
+attestation. No witness Person registration exists. The signed preview fingerprints the source
+series, policy, target, aliases, selected evidence, links and review state; confirmed commit creates
+only the exact reviewed link/review and canonical DRAFT listing Claim/Evidence with atomic audit.
+Witness publication and correction fail closed in this milestone. The ALIO queue and operations
+are unchanged. See [the source contract](GUKGAM_WITNESS_PACKET.md#private-reviewed-witness-linking).
+
 Supported actions:
 - HOLD / EXCLUDE / REOPEN on named ALIO source records;
 - REGISTER_PERSON / LINK_PERSON;

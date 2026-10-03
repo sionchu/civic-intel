@@ -27,6 +27,41 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Private reviewed witness identity continuation, 2026-10-04
+
+MAIN continues the next local slice at base `8c7c449c02af1ade8b6c42b0283e92b969fdca59`:
+extend existing private `LINK_PERSON` to one exact current 2026 witness observation and an
+already current RESOLVED Person. Reuse the canonical checkpoint/packet/provenance loader,
+official cross-lane bridge validator, operator attestation, signed preview and explicit confirmed
+commit. Bind source version, policy, target, evidence, aliases and review/link state into the
+existing preview fingerprint; stale input fails closed. Persist only the existing review/link and
+canonical DRAFT listing Claim/Evidence plus append-only audit, atomically in disposable fixtures.
+No witness Person creation, name-only link, inferred employment/attendance, schema, new API,
+public UI, source fetch, operational identity/review, SSD write or deployment. Existing ALIO
+behavior remains. Owned paths: existing admin workflow and witness loader, synthetic admin
+regressions, governing witness/admin docs, this plan, HANDOFF and one execution receipt.
+One bounded read-only child reviews dependency and identity boundaries; no recursive delegation,
+provider payloads, external network or operational resources. MAIN runs targeted checks and full
+make verify for changed code, inspects the diff and makes one coherent local commit.
+
+Completed local slice: existing private admin preview/commit accepts the reviewed witness
+LINK_PERSON branch and atomically saves exact review/link and canonical DRAFT Claim/Evidence
+with audit. No Person creation or witness publication/correction is enabled. Targeted33PASS
+and existing-path regressions pass. Full make verify exit0:1075 Python PASS,4 optional PG skips,
+6 warnings(519.00s),34 web/12 Worker synthetic HTTP PASS and all code/build gatesPASS. Independent
+read-only review found no concrete defect; added-series-version and scoped-selection regressions
+address its suggested gap. Original edit and47-row packet/template hashes remain unchanged.
+One Commander read at19:34:05–06UTC confirms schema0008/mode0600/quick_check ok/FK0/HTTP200 and
+unchanged aggregate counts:People298,DRAFT Claims298,Organizations0,observations299,witness0.
+Canonical `mois_standard_organization_codes` run count0 is now actually checked; the earlier
+singular-name query's NOT_RUN result remains historical. No source fetch, operational DB/schema/
+service/identity/human-review/publication/runtime upgrade/deployment effect. Real field review,
+actual source import and official identity bridge judgments are still pending. Next independent
+local implementation: witness current-source and exact reviewed-identity release preflight,
+with publication closed until the source-specific release contract and synthetic checks exist.
+[Reviewed witness admin implementation evidence](../../receipts/gukgam-witness-reviewed-admin-20261004.json)
+supersedes the preceding loader hash only; old receipts remain historical and unchanged.
+
 ### Witness-to-Person DRAFT Claim preparation continuation, 2026-10-04
 
 Owner requests continued implementation at base `2a190060eb42bd2b1a38c6cd3468cd8f92a36826`.

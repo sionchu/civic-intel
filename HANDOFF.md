@@ -41,6 +41,33 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-04 reviewed witness identity/DRAFT continuation (base8c7c449): existing private admin
+`LINK_PERSON` now accepts one exact current HUMAN_REVIEWED 2026 witness observation and an
+already current RESOLVED Person, using explicit official continuity evidence and human identity
+attestation. Scoped canonical packet validation and existing signed preview/confirmed commit
+bind source-series dependencies, policy, target/aliases, evidence and review/link state. One
+transaction persists the exact resolved review/link, canonical listing-only DRAFT Claim/Evidence
+and append-only audit. Witness Person creation and publication/correction are rejected. Existing
+ALIO behavior, automatic identity writer, schema, source rows, checkpoints and public routes stay
+unchanged. Targeted33PASS plus existing-path regressions; full make verify exit0:1075 Python PASS,
+4 optional PG skips,6 warnings(519.00s),34 web/12 Worker synthetic HTTP PASS, all lint/type/Golden/
+architecture/Next/Worker gatesPASS. Independent read-only review found no concrete defect; the
+additional source-version/scoped-selection regression gap was covered. No browser UI change.
+Original user edit and47-row packet/template hashes are preserved. One Commander aggregate
+read at2026-10-03 19:34:05–06UTC confirms schema0008/mode0600/quick_check ok/FK0/HTTP200,
+People298,DRAFT Claims298,Organizations0,observations299,runs1,witness0 and exact canonical MOIS
+runs0. This corrects the preceding NOT_RUN counter's query coverage without a second snapshot.
+No actual source field review, operational import/identity/DRAFT/publication, runtime upgrade,
+browser acceptance or deployment occurred. Entry: existing private admin preview/commit using
+the documented reviewed witness link contract. Actual inputs need reviewed source fields plus
+current Person/Observation and separately reviewed official Evidence IDs/basis; the unchanged
+47-row guide remains .tools/gukgam-witness-draft-preparation-20261004/README.md.
+Next independent local slice: current-source and exact reviewed-identity release preflight;
+keep witness release closed until its source-specific contract/regression is complete.
+Receipt and latest intentional code/test hash pins:
+docs/receipts/gukgam-witness-reviewed-admin-20261004.json. Retain prior pins for unchanged files.
+
+Preceding completed local preparation milestone:
 2026-10-04 witness-to-Person DRAFT preparation (base2a19006): canonical
 `civic inspect gukgam-witness-claim` takes an explicit Person/Observation and exact packet/row
 hashes. One coherent read-only UoW reuses current witness checkpoint/policy/provenance validation,

@@ -71,9 +71,16 @@ private operator records; a bare row key or printed name is insufficient. All in
 It opens one coherent read-only UoW and returns identifiers/hashes/category/gate state, never
 the proposition, printed fields or identity-review notes. SQLite must already exist and is
 opened read-only. DRAFT / CLAIM / non-asserted pairs are prepared in memory only; no record is
-saved. There is no witness Claim write, identity or publication command. A new version, removed
+saved. There is no witness Claim write, identity or publication CLI command. A new version, removed
 row, unresolved Person, ambiguous link or unmatched review fails closed with the existing
 redacted command error. See [the witness contract](../architecture/GUKGAM_WITNESS_PACKET.md).
+
+The existing private admin API separately supports one reviewed witness `LINK_PERSON` through
+signed preview and explicitly confirmed commit. It needs an actually reviewed current packet,
+an existing RESOLVED Person and separately reviewed official identity evidence; it atomically
+persists the exact review/link and a DRAFT listing Claim/Evidence with audit. It cannot create a
+witness Person or publish/correct its Claim. No CLI verb, public endpoint or automatic review is
+added. See [private reviewed witness linking](../architecture/GUKGAM_WITNESS_PACKET.md#private-reviewed-witness-linking).
 
 ### Offline witness correction preparation
 

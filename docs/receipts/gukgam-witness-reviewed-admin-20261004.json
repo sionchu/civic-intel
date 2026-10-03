@@ -1,0 +1,131 @@
+{
+  "base_commit": "8c7c449c02af1ade8b6c42b0283e92b969fdca59",
+  "canonical_mac_read_only": {
+    "active_running_runs": 0,
+    "claim_publication_status_counts": {
+      "DRAFT": 298
+    },
+    "counts": {
+      "claims": 298,
+      "evidence": 298,
+      "observations": 299,
+      "organizations": 0,
+      "people": 298,
+      "runs": 1,
+      "snapshots": 3,
+      "sources": 3
+    },
+    "exact_feeder_run_counts": {
+      "mois": 0,
+      "witness": 0
+    },
+    "file_mode": "0600",
+    "finished_at_utc": "2026-10-03T19:34:06.222436+00:00",
+    "foreign_key_violations": 0,
+    "health_http_status": 200,
+    "process_exit_code": 0,
+    "quick_check": "ok",
+    "schema_revision": "0008",
+    "snapshot_status": "READ_ONLY_AGGREGATES_COMPLETE",
+    "source_run_status_counts": {
+      "SUCCESS": 1
+    },
+    "started_at_utc": "2026-10-03T19:34:05.731629+00:00"
+  },
+  "effects": {
+    "deployment": 0,
+    "human_review": 0,
+    "identity": 0,
+    "operational_migration": 0,
+    "publication": 0,
+    "restart": 0,
+    "source_fetch": 0,
+    "ssd_write": 0
+  },
+  "implementation": {
+    "claim": "DRAFT_CLAIM_NOT_ASSERTED_SOURCE_LISTING_NOT_ATTENDANCE",
+    "commit": "EXPLICIT_CONFIRMATION_PRIVATE_WRITE_OPT_IN_REVALIDATION_ATOMIC_AUDIT",
+    "entrypoint": "existing private admin operations preview/commit LINK_PERSON",
+    "identity": "EXPLICIT_HUMAN_ATTESTATION_AND_EXISTING_OFFICIAL_CROSS_LANE_BRIDGE",
+    "new_api_or_ui": false,
+    "new_schema": false,
+    "person_creation": false,
+    "preview": "READ_ONLY_SIGNED_ACTOR_COMMAND_STATE_BOUND_5_MINUTES",
+    "source": "EXACT_CURRENT_HUMAN_REVIEWED_2026_CHECKPOINT_PACKET_AND_OBSERVATION",
+    "source_person_checkpoint_mutation": false,
+    "target": "EXISTING_CURRENT_RESOLVED_PERSON_ONLY",
+    "witness_publication_or_correction_enabled": false
+  },
+  "independent_review": {
+    "provider_data_or_remote_resources": false,
+    "review_gap_addressed": "ADDED_SOURCE_VERSION_AND_SCOPED_SELECTION_REGRESSIONS",
+    "status": "NO_CONCRETE_DEFECT_FOUND_READ_ONLY",
+    "tests_run_by_reviewer": false
+  },
+  "next_local_implementation": "Witness current-source and exact reviewed-identity release preflight; keep release closed until its contract and synthetic regression are complete.",
+  "not_executed": [
+    "ACTUAL_SOURCE_FIELD_REVIEW",
+    "OPERATIONAL_WITNESS_IMPORT",
+    "ACTUAL_OFFICIAL_IDENTITY_BRIDGE_REVIEW",
+    "OPERATIONAL_REVIEWED_LINK",
+    "OPERATIONAL_DRAFT_PERSISTENCE",
+    "CLAIM_PUBLICATION",
+    "DEPLOYMENT"
+  ],
+  "original_user_contract_edit": "PRESERVED",
+  "pilot_input_hashes_unchanged": [
+    {
+      "packet_and_edit_template_unchanged": true,
+      "source": 1
+    },
+    {
+      "packet_and_edit_template_unchanged": true,
+      "source": 2
+    }
+  ],
+  "prior_receipts_rewritten": false,
+  "recorded_at_utc": "2026-10-03T20:03:05.164947+00:00",
+  "source_files_lf_sha256": {
+    "packages/persistence/admin_workflow.py": "9df10db6d0b4eba15de6041a58e65c108c2a138955d3b48ab802c3a6c487dbbd",
+    "packages/rendering/gukgam_witness_review.py": "03bdbdb69cc9abba0ee324bab92851a04bbb26788d3c7ac5357340e035fa894a",
+    "tests/test_gukgam_witness_admin.py": "ba75f3c13bd5de28856e0bf974a8b2adea57bfd32dd0a6bafc9d24ebe6e2dce0"
+  },
+  "status": "LOCAL_REVIEWED_WITNESS_LINK_AND_DRAFT_PERSISTENCE_VERIFIED_NOT_OPERATIONAL",
+  "task_id": "gukgam-witness-reviewed-admin",
+  "verification": {
+    "architecture": "PASS",
+    "browser": "NOT_RUN_NO_UI_CHANGE",
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "environment": "ALLOWLISTED_LOCAL_SYNTHETIC_DISPOSABLE_FIXTURES",
+    "existing_path_regression": {
+      "exit_code": 0,
+      "log": ".tools/gukgam-witness-admin-20261004-regression-complete.log",
+      "log_sha256": "586a914808f037b3859212983f1c97ea939fce7eefcc457a8c7ae7c4bde842b9"
+    },
+    "exit_code": 0,
+    "golden": "PASS",
+    "initial_failures": [
+      "SYNTHETIC_FIXTURE_MISSING_REQUIRED_OBJECT_TEXT",
+      "TEST_ASSUMED_SQLITE_RETAINS_DATETIME_TZINFO",
+      "REGRESSION_INVOCATION_MISSING_TEST_FILE_NOT_RUN"
+    ],
+    "live_postgresql": "NOT_RUN_POSTGRES_TEST_URL_NOT_CONFIGURED_IN_SANITIZED_RUNNER",
+    "log": ".tools/gukgam-witness-admin-20261004-verify.log",
+    "log_sha256": "7423ae303eda7b40aaf6bd15fcc3d6b23da52d9d96c6a73a423632425a44d921",
+    "mypy": "PASS_153_SOURCE_FILES",
+    "optional_postgresql_skipped": 4,
+    "python_passed": 1075,
+    "python_seconds": 519.0,
+    "ruff": "PASS",
+    "targeted": {
+      "exit_code": 0,
+      "log": ".tools/gukgam-witness-admin-20261004-targeted-final.log",
+      "log_sha256": "8e1c9a3a9d7984ff4ed937cecedeea983d362c8efd268d49df771141ef680cce",
+      "passed": 33
+    },
+    "warnings": 6,
+    "web_lint_types_next_and_worker_builds": "PASS",
+    "web_passed": 34,
+    "worker_http_checks": 12
+  }
+}

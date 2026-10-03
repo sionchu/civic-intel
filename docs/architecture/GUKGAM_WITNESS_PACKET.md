@@ -161,7 +161,7 @@ The review must reference the same observation and Person, with an actual resolu
 and nonblank note. Names, printed institution headings and nearby roles cannot supply this
 authority. A shared name cell's second role row still needs its own exact reviewed bridge.
 This preflight creates no such link or review. The generic automatic identity writer is unchanged;
-the existing reviewed admin mutation lane supports ALIO and does not gain witness support here.
+the private reviewed admin path described below supplies a separate, explicitly confirmed link.
 
 The predicate `LISTED_IN_GUKGAM_WITNESS_ATTACHMENT` means only an official source listing.
 The pair remains DRAFT / CLAIM / `asserted_as_true=false`; it is not publication approval or
@@ -174,6 +174,40 @@ and has no excerpt. Canonical evidence checks run while the publication gate rem
 
 This completes local R4 preparation only. Real witness field review, SSD acquisition, source-row
 identity decisions, DRAFT persistence, publication and public UI/deployment remain separate steps.
+
+## Private reviewed witness linking
+
+The existing private `/admin/operations/preview` and `/commit` endpoints accept `LINK_PERSON`
+for one witness observation from a current successful, HUMAN_REVIEWED 2026 checkpoint. The
+existing immutable AdminCommand supplies its observation UUID, a current RESOLVED target
+Person UUID, existing official ClaimEvidence UUIDs, explicit official career/biography continuity
+basis, substantive reason and human review attestation. Source field review and identity review
+are separate judgments. A name match, name cell, institution heading or attachment row key
+cannot authorize a link. The metadata-only witness listing cannot be its own identity bridge.
+The existing official cross-lane resolver and policy checks still govern selected bridge evidence.
+Witness REGISTER_PERSON is rejected; this path creates no Person or Organization.
+
+Preview writes nothing and uses the existing five-minute, actor/command-bound signed token.
+The current source-series checkpoint, run, observation versions and Source/Snapshot/Policy,
+current target and aliases, official bridge evidence/provenance and review/link state enter its
+state fingerprint. Commit rebuilds under existing locks and needs explicit confirmation and
+private write opt-in. Changed dependencies, superseded/excluded rows, invalid policy, ambiguous
+identity and an already linked row fail closed. Validation is source-scoped; an unrelated
+attachment cannot authorize the selected row. A scope exceeding 1,000 stored observation
+versions fails the existing impact limit rather than weakening review.
+
+One transaction persists the exact RESOLVED review, REVIEWED_LINK / REVIEWED_BRIDGE,
+the existing canonical listing-only DRAFT Claim/Evidence and append-only operation receipt.
+Review details retain the packet/observation hashes and bridge evidence IDs/basis. Source rows,
+checkpoints and Persons remain unchanged. Evidence has no excerpt; requested attendance and
+printed institution context remain literal. The read-only Claim inspector reconstructs that
+same deterministic pair after an actual completed link. Exact request replay returns the
+original receipt, and an insertion failure rolls back all domain writes and audit.
+
+This implementation opens no witness publication or correction lane: those operations reject
+the new listing predicate until its separate current-source release contract is implemented.
+Actual source review/import, identity decisions, SSD writes, public UI and release still require
+their operational work orders. Synthetic fixtures are not human attestations about real people.
 
 ## Evidence boundary
 

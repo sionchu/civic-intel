@@ -81,12 +81,15 @@ class CurrentGukgamWitnessDocument:
 
 
 def load_current_gukgam_witness_documents(
-    repository: GukgamWitnessReviewRepository, *, year: int = 2026,
+    repository: GukgamWitnessReviewRepository, *, year: int = 2026, scope_key: str | None = None,
 ) -> tuple[CurrentGukgamWitnessDocument, ...]:
     """Recover exact checkpoint-selected packets and provenance for private use cases."""
     documents: list[CurrentGukgamWitnessDocument] = []
     for checkpoint in repository.source_checkpoints(GUKGAM_WITNESS_FEEDER):
-        if not checkpoint.scope_key.startswith(f"{year}:"):
+        if (
+            not checkpoint.scope_key.startswith(f"{year}:")
+            or (scope_key is not None and checkpoint.scope_key != scope_key)
+        ):
             continue
         run = repository.source_run(checkpoint.last_run_id) if checkpoint.last_run_id else None
         meta = checkpoint.metadata
