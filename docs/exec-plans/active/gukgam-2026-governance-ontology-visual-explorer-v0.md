@@ -1648,3 +1648,38 @@ Keep the exact 41-item post-org.go Gukgam Claim DRAFT uncommitted until explicit
 its manifest hash. Independently review the new 70-item MOIS Organization proposal. Only after
 explicit review should a source-specific reviewed Organization materialization contract be created;
 do not auto-create Organizations from exact names and do not merge these two approval boundaries.
+
+## Current checkpoint — launch cut + audit schedule view (2026-10-04)
+
+Audit period begins 2026-10-06 (secondary report: Newspim 2026-10-02; committee plans remain the
+origin references). Verified state before this slice:
+
+- `master == origin/master == 77e2767`; PR #161 (review-throughput telemetry) open, head
+  `2d0a2a4`, Verify SUCCESS. The dirty canonical checkout is an earlier, unformatted copy of the
+  same PR #161 change; it was left untouched and this slice used a separate worktree.
+- Mac PostgreSQL (schema `0008`): People `9120`, Organizations `374`, Claims/ClaimEvidence
+  `14397/14397`; public Claim-backed Gukgam targets `110` across `6` committees / `103`
+  Organizations, plan dates 2026-10-06..2026-10-23.
+- One orphan `RUNNING` SourceRun remains (`alio_public_institution_executives`,
+  `item_4_current_all_institutions`, started 2026-09-18). Not mutated; needs an explicit
+  operator close decision.
+- Railway staging Web (2026-09-20) / API (2026-09-23) run against the older staging DB
+  (People `299` / Organizations `347`) and the `/gukgam/2026` target section renders
+  `SERVICE_UNAVAILABLE`. No production service exists.
+
+Launch cut:
+
+- SHIP: People/Organization profiles with Claim → Evidence → Source drill-down, published
+  Claim-backed audit targets, existing private operator console.
+- FIX (this slice): `/gukgam/2026` regroups the same published targets as date → committee →
+  institution, with a sticky date index, today/next-date cue (KST), explicit coverage scope,
+  plan-publication date range and per-row plan locator (section/page). Grouping is a pure
+  presentation module (`apps/web/app/gukgam/2026/schedule.ts`); no item is added, inferred or
+  hidden, no API/schema/source change.
+- DEFER: PR #161 merge decision, 41-item Gukgam Claim DRAFT and 70-item MOIS proposal (separate
+  human approvals), witness/reference lists, decision/judgment APIs, model-based routing,
+  repository/application-layer refactor, new source lanes.
+
+Public-beta release gate (unchanged, requires owner approval): choose the public topology and
+cost, move the verified canonical data to it, deploy one exact verified master commit, run
+`workers.public_beta_preflight`, then rendered desktop/mobile QA on the deployed origin.
