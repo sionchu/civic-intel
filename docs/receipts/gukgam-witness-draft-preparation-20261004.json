@@ -1,0 +1,137 @@
+{
+  "actual_local_preparation": {
+    "actual_edits_applied": false,
+    "command": "python -X utf8 .tools/run_fixture_verification.py python -X utf8 .tools/prepare_witness_draft_edits_20261004.py",
+    "database_access": false,
+    "exit_code": 0,
+    "guide_path": ".tools/gukgam-witness-draft-preparation-20261004/README.md",
+    "human_attestations": 0,
+    "network_access": false,
+    "recorded_at_utc": "2026-10-03T15:16:01.021414+00:00",
+    "rows": 47,
+    "sources": 2,
+    "status": "47_ROW_DRAFT_EDIT_TEMPLATES_PREPARED_NOT_HUMAN_REVIEWED",
+    "templates": [
+      {
+        "attachment_sha256": "7ef99c6e217dc775cb2878f395a02eebcdd95cb4eecfa852b6d08b94d0217b9f",
+        "edit_manifest_hash": "23c309e563d3ee2837680fff099ffff1205f843fa3f73f9466684d637c4ce3cc",
+        "original_files_unchanged": true,
+        "packet_hash": "5b9686dea7e88272ff19cf965003581631847953cc7bb1f349ff0de5a75b92b5",
+        "row_count": 32,
+        "source_file_sha256": "f95684ef5863617bd21b920561470000779842b4c498f998c62ac4988ffe3090",
+        "template_path": ".tools/gukgam-witness-draft-preparation-20261004/msit-1-draft-edits.json",
+        "template_sha256": "fd627ebc9a57a4f1bfdc52e23a87f158b0f5b1895da9ffa44f924926e2ccf422"
+      },
+      {
+        "attachment_sha256": "bb1cf15928ef93e5e4e974fa2971fad628bedc58a1416ea890a46de9308f861d",
+        "edit_manifest_hash": "18154bb680a0622aa49a1f4c4430e31ae013ca126b6dc0e42ad0817b7241e181",
+        "original_files_unchanged": true,
+        "packet_hash": "66fb65333b87a89619d7e70c47a630cdf4865aa0011bdfdd29d56afdf079b7f0",
+        "row_count": 15,
+        "source_file_sha256": "89ea43f907e32f8b4b303a0bb617a55cddaea6bf4dd4cc9e1228b0bc7122c1fb",
+        "template_path": ".tools/gukgam-witness-draft-preparation-20261004/msit-2-draft-edits.json",
+        "template_sha256": "b53dfa132ec9d6edba81a56c36c8d59c43273753d3977015e5b3eae3204c04e6"
+      }
+    ]
+  },
+  "base_commit": "7abef5f0d47fb71c34c20ced0fdc0faca7facf82",
+  "effects": {
+    "claims_published": 0,
+    "deployment": false,
+    "human_attestations": 0,
+    "identity_changes": 0,
+    "mac_service_restarts": 0,
+    "official_source_fetches": 0,
+    "operational_db_writes": 0,
+    "operational_migrations": 0
+  },
+  "implementation": {
+    "canonical_cli": "inspect gukgam-witness",
+    "flags": [
+      "--write-draft-edits",
+      "--draft-edits",
+      "--draft-packet"
+    ],
+    "immutable": [
+      "SOURCE",
+      "RIGHTS",
+      "ATTACHMENT",
+      "ROW_AND_NAME_CELL_LOCATORS",
+      "CATEGORY",
+      "ORDINAL",
+      "REVIEW_STATUS"
+    ],
+    "input_binding": [
+      "CANONICAL_INPUT_PACKET_SHA256",
+      "RAW_ATTACHMENT_SHA256",
+      "ORIGINAL_ROW_HASH_AND_RECORD_KEY"
+    ],
+    "local_file_effect": "EXCLUSIVE_NEW_OPERATOR_TEMPLATE_OR_DRAFT_PACKET",
+    "operational_effect": "READ_ONLY",
+    "output_review_status": "DRAFT_NOT_HUMAN_REVIEWED",
+    "output_selection": "EXPLICIT_REVIEW_SUBSET",
+    "row_and_correction_values_in_stdout": false,
+    "source_policy": "EXISTING_METADATA_ONLY_EXACT_WITNESS_SOURCE_DECISION"
+  },
+  "independent_review": {
+    "command": "python -X utf8 .tools/run_fixture_verification.py python -m pytest -q tests/test_gukgam_witness.py -k 'draft_selection or draft_edits or draft_preparation or draft_merged or cli_local_draft or cli_draft_export or cli_invalid_draft or draft_cli_invalid'",
+    "exit_code": 0,
+    "provider_rows_or_raw_artifacts_accessed": false,
+    "status": "NO_ACTIONABLE_GAP_FOUND_READ_ONLY",
+    "synthetic_tests_passed": 38
+  },
+  "monitoring_baseline_update": {
+    "historical_receipts_rewritten": false,
+    "rule": "Use this receipt's LF hashes for these four intentional source/test changes; retain prior hashes for unchanged files."
+  },
+  "not_executed": [
+    "ACTUAL_OPERATOR_FIELD_REVIEW",
+    "ACTUAL_LITERAL_CORRECTIONS",
+    "OPERATIONAL_WITNESS_IMPORT",
+    "CANONICAL_IDENTITY",
+    "CLAIM_PUBLICATION",
+    "CLOUD_CONNECTION",
+    "DEPLOYMENT"
+  ],
+  "recorded_at_utc": "2026-10-03T15:23:59.240071+00:00",
+  "source_files_lf_sha256": {
+    "apps/cli/main.py": "2adab7e1962b3d71bcd79435e66f1d77c9d6a8af541f746526d0fc3c28244384",
+    "packages/verification/gukgam_witness_import.py": "338616fb444223458a3bf3993c505da95b668d90479280761ca0c16b607bbb91",
+    "tests/test_gukgam_witness.py": "b5b5ce4c8a22a931cbe6ca568aefdb7b3cf73e7f7df9b61f4f6843b913e3d101",
+    "workers/gukgam_witness_import.py": "f4b5f89c05c13fa8cb299a8aa1d14c87892593917bf1df8110adc3c934d15b59"
+  },
+  "status": "LOCAL_DRAFT_PREPARATION_VERIFIED_NOT_HUMAN_REVIEWED",
+  "task_id": "gukgam-witness-draft-preparation",
+  "verification": {
+    "architecture": "PASS",
+    "browser": "NOT_RUN_NO_WEB_BEHAVIOR_CHANGE",
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "environment": "ALLOWLISTED_LOCAL_OFFLINE_AND_DISPOSABLE_FIXTURES",
+    "exit_code": 0,
+    "first_narrow_failures": {
+      "correction": "ASSERT_EXISTING_RETURN1_AND_SAFE_ENVELOPE_WITH_FILE_PRESERVATION",
+      "count": 3,
+      "kind": "TEST_EXPECTED_SYSTEM_EXIT_FOR_EXISTING_CLI_FILE_EXISTS_ERROR_RETURN1",
+      "product_error_contract_changed": false
+    },
+    "golden_quality": "PASS",
+    "log_path": ".tools/gukgam-witness-draft-preparation-20261004-verify.log",
+    "log_sha256": "a6f4a2097908a0ad9f0d72ba93fa2dbfa2e94368822411e272c37f3c187f966b",
+    "mypy": {
+      "source_files": 152,
+      "status": "PASS"
+    },
+    "next_standalone_build": "PASS",
+    "optional_postgresql_skipped": 4,
+    "python_passed": 1008,
+    "python_seconds": 352.05,
+    "ruff": "PASS",
+    "targeted_command": "python -X utf8 .tools/run_fixture_verification.py python -m pytest tests/test_gukgam_witness.py tests/test_gukgam_witness_plan_review.py tests/test_cli_effects.py -q",
+    "targeted_exit_code": 0,
+    "warnings": 6,
+    "web_lint_and_types": "PASS",
+    "web_passed": 34,
+    "worker_build": "PASS",
+    "worker_http_checks": 12
+  }
+}

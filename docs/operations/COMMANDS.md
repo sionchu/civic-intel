@@ -61,6 +61,19 @@ label crosswalk. `--plan-packet` is repeatable on this inspect path only. The si
 schedule occurrences remain candidates, source dates stay separate and raw plan bytes/current
 editions remain unverified. See [the witness contract](../architecture/GUKGAM_WITNESS_PACKET.md).
 
+### Offline witness correction preparation
+
+The existing single-packet inspect command additionally accepts `--write-draft-edits
+<new-local-template.json>`, or `--draft-edits <operator-edits.json> --draft-packet
+<new-selected-draft.json>`. Both require `--packet <input-draft.json> --artifact <exact.pdf>`;
+research and plan-packet inputs are rejected for this mode. It opens no DB and fetches no source.
+READ_ONLY describes the operational effect; an explicit new local output file is created.
+Templates bind the input packet, raw PDF and original row hashes. Remove entries for subset
+selection and edit only the allowed literal fields. Unknown fields, changed provenance,
+stale hashes and inconsistent shared names fail closed. Outputs remain DRAFT, existing files
+are preserved and stdout never prints rows. Actual field review and reviewed acquisition remain
+separate. See [the witness contract](../architecture/GUKGAM_WITNESS_PACKET.md).
+
 `civic observe gukgam-schedule-probe --allow-effect SOURCE_INGESTION --date YYYY-MM-DD
 --committee <exact-committee> --page-size 10` fetches a bounded schedule sample without persistence.
 It checks SourcePolicy before fetching. It remains an L1 discovery path awaiting approved live

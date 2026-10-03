@@ -28,7 +28,9 @@ from packages.rendering.gukgam_witness_review import (
 )
 from packages.verification.gukgam_witness_import import (
     GUKGAM_WITNESS_FEEDER,
+    build_gukgam_witness_draft_edits,
     build_reviewed_gukgam_witness_capture,
+    prepare_gukgam_witness_draft,
     verify_witness_artifact,
 )
 from tests.cli_support import cli_payload
@@ -85,6 +87,188 @@ def capture(raw: dict | None = None, artifact: bytes = ARTIFACT):
     packet = parse_gukgam_witness_packet(raw or synthetic_packet())
     proof = verify_witness_artifact(packet, artifact)
     return build_reviewed_gukgam_witness_capture(packet, artifact=proof)
+
+
+def draft_inputs():
+    raw = synthetic_packet()
+    raw["review_status"] = DRAFT
+    raw["source"]["rights_mark"] = "KOGL_TYPE_1_VISIBLE_ON_EXACT_PARENT_POST"
+    packet = parse_gukgam_witness_packet(raw)
+    proof = verify_witness_artifact(packet, ARTIFACT)
+    return packet, proof, build_gukgam_witness_draft_edits(packet, artifact=proof)
+
+
+def test_draft_selection_preserves_order_provenance_nulls_and_acquisition_gate():
+    packet, proof, edits = draft_inputs()
+    original = packet.normalized()
+    edits["rows"] = [edits["rows"][2], edits["rows"][0]]
+    edits["rows"][1]["fields"]["printed_name"] = "명시적으로 공급된 원문 수정"
+    result = prepare_gukgam_witness_draft(packet, edits, artifact=proof)
+    assert result.review_status == DRAFT and result.selection == "EXPLICIT_REVIEW_SUBSET"
+    assert result.source == packet.source and result.attachment_sha256 == packet.attachment_sha256
+    assert [row.record_key for row in result.rows] == [packet.rows[0].record_key, packet.rows[2].record_key]
+    assert result.rows[0].printed_name == "명시적으로 공급된 원문 수정"
+    assert result.rows[0].requested_datetime_text is None
+    assert result.rows[1] == packet.rows[2]
+    assert packet.normalized() == original
+    with pytest.raises(GukgamWitnessPacketError, match="actual human review"):
+        build_reviewed_gukgam_witness_capture(result, artifact=proof)
+
+
+@pytest.mark.parametrize("change", [
+    "packet_hash", "attachment_hash", "row_hash", "empty", "duplicate", "unknown_row",
+    "row_object", "fields_object", "top_extra", "row_extra", "wrong_type", "blank_name",
+    "contact", "category", "record_key", "page_number", "source_name_cell_key",
+    "printed_ordinal", "review_status", "institution_datetime", "institution_employer",
+])
+def test_draft_edits_fail_closed_without_private_error_values(change):
+    packet, proof, edits = draft_inputs()
+    secret = "NEVER_LEAK_EDIT_VALUE"
+    row = edits["rows"][0]
+    if change == "packet_hash": edits["packet_hash"] = "0" * 64
+    elif change == "attachment_hash": edits["attachment_sha256"] = "0" * 64
+    elif change == "row_hash": row["expected_row_hash"] = "0" * 64
+    elif change == "empty": edits["rows"] = []
+    elif change == "duplicate": edits["rows"].append(copy.deepcopy(row))
+    elif change == "unknown_row": row["record_key"] = secret
+    elif change == "row_object": edits["rows"][0] = secret
+    elif change == "fields_object": row["fields"] = secret
+    elif change == "top_extra": edits[secret] = secret
+    elif change == "row_extra": row[secret] = secret
+    elif change == "wrong_type": row["fields"]["printed_name"] = {secret: secret}
+    elif change == "blank_name": row["fields"]["printed_name"] = " "
+    elif change == "institution_datetime": row["fields"]["requested_datetime_text"] = secret
+    elif change == "institution_employer": row["fields"]["printed_affiliation_role"] = secret
+    else: row["fields"][change] = secret
+    with pytest.raises(GukgamWitnessPacketError) as error:
+        prepare_gukgam_witness_draft(packet, edits, artifact=proof)
+    assert secret not in str(error.value)
+
+
+@pytest.mark.parametrize("change", ["human_review", "rights", "artifact", "policy"])
+def test_draft_preparation_retains_review_policy_and_exact_artifact_gates(change, monkeypatch):
+    packet, proof, _ = draft_inputs()
+    if change in {"human_review", "rights"}:
+        raw = packet.normalized()
+        if change == "human_review": raw["review_status"] = HUMAN_REVIEWED
+        else: raw["source"]["rights_mark"] = "UNREVIEWED"
+        packet = parse_gukgam_witness_packet(raw)
+    elif change == "artifact":
+        proof = type(proof)(proof.attachment_url, "0" * 64)
+    else:
+        from packages.verification.gukgam_reviewed_plan_import import reviewed_gukgam_plan_policy
+
+        policy = reviewed_gukgam_plan_policy("test.na.go.kr").model_copy(
+            update={"can_store_metadata": False},
+        )
+        monkeypatch.setattr(
+            "packages.verification.gukgam_witness_import.reviewed_gukgam_plan_policy",
+            lambda _: policy,
+        )
+    with pytest.raises(GukgamWitnessPacketError):
+        build_gukgam_witness_draft_edits(packet, artifact=proof)
+
+
+def test_draft_merged_name_correction_must_remain_coherent():
+    packet, proof, _ = draft_inputs()
+    raw = packet.normalized()
+    sibling = copy.deepcopy(raw["rows"][0])
+    sibling.update(table_row_number=2, name_from_merged_cell=True,
+                   record_key=f"{SOURCE_KEY}:page:1:table:1:row:2", printed_role="다른 합성역할")
+    raw["rows"].append(sibling)
+    packet = parse_gukgam_witness_packet(raw)
+    edits = build_gukgam_witness_draft_edits(packet, artifact=proof)
+    edits["rows"][0]["fields"]["printed_name"] = "공급된 공유 셀 수정"
+    with pytest.raises(GukgamWitnessPacketError, match="inconsistent names"):
+        prepare_gukgam_witness_draft(packet, edits, artifact=proof)
+    edits["rows"][-1]["fields"]["printed_name"] = "공급된 공유 셀 수정"
+    result = prepare_gukgam_witness_draft(packet, edits, artifact=proof)
+    assert result.rows[-1].name_from_merged_cell
+    assert result.rows[-1].printed_name == result.rows[0].printed_name
+
+
+def test_cli_local_draft_template_and_correction_never_open_db_or_print_rows(
+    tmp_path, monkeypatch, capsys,
+):
+    packet, _, _ = draft_inputs()
+    source = tmp_path / "packet.json"
+    source.write_text(json.dumps(packet.normalized(), ensure_ascii=False), encoding="utf-8")
+    artifact = tmp_path / "source.pdf"
+    artifact.write_bytes(ARTIFACT)
+    before = source.read_bytes(), artifact.read_bytes()
+    template, destination = tmp_path / "edits.json", tmp_path / "selected.json"
+    monkeypatch.setattr("apps.cli.adapters.repository", lambda _: pytest.fail("DB opened"))
+    monkeypatch.setattr("httpx.Client.send", lambda *a, **kw: pytest.fail("network request"))
+    base = ["inspect", "gukgam-witness", "--packet", str(source), "--artifact", str(artifact)]
+    assert main([*base, "--write-draft-edits", str(template)]) == 0
+    export_output = capsys.readouterr().out
+    export = cli_payload(export_output)
+    assert export["draft_preparation"]["status"] == "LOCAL_DRAFT_EDITS_WRITTEN"
+    edits = json.loads(template.read_text(encoding="utf-8"))
+    edits["rows"] = [edits["rows"][1]]
+    edits["rows"][0]["fields"]["printed_name"] = "PRIVATE_OPERATOR_CORRECTION"
+    edits["rows"][0]["fields"]["requested_datetime_text"] = None
+    template.write_text(json.dumps(edits), encoding="utf-8")
+    assert main([*base, "--draft-edits", str(template), "--draft-packet", str(destination)]) == 0
+    import_output = capsys.readouterr().out
+    report = cli_payload(import_output)["draft_preparation"]
+    assert report["selected_rows"] == 1 and report["dropped_rows"] == 2 and report["changed_rows"] == 1
+    assert report["review_status"] == DRAFT and report["human_attestation"] is False
+    result = parse_gukgam_witness_packet(json.loads(destination.read_text(encoding="utf-8")))
+    assert result.rows[0].requested_datetime_text is None
+    for output in (export_output, import_output):
+        assert "PRIVATE_OPERATOR_CORRECTION" not in output and "printed_name" not in output
+        assert packet.rows[0].record_key not in output
+    assert (source.read_bytes(), artifact.read_bytes()) == before
+
+
+@pytest.mark.parametrize("target", ["packet", "artifact", "existing_output"])
+def test_cli_draft_export_preserves_existing_files(target, tmp_path, capsys):
+    packet, _, _ = draft_inputs()
+    source, artifact = tmp_path / "packet.json", tmp_path / "source.pdf"
+    source.write_text(json.dumps(packet.normalized()), encoding="utf-8")
+    artifact.write_bytes(ARTIFACT)
+    existing = tmp_path / "edits.json"
+    existing.write_bytes(b"preserve this operator file")
+    destination = {"packet": source, "artifact": artifact, "existing_output": existing}[target]
+    before = destination.read_bytes()
+    assert main([
+        "inspect", "gukgam-witness", "--packet", str(source), "--artifact", str(artifact),
+        "--write-draft-edits", str(destination),
+    ]) == 1
+    assert json.loads(capsys.readouterr().out)["error_code"] == "COMMAND_FAILED"
+    assert destination.read_bytes() == before
+
+
+@pytest.mark.parametrize("change", ["artifact", "row_hash", "private_field"])
+def test_cli_invalid_draft_inputs_create_no_output(change, tmp_path, capsys):
+    packet, _, edits = draft_inputs()
+    source, artifact = tmp_path / "packet.json", tmp_path / "source.pdf"
+    source.write_text(json.dumps(packet.normalized()), encoding="utf-8")
+    artifact.write_bytes(ARTIFACT if change != "artifact" else b"wrong exact bytes")
+    if change == "row_hash": edits["rows"][0]["expected_row_hash"] = "0" * 64
+    if change == "private_field": edits["rows"][0]["fields"]["contact"] = "NEVER_LEAK_EDIT"
+    edit_file, destination = tmp_path / "edits.json", tmp_path / "draft.json"
+    edit_file.write_text(json.dumps(edits), encoding="utf-8")
+    with pytest.raises(SystemExit) as error:
+        main(["inspect", "gukgam-witness", "--packet", str(source), "--artifact", str(artifact),
+              "--draft-edits", str(edit_file), "--draft-packet", str(destination)])
+    assert error.value.code == 2 and not destination.exists()
+    assert "NEVER_LEAK_EDIT" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("flags", [
+    ["--research", "research.json", "--write-draft-edits", "edits.json"],
+    ["--packet", "packet.json", "--artifact", "source.pdf", "--draft-edits", "edits.json"],
+    ["--packet", "packet.json", "--artifact", "source.pdf", "--draft-packet", "draft.json"],
+    ["--packet", "packet.json", "--artifact", "source.pdf", "--plan-packet", "plan.json",
+     "--write-draft-edits", "edits.json"],
+])
+def test_draft_cli_invalid_combinations_fail_before_dispatch(flags, monkeypatch):
+    monkeypatch.setattr("apps.cli.adapters.dispatch", lambda _: pytest.fail("dispatched"))
+    with pytest.raises(SystemExit) as error:
+        main(["inspect", "gukgam-witness", *flags])
+    assert error.value.code == 2
 
 
 def test_real_research_remains_draft_and_47_sample_is_not_412_coverage():

@@ -1,10 +1,12 @@
-"""One local, reviewed witness attachment; acquisition only, never a crawler."""
+"""One local witness attachment: DRAFT preparation or reviewed acquisition; no crawler."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 from collections import Counter
+from pathlib import Path
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -13,6 +15,7 @@ from packages.connectors.gukgam_reviewed_packet import parse_reviewed_gukgam_pla
 from packages.connectors.gukgam_witness_packet import (
     GukgamWitnessPacket,
     GukgamWitnessPacketError,
+    canonical_hash,
     parse_gukgam_witness_packet,
     parse_gukgam_witness_research,
 )
@@ -21,7 +24,9 @@ from packages.rendering.gukgam_witness_plan_review import build_gukgam_witness_p
 from packages.verification.gukgam_witness_import import (
     GUKGAM_WITNESS_FEEDER,
     ReviewedGukgamWitnessCapture,
+    build_gukgam_witness_draft_edits,
     build_reviewed_gukgam_witness_capture,
+    prepare_gukgam_witness_draft,
     verify_witness_artifact,
 )
 
@@ -50,6 +55,14 @@ def load_packet(args: argparse.Namespace) -> GukgamWitnessPacket:
     return parse_gukgam_witness_packet(json.loads(args.packet.read_text(encoding="utf-8")))
 
 
+def _write_preparation(path: Path, payload: dict[str, object]) -> None:
+    # Exclusive creation preserves inputs, earlier outputs and symlink targets.
+    body = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+        output.write(body)
+
+
 def inspect_inputs(args: argparse.Namespace) -> dict[str, object]:
     if args.research:
         packets = parse_gukgam_witness_research(
@@ -58,10 +71,30 @@ def inspect_inputs(args: argparse.Namespace) -> dict[str, object]:
         artifact_verified = False
     else:
         packet = load_packet(args)
-        verify_witness_artifact(packet, args.artifact.read_bytes())
+        proof = verify_witness_artifact(packet, args.artifact.read_bytes())
         packets = (packet,)
         artifact_verified = True
     result = inspection(packets) | {"artifact_bytes_verified": artifact_verified}
+    if args.write_draft_edits:
+        edits = build_gukgam_witness_draft_edits(packet, artifact=proof)
+        _write_preparation(args.write_draft_edits, edits)
+        result["draft_preparation"] = {
+            "status": "LOCAL_DRAFT_EDITS_WRITTEN", "edit_manifest_hash": canonical_hash(edits),
+            "row_count": len(packet.rows), "human_attestation": False,
+        }
+    elif args.draft_edits:
+        edits = json.loads(args.draft_edits.read_text(encoding="utf-8"))
+        draft = prepare_gukgam_witness_draft(packet, edits, artifact=proof)
+        _write_preparation(args.draft_packet, draft.normalized())
+        originals = {row.record_key: row for row in packet.rows}
+        result["draft_preparation"] = {
+            "status": "LOCAL_DRAFT_PACKET_WRITTEN", "packet_hash": draft.content_hash,
+            "edit_manifest_hash": canonical_hash(edits), "review_status": draft.review_status,
+            "selection": draft.selection, "selected_rows": len(draft.rows),
+            "dropped_rows": len(packet.rows) - len(draft.rows),
+            "changed_rows": sum(row != originals[row.record_key] for row in draft.rows),
+            "human_attestation": False,
+        }
     if args.plan_packet:
         plans = [parse_reviewed_gukgam_plan_packet(json.loads(path.read_text(encoding="utf-8")))
                  for path in args.plan_packet]

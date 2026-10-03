@@ -45,6 +45,38 @@ Research inspection opens no DB, checks no PDF bytes and fetches no source. Sing
 inspection is `civic inspect gukgam-witness --allow-effect READ_ONLY --packet <packet.json>
 --artifact <exact.pdf>`; it additionally verifies the actual local attachment bytes.
 
+### Local DRAFT selection and literal corrections
+
+The same single-packet inspect path can create a local operator edit template:
+
+```powershell
+civic inspect gukgam-witness --packet <draft.json> --artifact <exact.pdf> --write-draft-edits <edits.json>
+civic inspect gukgam-witness --packet <same-draft.json> --artifact <same-exact.pdf> --draft-edits <edits.json> --draft-packet <selected-draft.json>
+```
+
+These are offline preparation commands with operational effect READ_ONLY. Their only write is
+an explicitly requested new local operator file; no DB, source fetch, identity or publication
+path opens. Existing output files and symlink targets are preserved by exclusive creation.
+Research/multiple-source and plan inputs cannot be mixed with this preparation form.
+
+The edit template has exactly `packet_hash`, `attachment_sha256` and `rows`. Each selected
+row has `record_key`, `expected_row_hash` and `fields`. Remove a row entry to exclude it;
+an empty selection fails closed. All hashes refer to the unmodified input. Literal corrections
+are limited to `source_section`, `printed_name`, `printed_institution_group`, `printed_role`,
+`printed_affiliation_role`, `printed_audited_target`, `requested_datetime_text` and
+`decision_date_text`. Unchanged nulls remain null. Locators, ordinal, category, source/rights,
+attachment and review state cannot be edited through this path. Row order follows the source.
+The canonical parser revalidates every result, including shared name-cell consistency.
+
+Preparation reuses the existing metadata-only SourcePolicy and accepts only the current exact
+source decision's `KOGL_TYPE_1_VISIBLE_ON_EXACT_PARENT_POST` mark. This check does not establish
+new rights or current amendment coverage. Exact local artifact proof is required. Already
+HUMAN_REVIEWED input is rejected. The output always remains `DRAFT_NOT_HUMAN_REVIEWED` and
+`EXPLICIT_REVIEW_SUBSET`, even when every input row was selected. It cannot prepare acquisition
+without actual separate field review. Operator JSON retains permitted normalized fields locally;
+stdout and errors contain only aggregate/hash information, never rows or correction values.
+The template/output is not a SourceSnapshot, raw truth store, public DTO or human attestation.
+
 ### Source-to-plan review preparation
 
 The existing inspect command also accepts repeated `--plan-packet <reviewed-plan.json>`.

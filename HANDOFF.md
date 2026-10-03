@@ -41,6 +41,21 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-04 offline witness DRAFT preparation (base 7abef5f): the existing single-packet
+inspect command now exports exact-hash-bound edit templates and validates explicit selection/
+literal corrections into the canonical DRAFT packet. Locators/categories/rights/review state
+stay immutable; stale/unknown/duplicate/empty/private fields and inconsistent merged names
+fail closed. SourcePolicy/exact artifact/DRAFT gates run before output; exclusive creation
+preserves existing files and stdout is aggregate-only. No DB/source/identity/publication path.
+Actual32+15 pilot templates are prepared locally; original packets/PDFs remain unchanged and
+no actual correction or human attestation was supplied. Guide: .tools/gukgam-witness-draft-preparation-20261004/README.md.
+MAIN targeted witness/plan/CLI checks pass; independent new synthetic checks38PASS. Full make
+verify exits0:1008 Python PASS,4 optional PG skips,6 warnings(352.05s),34 web/12 Worker HTTP PASS;
+all lint/type/Golden/architecture/Next/Worker gates PASS. New receipt hashes supersede earlier
+pins for the four intentionally changed modules/tests, preserving historical receipts.
+Actual field review, current versions, identity/import/publication and deployment remain separate.
+Evidence: docs/receipts/gukgam-witness-draft-preparation-20261004.json.
+
 2026-10-03 independent delivery continuation (base 5c93e83): source-field review waiting
 does not stop independent local implementation. Organization Gukgam Claims now display exact
 committee/planned audit date; annual metadata stays unchanged. Native Source anchors preserve

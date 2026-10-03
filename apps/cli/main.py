@@ -149,6 +149,10 @@ def build_parser() -> argparse.ArgumentParser:
                     inputs.add_argument("--packet", type=Path)
                     p.add_argument("--artifact", type=Path)
                     p.add_argument("--plan-packet", type=Path, action="append", default=[])
+                    draft = p.add_mutually_exclusive_group()
+                    draft.add_argument("--write-draft-edits", type=Path)
+                    draft.add_argument("--draft-edits", type=Path)
+                    p.add_argument("--draft-packet", type=Path)
                 else:
                     p.add_argument("--packet", type=Path, required=True)
                     p.add_argument("--artifact", type=Path, required=True)
@@ -307,6 +311,12 @@ def parse_command(argv: list[str] | None = None) -> argparse.Namespace:
             parser.error("witness packet inspection requires its exact local artifact")
         if args.research and args.artifact:
             parser.error("research inspection does not accept an artifact for multiple sources")
+        if bool(args.draft_edits) != bool(args.draft_packet):
+            parser.error("draft-edits and draft-packet are required together")
+        if (args.write_draft_edits or args.draft_edits) and (
+            not args.packet or args.plan_packet
+        ):
+            parser.error("draft preparation requires a single packet without plan inputs")
     if args.lane == "mois-organization-lookup":
         if args.page_size > 100 or not args.expected_full_name.strip():
             parser.error("MOIS lookup requires an expected full name and at most 100 rows")

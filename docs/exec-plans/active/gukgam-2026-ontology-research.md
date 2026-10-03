@@ -27,6 +27,37 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Offline witness field-review preparation continuation, 2026-10-04
+
+Owner requests continuation after delivery commit `7abef5f0d47fb71c34c20ced0fdc0faca7facf82`.
+MAIN implements one bounded R2 preparation slice in the existing witness verification module,
+worker and `inspect gukgam-witness` CLI: export a local editable selection/correction template
+and validate its selected literal fields into the existing canonical DRAFT packet. Pin input
+packet/raw attachment/per-row hashes, reuse exact artifact and SourcePolicy checks, preserve
+source/row/name-cell locators and categories, reject unknown fields and stale/duplicate/empty
+selections, keep absent fields absent unless an explicit supplied literal correction changes
+them, and reparse the canonical packet. Never infer from plans or set HUMAN_REVIEWED.
+Outputs are new local operator files only; stdout is aggregate/hash-only. Existing files are
+never overwritten. The READ_ONLY operational effect opens no DB and performs no source fetch.
+Owned paths: existing verification/worker/CLI modules, deterministic witness tests, witness
+contract/commands docs, this plan, HANDOFF and one receipt. No schema, public API/UI, new
+importer, canonical persistence, operational DB access, credentials or deployment. One bounded
+read-only inventory/review child; no recursion, shared resource or provider payload access.
+MAIN runs narrow offline regressions and full make verify, inspects the diff and commits.
+The existing47-row pilot may receive local DRAFT preparation templates without printing rows;
+actual source-field review, rights/identity/import/publication decisions remain separate.
+
+Completed: MAIN targeted witness/plan/CLI checks exit0. Three first narrow failures were test
+expectations about existing CLI FileExistsError handling; the tests now assert its unchanged
+return1/safe error envelope, with preservation verified. Independent read-only review finds
+no actionable issue and executes38 new synthetic checks PASS. Full make verify exits0:
+1008 Python PASS,4 optional PG skips,6 warnings(352.05s),34 web/12 Worker HTTP PASS and all
+code/build gates PASS. MAIN creates exact-artifact-verified local edit templates for the
+existing32+15 pilot rows, with DB/network calls denied and original hashes unchanged.
+No actual row edits or human review are supplied. Output templates remain operator preparation;
+operational import, identity, publication and deployment are unexecuted. Receipt/code hashes:
+[DRAFT preparation evidence](../../receipts/gukgam-witness-draft-preparation-20261004.json).
+
 ### Independent delivery continuation, 2026-10-03
 
 Owner correction: source-field review must not stop independent approved local work.
