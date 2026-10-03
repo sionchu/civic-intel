@@ -77,6 +77,160 @@
     "real_witness_human_field_attestation": false,
     "service_restarts": 0
   },
+  "heartbeat_checks": [
+    {
+      "automation_id": "db",
+      "base_commit": "7b539a4d6c17c9ed1240f1680ad39c80e5fa8879",
+      "canonical_mac_read_only": {
+        "active_running_runs": 0,
+        "checkpoints": {
+          "count": 1,
+          "latest_run_matches": 1,
+          "missing_run_references": 0,
+          "null_run_references": 0,
+          "scope_mismatches": 0,
+          "valid_same_scope_and_cursor_match": 1
+        },
+        "claim_publication_status_counts": {
+          "DRAFT": 298
+        },
+        "compared_to_previous_aggregate_receipt": "ALL_CHECKED_VALUES_MATCH",
+        "counts": {
+          "claims": 298,
+          "evidence": 298,
+          "observations": 299,
+          "organizations": 0,
+          "people": 298,
+          "runs": 1,
+          "snapshots": 3,
+          "sources": 3
+        },
+        "file_mode": "0600",
+        "finished_at_utc": "2026-10-03T05:21:22.425214Z",
+        "foreign_key_violations": 0,
+        "health_body_read": false,
+        "loopback_health_http_status": 200,
+        "mois_runs": 0,
+        "overall_budget_seconds": 20,
+        "query_only": true,
+        "quick_check": "ok",
+        "schema_revision": "0008",
+        "snapshot_count": 1,
+        "sole_writer_exclusion_proven": false,
+        "source_run_status_counts": {
+          "SUCCESS": 1
+        },
+        "sqlite_mode": "ro",
+        "sqlite_timeout_seconds": 5,
+        "started_at_utc": "2026-10-03T05:21:21.984117Z",
+        "status": "READ_ONLY_AGGREGATES_COMPLETE",
+        "target_alias": "canonical-mac-ssd",
+        "transport": "Remote Desktop Commander",
+        "witness_runs": 0
+      },
+      "effects": {
+        "canonical_identity_changes": 0,
+        "claims_created_or_published": 0,
+        "deployment": false,
+        "human_attestations_created": 0,
+        "migrations": 0,
+        "official_source_fetches": 0,
+        "operational_db_writes": 0,
+        "service_restarts": 0
+      },
+      "execution_privacy": {
+        "actionable_findings": 0,
+        "checked_at_utc": "2026-10-03T05:20:55Z",
+        "code_or_gate_drift_found": false,
+        "reviewer_read_provider_artifacts": false,
+        "reviewer_reproduced_remote_snapshot": false,
+        "subsequent_local_work_order_review": "NO_ACTIONABLE_FINDING",
+        "tests_executed": 0
+      },
+      "local_existing_proof_db_cli": {
+        "before_after_hash_match": true,
+        "checked_at_utc": "2026-10-03T05:21:16.966700+00:00",
+        "counts": {
+          "checkpoints": 1,
+          "claims": 0,
+          "evidence": 0,
+          "observation_keys": 1,
+          "observations": 1,
+          "organizations": 0,
+          "people": 0,
+          "running_runs": 0,
+          "runs": 1,
+          "snapshots": 1,
+          "sources": 1
+        },
+        "database_sha256": "5fa57b1840312fcc5afb3c617cc41d70ab6633f4973ee6afc09c51b26bec627d",
+        "exit_code": 0,
+        "log_sha256": "f41819c10f6ff2db3ad58d1055de038ac5182158936aae1b7922dff39d465d04",
+        "schema_revision": "0008",
+        "status": "OBSERVED",
+        "target_alias": "LOCAL_CODE_FIRST_PAGE"
+      },
+      "local_work_order": {
+        "active_plan_item": "EXACT_MAC_TARGET_SOURCE_ORGANIZATION_WORK_ORDER",
+        "historical_41_pair_artifacts": "REFERENCE_ONLY_NOT_REVERIFIED",
+        "identity_decisions": "NOT_DECIDED",
+        "independent_read_only_review": "NO_ACTIONABLE_FINDING",
+        "lf_sha256": "ef58e75cfbfd6230f6627f5ba145f00e7d29cdc3fb29fd5bd3fa9bf2b782458c",
+        "path": "docs/operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md",
+        "primary_scope": "EXISTING_47_ROW_SCIENCE_PILOT",
+        "private_mois_artifact": "PRIOR_DIGEST_REFERENCE_ONLY_NOT_READ_OR_REHASHED",
+        "runtime_input_created": false,
+        "status": "REVIEW_PREPARATION_ONLY"
+      },
+      "parser_provenance": {
+        "all_packets": "DRAFT_NOT_HUMAN_REVIEWED",
+        "canonical_parser_validation": "PASS",
+        "checked_at_utc": "2026-10-03T05:23:29Z",
+        "drift_found": false,
+        "latest_monitor_code_lf_hashes_matched": 8,
+        "mois_code_lf_hashes_matched": 2,
+        "pdfs_reopened": false,
+        "prepared_artifact_byte_hashes_matched": 4,
+        "prepared_packet_counts": [
+          370,
+          42,
+          32,
+          15
+        ],
+        "provider_review_artifact_read": false,
+        "research_category_counts": [
+          370,
+          29,
+          13
+        ],
+        "research_hashes_matched": 2,
+        "research_row_count": 412,
+        "tests_executed": 0,
+        "witness_core_lf_hashes_matched": 6
+      },
+      "privacy": {
+        "credentials_transmitted_to_ai": false,
+        "provider_rows_or_raw_source_transmitted_to_ai": false
+      },
+      "received_at_utc": "2026-10-03T05:18:27.451Z",
+      "recorded_at_utc": "2026-10-03T05:28:50.642880+00:00",
+      "remaining_gates": [
+        "ACTUAL_WITNESS_FIELD_REVIEW",
+        "CURRENT_PLAN_VERSION_EVIDENCE",
+        "REVIEWED_CANONICAL_IDENTITIES",
+        "OPERATIONAL_RUNNER_AND_WRITER_READINESS",
+        "PUBLICATION_AND_DELIVERY"
+      ],
+      "scope": "READ_ONLY_MONITORING_AND_APPROVED_LOCAL_DOCUMENT_PREPARATION",
+      "status": "CHECKED_NO_OBSERVED_DRIFT",
+      "verification": {
+        "previous_code_gate": "HISTORICAL_970_PYTHON_34_WEB_4_OPTIONAL_POSTGRESQL_SKIPS_NOT_REEXECUTED",
+        "reason": "UNCHANGED_IMPLEMENTATION_HASHES_SUCCESSFUL_PARSER_VALIDATION_AND_NO_FAILURE",
+        "tests_or_make_verify_reexecuted": false,
+        "work_order_relative_links_exist": 10
+      }
+    }
+  ],
   "implementation": {
     "canonical_administration_and_uow_reused": true,
     "command": "inspect collection-status",

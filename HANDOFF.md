@@ -40,6 +40,22 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 first db heartbeat (received05:18:27 UTC, base7b539a4): three independent agents
+rechecked parsing/provenance, Mac aggregates and execution/privacy. No checked code/research/
+prepared-artifact drift;412 research rows and370/42/32/15 packets remain DRAFT. Original
+PDFs/private MOIS review artifacts were not reopened. Existing local proof DB monitor at05:21
+exited0 and file hash is unchanged. One Commander snapshot at05:21:21–05:21:22 UTC matches
+the prior schema0008/mode0600/quick_checkok/FK0,298People/298DRAFTClaims/0Organizations,
+299observations/3snapshots/1SUCCESSrun/0RUNNING/witness/MOISruns, checkpoint/cursor and health200.
+0RUNNING does not prove writer exclusion. No tests/full verify rerun for unchanged implementation;
+previous970Python/34web gate remains historical evidence. No source/operational write/restart.
+Approved local next-review preparation is now documented in
+docs/operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md: exact service target,47-row pilot source
+versions, historical-only41 draft references and NOT_DECIDED identity/effect gates. No runtime
+manifest, staging IDs or provider rows are introduced. Real field review still holds R2
+acquisition; identity, publication and delivery remain separate. This is the first executed
+heartbeat check, recorded in the existing docs/receipts/collection-status-20261003.json.
+
 2026-10-03 parser/DB monitoring slice (base d8a8093): canonical `inspect collection-status`
 uses the existing administration read UoW, explicit target and forced existing-file SQLite
 mode=ro. It reports hashed lanes, latest attempts separately from historical success,
@@ -334,9 +350,12 @@ remain outside Git. Original root master/user contracts.py edits remain untouche
 
 ## Next concrete action
 
-Independent R3 source-to-plan preparation is complete. Preserve every versioned occurrence ref;
-do not choose from the pilot's two plan dates automatically. The one-label provider-code work order
-is unqueried/nonexecuting and requires a fresh reviewed source request and canonical target proof.
+Independent R3 source-to-plan and bounded MOIS lookup preparation are complete. Preserve every
+versioned occurrence ref; do not choose from the pilot's two plan dates automatically. The
+single-code candidate is local review evidence, with no canonical decision or Mac MOIS capture.
+Use docs/operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md for the exact service target/source/identity
+review boundaries. Continue the hourly read-only checks; any later source effect needs its own
+fresh request, unchanged target proof and operational runner/writer readiness.
 
 Roadmap R2: pinned package/Commander transfer/read-only checks/consistent backup and disposable
 restore are complete. Actual human field review of the exact 47-row source manifest is still

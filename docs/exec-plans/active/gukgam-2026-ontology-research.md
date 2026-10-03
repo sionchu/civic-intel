@@ -27,6 +27,32 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Heartbeat continuation and Mac identity preparation, 2026-10-03
+
+First `db` heartbeat received2026-10-03T05:18:27.451Z. MAIN / record curator, base
+`7b539a4d6c17c9ed1240f1680ad39c80e5fa8879`, continues the existing read-only checks and
+the approved next-review-packet item: exact Mac target/source/Organization work order.
+Owned paths are that operations document, existing monitoring receipt, INDEX and this plan/HANDOFF.
+No product code, runtime input/schema, source retrieval or operational effect is changed.
+
+Three independent agents found no new code/parser/privacy drift. Latest monitor8, witness
+core6, MOIS2, prepared-artifact4 and research2 hashes match their respective receipts;
+canonical parsing retains412 research rows and370/42/32/15 DRAFT packet counts. Actual PDFs
+and provider review artifacts were not reopened. At05:21 UTC the existing local proof DB
+monitor exited0/hash unchanged; one Commander Mac snapshot confirms schema0008/mode0600,
+quick_checkok/FK0,298People/298DRAFTClaims/0Organizations,299observations/3snapshots/1SUCCESSrun,
+0RUNNING/witness/MOISruns, valid checkpoint/cursor and HTTP200. All checked aggregates match
+the previous receipt.0RUNNING is not writer exclusion. Tests/make verify are not repeated:
+implementation hashes are unchanged, parsing succeeded and no new failure warrants reruns.
+
+The [Mac identity work order](../../operations/GUKGAM_MAC_IDENTITY_WORK_ORDER.md) pins the
+service target and fresh observed baseline,47-row pilot/source version references and the
+historical-only41-pair review. Decisions remain NOT_DECIDED; no staging IDs are transferred,
+no private MOIS rows are printed and no field/identity/publication approval is manufactured.
+Its input digests distinguish fresh local hashes from historical references. Actual field
+review, current plan/version evidence and reviewed canonical identity remain separate gates.
+Fresh timestamps/check scope/delta are appended to the [existing monitor receipt](../../receipts/collection-status-20261003.json).
+
 ### Parser and database monitoring work order, 2026-10-03
 
 Owner instruction: continue implementation and use agents to keep parsing and DB management
@@ -65,7 +91,7 @@ a wrong query field left part of that helper incomplete. One corrective read-onl
 at04:24 UTC verifies298DRAFTClaims,1SUCCESSrun,0RUNNING/witness/MOISruns and one valid same-scope
 checkpoint whose cursor matches checkpoint_after. These are separate snapshots;0RUNNING does
 not prove exclusion. Hourly thread heartbeat `db` / `국감 파싱·DB 점검` is ACTIVE and configuration
-confirmed; scheduled execution has not yet been observed. The new command is not installed
+confirmed; at that preparation checkpoint scheduled execution was not yet observed. The new command is not installed
 or executed on Mac. Real witness field review, reviewed identities and operational runner
 readiness remain gates. [Monitoring evidence](../../receipts/collection-status-20261003.json)
 and [ongoing procedure](../../operations/COLLECTION_AGENT.md#parser-and-database-monitoring).
