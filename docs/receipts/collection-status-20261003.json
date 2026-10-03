@@ -758,6 +758,201 @@
         "staged_monitor_code_hashes_matched": 8,
         "tests_or_make_verify_reexecuted": false
       }
+    },
+    {
+      "automation_id": "db",
+      "base_commit": "fef4d57e451092a6e562c9b6b9c34ccebe346684",
+      "canonical_mac_read_only": {
+        "active_running_runs": 0,
+        "checkpoints": {
+          "count": 1,
+          "latest_run_cursor_matches": 1,
+          "latest_run_matches": 1,
+          "latest_run_relation_count": 1,
+          "missing_run_references": 0,
+          "null_run_references": 0,
+          "scope_mismatches": 0,
+          "valid_same_scope_and_cursor_match": 1
+        },
+        "claim_publication_status_counts": {
+          "DRAFT": 298
+        },
+        "compared_to_previous_heartbeat": "ALL_CHECKED_VALUES_MATCH",
+        "counts": {
+          "claims": 298,
+          "evidence": 298,
+          "observations": 299,
+          "organizations": 0,
+          "people": 298,
+          "runs": 1,
+          "snapshots": 3,
+          "sources": 3
+        },
+        "file_mode": "0600",
+        "finished_at_utc": "2026-10-03T09:27:57.329323Z",
+        "foreign_key_violations": 0,
+        "health_body_read": false,
+        "launcher": "VALIDATED_ABSOLUTE_VENV_INTERPRETER",
+        "loopback_health_http_status": 200,
+        "mois_runs": 0,
+        "overall_budget_seconds": 20,
+        "query_only": true,
+        "quick_check": "ok",
+        "schema_revision": "0008",
+        "snapshot_count": 1,
+        "sole_writer_exclusion_proven": false,
+        "source_run_status_counts": {
+          "SUCCESS": 1
+        },
+        "sqlite_mode": "ro",
+        "sqlite_timeout_seconds": 5,
+        "started_at_utc": "2026-10-03T09:27:57.315109Z",
+        "status": "READ_ONLY_AGGREGATES_COMPLETE",
+        "successful_snapshots": 1,
+        "target_alias": "canonical-mac-ssd",
+        "transport": "Remote Desktop Commander",
+        "witness_runs": 0
+      },
+      "comparison_to_previous_heartbeat": {
+        "current_heartbeat_product_behavior_change": false,
+        "mac_aggregate_state": "MATCH",
+        "new_product_failures": 0,
+        "parser_counts_hashes_and_draft_states": "MATCH"
+      },
+      "effects": {
+        "canonical_identity_changes": 0,
+        "claims_created_or_published": 0,
+        "deployment": false,
+        "human_attestations_created": 0,
+        "migrations": 0,
+        "official_source_fetches": 0,
+        "operational_db_writes": 0,
+        "service_restarts": 0
+      },
+      "execution_privacy": {
+        "actionable_runtime_findings": 0,
+        "checked_at_utc": "2026-10-03T09:27:44Z",
+        "documentation_drift_found_and_corrected": false,
+        "gate_drift_found": false,
+        "new_safe_local_runtime_implementation_identified": false,
+        "prior_proposal_row_audit_repeated": false,
+        "reviewer_reproduced_remote_snapshot": false,
+        "tests_executed": 0
+      },
+      "local_existing_proof_db_cli": {
+        "before_after_hash_match": true,
+        "checked_at_utc": "2026-10-03T09:28:15.034168+00:00",
+        "counts": {
+          "checkpoints": 1,
+          "claims": 0,
+          "evidence": 0,
+          "observation_keys": 1,
+          "observations": 1,
+          "organizations": 0,
+          "people": 0,
+          "running_runs": 0,
+          "runs": 1,
+          "snapshots": 1,
+          "sources": 1
+        },
+        "database_sha256": "5fa57b1840312fcc5afb3c617cc41d70ab6633f4973ee6afc09c51b26bec627d",
+        "exit_code": 0,
+        "log_sha256": "b4b4bed4a805c800e50286879421ec2915223f26970b87365e93aa14702b6a3d",
+        "schema_revision": "0008",
+        "status": "OBSERVED",
+        "target_alias": "LOCAL_CODE_FIRST_PAGE"
+      },
+      "next_action": "ACTUAL_WITNESS_FIELD_REVIEW_AND_CURRENT_PLAN_VERSION_EVIDENCE_BEFORE_ACQUISITION_KEEP_IDENTITY_PUBLICATION_AND_DELIVERY_GATES_SEPARATE",
+      "parser_provenance": {
+        "all_packets": "DRAFT_NOT_HUMAN_REVIEWED",
+        "canonical_command_exit_code": 0,
+        "canonical_inspect_command": "C:\\Users\\getch\\AppData\\Local\\Programs\\Python\\Python312\\python.exe .tools/run_fixture_verification.py C:\\Users\\getch\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -c \"from apps.cli.main import main; raise SystemExit(main(['inspect','gukgam-witness','--research','docs/research/gukgam_2026_science_witness_linkage_2026-10-02.json']))\"",
+        "canonical_parser_validation": "PASS",
+        "canonical_source_snapshot_observation_checkpoint_path_review": "NO_BYPASS_FOUND_READ_ONLY_CODE_REVIEW",
+        "checked_at_utc": "2026-10-03T09:29:50.096Z",
+        "code_hash_helper_corrected_status": "NOT_NEEDED",
+        "code_hash_helper_initial_failure": "NONE",
+        "compared_to_previous_heartbeat": "ALL_CHECKED_COUNTS_HASHES_AND_DRAFT_STATES_MATCH",
+        "completeness": "NOT_ESTABLISHED",
+        "drift_found": false,
+        "independent_latest_35_code_hashes_matched": true,
+        "latest_monitor_code_lf_hashes_matched": 8,
+        "latest_unique_code_lf_hashes_matched": 35,
+        "mois_code_lf_hashes_matched": 2,
+        "pdfs_reopened": false,
+        "prepared_artifact_byte_hashes_matched": 4,
+        "prepared_packet_counts": [
+          370,
+          42,
+          32,
+          15
+        ],
+        "prepared_packet_parser": "parse_gukgam_witness_packet",
+        "private_single_code_mois_review_artifact_read": false,
+        "research_category_counts": [
+          370,
+          29,
+          13
+        ],
+        "research_hashes_matched": 2,
+        "research_row_count": 412,
+        "tests_executed": 0,
+        "witness_core_lf_hashes_matched": 6,
+        "witness_test_baseline": "SUPERSEDED_BY_GUKGAM_WORKER_BUILD_RECEIPT_INTENTIONAL_TEST_ONLY_CHANGE",
+        "worker_code_lf_hashes_matched": 14
+      },
+      "privacy": {
+        "credentials_transmitted_to_ai": false,
+        "proposal_rows_processed": false,
+        "provider_rows_or_raw_source_transmitted_to_ai": false
+      },
+      "received_at_utc": "2026-10-03T09:26:31.456Z",
+      "recorded_at_utc": "2026-10-03T09:33:47.986297+00:00",
+      "remaining_gates": [
+        "ACTUAL_WITNESS_FIELD_REVIEW",
+        "CURRENT_PLAN_VERSION_EVIDENCE",
+        "CURRENT_DB_SOURCE_SNAPSHOT_CHECKPOINT_PROVENANCE",
+        "REVIEWED_CANONICAL_IDENTITIES",
+        "OPERATIONAL_RUNNER_AND_WRITER_READINESS",
+        "PUBLICATION_AND_DELIVERY",
+        "REGISTERED_SITES_MANIFEST",
+        "BUILD_TOOL_DEPENDENCY_ADVISORIES",
+        "ASIDE_VISUAL_AND_MOBILE_ACCEPTANCE"
+      ],
+      "remote_attempts": [
+        {
+          "finished_at_utc": "2026-10-03T09:27:57.329323Z",
+          "launcher": "VALIDATED_ABSOLUTE_VENV_INTERPRETER",
+          "started_at_utc": "2026-10-03T09:27:57.315109Z",
+          "status": "READ_ONLY_SNAPSHOT_COMPLETE"
+        }
+      ],
+      "scope": "READ_ONLY_MONITORING_AND_EXISTING_PLAN_GATE_REVIEW",
+      "status": "CHECKED_NO_OBSERVED_DRIFT",
+      "verification": {
+        "added_local_document_links_verified": 1,
+        "aggregate_or_effect_delta": 0,
+        "code_hash_audit": {
+          "checked_at_utc": "2026-10-03T09:28:13.495242+00:00",
+          "latest_unique_code_hashes_matched": 35,
+          "previous_full_verify_log_hash_matches": true,
+          "product_code_unchanged": true,
+          "tests_reexecuted": false,
+          "witness_test_superseding_receipt": "gukgam-worker-build-20261003.json",
+          "working_and_head_match": true
+        },
+        "current_db_proposal_provenance_revalidated": false,
+        "diff_check": "PASS",
+        "previous_code_gate": "HISTORICAL_WORKER_RECEIPT_970_PYTHON_34_WEB_7_WORKER_HTTP_4_OPTIONAL_POSTGRESQL_SKIPS_NOT_REEXECUTED",
+        "previous_full_log_hash_revalidated": true,
+        "prior_70_item_artifact_audit": "HISTORICAL_NOT_REPEATED",
+        "prior_receipt_and_four_checks_preserved_exactly": true,
+        "reason": "UNCHANGED_VERIFIED_PRODUCT_CODE_SUCCESSFUL_CANONICAL_PARSE_AND_NO_PRODUCT_FAILURE",
+        "remote_failures": 0,
+        "staged_documentation_files": 3,
+        "staged_monitor_code_hashes_matched": 8,
+        "tests_or_make_verify_reexecuted": false
+      }
     }
   ],
   "implementation": {
