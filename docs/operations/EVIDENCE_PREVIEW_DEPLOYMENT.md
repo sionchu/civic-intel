@@ -169,6 +169,27 @@ existing canonical Organization ID, institution code, two fiscal years, database
 `--commit`. A dry run without `--commit` is required first. Ignored local databases and Golden
 fixtures are never deployment inputs.
 
+## Hosted read snapshot from the Mac canonical database (owner decision 2026-10-04)
+
+The Mac mini PostgreSQL is the canonical write database (SSOT). A hosted deployment database is a
+replaceable read snapshot of it, refreshed at release time; it is never written to directly and
+never becomes a second truth store. All ingestion, identity and publication gates keep running only
+against the Mac database. The Mac database is not exposed to the internet.
+
+`deploy/refresh-staging-db.sh` performs one refresh with credentials passed only as environment
+variables (`SOURCE_DATABASE_URL`, `TARGET_DATABASE_URL`) and a `BACKUP_DIR` outside the repository:
+
+1. records source schema revision and canonical counts;
+2. takes a custom-format backup of the target;
+3. dumps the source;
+4. replaces the target in one transaction (`pg_restore --clean --if-exists --no-owner --single-transaction`);
+5. requires identical revision/counts, otherwise exits non-zero and names the pre-refresh backup.
+
+Then deploy one exact verified master commit for API and Web and run the rendered QA. Any temporary
+public TCP proxy opened on the hosted database for the copy is removed immediately afterwards.
+A local rehearsal (Mac `civic_intel` → disposable `civic_refresh_rehearsal`) passed twice on
+2026-10-04, including the replace-over-existing path.
+
 ## Rollback and recovery
 
 Application rollback means redeploying the previously recorded image/commit while leaving the
