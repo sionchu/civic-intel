@@ -15,6 +15,7 @@ import type { Claim, Evidence, MoneyProjection, Source } from "../../types";
 
 const ALIO_EXECUTIVE_PREDICATE = "ALIO_CURRENT_EXECUTIVE_DISCLOSURE";
 const ALIO_CLASSIFICATION_PREDICATE = "ALIO_INSTITUTION_CLASSIFICATION";
+const GUKGAM_AUDIT_TARGET_PREDICATE = "LISTED_AS_GUKGAM_AUDIT_TARGET";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +71,7 @@ function EvidenceTrace({
           <div className="evidence-trace" key={item.id}>
             <span className={`status ${item.stance}`}>{item.stance}</span>
             {source ? (
-              <Link href={`#source-${source.id}`}>{source.title}</Link>
+              <a href={`#source-${source.id}`}>{source.title}</a>
             ) : (
               <span>Source unavailable</span>
             )}
@@ -99,15 +100,23 @@ function OrganizationClaimCard({
   sourceById: Map<string, Source>;
 }) {
   const fiscalYear = claim.qualifiers.fiscal_year ?? "연도 미기재";
+  const isAuditPlan = claim.predicate === GUKGAM_AUDIT_TARGET_PREDICATE;
 
   return (
     <article className="claim organization-claim-card">
       <div className="claim-heading">
-        <span className="claim-kind">ORGANIZATION CLAIM</span>
+        <span className="claim-kind">{isAuditPlan ? "GUKGAM AUDIT PLAN" : "ORGANIZATION CLAIM"}</span>
         <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>
       </div>
       <div className="organization-claim-meta">
-        <span>{fiscalYear} 회계연도</span>
+        {isAuditPlan ? (
+          <>
+            <span>{claim.qualifiers.committee_name || "위원회 정보 없음"}</span>
+            <span>감사계획 일정 {claim.qualifiers.audit_date || "일정 정보 없음"}</span>
+          </>
+        ) : (
+          <span>{fiscalYear} 회계연도</span>
+        )}
         <span>{claim.publication_status}</span>
       </div>
       <p className="claim-title">{claim.proposition}</p>
@@ -366,7 +375,7 @@ export default async function OrganizationPage({
 
       <section className="organization-section" id="claims" aria-labelledby="organization-claims-title">
         <div className="section-intro">
-          <div><span className="eyebrow">Published claims</span><h2 id="organization-claims-title">공시된 기관 기록</h2></div>
+          <div><span className="eyebrow">Published claims</span><h2 id="organization-claims-title">공개된 기관 기록</h2></div>
           <p>기관에 대해 현재 공개 가능한 Claim만 표시하며, 각 항목의 Evidence와 Source policy를 함께 제공합니다.</p>
         </div>
         {claims.length === 0 ? (

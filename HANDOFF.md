@@ -41,6 +41,24 @@ its value or transferring other `.env` values.
 
 ## Current checkpoint
 
+2026-10-03 independent delivery continuation (base 5c93e83): source-field review waiting
+does not stop independent local implementation. Organization Gukgam Claims now display exact
+committee/planned audit date; annual metadata stays unchanged. Native Source anchors preserve
+the reading path. Expanded canonical Worker smoke passes 12 actual synthetic HTTP checks:
+distinct Claim/Evidence/Source/Snapshot/Observation IDs, Source-only failure/conflict/recovery,
+and mixed annual/audit Claims. Final make verify exits0: 970 Python PASS, 4 optional PG skips,
+6 warnings (375.68s), 34 web PASS; Ruff/mypy152/Golden/architecture/lint/types/Next/Worker PASS.
+Independent read-only delivery review finds no blocker. Aside confirms the final institution
+route, Evidence/Source keyboard expansion and Source hash/visible landing; MAIN opens the
+final desktop Claim capture. Earlier pointer attempts missed an off-screen link and do not
+prove an application bug. Source capture timeout/mobile API absence leave UI acceptance
+partial. Owned test services are reaped. New product hashes in the delivery receipt supersede
+older expected hashes for these two intentionally changed files; historical receipts remain.
+R2 actual 47-row source-field review still waits, while this local delivery slice is completed.
+No official source fetch, operational DB write/migration/restart, identity/human attestation,
+publication, cloud connection or deployment. Latest heartbeat fresh aggregates are stored in
+ignored .tools logs; this implementation receipt is docs/receipts/gukgam-organization-delivery-20261003.json.
+
 Owner correction, 2026-10-03: repeated unchanged monitoring was not pipeline progress.
 The actual `db` heartbeat prompt is updated and its saved configuration verified; hourly
 cadence/thread/ACTIVE status are preserved. Unchanged inputs no longer trigger repeated

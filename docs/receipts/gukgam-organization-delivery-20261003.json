@@ -1,0 +1,116 @@
+{
+  "base_commit": "5c93e8353b7ebb4bddd76b5bd15c5d007114c70e",
+  "data_stage": {
+    "actual_source_field_review": "WAITING_FOR_ACTUAL_SOURCE_FIELD_REVIEW",
+    "actual_witness_acquisition": "NOT_RUN",
+    "canonical_identity": "NOT_RUN",
+    "deployment": "NOT_RUN",
+    "publication": "NOT_RUN",
+    "review_input_rows": 47,
+    "sites_and_cloud_to_mac": "NOT_RUN"
+  },
+  "effects": {
+    "claims_published": 0,
+    "human_attestations": 0,
+    "identity_changes": 0,
+    "mac_service_restarts": 0,
+    "official_source_fetches": 0,
+    "operational_db_writes": 0,
+    "operational_migrations": 0,
+    "push_or_deployment": false
+  },
+  "implementation": [
+    "Gukgam Organization Claims display existing committee_name and audit_date qualifiers.",
+    "Annual Organization Claims retain fiscal-year metadata.",
+    "Native in-page Source anchors preserve Claim-to-Source navigation.",
+    "Canonical Worker smoke covers Organization/Source success, Source-only error/conflict/recovery and mixed annual/audit Claims with distinct provenance IDs."
+  ],
+  "independent_review": {
+    "browser_reproduced": false,
+    "delivery_quality": "READ_ONLY_NO_BLOCKING_ISSUE_FOUND",
+    "separate_inventory": "FAILED_ROUTING_DISCOVERY_TIMEOUT_NO_EVIDENCE",
+    "tests_reproduced": false
+  },
+  "local_fixture_lifecycle": {
+    "final_output": "OWNED_FIXTURE_CHILDREN_REAPED",
+    "final_run_owned_children": [
+      27764,
+      87720,
+      22196,
+      40560,
+      57220
+    ],
+    "owned_aside_tab_closed": true,
+    "parent_exit_code": 0,
+    "port_and_process_ownership_checked_before_stop": true
+  },
+  "monitoring_baseline_update": {
+    "changed_paths": [
+      "apps/web/app/organizations/[id]/page.tsx",
+      "apps/web/scripts/check-worker.mjs"
+    ],
+    "historical_receipts_rewritten": false,
+    "latest_heartbeat_log": ".tools/collection-status-heartbeat-20261003T144318-metadata.json",
+    "rule": "Use this receipt's LF hashes for these intentional changes; retain latest earlier receipt hashes for unchanged files."
+  },
+  "recorded_at_utc": "2026-10-03T14:56:11.521678+00:00",
+  "security_or_release_pass": false,
+  "source_files_lf_sha256": {
+    "apps/web/app/organizations/[id]/page.tsx": "3c7269579093d843e619f0625124c41d361f67c7859c4c1bd5bf6f0c4f2614d1",
+    "apps/web/scripts/check-worker.mjs": "7b5a5dc90f8b4d4446467fdb90cf96474a9dfbbc029261b60cde151aed25ff89"
+  },
+  "status": "LOCAL_DELIVERY_CODE_VERIFIED_UI_PARTIAL",
+  "task_id": "gukgam-organization-delivery",
+  "ui": {
+    "acceptance": "PARTIAL",
+    "data": "DISPOSABLE_LOCAL_TEST_FIXTURE_NOT_OPERATIONAL_PUBLICATION",
+    "desktop_viewport_css_pixels": {
+      "document_scroll_width": 1425,
+      "height": 900,
+      "width": 1440
+    },
+    "earlier_pointer_attempts": "OFFSCREEN_LINK_MISSED_BY_BROWSER_ACTION_NOT_CONFIRMED_APPLICATION_BUG",
+    "evidence_audit_keyboard": "CONFIRMED_OPEN",
+    "final_code_route": "GUKGAM_TO_ORGANIZATION_CLAIMS_CONFIRMED",
+    "final_desktop_capture": {
+      "findings": "COMMITTEE_DATE_KOREAN_WRAPPING_PROVENANCE_AND_FOCUS_VISIBLE_NO_CLIPPING_IN_CAPTURE",
+      "opened_and_inspected": true,
+      "original_pixels": {
+        "height": 1350,
+        "width": 2160
+      },
+      "path": ".tools/gukgam-delivery-20261003-evidence/organization-final.png",
+      "sha256": "6c1e4447bda9761990fae2ab0a3f9885df01296f6a4a973e263f33b056f1464e"
+    },
+    "loading_and_source_error_browser_states": "NOT_RUN_THIS_SLICE_HTTP_STATES_VERIFIED_SEPARATELY",
+    "mechanism": "ASIDE_ONLY",
+    "mobile": "NOT_RUN_VIEWPORT_API_UNAVAILABLE",
+    "source_anchor_pointer": "CONFIRMED_EXACT_HASH_AND_VISIBLE_TARGET_AFTER_SCROLL",
+    "source_audit_keyboard": "CONFIRMED_OPEN",
+    "source_capture": "FAILED_ASIDE_VIEWPORT_CAPTURE_TIMEOUT_15_SECONDS_NO_VISUAL_PASS",
+    "source_target_top_css_pixels": 425.22918701171875
+  },
+  "verification": {
+    "architecture": "PASS",
+    "command": "python -X utf8 .tools/run_fixture_verification.py .tools/make/ucrt64/bin/mingw32-make.exe verify",
+    "environment": "ALLOWLISTED_SYNTHETIC_LOCAL_VERIFICATION",
+    "exit_code": 0,
+    "golden_quality": "PASS",
+    "log_path": ".tools/gukgam-delivery-20261003-verify-final.log",
+    "log_sha256": "f851285766211acbd94e53cbd628df1d55f9610dd095d9277a48445ae14b8965",
+    "mypy": {
+      "source_files": 152,
+      "status": "PASS"
+    },
+    "next_standalone_build": "PASS",
+    "optional_postgresql_skipped": 4,
+    "python_passed": 970,
+    "python_seconds": 375.68,
+    "ruff": "PASS",
+    "warnings": 6,
+    "web_lint_and_types": "PASS",
+    "web_passed": 34,
+    "worker_build": "PASS",
+    "worker_http_checks": 12
+  }
+}

@@ -27,6 +27,38 @@ Require full make verify and Aside desktop/mobile acceptance; report browser fai
 
 ## Official witness linkage research checkpoint, 2026-10-02
 
+### Independent delivery continuation, 2026-10-03
+
+Owner correction: source-field review must not stop independent approved local work.
+MAIN continues the canonical Gukgam → Organization → Claim/Evidence → Source reading slice
+at base `5c93e8353b7ebb4bddd76b5bd15c5d007114c70e`. The current Worker smoke only checks the
+institution link, while institution/source success responses are absent from its fixture.
+Owned paths: existing Organization page, Worker HTTP smoke, local delivery receipt and
+integrated handoff/connection plan. Render the existing audit-plan predicate with its exact
+committee/date qualifiers instead of a missing fiscal-year label; preserve all other Claims.
+Use a native within-page anchor for the evidence link. Earlier off-screen pointer attempts
+missed the link; that diagnosis is a browser action limit, not evidence of an application bug.
+Add actual local Worker institution/source success, source-only failure/conflict and recovery
+checks with synthetic distinct provenance IDs. Run targeted checks, full `make verify`, an
+independent read-only review and Aside screen/keyboard acceptance where supported. MAIN owns
+the disposable loopback fixture/ports and browser; children have no operational or credential
+access and no recursive delegation. No source fetch, SSD write, identity decision, human
+attestation, publication, tunnel, Site registration or deployment is part of this slice.
+
+Completed local slice: Gukgam Claims show their committee and planned audit date, while
+annual Claims retain fiscal-year metadata. The canonical Worker now passes 12 synthetic HTTP
+checks, including distinct provenance IDs, Source-only failure/conflict/recovery and mixed
+annual/audit Claims. Final `make verify` exits0: 970 Python PASS, 4 optional PostgreSQL skips,
+6 warnings (375.68s), 34 web PASS and all code/build gates PASS. Independent delivery review
+finds no blocking issue; one separate inventory agent timed out and supplies no evidence.
+Aside confirms the final Gukgam-to-Organization route, keyboard-open Evidence/Source audits,
+and actual Source hash/visible landing after scrolling the link into view. MAIN opens and
+inspects the final desktop Claim capture. Source screenshot times out and mobile viewport API
+is unavailable, so UI acceptance remains partial. Disposable fixture services are reaped.
+This implements reading/verification; actual witness field review, acquisition, identity,
+publication and deployment remain unexecuted. Evidence and new monitoring hash overrides:
+[delivery receipt](../../receipts/gukgam-organization-delivery-20261003.json).
+
 ### Owner correction: delta-based monitoring, 2026-10-03
 
 The owner challenged repeated checks without material progress. MAIN updates the actual
