@@ -376,6 +376,13 @@ Important properties:
 - source collection, Organization materialization, identity resolution and Claim publication remain
   separate operations.
 
+For the current 41-item Gukgam existing-Organization lane, human-review throughput is measured with
+a separate manifest-bound append-only operator receipt outside the canonical DB. It records active
+time with a five-minute idle cap, APPROVE/REJECT/HOLD disposition, bounded HOLD reason, evidence-link
+opens and first-versus-repeat Organization occurrence position. These measurements quantify review
+cost only; they do not authorize a reviewed manifest or Claim commit and are not reused as estimates
+for the different 70-item MOIS Organization-creation review.
+
 See [Operator Console](../operations/OPERATOR_CONSOLE.md) and
 [Admin operations](ADMIN_OPERATIONS.md).
 

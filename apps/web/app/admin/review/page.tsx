@@ -2,8 +2,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { ApiResult, OntologyGraph } from "../../types";
 import { operatorRead, requireOperator } from "./operator-data";
-import { KIND_LABELS, publicOntologyDetail, type Overview, type RecordPage, type OperatorDetail, type Manifest } from "./operator-types";
+import {
+  KIND_LABELS,
+  publicOntologyDetail,
+  type GukgamReviewThroughput,
+  type Overview,
+  type RecordPage,
+  type OperatorDetail,
+  type Manifest,
+} from "./operator-types";
 import OperatorGraphView from "./operator-graph";
+import GukgamReviewThroughputPanel from "./gukgam-review-throughput";
 import ReadState from "../../components/read-state";
 import AdminQueue from "./admin-queue";
 import AdminActions from "./admin-actions";
@@ -83,6 +92,13 @@ export default async function ReviewPage({ searchParams }: {
     next.set("focus_kind", focusKind); next.set("focus_id", focusId); return `/admin/review?${next}`; };
   const manifestResult = tab === "manifest" ? await operatorRead<Manifest>("/admin/operations/manifest") : null;
   const manifest = manifestResult?.state === "success" ? manifestResult.data : null;
+  const manifestSha = manifest?.gukgam_claim_review.manifest_sha256 ?? "";
+  const throughputResult = tab === "manifest" && /^[0-9a-f]{64}$/.test(manifestSha)
+    ? await operatorRead<GukgamReviewThroughput>(
+      `/admin/operations/review-throughput?${new URLSearchParams({ manifest_sha256: manifestSha })}`,
+    )
+    : null;
+  const throughput = throughputResult?.state === "success" ? throughputResult.data : null;
   const pageHref = (position: number) => { const next = new URLSearchParams(query); next.set("offset", String(position)); return `/admin/review?${next}`; };
   const selectHref = (id: string) => { const next = new URLSearchParams(query); next.set("focus_kind", kind); next.set("focus_id", id); return `/admin/review?${next}`; };
   const laneKind = ["observations", "runs", "checkpoints"].includes(kind);
@@ -177,13 +193,12 @@ export default async function ReviewPage({ searchParams }: {
           <p>{manifest.gukgam_claim_review.item_count ?? 0} occurrence · {manifest.gukgam_claim_review.organization_count ?? 0}개 기관 · 기존 Gukgam Claim {manifest.gukgam_claim_review.existing_gukgam_claim_count ?? 0}건</p>
           <p className="operator-note">{manifest.gukgam_claim_review.message} exact canonical-name 일치는 discovery candidate이며 사람 승인을 대신하지 않습니다.</p>
           {manifest.gukgam_claim_review.manifest_sha256 && <details className="operator-hashes"><summary>현재 DRAFT manifest hash</summary><p>{manifest.gukgam_claim_review.manifest_sha256}</p><small>claim_commit_authorized = {String(manifest.gukgam_claim_review.claim_commit_authorized)}</small></details>}
-          {manifest.gukgam_claim_review.items.length > 0 && <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>기관</th><th>위원회 / 감사 예정일</th><th>현재 후보 관계</th><th>DB 확인</th></tr></thead>
-            <tbody>{manifest.gukgam_claim_review.items.map((item) => <tr key={item.review_key}>
-              <td><strong>{item.organization_name}</strong><small>{item.review_key}</small></td>
-              <td>{item.committee_name}<small>{item.audit_date}</small></td>
-              <td><span className="operator-tag">{item.match_class}</span><small>Claim 존재 {item.current_claim_present ? "예" : "아니요"} · 승인되지 않음</small></td>
-              <td><Link prefetch={false} href={recordLink("organizations", item.organization_id)}>Organization →</Link><small><Link prefetch={false} href={recordLink("observations", item.observation_id)}>schedule observation →</Link></small></td>
-            </tr>)}</tbody></table></div>}
+          {throughputResult?.state === "error" && <ReadState error={throughputResult.error} />}
+          {manifestSha && manifest.gukgam_claim_review.items.length > 0 && <GukgamReviewThroughputPanel
+            items={manifest.gukgam_claim_review.items}
+            manifestSha256={manifestSha}
+            throughput={throughput}
+          />}
         </article>
 
         <article className="operator-detail-card">

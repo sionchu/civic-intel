@@ -107,6 +107,8 @@ test("Visual System v2 keeps Home editorial and People content-first", async () 
 test("UI exposes explicit provenance and a read-only review surface", async () => {
   const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
   const review = await readFile(new URL("../app/admin/review/page.tsx", import.meta.url), "utf8");
+  const throughput = await readFile(new URL("../app/admin/review/gukgam-review-throughput.tsx", import.meta.url), "utf8");
+  const actions = await readFile(new URL("../app/admin/review/actions/route.ts", import.meta.url), "utf8");
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.match(profile, /SOURCE CONFLICT/);
   assert.match(profile, /trace\.stance/);
@@ -116,8 +118,15 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.match(review, /operatorRead/);
   assert.match(review, /claim_commit_authorized/);
   assert.match(review, /materialization_authorized/);
-  assert.match(review, /item\.match_class/);
+  assert.match(throughput, /item\.match_class/);
+  assert.match(throughput, /IDLE_THRESHOLD_MS = 300_000/);
+  assert.match(throughput, /APPROVE/);
+  assert.match(throughput, /REJECT/);
+  assert.match(throughput, /HOLD/);
+  assert.match(throughput, /batch_decided: false/);
+  assert.match(actions, /gukgam_review_metric/);
   assert.match(review, /CURRENT HUMAN REVIEW/);
+  assert.doesNotMatch(throughput, /adminRequest<[^>]+>\("commit"/);
   assert.doesNotMatch(review, /method="post"|--commit/);
   assert.doesNotMatch(layout, /admin\/review/);
 });

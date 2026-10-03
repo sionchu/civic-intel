@@ -14,6 +14,12 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 
 from apps.api.operator_review import current_review_inspection
+from apps.api.operator_review_metrics import (
+    GukgamReviewMetricInput,
+    default_review_receipt_path,
+    gukgam_review_metric_summary,
+    record_gukgam_review_metric,
+)
 from packages.persistence import DatabaseNotReady, SqlAlchemyRepository
 from packages.persistence.operator_queries import MODELS
 from packages.persistence.repository import EXPECTED_SCHEMA_REVISION
@@ -79,8 +85,15 @@ def manifest_inspection(repository: SqlAlchemyRepository) -> dict[str, Any]:
     return current_review_inspection(repository)
 
 
-def build_operator_router(repository: SqlAlchemyRepository, label: str) -> APIRouter:
+def build_operator_router(
+    repository: SqlAlchemyRepository,
+    label: str,
+    *,
+    actor: str = "local-operator",
+    review_receipt_path: Path | None = None,
+) -> APIRouter:
     router = APIRouter(prefix="/admin/operations", include_in_schema=False)
+    receipt_path = review_receipt_path or default_review_receipt_path()
 
     @router.get("")
     def overview() -> dict[str, Any]:
@@ -122,6 +135,57 @@ def build_operator_router(repository: SqlAlchemyRepository, label: str) -> APIRo
     @router.get("/manifest")
     def manifest() -> dict[str, Any]:
         return manifest_inspection(repository)
+
+    @router.get("/review-throughput")
+    def review_throughput(
+        manifest_sha256: str = Query(..., pattern=r"^[0-9a-f]{64}$"),
+    ) -> dict[str, Any]:
+        try:
+            return gukgam_review_metric_summary(
+                inspection=current_review_inspection(repository),
+                manifest_sha256=manifest_sha256,
+                receipt_path=receipt_path,
+                repo_root=ROOT,
+            )
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(
+                409,
+                {"code": "REVIEW_STATE_CONFLICT", "message": str(exc)},
+            ) from exc
+        except OSError as exc:
+            raise HTTPException(
+                503,
+                {
+                    "code": "REVIEW_RECEIPT_UNAVAILABLE",
+                    "message": "Private review receipt storage is unavailable.",
+                },
+            ) from exc
+
+    @router.post("/review-throughput")
+    def record_review_throughput(
+        request: GukgamReviewMetricInput,
+    ) -> dict[str, Any]:
+        try:
+            return record_gukgam_review_metric(
+                inspection=current_review_inspection(repository),
+                actor=actor,
+                request=request,
+                receipt_path=receipt_path,
+                repo_root=ROOT,
+            )
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(
+                409,
+                {"code": "REVIEW_STATE_CONFLICT", "message": str(exc)},
+            ) from exc
+        except OSError as exc:
+            raise HTTPException(
+                503,
+                {
+                    "code": "REVIEW_RECEIPT_UNAVAILABLE",
+                    "message": "Private review receipt storage is unavailable.",
+                },
+            ) from exc
 
     return router
 

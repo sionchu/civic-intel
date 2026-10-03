@@ -22,7 +22,12 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: { message: "잘못된 요청 형식입니다." } }, { status: 400 });
   }
-  const allowed: Record<string, string> = { preview: "preview", commit: "commit", work_order_draft: "playbook/draft" };
+  const allowed: Record<string, string> = {
+    preview: "preview",
+    commit: "commit",
+    work_order_draft: "playbook/draft",
+    gukgam_review_metric: "review-throughput",
+  };
   let path = Object.hasOwn(allowed, input.operation ?? "") ? allowed[input.operation!] : "";
   let method = "POST";
   if (input.operation === "lookup") {

@@ -71,6 +71,23 @@ Claims, and separately revalidates the checked-in MOIS Organization proposal aga
 MOIS checkpoint/provider observations plus current Gukgam NO_EXACT occurrences. Both lanes are
 human-review / no-write surfaces; neither authorizes Organization creation or Claim publication.
 
+The 41-item existing-Organization Gukgam lane additionally supports **private review-throughput
+receipts**. A reviewer explicitly starts one item, may open its Organization/schedule evidence in a
+new tab, then records APPROVE, REJECT or HOLD with a bounded HOLD reason. The receipt is bound to the
+exact current manifest SHA and review key; the API revalidates current DB state before append.
+Active time is an interaction proxy with a five-minute idle cap, and the summary separates first
+versus repeated Organization occurrences and reports median/p90, HOLD reasons and evidence-open
+rate. V0 records single-item decisions only (`batch_decided=false`).
+
+These receipts are **not** `AdminOperationRow` mutation receipts, canonical data, a reviewed Claim
+manifest or commit authorization. They are append-only private operator state outside Git and the
+canonical database. The default path is
+`~/.civic-intel/operator/gukgam-review-throughput-v1.jsonl`; operators may override it with
+`CIVIC_OPERATOR_REVIEW_RECEIPT_PATH`, but the API rejects repo-local or non-JSONL targets. Receipt
+entries contain IDs, timestamps, disposition/enum values and counters only—no source body, excerpt,
+URL, credential or free-text note. The independent 70-item MOIS Organization review does not reuse
+these timing statistics.
+
 Deletion means public removal/deactivation while preserving source/audit records; there
 is no arbitrary hard-delete button. Claim correction creates a new attributable CLAIM draft, not a
 rewritten official source row or automatically inferred typed relationship. A review/merge blocked
@@ -86,6 +103,8 @@ GET  /admin/operations/capabilities
 GET  /admin/operations/people-review?q=...&state=UNREVIEWED&offset=0&limit=25
 GET  /admin/operations/evidence-options?q=...
 GET  /admin/operations/history?offset=0&limit=25
+GET  /admin/operations/review-throughput?manifest_sha256=...
+POST /admin/operations/review-throughput
 POST /admin/operations/preview
 POST /admin/operations/commit
 ```

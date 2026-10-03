@@ -35,6 +35,58 @@ export type GukgamClaimReviewItem = {
   current_claim_present: boolean;
 };
 
+export type GukgamReviewDecision = "APPROVE" | "REJECT" | "HOLD";
+export type GukgamReviewHoldReason =
+  | "INSTITUTION_IDENTITY_UNCLEAR"
+  | "LIFECYCLE_OR_SUCCESSOR_UNCLEAR"
+  | "SOURCE_CONTEXT_INSUFFICIENT"
+  | "OTHER_EVIDENCE_REQUIRED";
+
+export type GukgamReviewEvidenceOpens = {
+  organization: number;
+  gukgam_observation: number;
+};
+
+export type GukgamReviewMetricItem = {
+  review_key: string;
+  decision: GukgamReviewDecision;
+  hold_reason: GukgamReviewHoldReason | null;
+  decided_at: string;
+  active_ms: number;
+  evidence_opens: GukgamReviewEvidenceOpens;
+  org_occurrence_index: number;
+  org_occurrence_count: number;
+  batch_decided: boolean;
+  receipt_sha256: string;
+};
+
+export type ReviewMetricGroup = {
+  count: number;
+  decision_counts: Record<string, number>;
+  hold_reason_counts: Record<string, number>;
+  median_active_ms: number | null;
+  p90_active_ms: number | null;
+  with_evidence_opens: number;
+  evidence_open_rate: number | null;
+  batch_decided_count: number;
+};
+
+export type GukgamReviewThroughput = {
+  semantics: "GUKGAM_EXISTING_ORGANIZATION_REVIEW_THROUGHPUT_V1";
+  manifest_sha256: string;
+  review_item_count: number;
+  organization_count: number;
+  decided_count: number;
+  remaining_count: number;
+  all_reviewed: boolean;
+  overall: ReviewMetricGroup;
+  first_occurrence: ReviewMetricGroup;
+  repeat_occurrence: ReviewMetricGroup;
+  items: GukgamReviewMetricItem[];
+  canonical_write_performed: false;
+  claim_commit_authorized: false;
+};
+
 export type MoisOrganizationReviewItem = {
   organization_name: string;
   org_code: string;
