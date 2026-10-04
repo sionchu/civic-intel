@@ -227,4 +227,5 @@ def test_committee_projection_is_identical_with_narrowed_contexts(
         )
     )
     assert full == narrowed
-    assert full["committees"][0]["member_count"] == 2
+    by_name = {item["committee_name"]: item for item in full["committees"]}
+    assert by_name[COMMITTEE]["member_count"] == 2
