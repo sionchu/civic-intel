@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from uuid import UUID, uuid5
 
 from packages.connectors.gukgam_witness_packet import (
+    CHANNEL_OFFICIAL_MINUTES,
     OWNER_COPY_LABEL,
     WITNESS_PACKET_SCHEMA,
     ReviewedGukgamWitnessPacket,
@@ -21,6 +22,7 @@ from packages.domain.contracts import (
     SourceSnapshot,
 )
 from packages.domain.enums import SourceCollectionMode
+from packages.verification.assembly_minutes_import import assembly_minutes_policy
 from packages.verification.gukgam_reviewed_plan_import import (
     EXACT_ATTACHMENT_RIGHTS,
     HUMAN_ASSISTED_CAPTURE,
@@ -221,6 +223,15 @@ def build_gukgam_witness_capture(
             "received_via": packet_source.received_via,
             "received_at": packet_source.received_at.isoformat(),
             "rights_scope": OWNER_COPY_RIGHTS_SCOPE,
+        }
+    elif packet_source.acquisition_channel == CHANNEL_OFFICIAL_MINUTES:
+        assert packet_source.attachment_url
+        policy = assembly_minutes_policy()
+        url = packet_source.attachment_url
+        publisher = f"대한민국 국회 {packet_source.committee_name} (회의록)"
+        metadata |= {
+            "rights_scope": EXACT_ATTACHMENT_RIGHTS,
+            "list_carrier": "OFFICIAL_COMMITTEE_MINUTES",
         }
     else:
         assert packet_source.attachment_url and packet_source.page_url
