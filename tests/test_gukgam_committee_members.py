@@ -21,6 +21,13 @@ from apps.api.main import create_app
 from packages.connectors.open_assembly import OpenAssemblyMemberConnector
 from packages.domain.contracts import Claim, ClaimEvidence, Person
 from packages.domain.enums import EpistemicStatus, EvidenceStance, IdentityStatus, PublicationStatus
+from packages.rendering.gukgam_2026_committees import (
+    GUKGAM_2026_COMMITTEE_NAMES,
+    GUKGAM_2026_COMMITTEES_INVENTORY,
+    GUKGAM_2026_COMMITTEES_SEMANTICS,
+    GUKGAM_2026_COMMITTEES_SOURCE_SHA256,
+    GUKGAM_2026_UNCONFIRMED_COMMITTEE_NAMES,
+)
 from packages.rendering.gukgam_committee_members import (
     GUKGAM_COMMITTEE_MEMBERS_SEMANTICS,
     GukgamCommitteeMembersError,
@@ -103,10 +110,24 @@ def test_committee_endpoint_lists_claim_backed_members_of_target_committees(
     assert payload["semantics"] == GUKGAM_COMMITTEE_MEMBERS_SEMANTICS
     assert payload["roster_semantics"] == "MEMBER_ROSTER_SNAPSHOT_NOT_AUDIT_DAY_ATTENDANCE"
     assert payload["year"] == 2026
-    assert payload["committee_count"] == 1
-    only = payload["committees"][0]
-    assert only["committee_name"] == committee
+    names = [item["committee_name"] for item in payload["committees"]]
+    assert set(names) == {*GUKGAM_2026_COMMITTEE_NAMES, committee}
+    assert payload["committee_count"] == len(names) >= 17
+    assert "기획재정위원회" not in names  # old name is never merged or listed
+    by_name = {item["committee_name"]: item for item in payload["committees"]}
+    only = by_name[committee]
     assert only["target_count"] == targets["target_count"] == 1
+    assert only["target_claim_coverage"] == "PUBLISHED"
+    for name, item in by_name.items():
+        if name != committee:
+            assert item["target_count"] == 0
+            assert item["target_claim_coverage"] == "NOT_YET_PUBLISHED"
+    # A reviewed committee without published targets lists its roster members only.
+    assert committee != "국방위원회"
+    roster_only = by_name["국방위원회"]
+    assert [m["person"]["name"] for m in roster_only["members"]] == ["가회원", "나회원", "다회원"]
+    assert roster_only["member_count"] == 3
+    assert any("not yet published" in text for text in payload["limitations"])
     assert only["member_count"] == 2
     assert [member["person"]["name"] for member in only["members"]] == ["가회원", "나회원"]
     assert [member["party"] for member in only["members"]] == ["나정당", "가정당"]
@@ -121,9 +142,7 @@ def test_committee_endpoint_lists_claim_backed_members_of_target_committees(
     assert member_claims[first["party_claim_id"]]["predicate"] == "ASSEMBLY_PARTY"
 
     serialized = json.dumps(payload, ensure_ascii=False)
-    assert "다회원" not in serialized  # other committee only
     assert "라회원" not in serialized  # old committee name is never merged
-    assert "국방위원회" not in serialized  # no committee without a published target claim
     assert any("audit-day attendance" in text for text in payload["limitations"])
     assert any("questioned" in text for text in payload["limitations"])
     for forbidden in ("score", "rank", "confidence", "normalized", "review_key"):
@@ -140,13 +159,39 @@ def test_committee_endpoint_lists_claim_backed_members_of_target_committees(
     assert {edge["claim_id"] for edge in committee_edges} == {first["claim_id"]}
 
 
-def test_committee_endpoint_is_empty_without_published_targets(tmp_path: Path) -> None:
+def test_committee_endpoint_lists_all_reviewed_committees_without_published_targets(
+    tmp_path: Path,
+) -> None:
     repository = migrated_repository(tmp_path / "empty.db")
     with TestClient(create_app(repository)) as client:
         response = client.get("/gukgam/2026/committees")
     assert response.status_code == 200
-    assert response.json()["committees"] == []
-    assert response.json()["committee_count"] == 0
+    payload = response.json()
+    assert payload["committee_count"] == 17
+    assert [c["committee_name"] for c in payload["committees"]] == sorted(
+        GUKGAM_2026_COMMITTEE_NAMES
+    )
+    for item in payload["committees"]:
+        assert item["members"] == [] and item["member_count"] == 0
+        assert item["target_count"] == 0
+        assert item["target_claim_coverage"] == "NOT_YET_PUBLISHED"
+
+
+def test_reviewed_committee_list_is_the_17_confirmed_inventory_names() -> None:
+    inventory = json.loads(
+        (Path(__file__).resolve().parents[1] / GUKGAM_2026_COMMITTEES_INVENTORY).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert inventory["source"]["sha256"] == GUKGAM_2026_COMMITTEES_SOURCE_SHA256
+    assert inventory["source"]["sha256"].startswith("3bf52749")
+    assert inventory["source"]["sha256"].endswith("c730")
+    full_names = [item["committee_full_name"] for item in inventory["committees"]]
+    assert list(GUKGAM_2026_COMMITTEE_NAMES) == full_names
+    assert len(set(GUKGAM_2026_COMMITTEE_NAMES)) == 17
+    assert GUKGAM_2026_UNCONFIRMED_COMMITTEE_NAMES == frozenset()  # every name is confirmed
+    assert "기획재정위원회" not in GUKGAM_2026_COMMITTEE_NAMES
+    assert GUKGAM_2026_COMMITTEES_SEMANTICS.endswith("NOT_A_CLAIM")
 
 
 # --- pure projection --------------------------------------------------------------------
@@ -219,6 +264,14 @@ def open_gate(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
+def _committee(payload, name, *, missing_ok=False):
+    found = [c for c in payload["committees"] if c["committee_name"] == name]
+    if not found and missing_ok:
+        return None
+    assert len(found) == 1
+    return found[0]
+
+
 def _build(people, contexts):
     return build_gukgam_committee_members_projection(
         _targets(), people, contexts, sources={}, policies={}
@@ -242,10 +295,53 @@ def test_projection_requires_resolved_people_and_exact_committee_names(
 
     payload = _build([member, review, renamed], contexts)
 
-    assert [c["committee_name"] for c in payload["committees"]] == [COMMITTEE]
-    members = payload["committees"][0]["members"]
+    assert "기획재정위원회" not in [c["committee_name"] for c in payload["committees"]]
+    members = _committee(payload, COMMITTEE)["members"]
     assert [m["person"]["name"] for m in members] == ["가회원"]
     assert members[0]["party"] == "테스트정당"
+    assert _committee(payload, "운영위원회", missing_ok=True) is None  # not an official name
+    assert all(not c["members"] for c in payload["committees"] if c["committee_name"] != COMMITTEE)
+
+
+def test_projection_is_union_of_reviewed_list_and_target_committees(open_gate: None) -> None:
+    member = _person("가회원")
+    contexts = {
+        member.id: _context(_claim(member, "ASSEMBLY_COMMITTEES", "법제사법위원회, 정보위원회"))
+    }
+
+    payload = _build([member], contexts)
+
+    names = [c["committee_name"] for c in payload["committees"]]
+    assert payload["committee_count"] == len(names) == 17
+    assert set(names) == set(GUKGAM_2026_COMMITTEE_NAMES)
+    assert COMMITTEE in names
+    assert _committee(payload, COMMITTEE)["target_claim_coverage"] == "PUBLISHED"
+    assert _committee(payload, COMMITTEE)["target_count"] == 1
+    for name in ("법제사법위원회", "정보위원회"):
+        item = _committee(payload, name)
+        assert item["target_claim_coverage"] == "NOT_YET_PUBLISHED"
+        assert item["target_count"] == 0
+        assert [m["person"]["name"] for m in item["members"]] == ["가회원"]
+    assert _committee(payload, "정무위원회")["members"] == []
+    assert any("not yet published" in text for text in payload["limitations"])
+
+
+def test_projection_adds_target_committee_outside_reviewed_list(open_gate: None) -> None:
+    targets = _targets()
+    extra = GukgamAuditTargetProjection(
+        year=2026,
+        items=(
+            GukgamAuditTargetProjectionItem(
+                **{**targets.items[0].__dict__, "committee_name": "연금개혁특별위원회"}
+            ),
+        ),
+    )
+    payload = build_gukgam_committee_members_projection(
+        extra, [], {}, sources={}, policies={}
+    ).to_dict()
+
+    assert payload["committee_count"] == 18
+    assert _committee(payload, "연금개혁특별위원회")["target_claim_coverage"] == "PUBLISHED"
 
 
 def test_projection_ignores_unpublished_and_party_may_be_absent(open_gate: None) -> None:
@@ -258,7 +354,7 @@ def test_projection_ignores_unpublished_and_party_may_be_absent(open_gate: None)
         no_party.id: _context(_claim(no_party, "ASSEMBLY_COMMITTEES", COMMITTEE)),
     }
 
-    members = _build([draft, no_party], contexts)["committees"][0]["members"]
+    members = _committee(_build([draft, no_party], contexts), COMMITTEE)["members"]
 
     assert [m["person"]["name"] for m in members] == ["나회원"]
     assert members[0]["party"] is None and members[0]["party_claim_id"] is None
@@ -275,7 +371,7 @@ def test_projection_skips_claims_failing_the_publication_gate(
     member = _person("가회원")
     contexts = {member.id: _context(_claim(member, "ASSEMBLY_COMMITTEES", COMMITTEE))}
 
-    assert _build([member], contexts)["committees"][0]["members"] == []
+    assert _committee(_build([member], contexts), COMMITTEE)["members"] == []
 
 
 @pytest.mark.parametrize(

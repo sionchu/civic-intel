@@ -120,6 +120,7 @@ export type GukgamCommitteeMember = {
 export type GukgamCommittee = {
   committee_name: string;
   target_count: number;
+  target_claim_coverage: "PUBLISHED" | "NOT_YET_PUBLISHED";
   member_count: number;
   members: GukgamCommitteeMember[];
 };

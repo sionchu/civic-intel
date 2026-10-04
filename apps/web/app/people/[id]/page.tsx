@@ -296,6 +296,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 return (
                   <div className="person-gukgam-committee" key={committee.committee_name}>
                     <h3><Link href={committeeHref(committee.committee_name)}>{committee.committee_name}</Link></h3>
+                    {committee.target_claim_coverage === "NOT_YET_PUBLISHED" && (
+                      <p className="committee-targets-pending" role="note">
+                        피감대상 공개 기록 준비 중 — 위원 명단만 표시
+                      </p>
+                    )}
                     <dl className="person-gukgam-facts">
                       <div>
                         <dt>감사일</dt>

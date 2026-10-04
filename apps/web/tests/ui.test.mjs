@@ -506,6 +506,29 @@ test("Gukgam committee members stay Claim-backed, roster-scoped and unranked", a
   assert.match(styles, /\.committee-index/);
 });
 
+test("Committees without published targets show only a roster note, never invented schedule rows", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [page, person, types, styles] = await Promise.all([
+    read("../app/gukgam/2026/page.tsx"),
+    read("../app/people/[id]/page.tsx"),
+    read("../app/types.ts"),
+    read("../app/styles.css"),
+  ]);
+  assert.match(types, /target_claim_coverage: "PUBLISHED" \| "NOT_YET_PUBLISHED"/);
+  for (const source of [page, person]) {
+    assert.match(source, /committee\.target_claim_coverage === "NOT_YET_PUBLISHED"/);
+    assert.match(source, /피감대상 공개 기록 준비 중 — 위원 명단만 표시/);
+  }
+  // The committee index lists every committee returned by the API, with no target filter.
+  assert.match(page, /\{committees\.map\(\(committee\) => \(\s*<li key=\{committee\.committee_name\}/);
+  assert.doesNotMatch(page, /committees\.filter\(/);
+  // The person section keys on roster membership, and dates still come only from published targets.
+  assert.match(person, /committee\.members\.find\(\(item\) => item\.person\.id === person\.id\)/);
+  assert.match(person, /targetItems\.filter\(\(item\) => item\.committee_name === committee\.committee_name\)/);
+  assert.match(person, /공개된 일정 없음/);
+  assert.match(styles, /\.committee-targets-pending/);
+});
+
 test("Organization detail shows the 2026 Gukgam section without linking executives to People", async () => {
   const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(page, /getGukgamTargets\(\)/);
