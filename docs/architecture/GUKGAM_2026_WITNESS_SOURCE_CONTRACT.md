@@ -42,6 +42,17 @@ automation. Therefore:
   (free text, e.g. "KakaoTalk TalkFile", no contact details) and `received_at` (ISO date) are
   required, and the list year must be fixed by `adoption_date` or `assumed_year`.
 
+- `OFFICIAL_MINUTES` (2026-10-05): the committee adopted the list in a full-committee meeting and the
+  official minutes on `record.assembly.go.kr` print the adopted list (some committees post no
+  separate attachment). `attachment_url` must be the exact
+  `https://record.assembly.go.kr/assembly/viewer/minutes/download/pdf.do?id=<n>` URL; `page_url`
+  must be null; `artifact_format` must be `PDF` (page locators required); `artifact_filename` and
+  `adoption_date` (the meeting date) are required; `received_via`/`received_at` must be null. The
+  Source is bound to the minutes-lane policy (`official_national_assembly_minutes`, no fetch, no
+  fulltext). The witness lane still stores no excerpt. Only lists actually printed in the minutes
+  qualify: a minutes text that refers to "배부해드린 유인물" without printing it is not a list and
+  the committee stays `MANUAL_DOWNLOAD_REQUIRED`.
+
 An owner-supplied copy is NOT an official source. It may be imported as
 Source/SourceSnapshot/FeederObservation only after `HUMAN_REVIEWED`. Because `Source.url` is
 mandatory and there is no migration, the Source carries the unfetchable placeholder

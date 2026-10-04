@@ -6,7 +6,8 @@ from datetime import UTC, date, datetime, time
 from uuid import UUID, uuid5
 
 from packages.connectors.gukgam_witness_packet import (
-    CHANNEL_OFFICIAL_SITE,
+    ACQUISITION_CHANNELS,
+    CHANNEL_OFFICIAL_MINUTES,
     CHANNEL_OWNER_SUPPLIED_COPY,
     OWNER_COPY_LABEL,
     WITNESS_CATEGORIES,
@@ -30,6 +31,17 @@ from packages.verification.gukgam_witness_import import (
 )
 
 OFFICIAL_SOURCE_CLASS = "official_reviewed_committee_attachment"
+MINUTES_SOURCE_CLASS = "official_national_assembly_minutes"
+
+
+def expected_source_class(channel: str) -> str:
+    """The only SourcePolicy class each acquisition channel may be backed by."""
+
+    if channel == CHANNEL_OWNER_SUPPLIED_COPY:
+        return OWNER_COPY_SOURCE_CLASS
+    if channel == CHANNEL_OFFICIAL_MINUTES:
+        return MINUTES_SOURCE_CLASS
+    return OFFICIAL_SOURCE_CLASS
 GUKGAM_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS_SOURCE_TEXT"
 GUKGAM_WITNESS_CLAIM_NAMESPACE = UUID("3c1f2f55-0b0e-4b7e-9a25-6f4c1d8e7a10")
 GUKGAM_WITNESS_EVENT_SEMANTICS = "OFFICIAL_ATTENDANCE_REQUEST_LISTING_NOT_WRONGDOING"
@@ -113,12 +125,9 @@ def build_gukgam_witness_claim(
     if isinstance(list_year, bool) or not isinstance(list_year, int):
         raise GukgamWitnessClaimError("witness observation list_year is invalid")
     channel = _obs_required(observation, "acquisition_channel")
-    if channel not in (CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY):
+    if channel not in ACQUISITION_CHANNELS:
         raise GukgamWitnessClaimError("witness observation acquisition channel is invalid")
-    expected_class = (
-        OWNER_COPY_SOURCE_CLASS if channel == CHANNEL_OWNER_SUPPLIED_COPY else OFFICIAL_SOURCE_CLASS
-    )
-    if policy.source_class != expected_class:
+    if policy.source_class != expected_source_class(channel):
         raise GukgamWitnessClaimError("witness acquisition channel contradicts the source policy")
     locator = observation.normalized.get("locator")
     if (
@@ -382,7 +391,7 @@ def build_gukgam_witness_projection(
             category = _qualifier(claim, "category")
             adoption_date = claim.qualifiers.get("adoption_date")
             channel = _qualifier(claim, "acquisition_channel")
-            if channel not in (CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY):
+            if channel not in ACQUISITION_CHANNELS:
                 raise GukgamWitnessClaimError("witness projection acquisition channel is invalid")
             if category not in WITNESS_CATEGORIES:
                 raise GukgamWitnessClaimError("witness projection category is invalid")
@@ -414,12 +423,7 @@ def build_gukgam_witness_projection(
                 if (
                     found is None
                     or policy is None
-                    or policy.source_class
-                    != (
-                        OWNER_COPY_SOURCE_CLASS
-                        if channel == CHANNEL_OWNER_SUPPLIED_COPY
-                        else OFFICIAL_SOURCE_CLASS
-                    )
+                    or policy.source_class != expected_source_class(channel)
                     or item.snapshot_id is None
                     or item.feeder_observation_id is None
                     or item.excerpt is not None
