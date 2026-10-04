@@ -154,16 +154,22 @@ If the identity remains ambiguous, keep `REVIEW`/`ENTITY_UNRESOLVED` rather than
 
 ## Current implementation boundary
 
-The first implementation is deliberately offline and deterministic because there is no
-single stable named-person API covering all Korean central and local civil-service moves:
+The normalized civil-service semantics remain deterministic and source-specific because there is
+no single stable named-person API covering all Korean central and local civil-service moves.
 
-- normalized fixture parser for official named personnel rows
-- normalized fixture parser for retired-public-official employment-review rows
-- mapping into the existing `IdentityCandidate` only when the public name is usable
-- canonical contracts for `CivilServiceCareerEpisode` and `EmploymentReviewEvent`
-- no automatic database upsert
-- no broad government-site crawler
+Implemented boundaries now include:
 
-Every future live source must have its own SourcePolicy and source-specific parser. The next
-source adapter should target one stable official named-person feed/notice family and reuse
+- normalized fixture parser for official named personnel rows;
+- normalized fixture parser for retired-public-official employment-review rows;
+- the MPM `국가주요직위명부` observation-only feeder for the exact 2026-04-30 snapshot;
+- mapping into the existing `IdentityCandidate` only when a separate reviewed path authorizes it;
+- canonical contracts for `CivilServiceCareerEpisode` and `EmploymentReviewEvent`;
+- no automatic Person/CareerEpisode/Claim upsert from the MPM roster;
+- no broad government-site crawler.
+
+The MPM feeder intentionally persists all provider-declared key-position rows as source
+observations with empty identity hints. Its office-phone column is discarded before normalization.
+See `MPM_KEY_POSITIONS_FEEDER.md`.
+
+Every additional live source must keep its own SourcePolicy and source-specific parser and reuse
 these semantics instead of creating another career model.
