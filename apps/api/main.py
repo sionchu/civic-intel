@@ -43,6 +43,10 @@ from packages.rendering.gukgam_schedule_review import (
     GukgamScheduleReviewReport,
     load_current_gukgam_schedule_review,
 )
+from packages.rendering.gukgam_witness_claim import (
+    GUKGAM_WITNESS_PREDICATE,
+    build_gukgam_witness_projection,
+)
 from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
 from packages.rendering.profile_projection import (
     build_people_discovery_projection,
@@ -547,6 +551,37 @@ def create_app(
             contexts,
             sources=source_map,
             policies=policy_map,
+        ).to_dict()
+
+    @app.get("/gukgam/2026/witnesses")
+    def gukgam_2026_witnesses() -> dict:
+        current_organizations = target.public_organizations()
+        contexts = target.published_organization_claim_contexts(
+            item.id for item in current_organizations
+        )
+        witness_contexts = {}
+        all_evidence: list[ClaimEvidence] = []
+        for organization_id, (claims, evidence_by_claim) in contexts.items():
+            candidate_claims = tuple(
+                claim for claim in claims if claim.predicate == GUKGAM_WITNESS_PREDICATE
+            )
+            if not candidate_claims:
+                continue
+            candidate_evidence = {
+                claim.id: evidence_by_claim.get(claim.id, ()) for claim in candidate_claims
+            }
+            witness_contexts[organization_id] = (candidate_claims, candidate_evidence)
+            all_evidence.extend(
+                evidence for items in candidate_evidence.values() for evidence in items
+            )
+        source_map = target.sources(evidence.source_id for evidence in all_evidence)
+        policy_map = target.policies(source.policy_id for source in source_map.values())
+        return build_gukgam_witness_projection(
+            current_organizations,
+            witness_contexts,
+            sources=source_map,
+            policies=policy_map,
+            year=2026,
         ).to_dict()
 
     @app.get("/people/{person_id}/claims")

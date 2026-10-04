@@ -1,0 +1,131 @@
+{
+  "schema": "gukgam-witness-source-inventory.v1",
+  "as_of_date": "2026-10-04",
+  "scope": "2026 국정감사 증인 등 출석요구의 건 — official adopted witness/reference-person lists",
+  "method": [
+    "Checked https://<host>/robots.txt for every committee host on ports 443 and 444 (User-agent: *).",
+    "Every reachable host returns 'Disallow: /' with only 'Allow: /$'. Committee board, attachment and preview paths are therefore NOT fetched automatically.",
+    "Only the committee home page '/' (explicitly allowed) was read, solely to learn the public menu structure for operator navigation. No board, post or attachment path was requested.",
+    "health.na.go.kr:443/robots.txt answered HTTP 400 (no usable policy, not treated as permission); health.na.go.kr:444/robots.txt answered the same Disallow rule.",
+    "News adoption reports are discovery-only; no name was taken from news.",
+    "열린국회정보 has no witness dataset (prior finding, not re-probed)."
+  ],
+  "robots_rule_observed": "User-agent: * / Disallow: / / Allow: /$",
+  "open_assembly_api": "no_witness_dataset",
+  "committees": [
+    {
+      "committee": "국회운영위원회",
+      "host": "steering.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://steering.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": null,
+      "adoption_date_basis": "NOT_DETERMINED",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "정무위원회",
+      "host": "policy.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://policy.na.go.kr/",
+      "candidate_menus": ["국정감사", "자료실", "보도자료", "회의록", "위원회 일정"],
+      "adoption_date": "2026-10-01",
+      "adoption_date_basis": "NEWS_DISCOVERY_ONLY_APPROXIMATE",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "재정경제기획위원회",
+      "host": "finance.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://finance.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": "2026-09-28",
+      "adoption_date_basis": "NEWS_DISCOVERY_ONLY",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "행정안전위원회",
+      "host": "adminhom.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://adminhom.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": "2026-09-28",
+      "adoption_date_basis": "NEWS_DISCOVERY_ONLY",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "보건복지위원회",
+      "host": "health.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://health.na.go.kr/",
+      "candidate_menus": ["국정감사", "자료실", "보도자료", "회의록", "위원회 일정"],
+      "adoption_date": "2026-09-29",
+      "adoption_date_basis": "NEWS_DISCOVERY_ONLY",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "농림축산식품해양수산위원회",
+      "host": "agri.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://agri.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": null,
+      "adoption_date_basis": "NOT_DETERMINED",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "과학기술정보방송통신위원회",
+      "host": "science.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://science.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": null,
+      "adoption_date_basis": "NOT_DETERMINED",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "국방위원회",
+      "host": "defense.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://defense.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": null,
+      "adoption_date_basis": "NOT_DETERMINED",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    },
+    {
+      "committee": "문화체육관광위원회",
+      "host": "culture.na.go.kr",
+      "page_url": null,
+      "attachment_url": null,
+      "operator_start_url": "https://culture.na.go.kr/",
+      "candidate_menus": ["국정감사>참고자료 (BCMT2004)", "자료실 (cmtEstn)", "보도자료 (B0000051)", "회의록", "위원회 일정"],
+      "adoption_date": null,
+      "adoption_date_basis": "NOT_DETERMINED",
+      "robots_allowed": false,
+      "status": "MANUAL_DOWNLOAD_REQUIRED"
+    }
+  ],
+  "status_semantics": {
+    "FETCHED": "Exact official bytes were obtained by an automation-permitted route.",
+    "MANUAL_DOWNLOAD_REQUIRED": "The official location is robots-blocked for automation or not discoverable without fetching blocked paths; an operator must locate and download the exact attachment in a browser. page_url/attachment_url are null because inventing them is prohibited.",
+    "NOT_FOUND": "No official list exists or could be located (none recorded here: absence of a located URL is not evidence that no list exists)."
+  },
+  "fetched_count": 0
+}

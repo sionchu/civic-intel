@@ -1,0 +1,78 @@
+{
+  "schema": "gukgam-witness-reviewed-packet.v2",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "합성시험위원회",
+    "acquisition_channel": "OWNER_SUPPLIED_COPY",
+    "artifact_format": "HWP",
+    "artifact_sha256": "429475ee97ffd2492ea1985751c53475c44c0624ff9eb71bccbf1fd0f23930a4",
+    "artifact_filename": null,
+    "page_url": null,
+    "attachment_url": null,
+    "received_via": "SYNTHETIC messenger file",
+    "received_at": "2026-10-04",
+    "list_title": "SYNTHETIC 국정감사 증인 ․ 참고인 명단",
+    "list_version": "OWNER-COPY-2026-10-04",
+    "adoption_date": null,
+    "assumed_year": {
+      "year": 2026,
+      "basis": "2026년도 국정감사 명단"
+    },
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "declared_totals": {
+    "증인": 2,
+    "참고인": 1
+  },
+  "rows": [
+    {
+      "row_number": 1,
+      "category": "증인",
+      "name": "합성증인 갑",
+      "affiliation_title": "합성기관 대표",
+      "list_section": null,
+      "attendance_date_text": "10. 7.",
+      "attendance_date": null,
+      "target_institution": null,
+      "request_reason_text": "합성 신청사유 문구",
+      "locator": {
+        "page_number": null,
+        "table_index": 1,
+        "table_row": 1
+      }
+    },
+    {
+      "row_number": 2,
+      "category": "증인",
+      "name": "합성증인 을",
+      "affiliation_title": "합성공단 이사장",
+      "list_section": null,
+      "attendance_date_text": "10. 12.",
+      "attendance_date": null,
+      "target_institution": "합성공단",
+      "request_reason_text": null,
+      "locator": {
+        "page_number": null,
+        "table_index": 1,
+        "table_row": 2
+      }
+    },
+    {
+      "row_number": 3,
+      "category": "참고인",
+      "name": "합성참고인 병",
+      "affiliation_title": null,
+      "list_section": null,
+      "attendance_date_text": "10. 7.",
+      "attendance_date": null,
+      "target_institution": null,
+      "request_reason_text": null,
+      "locator": {
+        "page_number": null,
+        "table_index": 1,
+        "table_row": 3
+      }
+    }
+  ]
+}

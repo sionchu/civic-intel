@@ -134,6 +134,49 @@ export type GukgamCommitteeProjection = {
   limitations: string[];
 };
 
+export type GukgamWitnessProjectionItem = {
+  committee_name: string;
+  category: "증인" | "참고인";
+  name: string;
+  affiliation_title: string | null;
+  list_section: string | null;
+  attendance_date_text: string | null;
+  attendance_date: string | null;
+  attendance_year_basis: string | null;
+  list_title: string;
+  list_version: string;
+  adoption_date: string | null;
+  row_number: number;
+  page_number: number | null;
+  table_index: number;
+  table_row: number;
+  subject_scope: "COMMITTEE" | "TARGET_INSTITUTION";
+  organization: {
+    id: string;
+    name: string;
+  };
+  acquisition_channel: "OFFICIAL_SITE" | "OWNER_SUPPLIED_COPY";
+  provenance_label: string | null;
+  source_url: string | null;
+  claim_id: string;
+  evidence_ids: string[];
+  source_ids: string[];
+  snapshot_ids: string[];
+  observation_ids: string[];
+};
+
+export type GukgamWitnessProjection = {
+  semantics: "PUBLIC_CLAIM_BACKED_GUKGAM_WITNESS_LISTS_V1";
+  coverage: "BOUNDED_INCOMPLETE_PUBLISHED_CLAIMS_ONLY";
+  identity_semantics: "SOURCE_LISTED_TEXT_NO_PERSON_LINK";
+  year: number;
+  witness_count: number;
+  reference_person_count: number;
+  committee_count: number;
+  items: GukgamWitnessProjectionItem[];
+  limitations: string[];
+};
+
 export type ChangeTracePoint = {
   claim_id: string;
   order_key: string;

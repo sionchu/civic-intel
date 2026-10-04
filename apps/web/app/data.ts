@@ -3,6 +3,7 @@ import type {
   ApiResult,
   GukgamCommitteeProjection,
   GukgamTargetProjection,
+  GukgamWitnessProjection,
   MoneyProjection,
   OntologyGraph,
   Organization,
@@ -79,6 +80,9 @@ export function getGukgamTargets(): Promise<ApiResult<GukgamTargetProjection>> {
 }
 export function getGukgamCommittees(): Promise<ApiResult<GukgamCommitteeProjection>> {
   return getJson("/gukgam/2026/committees");
+}
+export function getGukgamWitnesses(): Promise<ApiResult<GukgamWitnessProjection>> {
+  return getJson("/gukgam/2026/witnesses");
 }
 export function getOrganizationMoney(
   id: string,
