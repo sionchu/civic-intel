@@ -433,6 +433,21 @@ def test_hwp_locator_page_may_be_given_and_tuple_stays_unique() -> None:
     assert parse_reviewed_gukgam_witness_packet(raw).rows[0].locator.page_number == 1
 
 
+def test_xlsx_artifact_is_pageless_with_sheet_row_locators() -> None:
+    raw = copy.deepcopy(payload("REVIEW_REQUIRED"))
+    raw["source"]["artifact_format"] = "XLSX"
+    for offset, row in enumerate(raw["rows"], 5):
+        row["locator"] = {"page_number": None, "table_index": 1, "table_row": offset}
+    packet = parse_reviewed_gukgam_witness_packet(raw)
+    assert packet.source.artifact_format == "XLSX"
+    assert all(r.locator.page_number is None for r in packet.rows)
+    assert [r.locator.table_row for r in packet.rows] == list(range(5, 5 + len(packet.rows)))
+    # a PDF still requires a page number
+    raw["source"]["artifact_format"] = "PDF"
+    with pytest.raises(GukgamWitnessPacketError, match="required for PDF"):
+        parse_reviewed_gukgam_witness_packet(raw)
+
+
 def test_owner_copy_capture_requires_review_and_uses_unfetchable_placeholder() -> None:
     with pytest.raises(GukgamWitnessImportError, match="HUMAN_REVIEWED"):
         build_gukgam_witness_capture(

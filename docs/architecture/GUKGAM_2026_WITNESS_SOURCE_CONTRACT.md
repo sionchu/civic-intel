@@ -58,10 +58,11 @@ and carries a limitation line stating that the official location is unconfirmed.
 
 ### Artifact formats and locators
 
-`artifact_format` is `PDF`, `HWP` or `HWPX`. A locator is always
-`{page_number, table_index, table_row}`. HWP/HWPX documents have no stable page numbers, so for
+`artifact_format` is `PDF`, `HWP`, `HWPX` or `XLSX`. A locator is always
+`{page_number, table_index, table_row}`. HWP/HWPX/XLSX documents have no stable page numbers, so for
 those formats `page_number` may be null provided `table_index` and `table_row` are present (both
-always required). For `PDF` `page_number` is required. Locator tuples must be unique within a
+always required; for XLSX `table_index` is the 1-based sheet number and `table_row` the sheet row).
+For `PDF` `page_number` is required. Locator tuples must be unique within a
 packet. The projection shows `표 {table_index} {table_row}행` when there is no page number.
 
 ### Dates printed without a year
