@@ -1,25 +1,39 @@
 # HANDOFF
 
-## Current state — 2026-10-04 (Gukgam launch window; audit starts 2026-10-06)
+## Current state — 2026-10-04 evening (Mac offline; Windows interim dev)
 
-- Merged: #161 review telemetry, #162 `/gukgam/2026` audit schedule view (`5ab146f`), #163 hosted
-  snapshot refresh fallback. This PR (#164) adds the reviewed MOIS Organization commit worker.
-- Serving (owner decision): the Mac mini serves the public beta directly from the canonical DB.
-  launchd `kr.civicintel.api` (127.0.0.1:8100, worktree `/Users/lee/Projects/civic-intel-deploy`
-  at `5ab146f`) and `kr.civicintel.web` (127.0.0.1:3200, standalone build); Tailscale Funnel
-  `https://macmini.taild017a0.ts.net` → 3200 only. API/DB are not exposed. noindex; operator
-  console off. To update: `git -C /Users/lee/Projects/civic-intel-deploy checkout --detach <sha>`,
-  rebuild web, `launchctl kickstart -k gui/$UID/kr.civicintel.{api,web}`.
-- Owner-approved data actions (batch approval, receipts under `~/Developer/civic-intel-serve/approvals`):
-  41 Gukgam Claims committed (targets 110 → 151, committees 7); 70 MOIS Organizations created
-  (Organizations 374 → 444); orphan ALIO SourceRun closed as FAILED. Backups under
-  `~/Developer/civic-intel-db-refresh/backups`.
-- Pending owner decision: follow-on 74-item Gukgam Claim DRAFT for the new MOIS Organizations
-  (manifest `0bbb7d5d…cada`, preflight 74/74 PASS, not committed).
-- Railway: a temporary staging Postgres TCP proxy (`switchback.proxy.rlwy.net:23228`) still has
-  an unapplied staged removal (MCP accept-deploy timed out); remove it in the dashboard.
-- The superseded pre-format #161 copy in the canonical checkout was stashed
-  (`git stash list`), and the checkout is on `master`.
+The Mac mini (canonical DB + public host) lost its network path on 2026-10-04 (Tailscale only via
+far DERP relays, Desktop Commander offline). Code work continued on the Windows clone
+`C:\Users\getch\civic-intel-win` (worktrees `C:\Users\getch\ci-wt-*`). No DB changes happened
+after the Mac went offline.
+
+Merged to master since the last Mac deploy (`c30147d` is what the Mac currently serves):
+#170 comprehensive-schedule inventory (discovery only), #172 read-latency fix, #176 nine reviewed
+plan packets (REVIEW_REQUIRED fixtures), #174 witness lane v1 (HWP/XLSX locators, owner-supplied
+copies, committee-subject gate), #173 all 17 Gukgam committees listed with roster-only coverage.
+
+Acquisition outside git (Windows `C:\Users\getch\civic-intel-acquisition\gukgam-2026\`): 51
+official files captured with Aside (sidecars + `acquisition-2026-10-04.json`), 12 official
+witness-list packets in `packets\` (all parse under v2, REVIEW_REQUIRED, ~1,553 rows incl.
+기관증인) plus the owner-supplied 교육위 copy (`education-witness-v2.json`, 23 rows). Not posted
+officially yet: 운영/행안/문체/기후노동/국토 witness lists, 성평등가족 plan and list; 교육/법사/재경
+have press summaries only.
+
+### Resume queue when the Mac is back (in order)
+1. Restore Mac networking; confirm Desktop Commander online and `pmset` sleep disabled.
+2. Copy `C:\Users\getch\civic-intel-acquisition\gukgam-2026` to
+   `/Users/lee/Developer/civic-intel-acquisition/gukgam-2026` and re-verify every sidecar sha256.
+3. Deploy master: `/Users/lee/Developer/civic-intel-serve/deploy-master.sh`; re-time
+   `/gukgam/2026` (was ~4 s warm) and diff the four read APIs against the previous build.
+4. Human review → `HUMAN_REVIEWED` for the nine plan packets; plan importer dry-run → `--commit`
+   (observations only); then the existing binding-review → Organization manifest → Claim batch
+   path, each step with its own approval.
+5. Owner decision: create 17 committee Organizations (reviewed manifest) so committee-level
+   witness Claims have a subject. Then review witness packets → import observations → Claims
+   → publication approval. 신문요지 stays stored-not-published unless the policy changes.
+6. Pending owner decisions carried over: 74-item MOIS-bound Gukgam Claim batch (`0bbb7d5d…`,
+   preflight PASS), publication of 2,688 ALIO person-role Claims, removal of the Railway staging
+   Postgres TCP proxy (`switchback.proxy.rlwy.net:23228`).
 
 ## Current authority — 2026-09-30
 
