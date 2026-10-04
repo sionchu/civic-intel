@@ -298,6 +298,8 @@ def build_gukgam_audit_target_projection(
         if organization.superseded_at is None
     }
     items: list[GukgamAuditTargetProjectionItem] = []
+    source_map = dict(sources)
+    policy_map = dict(policies)
     for organization_id, (claims, evidence_by_claim) in contexts.items():
         organization = organization_by_id.get(organization_id)
         if organization is None:
@@ -318,8 +320,8 @@ def build_gukgam_audit_target_projection(
                 claim,
                 organization,
                 evidence,
-                dict(sources),
-                dict(policies),
+                source_map,
+                policy_map,
             )
             if not gate.publishable:
                 raise GukgamOrganizationClaimError(

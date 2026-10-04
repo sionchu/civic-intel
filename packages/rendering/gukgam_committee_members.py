@@ -20,6 +20,8 @@ GUKGAM_COMMITTEE_ROSTER_SEMANTICS = "MEMBER_ROSTER_SNAPSHOT_NOT_AUDIT_DAY_ATTEND
 _COMMITTEE_PREDICATE = "ASSEMBLY_COMMITTEES"
 _PARTY_PREDICATE = "ASSEMBLY_PARTY"
 _PARTY_FIELD = {_COMMITTEE_PREDICATE: "committees", _PARTY_PREDICATE: "party"}
+# The only Claim predicates the projection reads; callers may narrow their Claim read to these.
+GUKGAM_COMMITTEE_ROSTER_PREDICATES = (_COMMITTEE_PREDICATE, _PARTY_PREDICATE)
 
 
 _LIMITATIONS = (
@@ -140,6 +142,8 @@ def build_gukgam_committee_members_projection(
         name: [] for name in target_counts
     }
 
+    source_map = dict(sources)
+    policy_map = dict(policies)
     for person in people:
         if person.identity_status != IdentityStatus.RESOLVED or person.superseded_at is not None:
             continue
@@ -154,7 +158,7 @@ def build_gukgam_committee_members_projection(
                 continue
             evidence = list(evidence_by_claim.get(claim.id, ()))
             gate = validate_claim_publication(
-                claim, person, evidence, dict(sources), dict(policies)
+                claim, person, evidence, source_map, policy_map
             )
             if not gate.publishable:
                 continue
