@@ -240,8 +240,9 @@ export default async function Gukgam2026Page({
             <h2 id="gukgam-committees-title">위원회별 감사 위원</h2>
           </div>
           <p>
-            공개된 피감대상 Claim이 있는 위원회마다, 국회 명부 Claim에 그 위원회가 기재된 현재 공개 의원을
-            보여줍니다. 위원 이름은 인물 기록으로, 근거는 해당 Claim으로 이어집니다.
+            2026 국정감사 대상 위원회마다, 국회 명부 Claim에 그 위원회가 기재된 현재 공개 의원을
+            보여줍니다. 공개된 피감대상 Claim이 아직 없는 위원회는 위원 명단만 표시합니다.
+            위원 이름은 인물 기록으로, 근거는 해당 Claim으로 이어집니다.
           </p>
         </div>
         {committeesResult.state === "error" ? (
@@ -266,8 +267,18 @@ export default async function Gukgam2026Page({
                 <li key={committee.committee_name} id={committeeAnchor(committee.committee_name)}>
                   <div className="committee-index-heading">
                     <h3>{committee.committee_name}</h3>
-                    <span>피감대상 {committee.target_count}건 · 위원 {committee.member_count}명</span>
+                    <span>
+                      {committee.target_claim_coverage === "PUBLISHED"
+                        ? `피감대상 ${committee.target_count}건`
+                        : "피감대상 미공개"}
+                      {" · "}위원 {committee.member_count}명
+                    </span>
                   </div>
+                  {committee.target_claim_coverage === "NOT_YET_PUBLISHED" && (
+                    <p className="committee-targets-pending" role="note">
+                      피감대상 공개 기록 준비 중 — 위원 명단만 표시
+                    </p>
+                  )}
                   <CommitteeMembers committee={committee} label="위원 명단" />
                 </li>
               ))}

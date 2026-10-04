@@ -7,6 +7,7 @@ from uuid import UUID
 from packages.domain.contracts import Claim, ClaimEvidence, Person, Source, SourcePolicy
 from packages.domain.enums import EpistemicStatus, IdentityStatus, PublicationStatus
 from packages.rendering.governance_ontology import split_assembly_committee_names
+from packages.rendering.gukgam_2026_committees import GUKGAM_2026_COMMITTEE_NAMES
 from packages.rendering.gukgam_organization_claim import GukgamAuditTargetProjection
 from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
@@ -31,8 +32,13 @@ _LIMITATIONS = (
     ),
     "Committee membership does not mean the member questioned any audited institution.",
     (
-        "Only committee names used by published Gukgam target Claims are listed, matched "
-        "by exact official name; former or renamed committee names are not merged."
+        "Only the reviewed 2026 Gukgam committee list and committee names used by published "
+        "Gukgam target Claims are listed, matched by exact official name; former or renamed "
+        "committee names are not merged."
+    ),
+    (
+        "Committees without published audit-target Claims are listed for their member roster "
+        "only; their audit targets are not yet published."
     ),
     "Coverage is bounded and incomplete; a missing member is not evidence of non-membership.",
 )
@@ -75,6 +81,7 @@ class GukgamCommitteeMembers:
         return {
             "committee_name": self.committee_name,
             "target_count": self.target_count,
+            "target_claim_coverage": "PUBLISHED" if self.target_count > 0 else "NOT_YET_PUBLISHED",
             "member_count": len(self.members),
             "members": [member.to_dict() for member in self.members],
         }
@@ -132,15 +139,15 @@ def build_gukgam_committee_members_projection(
     sources: Mapping[UUID, Source],
     policies: Mapping[UUID, SourcePolicy],
 ) -> GukgamCommitteeMembersProjection:
-    """List public Assembly members of the committees named by published Gukgam targets."""
+    """List public Assembly members of the reviewed 2026 committees and any target committees."""
 
     target_counts: dict[str, int] = {}
     for item in targets.items:
         target_counts[item.committee_name] = target_counts.get(item.committee_name, 0) + 1
 
-    members_by_committee: dict[str, list[GukgamCommitteeMember]] = {
-        name: [] for name in target_counts
-    }
+    # Scope = reviewed committee list (presentation only) plus committees named by targets.
+    scope = sorted({*GUKGAM_2026_COMMITTEE_NAMES, *target_counts})
+    members_by_committee: dict[str, list[GukgamCommitteeMember]] = {name: [] for name in scope}
 
     source_map = dict(sources)
     policy_map = dict(policies)
@@ -196,7 +203,7 @@ def build_gukgam_committee_members_projection(
     committees = tuple(
         GukgamCommitteeMembers(
             committee_name=name,
-            target_count=target_counts[name],
+            target_count=target_counts.get(name, 0),
             members=tuple(
                 sorted(
                     members_by_committee[name],
@@ -204,6 +211,6 @@ def build_gukgam_committee_members_projection(
                 )
             ),
         )
-        for name in sorted(target_counts)
+        for name in scope
     )
     return GukgamCommitteeMembersProjection(year=targets.year, committees=committees)
