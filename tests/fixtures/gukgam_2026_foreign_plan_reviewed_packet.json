@@ -1,0 +1,67 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "외교통일위원회",
+    "ntt_id": "3078713",
+    "detail_url": "https://uft.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078713&menuNo=2000030",
+    "title": "2026년도 국정감사계획서 및 기관증인 명단",
+    "published_date": "2026-09-17",
+    "atch_file_id": "4bb3f008d44e43b5968f2dee6b627f14",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사계획서_외교통일위원회.pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-06",
+      "time_text": "10:00",
+      "venue": "국회 외교통일위원회",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "외교부",
+        "한국국제협력단",
+        "한국국제교류재단",
+        "한·아프리카재단",
+        "재외동포청"
+      ],
+      "page_number": 10
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-07",
+      "time_text": "10:00",
+      "venue": "통일부 남북회담본부",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "통일부",
+        "북한이탈주민지원재단",
+        "남북교류협력지원협회",
+        "민주평화통일자문회의사무처"
+      ],
+      "page_number": 10
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-27",
+      "time_text": "10:00",
+      "venue": "국회 외교통일위원회",
+      "section": "감사일정 및 감사장소 / 종합감사",
+      "audited_targets": [
+        "외교부",
+        "한국국제협력단",
+        "한국국제교류재단",
+        "한·아프리카재단",
+        "통일부",
+        "북한이탈주민지원재단",
+        "남북교류협력지원협회",
+        "민주평화통일자문회의사무처",
+        "재외동포청"
+      ],
+      "page_number": 12
+    }
+  ],
+  "witness_rows_included": false
+}

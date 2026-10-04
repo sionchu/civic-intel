@@ -1,0 +1,257 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "법제사법위원회",
+    "ntt_id": "3078717",
+    "detail_url": "https://legislation.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078717&menuNo=2000030",
+    "title": "2026년도 국정감사 계획서",
+    "published_date": "2026-09-21",
+    "atch_file_id": "027d53b9396c4eb588e3efe30ba30f00",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사계획서.pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-06",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대법원(법원행정처)",
+        "사법연수원",
+        "사법정책연구원",
+        "법원공무원교육원",
+        "법원도서관",
+        "양형위원회",
+        "윤리감사관"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-08",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "법무부",
+        "대한법률구조공단",
+        "정부법무공단",
+        "한국법무보호복지공단"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": "10:00",
+      "venue": "감사원",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "감사원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "헌법재판소(사무처)",
+        "헌법재판연구원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-13",
+      "time_text": "14:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "고위공직자범죄수사처"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-15",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "법제처"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-15",
+      "time_text": "14:00",
+      "venue": "국방부",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "군사법원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-16",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "서울고등법원",
+        "수원고등법원",
+        "서울중앙지방법원",
+        "서울가정법원",
+        "서울행정법원",
+        "서울회생법원",
+        "서울동부지방법원",
+        "서울남부지방법원",
+        "서울북부지방법원",
+        "서울서부지방법원",
+        "의정부지방법원",
+        "인천지방법원",
+        "인천가정법원",
+        "춘천지방법원",
+        "수원지방법원",
+        "수원가정법원",
+        "수원회생법원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 9,
+      "audit_date": "2026-10-19",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "서울고등검찰청",
+        "수원고등검찰청",
+        "서울중앙지방검찰청",
+        "서울동부지방검찰청",
+        "서울남부지방검찰청",
+        "서울북부지방검찰청",
+        "서울서부지방검찰청",
+        "의정부지방검찰청",
+        "인천지방검찰청",
+        "춘천지방검찰청",
+        "수원지방검찰청"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 10,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00",
+      "venue": "광주고등법원 (지방1반)",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대전고등법원",
+        "광주고등법원",
+        "특허법원",
+        "대전지방법원",
+        "대전가정법원",
+        "대전회생법원",
+        "청주지방법원",
+        "광주지방법원",
+        "광주가정법원",
+        "광주회생법원",
+        "전주지방법원",
+        "제주지방법원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 11,
+      "audit_date": "2026-10-20",
+      "time_text": "14:00",
+      "venue": "광주고등검찰청 (지방1반)",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대전고등검찰청",
+        "광주고등검찰청",
+        "대전지방검찰청",
+        "청주지방검찰청",
+        "광주지방검찰청",
+        "전주지방검찰청",
+        "제주지방검찰청"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 12,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00",
+      "venue": "대구고등법원 (지방2반)",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대구고등법원",
+        "부산고등법원",
+        "대구지방법원",
+        "대구가정법원",
+        "대구회생법원",
+        "부산지방법원",
+        "부산가정법원",
+        "부산회생법원",
+        "울산지방법원",
+        "울산가정법원",
+        "창원지방법원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 13,
+      "audit_date": "2026-10-20",
+      "time_text": "14:00",
+      "venue": "대구고등검찰청 (지방2반)",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대구고등검찰청",
+        "부산고등검찰청",
+        "대구지방검찰청",
+        "부산지방검찰청",
+        "울산지방검찰청",
+        "창원지방검찰청"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 14,
+      "audit_date": "2026-10-22",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대검찰청"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 15,
+      "audit_date": "2026-10-26",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정 및 장소 / 종합감사",
+      "audited_targets": [
+        "법무부",
+        "법제처",
+        "감사원",
+        "고위공직자범죄수사처",
+        "헌법재판소(사무처)",
+        "대법원(법원행정처)"
+      ],
+      "page_number": 9
+    }
+  ],
+  "witness_rows_included": false
+}

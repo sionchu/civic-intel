@@ -1,0 +1,128 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "정무위원회",
+    "ntt_id": "3078726",
+    "detail_url": "https://policy.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078726&menuNo=2000030",
+    "title": "2026년도 국정감사 계획서",
+    "published_date": "2026-09-28",
+    "atch_file_id": "ed6a5b1bc1ba4fa6a19883e1b5a41a6d",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사계획서.pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-06",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "국가보훈부",
+        "한국보훈복지의료공단",
+        "독립기념관",
+        "88관광개발(주)",
+        "국민권익위원회"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-08",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "금융위원회",
+        "한국산업은행",
+        "중소기업은행"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "공정거래위원회",
+        "한국공정거래조정원",
+        "한국소비자원"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "국무조정실",
+        "국무총리비서실",
+        "경제·인문사회연구회 및 소관 출연연구기관(24개)",
+        "개인정보보호위원회"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-15",
+      "time_text": null,
+      "venue": "부산국제금융센터 (부산)",
+      "section": "감사일정 및 감사장소 / 현장국감",
+      "audited_targets": [
+        "한국자산관리공사",
+        "한국주택금융공사",
+        "신용보증기금"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-19",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "금융감독원",
+        "예금보험공사",
+        "서민금융진흥원"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-21",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소 / 종합감사 - 비금융",
+      "audited_targets": [
+        "국가보훈부",
+        "국무조정실",
+        "국무총리비서실",
+        "공정거래위원회",
+        "국민권익위원회",
+        "개인정보보호위원회 등"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-22",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 감사장소 / 종합감사 - 금융",
+      "audited_targets": [
+        "금융위원회",
+        "금융감독원 등"
+      ],
+      "page_number": 6
+    }
+  ],
+  "witness_rows_included": false
+}

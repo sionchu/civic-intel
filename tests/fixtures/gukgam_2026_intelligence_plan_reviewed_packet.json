@@ -1,0 +1,74 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "정보위원회",
+    "ntt_id": "3078738",
+    "detail_url": "https://intelligence.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078738&menuNo=2000030",
+    "title": "2026년도 국정감사 계획서",
+    "published_date": "2026-09-30",
+    "atch_file_id": "062df033a3b148f08d46a80fa265cea3",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사 계획서_의결.pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-28",
+      "time_text": "10:00",
+      "venue": "국회 정보위원회 전체회의장 (본관 647호)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "국방정보본부(정보사령부, 777사령부 포함)"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-28",
+      "time_text": "14:00",
+      "venue": "국회 정보위원회 전체회의장 (본관 647호)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "경찰청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-29",
+      "time_text": "10:00",
+      "venue": "국가정보원 국정감사장",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "국가정보원"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-30",
+      "time_text": "10:00",
+      "venue": "국방방첩본부 국정감사장",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "국방방첩본부"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-30",
+      "time_text": "국방방첩본부 감사 종료 후",
+      "venue": "국방방첩본부 국정감사장",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "사이버작전사령부"
+      ],
+      "page_number": 6
+    }
+  ],
+  "witness_rows_included": false
+}
