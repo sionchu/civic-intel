@@ -40,6 +40,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Assembly meeting universe feeder](architecture/ASSEMBLY_MEETING_UNIVERSE_FEEDER.md)
 - [Assembly meeting universe source v0](exec-plans/completed/assembly-meeting-universe-v0.md)
 - [Assembly plenary roll-call vote feeder](architecture/ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md)
+- [Assembly minutes statement feeder](architecture/ASSEMBLY_MINUTES_STATEMENT_FEEDER.md)
 - [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)

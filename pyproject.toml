@@ -15,6 +15,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["mypy>=1.11,<2", "pytest>=8.3,<9", "ruff>=0.6,<1"]
+# Text-layer extraction for the human-assisted Assembly minutes lane only (lazy import).
+minutes-pdf = ["pypdf>=5.9,<7"]
 
 [project.scripts]
 civic-quality = "packages.verification.quality:main"
@@ -36,6 +38,7 @@ civic-stage-alio-money = "workers.alio_business_expense:main"
 civic-import-alio-reviewed-claims = "workers.alio_reviewed_claim_import:main"
 civic-materialize-alio-safe-people = "workers.alio_safe_person_materialization:main"
 civic-materialize-nec-safe-people = "workers.nec_safe_person_materialization:main"
+civic-import-assembly-minutes = "workers.assembly_minutes_import:main"
 civic-import-gukgam-reviewed-claim = "workers.gukgam_reviewed_claim_import:main"
 civic-preflight-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch_manifest:main"
 civic-import-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch_commit:main"
