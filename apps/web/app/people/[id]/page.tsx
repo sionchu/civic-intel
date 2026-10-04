@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { latestRecordedAt, predicateLabel } from "../../claim-labels";
 import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getSource } from "../../data";
 import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
 import FactBox, { type FactRow } from "../../components/fact-box";
@@ -9,6 +10,7 @@ import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
 import PendingLanes from "../../components/pending-lanes";
 import ReadState from "../../components/read-state";
+import RecordHeader from "../../components/record-header";
 import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
 import { getReviewedPortrait } from "../../portrait";
@@ -17,13 +19,8 @@ import type { Claim, ProfileEntry } from "../../types";
 
 export const dynamic = "force-dynamic";
 
-const FACT_PREDICATES: [string, string][] = [
-  ["HELD_ROLE", "직위"],
-  ["ASSEMBLY_PARTY", "정당"],
-  ["ASSEMBLY_DISTRICT", "지역구"],
-  ["ASSEMBLY_COMMITTEES", "소속 위원회"],
-  ["ASSEMBLY_REELECTION", "선수"],
-];
+// Identity-header facts first, in this reading order; other published Claims follow.
+const FACT_PREDICATES = ["HELD_ROLE", "ASSEMBLY_PARTY", "ASSEMBLY_DISTRICT", "ASSEMBLY_COMMITTEES", "ASSEMBLY_REELECTION"];
 
 export async function generateMetadata({
   params,
@@ -86,16 +83,16 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const claims = person.claims ?? [];
   const claimById = new Map(claims.map((claim) => [claim.id, claim]));
   const publishedClaims = claims.filter((claim) => claim.publication_status === "PUBLISHED");
-  const knownPredicates = new Set(FACT_PREDICATES.map(([predicate]) => predicate));
+  const knownPredicates = new Set(FACT_PREDICATES);
   const factRows: FactRow[] = [
-    ...FACT_PREDICATES.flatMap(([predicate, label]) =>
+    ...FACT_PREDICATES.flatMap((predicate) =>
       publishedClaims.filter((claim) => claim.predicate === predicate).map((claim) => ({
-        key: claim.id, label, value: claim.object_text, claim,
+        key: claim.id, label: predicateLabel(predicate), value: claim.object_text, claim,
       })),
     ),
     ...publishedClaims
       .filter((claim) => !knownPredicates.has(claim.predicate) && claim.predicate !== "ASSEMBLY_BILL_PARTICIPATION")
-      .map((claim) => ({ key: claim.id, label: claim.predicate, value: claim.object_text, claim })),
+      .map((claim) => ({ key: claim.id, label: predicateLabel(claim.predicate), value: claim.object_text, claim })),
   ];
 
   const memberCommittees = committeesResult.state === "success"
@@ -215,45 +212,38 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   return (
     <div className="site-page profile-page">
       <Link href="/people" className="back-link"><span aria-hidden="true">←</span> People</Link>
-      <header className="profile-header">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Evidence profile / Resolved identity</div>
-          <div className="profile-title-row">
-            <h1>{person.canonical_name}</h1>
-            <span className={`status identity ${person.identity_status}`}>{person.identity_status}</span>
-          </div>
-          <p className="profile-lede">canonical identity에 연결된 published evidence를 현재 읽기 화면으로 투영합니다.</p>
-        </div>
-        {portrait ? (
-          <figure className="profile-portrait">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={portrait.local_path}
-              width={portrait.source_width}
-              height={portrait.source_height}
-              alt={`${person.canonical_name} 공개 사진`}
-            />
-            <figcaption className="portrait-credit">
-              <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · Wikimedia Commons</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
-              <details className="audit-details">
-                <summary>Portrait source audit</summary>
-                <small>
-                  File {portrait.file_title}<br />
-                  Revision {portrait.source_revision_timestamp}<br />
-                  SHA-1 {portrait.source_sha1}<br />
-                  {portrait.modification_note}
-                </small>
-              </details>
-            </figcaption>
-          </figure>
-        ) : (
-          <div className="profile-stamp" aria-hidden="true">
-            <span className="micro-label">PUBLIC RECORD</span>
-            <strong>CI</strong>
-            <span>directory / 01</span>
-          </div>
-        )}
-      </header>
+      <RecordHeader
+        kind="인물 기록"
+        name={person.canonical_name}
+        status={<span className={`status identity ${person.identity_status}`}>{person.identity_status}</span>}
+        lede="공개된 Claim과 근거만 모았습니다. 각 항목의 근거에서 출처와 기준일을 확인할 수 있습니다."
+        claimCount={publishedClaims.length}
+        sourceCount={sources.length}
+        recordedAt={latestRecordedAt(publishedClaims)}
+        aside={portrait ? (
+            <figure className="profile-portrait">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={portrait.local_path}
+                width={portrait.source_width}
+                height={portrait.source_height}
+                alt={`${person.canonical_name} 공개 사진`}
+              />
+              <figcaption className="portrait-credit">
+                <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · Wikimedia Commons</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
+                <details className="audit-details">
+                  <summary>Portrait source audit</summary>
+                  <small>
+                    File {portrait.file_title}<br />
+                    Revision {portrait.source_revision_timestamp}<br />
+                    SHA-1 {portrait.source_sha1}<br />
+                    {portrait.modification_note}
+                  </small>
+                </details>
+              </figcaption>
+            </figure>
+          ) : null}
+      />
 
       <OpenTargetDetails />
       <div className="profile-layout">
@@ -337,7 +327,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <section className="person-section" id="records" aria-labelledby="records-title">
             <div className="section-intro">
               <div><span className="eyebrow">Evidence profile</span><h2 id="records-title">기록</h2></div>
-              <p>published Claim/Evidence 범위와 아직 비어 있는 영역을 구분합니다.</p>
+              <p>공개된 기록과 아직 근거가 연결되지 않은 영역을 구분합니다.</p>
             </div>
             {profile ? (
               <>
@@ -350,7 +340,27 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                         <span className={`status ${section.status}`}>{section.status}</span>
                       </div>
                       {section.note && <p className="section-note">{section.note}</p>}
-                      {section.entries.map(renderEntry)}
+                      {(() => {
+                        // Coverage gaps without their own Claim read as one compact list, so absent
+                        // evidence never takes more room than the evidence itself.
+                        const gaps = section.entries.filter((entry) => entry.kind === "LIMITATION" && !entry.claim_id);
+                        const rest = section.entries.filter((entry) => !gaps.includes(entry));
+                        return (
+                          <>
+                            {rest.map(renderEntry)}
+                            {gaps.length > 0 && (
+                              <ul className="limitation-list" aria-label={`${section.label} 미확인 항목`}>
+                                {gaps.map((entry) => (
+                                  <li key={entry.id} id={`entry-${entry.id}`}>
+                                    <span>{entry.title}</span>
+                                    {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{entry.epistemic_status}</span>}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </>
+                        );
+                      })()}
                     </section>
                   ))}
                 </div>
@@ -375,7 +385,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             ) : (
               <p className="empty-state" role="status">
                 <span className="empty-state-mark" aria-hidden="true">∅</span>
-                <span><strong>현재 공개 가능한 연결이 없습니다.</strong><small>관계가 없다는 뜻이 아니라, 현재 ontology projection에 표시할 published Claim/Evidence가 없다는 뜻입니다.</small></span>
+                <span><strong>현재 공개 가능한 연결이 없습니다.</strong><small>관계가 없다는 뜻이 아니라, 현재 공개 Claim · Evidence로 확인되는 연결이 없다는 뜻입니다.</small></span>
               </p>
             )}
           </section>
@@ -383,7 +393,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <section className="source-library person-section" id="sources" aria-labelledby="sources-title">
             <div className="section-intro">
               <div><span className="eyebrow">Evidence & audit</span><h2 id="sources-title">이 프로필의 출처</h2></div>
-              <p>출처의 공개일, 확인 시각과 policy 요약은 바로 보이고 식별자는 감사 ID 안에 둡니다.</p>
+              <p>출처의 공개일, 확인 시각과 출처 정책 요약을 보여줍니다. 내부 식별자는 감사 ID 안에 둡니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 && !sourceError ? <p className="empty">No source cards available.</p> : (

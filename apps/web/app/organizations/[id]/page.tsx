@@ -10,11 +10,13 @@ import {
   getOrganizationOntology,
   getSource,
 } from "../../data";
+import { latestRecordedAt, predicateLabel } from "../../claim-labels";
 import CommitteeMembers from "../../components/committee-members";
 import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
 import FactBox, { type FactRow } from "../../components/fact-box";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
+import RecordHeader from "../../components/record-header";
 import PendingLanes from "../../components/pending-lanes";
 import ReadState from "../../components/read-state";
 import { committeeHref } from "../../gukgam/2026/committees";
@@ -205,6 +207,7 @@ export default async function OrganizationPage({
   const hasGukgam = gukgamItems.length > 0 || gukgamReadError !== null;
 
   const claims = organization.claims ?? [];
+  const publishedClaims = claims.filter((claim) => claim.publication_status === "PUBLISHED");
   const executiveClaims = claims.filter((claim) => claim.predicate === ALIO_EXECUTIVE_PREDICATE);
   const recordClaims = claims.filter((claim) => claim.predicate !== ALIO_EXECUTIVE_PREDICATE);
   const classificationClaim = claims.find((claim) => claim.predicate === ALIO_CLASSIFICATION_PREDICATE);
@@ -214,16 +217,16 @@ export default async function OrganizationPage({
 
   const factRows: FactRow[] = [
     ...(classificationClaim
-      ? [{ key: classificationClaim.id, label: "ALIO 기관 분류", value: classificationClaim.object_text, claim: classificationClaim }]
+      ? [{ key: classificationClaim.id, label: predicateLabel(ALIO_CLASSIFICATION_PREDICATE), value: classificationClaim.object_text, claim: classificationClaim }]
       : []),
     ...(executiveClaims.length > 0
-      ? [{ key: "executive-count", label: "현재 임원 공시", value: `${executiveClaims.length}건`, derived: { href: "#executives" } }]
+      ? [{ key: "executive-count", label: predicateLabel(ALIO_EXECUTIVE_PREDICATE), value: `${executiveClaims.length}건`, derived: { href: "#executives" } }]
       : []),
     ...gukgamClaims.map((claim) => {
       const { audit_date: auditDate, committee_name: committeeName, time_text: timeText } = claim.qualifiers;
       return {
         key: claim.id,
-        label: "2026 국정감사 피감대상",
+        label: predicateLabel(GUKGAM_TARGET_PREDICATE),
         value: auditDate
           ? `${formatAuditDate(auditDate)} · ${committeeName ?? "위원회 미기재"}${timeText ? ` · ${timeText}` : ""}`
           : claim.object_text,
@@ -263,21 +266,15 @@ export default async function OrganizationPage({
   return (
     <div className="site-page organization-page">
       <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> Organizations</Link>
-      <header className="profile-header organization-header">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Organization record / Published evidence</div>
-          <div className="profile-title-row">
-            <h1>{organization.name}</h1>
-            <span className="status AVAILABLE">AVAILABLE</span>
-          </div>
-          <p className="profile-lede">현재 canonical organization에 연결된 published Claim과 근거 경로를 읽기 전용으로 표시합니다.</p>
-        </div>
-        <div className="profile-stamp" aria-hidden="true">
-          <span className="micro-label">PUBLIC RECORD</span>
-          <strong>ORG</strong>
-          <span>evidence / read-only</span>
-        </div>
-      </header>
+      <RecordHeader
+        kind="기관 기록"
+        name={organization.name}
+        status={<span className="status AVAILABLE">AVAILABLE</span>}
+        lede="이 기관에 대해 공개된 Claim과 근거만 모았습니다. 각 항목의 근거에서 출처와 기준일을 확인할 수 있습니다."
+        claimCount={publishedClaims.length}
+        sourceCount={sources.length}
+        recordedAt={latestRecordedAt(publishedClaims)}
+      />
 
       <OpenTargetDetails />
       <div className="profile-layout">
@@ -298,7 +295,7 @@ export default async function OrganizationPage({
           <section className="organization-section" id="key-facts" aria-labelledby="organization-overview-title">
             <div className="section-intro">
               <div><span className="eyebrow">Published claims</span><h2 id="organization-overview-title">핵심 기록</h2></div>
-              <p>기관 분류와 국정감사 일정은 published organization Claim에서만 가져오며, 임원 공시 건수는 그 Claim을 센 집계입니다.</p>
+              <p>기관 분류와 국정감사 일정은 공개된 기관 Claim에서만 가져오며, 임원 공시 건수는 그 Claim을 센 집계입니다.</p>
             </div>
             {factRows.length > 0 ? <FactBox rows={factRows} /> : (
               <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 Claim이 아직 없습니다.</p>
@@ -409,7 +406,7 @@ export default async function OrganizationPage({
           <section className="source-library organization-source-library" id="sources" aria-labelledby="organization-sources-title">
             <div className="section-intro">
               <div><span className="eyebrow">Evidence & audit</span><h2 id="organization-sources-title">이 기록의 출처</h2></div>
-              <p>출처의 공개일, 확인 시각과 policy 요약은 바로 확인하고, 식별자는 감사 ID에서 확인합니다.</p>
+              <p>출처의 공개일, 확인 시각과 출처 정책 요약을 보여줍니다. 내부 식별자는 감사 ID 안에 둡니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 ? (
