@@ -1,6 +1,166 @@
 # National Assembly asset disclosure source gate
 
-## Decision — 2026-09-12
+## Decision — 2026-10-05: L1 CONTRACT_STAGED (human-assisted Gazette packet path)
+
+**L1 CONTRACT_STAGED; human-assisted reviewed-packet path; no real packet imported yet.**
+The owner directed implementation. The 2026-09-12 blockers (release coverage, revision/key
+semantics, permitted automated route) are **not** resolved and were not guessed past; the lane
+implements only the narrowest safe path the gate already allowed: one rights-reviewed official
+Gazette issue, transcribed by a human, imported as metadata-only source observations. No L2 is
+claimed: L2 needs a real rights-approved packet imported end to end. No automated enumeration,
+scheduler, OpenWatch/opengirok ingestion, Person link, AssetDisclosure row or Claim exists.
+
+### Authority and route
+
+- **Authority:** the official 국회공보 재산변동사항/재산등록사항 공개 issue published by
+  국회공직자윤리위원회, as listed in the official Gazette index on `www.assembly.go.kr`
+  (`/portal/cnts/cntsNamgzn/gongbo.do?cntsDivCd=NAMGZN&pdfClsCd=CPR&menuNo=601019`) with
+  per-issue detail pages `/portal/cnts/cntsCont/dataA.do?cntsDivCd=NAMGZN&...&pdfId=<n>`
+  (e.g. 2025-51 `pdfId=379578`, browser-observed on 2026-09-12 above).
+- **robots.txt re-observed 2026-10-05:** `User-agent: * / Disallow: / / Allow: /$`; an automated
+  fetch tool also refused the host on robots grounds. Therefore nothing in this lane fetches
+  from `www.assembly.go.kr`; the index/detail locations above were not re-crawled. A human
+  operator opens the detail page in a normal browser and saves the exact PDF.
+- OpenWatch / opengirok / 정보공개센터 sheets remain **discovery and methodology references only**;
+  they are never an authority, never imported, and never a source of MONA_CD.
+
+### Pipeline (existing seams only, no migration)
+
+```text
+operator saves exact Gazette PDF (browser)            -> local file, never committed
+reviewed packet `assembly-asset-gazette-reviewed-packet.v1` (REVIEW_REQUIRED -> HUMAN_REVIEWED)
+  -> packages/connectors/assembly_asset_packet.py      (closed-schema validation, no I/O)
+  -> packages/verification/assembly_asset_import.py    (HUMAN_REVIEWED gate, %PDF + sha256
+                                                        match, SourcePolicy gate)
+  -> workers/assembly_asset_import.py                  (dry-run default; --commit writes
+     Source / SourceSnapshot / FeederObservation only via commit_source_page;
+     feeder `assembly_asset_gazette_reviewed`)
+```
+
+The worker requires `--confirm-gazette-rights-review` (owner attests the issue's reuse rights
+were reviewed) and, with `--commit`, `--database-url`. It never downloads anything.
+
+- **SourcePolicy** (`gazette_asset_policy`, domain `www.assembly.go.kr`): `can_fetch=False`,
+  metadata only; no fulltext, AI, excerpt or commercialization; `robots_checked_at=2026-10-05`.
+  Before commit the worker loads stored policies: a stored decision for the domain wins and must
+  permit `STORE_METADATA` and deny fetch; a different policy id bound to the domain, a BLOCKED
+  mode or denied metadata storage refuses the import with nothing written. Because SourcePolicy is
+  unique per domain, any later lane on `www.assembly.go.kr` must reuse or deliberately revise
+  this policy rather than add a conflicting one.
+- **Source** URL is the canonical official detail URL rebuilt from the packet's `pdf_id` (the
+  packet `page_url` must be that exact host/path with matching `cntsDivCd=NAMGZN`/`pdfId`);
+  `published_at` is the printed Gazette date (KST).
+- **SourceSnapshot**: `content_hash` = raw PDF sha256; metadata carries issue, title, date,
+  disclosure kind, pdf_id, filename, rights mark, capture mode, unit and value semantics;
+  `fulltext=None`. The PDF bytes are not stored (no second raw store).
+
+### Packet contract
+
+Source block: `gazette_issue` (`YYYY-N`, year must equal `publication_date`), `gazette_title`,
+`publication_date`, `disclosure_kind` (`정기` | `수시`), `reporting_period_text` (verbatim) with
+optional ISO start/end (end ≤ publication date), `pdf_id`, `page_url`, `artifact_filename`,
+`artifact_sha256`, `rights_mark`, `automation_gate = ASSEMBLY_GAZETTE_AUTOMATION_BLOCKED_ROBOTS`.
+Packet-level `coverage` (`SELECTED_MEMBERS` | `FULL_ISSUE`) and `declared_member_count` are
+persisted in run metadata so a partial packet is never mistaken for a complete issue.
+
+Member block: `printed_member_name`, `printed_affiliation`, `printed_position` (must be exactly
+`국회의원`: member-level only; other high officials in the same issue are rejected),
+`report_type` (`변동신고` | `최초등록` | `재등록` | `퇴직`; a `정기` issue accepts only `변동신고`;
+registration types carry only `current_value`), optional `reviewer_stated_mona_cd` +
+`mona_cd_basis` (both or neither), `total_locator`, `declared_totals`, `items`.
+
+Item block: exact `locator {page_number, table_index, table_row}`, `holder_relation` (coarse
+code SELF | SPOUSE | LINEAL_ASCENDANT | LINEAL_DESCENDANT | OTHER_REPORTED_RELATIVE; the printed
+kinship term is not kept), `item_category` (statutory 재산의 구분 as a closed code set, incl.
+DEBT), optional verbatim `item_category_text`, optional short `item_kind` (재산의 종류, e.g.
+대지/아파트/예금), optional `region_sido`, and amounts `prior_value`, `increase`, `decrease`,
+`current_value`, each `{text, value}`: printed thousand-KRW text plus parsed integer, which must
+agree (`-`/`△` negative allowed; parentheses such as 실거래가격 notes are rejected). A missing
+amount is `null`, distinct from a printed `0`.
+
+Validation fails closed on: unknown fields anywhere (so `location`, `account_number`,
+`change_reason`, family names etc. cannot be supplied); contact-, address- (번지/동·호/로·길+number,
+지번 `12-3`, ㎡, 시/도+시/군/구) or account-like (`NNNN-NN-NNNNNN`, ≥10 digits) text in permitted
+text fields; a region outside the closed 시/도 list; duplicate locators or MONA_CDs; amount
+text/value disagreement; and a **declared-total mismatch**: for each member, printed
+`prior_value` and `current_value` totals must equal the item sum with DEBT items subtracted.
+
+### Privacy decisions (AGENTS.md)
+
+- **Location:** `소재지 면적 등 권리의 명세` is never accepted. The only location kept is
+  `region_sido` from a closed list of 17 시/도 plus `해외`. 시/군/구 was rejected for now: with
+  item kind (e.g. 아파트) it narrows a residence more than the coarse public-interest signal
+  needs, and the closed list makes address leakage structurally impossible. Widening it is an
+  owner decision.
+- **Relative-held items: excluded.** The existing AssetDisclosure/AssetItem contracts do not
+  model a relation category, so the lane prefers exclusion. Relative-held rows may appear in the
+  packet only as relation code + category + amounts (no text, kind or region) so the printed
+  member totals can be cross-checked; they are dropped before persistence. Observations carry
+  only `relative_items_policy = RELATIVE_HELD_ITEMS_EXCLUDED_FROM_OBSERVATIONS`; the run metadata
+  keeps only an aggregate excluded-row count. The persisted member total is the printed headline
+  figure and is labeled `PRINTED_MEMBER_TOTAL_INCLUDES_REPORTED_RELATIVES`.
+- **Change reasons (변동사유):** not accepted. The 2026-09-12 minimal design found free-text
+  reasons unnecessary and they can name relatives or transactions; enabling them is an owner
+  decision.
+- No family names, account/parcel numbers, contacts or 고지거부 annotations are modeled.
+  고지거부 and similar non-disclosure markers stay outside the contract (an absent row is
+  unresolved, never "no assets").
+
+### Identity
+
+No Person is created, merged or linked. `identity_hints` is `{}` unless the reviewer states an
+official MONA_CD with its basis; then it is
+`{assembly_mona_cd_stated, identity_basis: PACKET_REVIEWER_STATED, link_mode:
+REVIEW_ONLY_NO_AUTO_LINK}`. The Gazette itself does not print MONA_CD, so a stated code is a
+reviewer assertion awaiting an exact-code linkage review, never automatic authority. Printed
+name + issue + locator remain review-only handles. Observations deliberately omit
+`canonical_name`, so the generic `materialize_feeder_observation` path refuses them (tested).
+
+### Observations, keys and values
+
+Per member: one `MEMBER_DECLARED_TOTAL` observation; per self-held item: one
+`SELF_HELD_ASSET_ITEM` observation referencing the member's record key. Scope key
+`gazette:<issue>:pdf:<pdf_id>`; provider record key `<issue>:p<page>:t<table>:r<row>` — a
+**snapshot-scoped observation key**, never a Person or a durable real-world asset identity.
+Every observation carries `authority = OFFICIAL_NATIONAL_ASSEMBLY_GAZETTE`,
+`amount_unit = THOUSAND_KRW` and **`value_semantics = DECLARED_VALUE_NOT_MARKET_WEALTH`**:
+these are values declared under the Public Service Ethics Act as printed in the Gazette, not
+market wealth, not independently verified and not a wrongdoing signal.
+
+Re-importing the same packet is idempotent (observations unchanged). A corrected packet that
+changes a row appends a new observation under the same record key; nothing is overwritten and no
+precedence is chosen (see open decisions).
+
+### Tests
+
+`tests/test_assembly_asset_disclosure.py` with a clearly synthetic fixture
+(`tests/fixtures/assembly_asset_synthetic_reviewed_packet.json`, issue `2099-1`, `pdfId=0`):
+packet validation, forbidden fields and address/account-like text, total mismatch, registration
+shape, amount parsing, HUMAN_REVIEWED/PDF/sha256 gates, relative-item exclusion, dry-run writes
+nothing, commit idempotency, corrected-packet append, no Person/PersonObservationLink/
+AssetDisclosure/AssetItem/Claim rows, materializer refusal, and stored-policy denial.
+
+### Still-open owner decisions
+
+1. **Rights/route:** confirm reuse terms for each specific Gazette issue (Copyright Act Art. 7
+   classification, attribution, redistribution) before passing `--confirm-gazette-rights-review`;
+   the automated route stays blocked by robots.txt.
+2. **Which issues to cover** first (e.g. 2026-54 정기, 2024-107 수시) and whether packets may be
+   `SELECTED_MEMBERS` or must be `FULL_ISSUE`.
+3. **Revision semantics:** precedence between a corrected packet and an earlier one for the same
+   locator, Gazette correction/republication handling, and cross-release item continuity.
+4. **Cross-check rule confirmation:** the net (assets − debts) prior/current total rule and the
+   statutory category code list are UNVERIFIED against a real Gazette PDF; the first real packet
+   must confirm or correct them. Increase/decrease totals are stored verbatim but not
+   cross-checked until the Gazette's netting of debt changes is confirmed.
+5. **Optional fields:** whether 시/군/구, change reasons or a relation-category aggregate may ever
+   be stored, and whether real-transaction-price columns should be modeled.
+6. **Identity/publication:** an exact MONA_CD linkage review path and any Claim/AssetDisclosure
+   materialization (requires a Person link, so it remains out of scope here).
+
+The L3 blocking conditions below remain in force.
+
+## Decision — 2026-09-12 (historical)
 
 **L0 RESEARCHED; BLOCKED. No L1/L2/L3 promotion.** Research and aggregate QA are
 complete; no runtime connector, persisted observations, Person links or migration were added.
@@ -275,7 +435,8 @@ semantic scope only; this proposal does not widen it.
 Until those L3 gates are met, no automated enumeration run or scheduler is authorized.
 A separately rights-approved official packet may be evaluated for human-assisted L1/L2 under
 the [source acquisition playbook](FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook), without
-ingesting OpenWatch or creating Persons. No such importer exists at this checkpoint.
+ingesting OpenWatch or creating Persons. No such importer existed at the 2026-09-12 checkpoint;
+the 2026-10-05 decision above adds it (L1, no real packet yet).
 A later L3 ExecPlan must prove unfiltered bounded enumeration, transactional
 snapshot/observation commit before checkpoints, resume, idempotency, corrected-release handling,
 privacy, publication gates and full DoD using the existing foundation.

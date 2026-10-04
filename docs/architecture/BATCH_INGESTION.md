@@ -485,7 +485,8 @@ source contracts, coverage rules and semantic boundaries. Any future helper must
 must be earned by verified duplication; a generic crawler or universal page runner is still not
 justified.
 
-National Assembly asset disclosure remains `L0 RESEARCHED; BLOCKED`. See
+National Assembly asset disclosure is `L1 CONTRACT_STAGED` as a human-assisted reviewed
+Gazette packet path only (no real packet yet; automated enumeration remains blocked). See
 `NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md` for the source-contract and actual-model audit.
 OpenWatch is a dataset-specific curated secondary layer, not a universal canonical feeder.
 Origin Gazette and curated transformations must keep distinct Sources/SourcePolicies and exact
