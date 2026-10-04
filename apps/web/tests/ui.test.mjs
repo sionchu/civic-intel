@@ -666,3 +666,18 @@ test("Evidence Encyclopedia reading surfaces use field labels, coverage counts a
   }
   assert.doesNotMatch(styles, /\.gukgam-hero|\.principles|\.eyebrow-mark|\.profile-stamp/);
 });
+
+test("large directories page deterministically and filter without ranking or identity changes", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [roster, orgDirectory, orgPage] = await Promise.all([
+    read("../app/components/roster-grid.tsx"),
+    read("../app/components/organization-directory.tsx"),
+    read("../app/organizations/page.tsx"),
+  ]);
+  assert.match(roster, /export const DIRECTORY_PAGE_SIZE = 60/);
+  assert.match(roster, /visiblePeople\.slice\(0, limit\)/);
+  assert.match(orgDirectory, /visible\.slice\(0, limit\)/);
+  assert.match(orgPage, /<OrganizationDirectory organizations=\{organizationsResult\.data\} \/>/);
+  assert.doesNotMatch(orgDirectory, /organizations\.sort|visible\.sort|score|rank|fetch\(/i);
+  for (const source of [roster, orgDirectory]) assert.doesNotMatch(source, /row-index|padStart/);
+});

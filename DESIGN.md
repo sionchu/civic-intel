@@ -114,7 +114,10 @@ navigation.
 
 ### Tables and data-dense UI
 
-People are presented as stacked readable rows rather than a gallery or wide table. Evidence is
+People and Organizations are presented as stacked readable rows rather than a gallery or wide
+table, without decorative row numbers. Large directories draw 60 rows at a time with an explicit
+"더 보기" button; paging and the name/classification filters change only what is drawn, never order
+or membership. Evidence is
 presented as stacked readable rows. Source titles and policy summaries are visible; UUIDs, hashes
 and snapshot references stay behind `details` disclosure.
 

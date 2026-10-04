@@ -110,8 +110,12 @@ labels not colour-only, list twin for every graph, ≥ 44px touch targets for na
    shared RecordHeader with coverage/recording time, compact limitation list, Gukgam day
    disclosures (mobile page 47.8k px → 8.1k px on the 177-row preview, sub-24px targets 177 → 0),
    Home re-centred on the next audit date, decorative clichés removed from CSS.
-5. Gukgam payload: move the search roster to a lighter read (open).
-6. Legislative/news layers only after their source lanes pass SourcePolicy gates.
+5. Directory usability (done 2026-10-04): People/Organizations draw 60 rows per page with
+   "더 보기"; Organizations gains a name and ALIO classification filter (preview mobile
+   33.9k px → 13.3k px); decorative row numbers removed; sub-24px touch targets on Home and
+   profiles fixed.
+6. Gukgam payload: move the search roster to a lighter read (open).
+7. Legislative/news layers only after their source lanes pass SourcePolicy gates.
 
 ## Do not build
 
