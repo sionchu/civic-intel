@@ -1,0 +1,602 @@
+{
+  "schema": "gukgam-plan-batch2-provenance.v1",
+  "page_number_convention": "1-based PDF page index of the exact attachment (printed folio = index - 2 in these PDFs)",
+  "review_status_note": "All packets are agent-prepared and REVIEW_REQUIRED; no human review is claimed. rights_mark is null because the page-level 공공누리 mark was not verified.",
+  "packets": [
+    {
+      "slug": "legislation",
+      "committee_name": "법제사법위원회",
+      "fixture": "tests/fixtures/gukgam_2026_legislation_plan_reviewed_packet.json",
+      "page_url": "https://legislation.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078717&menuNo=2000030",
+      "post_title": "2026년도 국정감사 계획서",
+      "posted_date": "2026-09-21",
+      "attachment_url": "https://legislation.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=027d53b9396c4eb588e3efe30ba30f00&fileSn=2",
+      "attachment_filename": "2026년도 국정감사계획서.pdf",
+      "attachment_sha256": "bcca77218a4f0d1d1e8e285b723d63cb5794cd9def99b4dfe555c2aa4c524a05",
+      "attachment_size": 171135,
+      "pdf_pages": 13,
+      "retrieved_at_utc": "2026-10-04T07:46:09.652Z",
+      "acquisition_relpath": "legislation-judiciary/2026년도 국정감사계획서.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://legislation.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=027d53b9396c4eb588e3efe30ba30f00&fileSn=1",
+        "sha256": "47ca278ed8927a008edbcdb7b06d93536dd1e97ded010c6075f5dcc1ae25dd79",
+        "filename": "2026년도 국정감사계획서.hwp",
+        "targets_found_in_hwp_text": 88,
+        "targets_checked": 88
+      },
+      "schedule_pages": [
+        9
+      ],
+      "schedule_rows": 15,
+      "audited_target_mentions": 88,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-07",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 9
+        },
+        {
+          "date_or_kind": "2026-10-09",
+          "printed": "한글날",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 9
+        },
+        {
+          "date_or_kind": "2026-10-14",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 9
+        },
+        {
+          "date_or_kind": "2026-10-21",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 9
+        },
+        {
+          "date_or_kind": "2026-10-23",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 9
+        },
+        {
+          "date_or_kind": "note",
+          "printed": "※ 2026. 10. 2. 공소청 출범 이후, 대검찰청 및 각급 검찰청에 대한 국정감사 일정에 그에 상응하는 공소청 및 각급 공소청에 대한 국정감사를 실시한다.",
+          "reason": "footnote, not an institution row",
+          "page": 9
+        }
+      ],
+      "notes": [
+        "10-20 지방1반/지방2반 labels are printed on the first institution line; kept in venue.",
+        "10-13 and 10-15 afternoon rows inherit the merged venue cell (국회) / 국방부 as printed."
+      ]
+    },
+    {
+      "slug": "policy",
+      "committee_name": "정무위원회",
+      "fixture": "tests/fixtures/gukgam_2026_policy_plan_reviewed_packet.json",
+      "page_url": "https://policy.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078726&menuNo=2000030",
+      "post_title": "2026년도 국정감사 계획서",
+      "posted_date": "2026-09-28",
+      "attachment_url": "https://policy.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=ed6a5b1bc1ba4fa6a19883e1b5a41a6d&fileSn=2",
+      "attachment_filename": "2026년도 국정감사계획서.pdf",
+      "attachment_sha256": "c33028e68971bf14b0b3b74abd7e5d9127d07de52d5ff023928d13b7c7415cf5",
+      "attachment_size": 138558,
+      "pdf_pages": 10,
+      "retrieved_at_utc": "2026-10-04T07:46:16.025Z",
+      "acquisition_relpath": "policy-affairs/2026년도 국정감사계획서.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://policy.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=ed6a5b1bc1ba4fa6a19883e1b5a41a6d&fileSn=1",
+        "sha256": "66f6dd3a650d906b84a45cf2b25cb4d9efd3af1661a341100519e694c03e086e",
+        "filename": "2026년도 국정감사계획서.hwp",
+        "targets_found_in_hwp_text": 29,
+        "targets_checked": 29
+      },
+      "schedule_pages": [
+        6
+      ],
+      "schedule_rows": 8,
+      "audited_target_mentions": 29,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-07",
+          "printed": "(자료수집 및 정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-09",
+          "printed": "한글날",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-10",
+          "printed": "(blank)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-11",
+          "printed": "(blank)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-14",
+          "printed": "(자료수집 및 정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-16",
+          "printed": "<현장시찰> 거제",
+          "reason": "field-inspection line with site names only; no 감사대상기관 listed",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-17",
+          "printed": "(blank)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-18",
+          "printed": "(blank)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-20",
+          "printed": "(자료수집 및 정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "note",
+          "printed": "※ 종합감사 시 대상기관의 산하기관 기관증인 출석",
+          "reason": "footnote, not an institution row",
+          "page": 6
+        }
+      ],
+      "notes": [
+        "No time-of-day column is printed; time_text is null for every row.",
+        "'개인정보보호위원회 등' and '금융감독원 등' keep the printed '등' suffix verbatim."
+      ]
+    },
+    {
+      "slug": "education",
+      "committee_name": "교육위원회",
+      "fixture": "tests/fixtures/gukgam_2026_education_plan_reviewed_packet.json",
+      "page_url": "https://edu.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078729&menuNo=2000030&hrCmtId=9700512&pageUnit=10&pdCndCd=A&pageIndex=1",
+      "post_title": "2026년도 국정감사계획서",
+      "posted_date": "2026-09-29",
+      "attachment_url": "https://edu.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=a77b23fb64694342bada096b2cd12923&fileSn=2",
+      "attachment_filename": "2026년도 국정감사계획서_최종.pdf",
+      "attachment_sha256": "03b109a0d6210d30ecb90240e8744c1208294c79cc41f923f98c752b898afb70",
+      "attachment_size": 208106,
+      "pdf_pages": 12,
+      "retrieved_at_utc": "2026-10-04T07:40:01.810Z",
+      "acquisition_relpath": "education/2026년도 국정감사계획서_최종.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://edu.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=a77b23fb64694342bada096b2cd12923&fileSn=1",
+        "sha256": "a4063bdf8440d291f2a357c14e82d99ee7481210e0c7750f66fcd305554a2bf6",
+        "filename": "2026년도 국정감사계획서_최종.hwp",
+        "targets_found_in_hwp_text": 69,
+        "targets_checked": 69
+      },
+      "schedule_pages": [
+        7,
+        8
+      ],
+      "schedule_rows": 9,
+      "audited_target_mentions": 69,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-08",
+          "printed": "감 사 준 비",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-13",
+          "printed": "감 사 준 비",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-15",
+          "printed": "감 사 준 비",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-19",
+          "printed": "감 사 준 비",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-22",
+          "printed": "감 사 준 비",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 8
+        }
+      ],
+      "notes": [
+        "10-20/10-21 split-team (감사 1반/2반) assignment of the two institution columns follows left/right column order and the 1반/2반 order in the 장소 cell; reviewer should confirm on the PDF.",
+        "10-20 비고 prints '(1박)'; 교통수단 'KTX, 버스 등'."
+      ]
+    },
+    {
+      "slug": "foreign",
+      "committee_name": "외교통일위원회",
+      "fixture": "tests/fixtures/gukgam_2026_foreign_plan_reviewed_packet.json",
+      "page_url": "https://uft.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078713&menuNo=2000030",
+      "post_title": "2026년도 국정감사계획서 및 기관증인 명단",
+      "posted_date": "2026-09-17",
+      "attachment_url": "https://uft.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=4bb3f008d44e43b5968f2dee6b627f14&fileSn=2",
+      "attachment_filename": "2026년도 국정감사계획서_외교통일위원회.pdf",
+      "attachment_sha256": "fde2aa6309f28b87d398fd1a3dbda264e26f769cfc7a50918f32fd2a0241243d",
+      "attachment_size": 216658,
+      "pdf_pages": 15,
+      "retrieved_at_utc": "2026-10-04T07:46:31.876Z",
+      "acquisition_relpath": "foreign-affairs-unification/2026년도 국정감사계획서_외교통일위원회.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://uft.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=4bb3f008d44e43b5968f2dee6b627f14&fileSn=1",
+        "sha256": "556472f5b0a4e3d3abe33433b9b8c88b2271ac132bda537f9d0503afced7aa37",
+        "filename": "2026년도 국정감사계획서_외교통일위원회.hwp",
+        "targets_found_in_hwp_text": 18,
+        "targets_checked": 18
+      },
+      "schedule_pages": [
+        10,
+        12
+      ],
+      "schedule_rows": 3,
+      "audited_target_mentions": 18,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-11/2026-10-22",
+          "printed": "[미주반] 주미국대사관 외 17개 재외공관 (해당 재외공관)",
+          "reason": "multi-day range 10. 11.(일) ~ 10. 22.(목); v1 schedule row has a single audit_date",
+          "page": 10
+        },
+        {
+          "date_or_kind": "2026-10-11/2026-10-20",
+          "printed": "[구주반] 주영국대사관 외 12개 재외공관 (해당 재외공관)",
+          "reason": "multi-day range 10. 11.(일) ~ 10. 20.(화); v1 schedule row has a single audit_date",
+          "page": 11
+        },
+        {
+          "date_or_kind": "2026-10-11/2026-10-21",
+          "printed": "[아주반] 주일본대사관 외 6개 재외공관 (해당 재외공관)",
+          "reason": "multi-day range 10. 11.(일) ~ 10. 21.(수); v1 schedule row has a single audit_date",
+          "page": 11
+        }
+      ],
+      "notes": [
+        "Overseas-mission team schedules are printed only as multi-day ranges; excluded. The 2026-10-01 comprehensive inventory carries per-day dates for these missions but the plan itself does not."
+      ]
+    },
+    {
+      "slug": "industry",
+      "committee_name": "산업통상자원중소벤처기업위원회",
+      "fixture": "tests/fixtures/gukgam_2026_industry_plan_reviewed_packet.json",
+      "page_url": "https://industry.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078718&menuNo=2000030",
+      "post_title": "2026년도 국정감사계획서",
+      "posted_date": "2026-09-22",
+      "attachment_url": "https://industry.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=2b2c026b58ba4f628da66d0d77dc8537&fileSn=2",
+      "attachment_filename": "★2026년도 국정감사계획서 (09210842).pdf",
+      "attachment_sha256": "cf834bc66c5b0bc9d2740d6f305e12a2107c8e98673ec6345a2d412f4d6dd0e3",
+      "attachment_size": 147951,
+      "pdf_pages": 14,
+      "retrieved_at_utc": "2026-10-04T07:46:44.522Z",
+      "acquisition_relpath": "industry-trade-resources-smes/★2026년도 국정감사계획서 (09210842).pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://industry.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=2b2c026b58ba4f628da66d0d77dc8537&fileSn=1",
+        "sha256": "fdc907a3823d964ef8c3885dba596ce4dcff432b6c5f7d95039a5e60fc1392e7",
+        "filename": "★2026년도 국정감사계획서 (09210842).hwp",
+        "targets_found_in_hwp_text": 44,
+        "targets_checked": 44
+      },
+      "schedule_pages": [
+        9
+      ],
+      "schedule_rows": 8,
+      "audited_target_mentions": 44,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-20",
+          "printed": "현장시찰 (경북 구미)",
+          "reason": "field-inspection line with site names only; no 감사대상기관 listed",
+          "page": 9
+        }
+      ],
+      "notes": [
+        "No time-of-day column is printed; time_text is null for every row.",
+        "10-12 한국전력공사 and 한국수력원자력 are printed with a leading '*' marker (no footnote text found in the plan); marker dropped from the target string.",
+        "10-13 row: the right merged cell prints '현장시찰'; 장소 prints '지식재산처 (대전)'. Row kept because 감사대상기관 are listed."
+      ]
+    },
+    {
+      "slug": "climate",
+      "committee_name": "기후에너지환경노동위원회",
+      "fixture": "tests/fixtures/gukgam_2026_climate_plan_reviewed_packet.json",
+      "page_url": "https://environment.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078728&menuNo=2000030",
+      "post_title": "2026년도 국정감사계획서",
+      "posted_date": "2026-09-28",
+      "attachment_url": "https://environment.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=8ea2fe6c2663444b87700b2cbbff6b75&fileSn=2",
+      "attachment_filename": "2026년도 국정감사계획서(최종).pdf",
+      "attachment_sha256": "a0bd789a323c331d53c22d6a2019e5961c00fdd4e8e8667e6cd7dc9bec672930",
+      "attachment_size": 129286,
+      "pdf_pages": 13,
+      "retrieved_at_utc": "2026-10-04T07:47:27.879Z",
+      "acquisition_relpath": "climate-energy-environment-labor/2026년도 국정감사계획서(최종).pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://environment.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=8ea2fe6c2663444b87700b2cbbff6b75&fileSn=1",
+        "sha256": "fd4b0e0d97d56dae5ee4380feadb2cc95e0e007d733666d043f2d1b13a6de824",
+        "filename": "2026년도 국정감사계획서(최종).hwp",
+        "targets_found_in_hwp_text": 104,
+        "targets_checked": 104
+      },
+      "schedule_pages": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "schedule_rows": 9,
+      "audited_target_mentions": 104,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-07",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-09/2026-10-11",
+          "printed": "휴일",
+          "reason": "multi-day non-audit range",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-12",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-14",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-17/2026-10-18",
+          "printed": "휴일",
+          "reason": "multi-day non-audit range",
+          "page": 8
+        },
+        {
+          "date_or_kind": "2026-10-20/2026-10-21",
+          "printed": "현장시찰 제주(한림해상풍력 등) 출장(1박)",
+          "reason": "multi-day field inspection with site names only; no 감사대상기관 listed",
+          "page": 9
+        },
+        {
+          "date_or_kind": "2026-10-22",
+          "printed": "자료정리",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 9
+        },
+        {
+          "date_or_kind": "2026-10-24/2026-10-25",
+          "printed": "휴일",
+          "reason": "multi-day non-audit range",
+          "page": 9
+        }
+      ],
+      "notes": [
+        "10-16 row starts on PDF page 7 and continues on page 8; page_number is the start page (7).",
+        "중앙노동위원회 prints '(12개 지방노동위원회 포함)' on a wrapped line; kept inside the target name as printed."
+      ]
+    },
+    {
+      "slug": "land",
+      "committee_name": "국토교통위원회",
+      "fixture": "tests/fixtures/gukgam_2026_land_plan_reviewed_packet.json",
+      "page_url": "https://ltc.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078760&menuNo=2000030",
+      "post_title": "2026년도 국정감사계획서",
+      "posted_date": "2026-10-01",
+      "attachment_url": "https://ltc.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=25c2b52b2ea342b281da9d968bc2b126&fileSn=2",
+      "attachment_filename": "2026년도 국정감사계획서.pdf",
+      "attachment_sha256": "3f9f0fb6ba3639d7134b4cf1fb12e350a53cae20d5916b2927010ac38eec37c1",
+      "attachment_size": 216701,
+      "pdf_pages": 11,
+      "retrieved_at_utc": "2026-10-04T07:47:34.277Z",
+      "acquisition_relpath": "land-infrastructure-transport/2026년도 국정감사계획서.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://ltc.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=25c2b52b2ea342b281da9d968bc2b126&fileSn=1",
+        "sha256": "0e7473a5570d9d71c24ba9b28e4fb0274d6632d6850b5bf295777624be015563",
+        "filename": "2026년도 국정감사계획서.hwp",
+        "targets_found_in_hwp_text": 36,
+        "targets_checked": 36
+      },
+      "schedule_pages": [
+        7
+      ],
+      "schedule_rows": 8,
+      "audited_target_mentions": 36,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-14",
+          "printed": "자 료 조 사",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-16",
+          "printed": "자 료 조 사",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-20",
+          "printed": "<현장시찰> 현대자동차 남양연구소 / 한국교통안전공단 자동차안전연구원 (화성)",
+          "reason": "field-inspection line with site names only; no 감사대상기관 listed",
+          "page": 7
+        },
+        {
+          "date_or_kind": "2026-10-21",
+          "printed": "자 료 조 사",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 7
+        },
+        {
+          "date_or_kind": "undated",
+          "printed": "금ㆍ토ㆍ일 공 휴 일 / 토ㆍ일 공 휴 일",
+          "reason": "undated holiday lines",
+          "page": 7
+        }
+      ],
+      "notes": [
+        "10-19: 서울특별시 at 서울특별시청(서울) and 경기도 at 경기도청(수원) share one printed row; venue keeps both as printed, order matches the target order."
+      ]
+    },
+    {
+      "slug": "intelligence",
+      "committee_name": "정보위원회",
+      "fixture": "tests/fixtures/gukgam_2026_intelligence_plan_reviewed_packet.json",
+      "page_url": "https://intelligence.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078738&menuNo=2000030",
+      "post_title": "2026년도 국정감사 계획서",
+      "posted_date": "2026-09-30",
+      "attachment_url": "https://intelligence.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=062df033a3b148f08d46a80fa265cea3&fileSn=2",
+      "attachment_filename": "2026년도 국정감사 계획서_의결.pdf",
+      "attachment_sha256": "c39b1449c3ec79f61a886c82982fa908ef7670cf5b101290f5945de919dd20df",
+      "attachment_size": 228944,
+      "pdf_pages": 11,
+      "retrieved_at_utc": "2026-10-04T07:47:40.699Z",
+      "acquisition_relpath": "intelligence/2026년도 국정감사 계획서_의결.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://intelligence.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=062df033a3b148f08d46a80fa265cea3&fileSn=1",
+        "sha256": "2367044632e9e5a904bbc529304a41a8739de9b11cb31a43bc508b98605a62ef",
+        "filename": "2026년도 국정감사 계획서_의결.hwp",
+        "targets_found_in_hwp_text": 5,
+        "targets_checked": 5
+      },
+      "schedule_pages": [
+        6
+      ],
+      "schedule_rows": 5,
+      "audited_target_mentions": 5,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-30",
+          "printed": "오후 현장시찰 (국방방첩본부 / 사이버작전사령부)",
+          "reason": "field-inspection line with site names only; no 감사대상기관 listed",
+          "page": 6
+        }
+      ],
+      "notes": [
+        "Last row time is printed as '국방방첩본부 감사 종료 후' (after the 국방방첩본부 audit ends); venue cell is merged with the 10:00 row."
+      ]
+    },
+    {
+      "slug": "health",
+      "committee_name": "보건복지위원회",
+      "fixture": "tests/fixtures/gukgam_2026_health_plan_reviewed_packet.json",
+      "page_url": "https://health.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078730&menuNo=2000030",
+      "post_title": "2026년도 국정감사계획서(260929)",
+      "posted_date": "2026-09-29",
+      "attachment_url": "https://health.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=11a174c538244b6eb2de554fa361a86d&fileSn=2",
+      "attachment_filename": "2026년도 보건복지위원회 국정감사계획서.pdf",
+      "attachment_sha256": "46c2f56b2458511e6a0f00efdefa623aca79eb334800d2439a2008b9969e129a",
+      "attachment_size": 128158,
+      "pdf_pages": 9,
+      "retrieved_at_utc": "2026-10-04T07:47:08.736Z",
+      "acquisition_relpath": "health-welfare/dup2_2026년도 보건복지위원회 국정감사계획서.pdf",
+      "hwp_crosscheck": {
+        "attachment_url": "https://health.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=11a174c538244b6eb2de554fa361a86d&fileSn=1",
+        "sha256": "cfe379abe19544c974a607c87a2bfdcdffdb7e3732a0c1bdddfb0a695bc3fccd",
+        "filename": "2026년도 보건복지위원회 국정감사계획서.hwp",
+        "targets_found_in_hwp_text": 53,
+        "targets_checked": 53,
+        "sha256_matches_owner_copy_pr171": true
+      },
+      "schedule_pages": [
+        6
+      ],
+      "schedule_rows": 8,
+      "audited_target_mentions": 53,
+      "excluded": [
+        {
+          "date_or_kind": "2026-10-06",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-12",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-15",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-19",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-21",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-23",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-26",
+          "printed": "(자료정리)",
+          "reason": "no audited institution printed (non-audit day)",
+          "page": 6
+        },
+        {
+          "date_or_kind": "2026-10-27",
+          "printed": "종합감사",
+          "reason": "row prints only '종합감사' with no institution named",
+          "page": 6
+        },
+        {
+          "date_or_kind": "note",
+          "printed": "*소속기관 및 소관기관 배석(지방청 포함)",
+          "reason": "footnote under 식품의약품안전처; 지방식품의약품안전청 6곳 are listed in 3. 감사 대상기관 (p.4) but not as schedule targets",
+          "page": 6
+        }
+      ],
+      "notes": [
+        "10-08 is a two-row merged date/venue cell: the 14:00 row inherits 국회 as printed.",
+        "Supersedes the owner-copy HWP draft of PR #171: same 8 rows / 53 target mentions, now anchored to the official post and PDF page numbers."
+      ],
+      "alternate_pdf": {
+        "attachment_url": "https://health.na.go.kr/cmmit/cmmn/file/fileDown.do?menuNo=2000030&atchFileId=11a174c538244b6eb2de554fa361a86d&fileSn=3",
+        "sha256": "1aeb5a30cff8b04f7ee3d4b994562b03ab1c0d5a7736a6f56cd5c651fbba4465",
+        "size": 307393,
+        "extracted_text_identical_to_primary": true
+      }
+    }
+  ]
+}

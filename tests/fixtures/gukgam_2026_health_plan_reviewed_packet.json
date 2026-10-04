@@ -1,0 +1,152 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "보건복지위원회",
+    "ntt_id": "3078730",
+    "detail_url": "https://health.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078730&menuNo=2000030",
+    "title": "2026년도 국정감사계획서(260929)",
+    "published_date": "2026-09-29",
+    "atch_file_id": "11a174c538244b6eb2de554fa361a86d",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 보건복지위원회 국정감사계획서.pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-07",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "보건복지부",
+        "질병관리청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-08",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "부산대학교병원",
+        "부산대학교 치과병원",
+        "강원대학교병원",
+        "강원대학교 치과병원",
+        "경북대학교병원",
+        "경북대학교 치과병원",
+        "경상국립대학교병원",
+        "전남대학교병원",
+        "전북대학교병원",
+        "제주대학교병원",
+        "충남대학교병원",
+        "충북대학교병원"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-08",
+      "time_text": "14:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "보건복지부",
+        "질병관리청"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "식품의약품안전처",
+        "식품의약품안전평가원",
+        "한국식품안전관리인증원",
+        "한국의약품안전관리원",
+        "식품안전정보원",
+        "한국의료기기안전정보원",
+        "한국마약퇴치운동본부",
+        "한국희귀·필수의약품센터"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-14",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "국민연금공단"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-16",
+      "time_text": "10:00",
+      "venue": "원주",
+      "section": "감사일정",
+      "audited_targets": [
+        "국민건강보험공단",
+        "건강보험심사평가원"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-20",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "한국보건산업진흥원",
+        "한국건강증진개발원",
+        "국립암센터",
+        "대한적십자사",
+        "한국보건의료인국가시험원",
+        "한국국제보건의료재단",
+        "국립중앙의료원",
+        "한국보건의료연구원",
+        "한국의료분쟁조정중재원",
+        "한국장기조직기증원",
+        "한국한의약진흥원",
+        "의료기관평가인증원",
+        "한국공공조직은행",
+        "한국보건의료정보원",
+        "한국생명존중희망재단",
+        "대한결핵협회",
+        "전국지방의료원연합회"
+      ],
+      "page_number": 6
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-22",
+      "time_text": "10:00",
+      "venue": "국회",
+      "section": "감사일정",
+      "audited_targets": [
+        "한국노인인력개발원",
+        "한국사회보장정보원",
+        "한국보건복지인재원",
+        "한국장애인개발원",
+        "한국사회복지협의회",
+        "국가아동권리보장원",
+        "한국자활복지개발원",
+        "중앙사회서비스원",
+        "인구보건복지협회"
+      ],
+      "page_number": 6
+    }
+  ],
+  "witness_rows_included": false
+}

@@ -1,0 +1,143 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "산업통상자원중소벤처기업위원회",
+    "ntt_id": "3078718",
+    "detail_url": "https://industry.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078718&menuNo=2000030",
+    "title": "2026년도 국정감사계획서",
+    "published_date": "2026-09-22",
+    "atch_file_id": "2b2c026b58ba4f628da66d0d77dc8537",
+    "file_sn": 2,
+    "attachment_filename": "★2026년도 국정감사계획서 (09210842).pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-06",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "산업통상부"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-07",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "중소벤처기업부"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "대한무역투자진흥공사",
+        "한국무역보험공사",
+        "한국산업단지공단",
+        "한국산업기술진흥원",
+        "한국산업기술기획평가원",
+        "한국세라믹기술원",
+        "무역안보관리원",
+        "한국로봇산업진흥원",
+        "한국산업기술시험원",
+        "한국디자인진흥원",
+        "한국탄소산업진흥원",
+        "한국제품안전관리원",
+        "한국전력공사",
+        "한국수력원자력"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": null,
+      "venue": "지식재산처 (대전)",
+      "section": "감사일정 및 장소 / 현장시찰",
+      "audited_targets": [
+        "지식재산처",
+        "한국발명진흥회",
+        "한국지식재산연구원",
+        "한국지식재산보호원",
+        "한국특허전략개발원",
+        "한국특허정보원",
+        "한국특허기술진흥원"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-15",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "중소벤처기업진흥공단",
+        "기술보증기금",
+        "소상공인시장진흥공단",
+        "중소기업기술정보진흥원",
+        "신용보증재단중앙회",
+        "창업진흥원",
+        "한국벤처투자",
+        "한국중소벤처기업유통원",
+        "공영홈쇼핑",
+        "중소벤처기업연구원",
+        "장애인기업종합지원센터"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-19",
+      "time_text": null,
+      "venue": "한국가스공사 (대구)",
+      "section": "감사일정 및 장소",
+      "audited_targets": [
+        "한국석유공사",
+        "한국가스공사",
+        "강원랜드",
+        "대한석탄공사",
+        "한국가스기술공사",
+        "한국가스안전공사",
+        "한국석유관리원",
+        "한국광해광업공단"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-22",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 장소 / 종합국감①",
+      "audited_targets": [
+        "산업통상부 및 소관기관"
+      ],
+      "page_number": 9
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-23",
+      "time_text": null,
+      "venue": "국회",
+      "section": "감사일정 및 장소 / 종합국감②",
+      "audited_targets": [
+        "중소벤처기업부ㆍ지식재산처 및 소관기관"
+      ],
+      "page_number": 9
+    }
+  ],
+  "witness_rows_included": false
+}

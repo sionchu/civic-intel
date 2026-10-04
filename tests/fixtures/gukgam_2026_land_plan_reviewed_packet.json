@@ -1,0 +1,135 @@
+{
+  "schema": "gukgam-plan-reviewed-packet.v1",
+  "review_status": "REVIEW_REQUIRED",
+  "source": {
+    "committee_name": "국토교통위원회",
+    "ntt_id": "3078760",
+    "detail_url": "https://ltc.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078760&menuNo=2000030",
+    "title": "2026년도 국정감사계획서",
+    "published_date": "2026-10-01",
+    "atch_file_id": "25c2b52b2ea342b281da9d968bc2b126",
+    "file_sn": 2,
+    "attachment_filename": "2026년도 국정감사계획서.pdf",
+    "rights_mark": null,
+    "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
+  },
+  "schedule": [
+    {
+      "ordinal": 1,
+      "audit_date": "2026-10-07",
+      "time_text": "10:00",
+      "venue": "국토교통위원회 회의실(국회) (※ 산하기관장 출석)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "국토교통부",
+        "행정중심복합도시건설청",
+        "새만금개발청"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 2,
+      "audit_date": "2026-10-08",
+      "time_text": "10:00",
+      "venue": "국토교통위원회 회의실(국회)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "한국도로공사",
+        "한국교통안전공단",
+        "한국도로공사서비스(주)",
+        "자동차손해배상진흥원"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 3,
+      "audit_date": "2026-10-12",
+      "time_text": "10:00",
+      "venue": "국토교통위원회 회의실(국회)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "한국토지주택공사",
+        "국토안전관리원",
+        "국토교통과학기술진흥원",
+        "대한건설기계안전관리원",
+        "주택관리공단(주)",
+        "건설기술교육원"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 4,
+      "audit_date": "2026-10-13",
+      "time_text": "10:00",
+      "venue": "국토교통위원회 회의실(국회)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "한국철도공사",
+        "국가철도공단",
+        "코레일네트웍스(주)",
+        "코레일유통(주)",
+        "코레일테크(주)"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 5,
+      "audit_date": "2026-10-15",
+      "time_text": "10:00",
+      "venue": "국토교통위원회 회의실(국회)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "한국부동산원",
+        "주택도시보증공사",
+        "제주국제자유도시개발센터",
+        "한국국토정보공사",
+        "한국해외인프라도시개발지원공사",
+        "새만금개발공사",
+        "공간정보품질관리원",
+        "공간정보산업진흥원"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 6,
+      "audit_date": "2026-10-19",
+      "time_text": "10:00",
+      "venue": "서울특별시청(서울) / 경기도청(수원)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "서울특별시",
+        "경기도"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 7,
+      "audit_date": "2026-10-22",
+      "time_text": "10:00",
+      "venue": "인천국제공항공사 회의실 (인천)",
+      "section": "감사일정 및 감사장소",
+      "audited_targets": [
+        "인천국제공항공사",
+        "한국공항공사",
+        "항공안전기술원",
+        "국립항공박물관",
+        "가덕도신공항건설공단"
+      ],
+      "page_number": 7
+    },
+    {
+      "ordinal": 8,
+      "audit_date": "2026-10-23",
+      "time_text": "10:00",
+      "venue": "국토교통위원회 회의실(국회) (※ 산하기관장 출석)",
+      "section": "감사일정 및 감사장소 / 종합감사(확인감사)",
+      "audited_targets": [
+        "국토교통부",
+        "행정중심복합도시건설청",
+        "새만금개발청"
+      ],
+      "page_number": 7
+    }
+  ],
+  "witness_rows_included": false
+}
