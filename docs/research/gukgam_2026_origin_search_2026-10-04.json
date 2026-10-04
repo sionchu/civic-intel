@@ -1,0 +1,215 @@
+{
+ "semantics": "DISCOVERY_ONLY_LOCATION_CLUES_NOT_DATA",
+ "searched_on": "2026-10-04",
+ "robots": {
+  "note": "curl to assembly.go.kr/edu.na.go.kr/health.na.go.kr/open.assembly.go.kr/slownews.kr -> egress gateway 403 CONNECT (org policy, not retried). WebFetch of /robots.txt and of committee pages returned ROBOTS_DISALLOWED (tool-side). robots.txt text itself could not be read for any host; treat as ROBOTS_BLOCKED/unverified. Search-engine index hits only."
+ },
+ "items": [
+  {
+   "id": 1,
+   "target": "의사국 국정감사 종합일정",
+   "status": "NOT_FOUND (exact file); candidate locations only",
+   "candidates": [
+    {
+     "url": "https://www.assembly.go.kr/portal/bbs/B0000034/list.do?menuNo=600143",
+     "title": "의사일정 공지",
+     "note": "WebFetch loaded it but newest rows shown were 2022-09 (제400회); no 2026 종합일정 post visible -> not confirmed"
+    },
+    {
+     "url": "https://www.assembly.go.kr/portal/cnts/cntsCont/dataA.do?cntsDivCd=INSPECT&menuNo=600236",
+     "title": "국정감사 현황",
+     "note": "search hit, not opened"
+    },
+    {
+     "url": "https://likms.assembly.go.kr/inspections/main.do",
+     "title": "국정감사 정보시스템 (LIKMS)",
+     "note": "ROBOTS_DISALLOWED to fetch tool; human can open"
+    },
+    {
+     "url": "https://nas.na.go.kr/nas/main/contents.do?menuNo=1800114",
+     "title": "국정감사 · 조사 및 인사청문회",
+     "note": "search hit, not opened"
+    }
+   ],
+   "clue": "newspim 20261002000833 (2026-10-02) says 국정감사수첩과 종합일정표 are posted on the 국회 홈페이지, committee plans on each committee homepage; gives no URL"
+  },
+  {
+   "id": 2,
+   "target": "교육위원회 2026 국정감사 증인·참고인 명단",
+   "status": "ROBOTS_BLOCKED (unverified location)",
+   "url_clue": "https://edu.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078729",
+   "url_clue_source": "third-party aggregator lawmake.kr/issues/audit-2026 lists it as the 교육위 2026 국정감사계획서 post; unverified",
+   "title": null,
+   "posted": "committee adopted 2026-09-29 per news",
+   "attachment": null,
+   "human_open": "https://edu.na.go.kr/ (committee board BCMT2002)"
+  },
+  {
+   "id": 3,
+   "target": "보건복지위원회 2026년도 국정감사계획서",
+   "status": "ROBOTS_BLOCKED (unverified location)",
+   "url_clue": "https://health.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078730",
+   "url_clue_source": "lawmake.kr aggregator (annotated 260929); unverified",
+   "title": null,
+   "posted": "adopted 2026-09-29 per khanews (22 days, 10.7-10.27, 57 institutions)",
+   "attachment": null,
+   "human_open": "https://health.na.go.kr/cmmit/main/main.do"
+  },
+  {
+   "id": 4,
+   "target": "other committees 2026 국정감사계획서 board posts (BCMT2002) - clues from lawmake.kr only",
+   "status": "ROBOTS_BLOCKED (unverified)",
+   "urls": {
+    "국회운영": "https://steering.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078706",
+    "법제사법": "https://legislation.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078717",
+    "정무": "https://policy.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078761",
+    "재정경제기획": "https://finance.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078708",
+    "과학기술정보방송통신": "https://science.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078699",
+    "외교통일": "https://uft.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078713",
+    "국방": "https://defense.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078693",
+    "행정안전": "https://adminhom.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078707",
+    "문화체육관광": "https://cst.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078704",
+    "산업통상자원중소벤처기업": "https://industry.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078718",
+    "기후에너지환경노동": "https://environment.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078728",
+    "국토교통": "https://ltc.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078760",
+    "정보": "https://intelligence.na.go.kr/cmmit/bbs/BCMT2002/view.do?nttId=3078738"
+   },
+   "note": "These are plan posts (국정감사계획서), not necessarily witness lists; witness-list location not found. Also seen: health.na.go.kr:444/flexer/upload/nc_data/1100012517B1.HWP.PDF.files/PDFBook.html (search hit, content/date unknown)."
+  }
+ ],
+ "slownews_166960_DISCOVERY_ONLY": {
+  "url": "https://slownews.kr/166960",
+  "title": "피감 기관 800곳, 국정감사 증인 누가 나오나",
+  "published": "2026-09-25 (updated 2026-10-01)",
+  "caution": "figures as summarized by the fetch tool from a news article; not verified against committee records; not data",
+  "table": [
+   [
+    "국회운영",
+    "미정",
+    null,
+    null,
+    "TBD"
+   ],
+   [
+    "법제사법",
+    "9/21",
+    3,
+    0,
+    3
+   ],
+   [
+    "정무",
+    "10/1",
+    21,
+    0,
+    21
+   ],
+   [
+    "재정경제기획",
+    "9/28",
+    6,
+    4,
+    10
+   ],
+   [
+    "교육",
+    "9/29",
+    19,
+    4,
+    23
+   ],
+   [
+    "과학기술정보방송통신",
+    "9/22",
+    42,
+    null,
+    "42+"
+   ],
+   [
+    "외교통일",
+    "9/17",
+    null,
+    null,
+    "204 institutions (not persons)"
+   ],
+   [
+    "국방",
+    "9/16",
+    null,
+    null,
+    "167 institutions + 49 (unspecified)"
+   ],
+   [
+    "행정안전",
+    null,
+    null,
+    null,
+    "695 institutions + 32 general"
+   ],
+   [
+    "문화체육관광",
+    "9/29",
+    15,
+    17,
+    32
+   ],
+   [
+    "농림축산식품해양수산",
+    "9/17",
+    18,
+    null,
+    "18+"
+   ],
+   [
+    "산업통상자원중소벤처기업",
+    "9/22",
+    4,
+    null,
+    "4+"
+   ],
+   [
+    "보건복지",
+    "9/29",
+    18,
+    30,
+    48
+   ],
+   [
+    "기후에너지환경노동",
+    "9/28",
+    2,
+    null,
+    "2+"
+   ],
+   [
+    "국토교통",
+    "9/30",
+    9,
+    1,
+    "10+"
+   ],
+   [
+    "정보",
+    "9/30",
+    "17 (institutions)",
+    null,
+    17
+   ],
+   [
+    "성평등가족",
+    null,
+    null,
+    null,
+    "pending"
+   ]
+  ],
+  "columns": [
+   "committee",
+   "adopted",
+   "witnesses",
+   "reference",
+   "total_reported"
+  ],
+  "cross_clues": "educhang 20260929: 교육위 23 persons (matches); pharmnews/khanews 2026-09-29: 보건복지 18+30=48 (matches)"
+ }
+}
