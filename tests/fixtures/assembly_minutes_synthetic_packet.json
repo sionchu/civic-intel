@@ -1,0 +1,40 @@
+{
+  "schema": "assembly-minutes-packet.v1",
+  "acquisition_channel": "OPERATOR_SUPPLIED_OFFICIAL_PDF",
+  "artifact_sha256": "7bbf3425c061936bc2af2622478650a383832844ce11962751a3ea96cc8701a0",
+  "received_via": "synthetic test fixture",
+  "api_rows": [
+    {
+      "CONFER_NUM": 99901,
+      "TITLE": "제22대 제901회 제2차 합성시험위원회 (2026년 09월 28일)",
+      "CLASS_NAME": "상임위원회",
+      "DAE_NUM": 22,
+      "COMM_NAME": "합성시험위원회",
+      "VODCOMM_CODE": null,
+      "CONF_DATE": "2026-09-28",
+      "SUB_NAME": "1. 가나다법 일부개정법률안",
+      "VOD_LINK_URL": null,
+      "CONF_LINK_URL": "https://record.assembly.go.kr/assembly/viewer/minutes/xml.do?id=99901&type=summary",
+      "PDF_LINK_URL": "https://record.assembly.go.kr/assembly/viewer/minutes/download/pdf.do?id=99901",
+      "PDF_FILE_ID": 9990101,
+      "DEPT_CD": "9999999",
+      "CONF_ID": "N999901"
+    },
+    {
+      "CONFER_NUM": 99901,
+      "TITLE": "제22대 제901회 제2차 합성시험위원회 (2026년 09월 28일)",
+      "CLASS_NAME": "상임위원회",
+      "DAE_NUM": 22,
+      "COMM_NAME": "합성시험위원회",
+      "VODCOMM_CODE": null,
+      "CONF_DATE": "2026-09-28",
+      "SUB_NAME": "2. 2026년도 국정감사 서류제출 요구의 건",
+      "VOD_LINK_URL": null,
+      "CONF_LINK_URL": "https://record.assembly.go.kr/assembly/viewer/minutes/xml.do?id=99901&type=summary",
+      "PDF_LINK_URL": "https://record.assembly.go.kr/assembly/viewer/minutes/download/pdf.do?id=99901",
+      "PDF_FILE_ID": 9990101,
+      "DEPT_CD": "9999999",
+      "CONF_ID": "N999901"
+    }
+  ]
+}

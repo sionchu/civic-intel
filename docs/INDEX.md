@@ -31,6 +31,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Acquisition Sync v1](exec-plans/completed/acquisition-sync-v1.md)
 - [Collector Runtime Hardening v1](exec-plans/completed/collector-runtime-hardening-v1.md)
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
+- [Assembly minutes statement feeder](architecture/ASSEMBLY_MINUTES_STATEMENT_FEEDER.md)
 - [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
