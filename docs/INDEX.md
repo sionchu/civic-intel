@@ -36,6 +36,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
 - [NEC local candidate feeder](architecture/NEC_LOCAL_CANDIDATE_FEEDER.md)
 - [Civil service feeder](architecture/CIVIL_SERVICE.md)
+- [MPM national key-position roster feeder](architecture/MPM_KEY_POSITIONS_FEEDER.md)
 - [Public institution feeder](architecture/PUBLIC_INSTITUTION_FEEDER.md)
 - [MOIS Standard Organization Code feeder](architecture/MOIS_ORGANIZATION_CODE_FEEDER.md)
 - [org.go top-level Organization feeder](architecture/ORGGO_TOP_LEVEL_ORGANIZATION_FEEDER.md)
