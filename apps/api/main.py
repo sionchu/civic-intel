@@ -27,6 +27,7 @@ from packages.rendering.governance_ontology import (
     build_person_governance_ontology,
 )
 from packages.rendering.gukgam_committee_members import (
+    GUKGAM_COMMITTEE_ROSTER_PREDICATES,
     build_gukgam_committee_members_projection,
 )
 from packages.rendering.gukgam_organization_binding_review import (
@@ -476,8 +477,10 @@ def create_app(
 
     def gukgam_target_projection():
         current_organizations = target.public_organizations()
+        # Only Gukgam target Claims are consumed below, so read only those.
         contexts = target.published_organization_claim_contexts(
-            item.id for item in current_organizations
+            (item.id for item in current_organizations),
+            predicates=(GUKGAM_AUDIT_TARGET_PREDICATE,),
         )
         gukgam_contexts = {}
         all_evidence: list[ClaimEvidence] = []
@@ -525,7 +528,11 @@ def create_app(
     def gukgam_2026_committees() -> dict:
         targets = gukgam_target_projection()
         public_people = target.public_people()
-        contexts = target.published_person_claim_contexts(item.id for item in public_people)
+        # The projection only consumes the roster committee/party Claims.
+        contexts = target.published_person_claim_contexts(
+            (item.id for item in public_people),
+            predicates=GUKGAM_COMMITTEE_ROSTER_PREDICATES,
+        )
         all_evidence = [
             evidence
             for _, evidence_by_claim in contexts.values()

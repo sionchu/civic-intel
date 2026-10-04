@@ -3522,12 +3522,21 @@ class SqlAlchemyRepository:
     def published_person_claim_contexts(
         self,
         person_ids: Iterable[UUID],
+        *,
+        predicates: Iterable[str] | None = None,
     ) -> dict[UUID, tuple[tuple[Claim, ...], dict[UUID, tuple[ClaimEvidence, ...]]]]:
-        """Load current published Person Claim/Evidence context in two bounded reads."""
+        """Load current published Person Claim/Evidence context in two bounded reads.
+
+        ``predicates`` optionally narrows the Claim read to those predicates (and so the
+        Evidence read to those Claims) for callers that only consume a known predicate set.
+        """
 
         requested_ids = tuple(sorted({str(person_id) for person_id in person_ids}))
         if not requested_ids:
             return {}
+        predicate_filter = (
+            () if predicates is None else (ClaimRow.predicate.in_(sorted(set(predicates))),)
+        )
 
         with self.sessions() as session:
             claim_rows = list(
@@ -3537,6 +3546,7 @@ class SqlAlchemyRepository:
                         ClaimRow.person_id.in_(requested_ids),
                         ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
                         ClaimRow.superseded_at.is_(None),
+                        *predicate_filter,
                     )
                     .order_by(ClaimRow.person_id, ClaimRow.id)
                 )
@@ -3569,9 +3579,8 @@ class SqlAlchemyRepository:
             person_id: (
                 tuple(claims_by_person[person_id]),
                 {
-                    claim_id: tuple(items)
-                    for claim_id, items in evidence_by_claim.items()
-                    if claim_id in {claim.id for claim in claims_by_person[person_id]}
+                    claim.id: tuple(evidence_by_claim[claim.id])
+                    for claim in claims_by_person[person_id]
                 },
             )
             for person_id in (UUID(item) for item in requested_ids)
@@ -3580,12 +3589,21 @@ class SqlAlchemyRepository:
     def published_organization_claim_contexts(
         self,
         organization_ids: Iterable[UUID],
+        *,
+        predicates: Iterable[str] | None = None,
     ) -> dict[UUID, tuple[tuple[Claim, ...], dict[UUID, tuple[ClaimEvidence, ...]]]]:
-        """Load current published Organization Claim/Evidence context in two bounded reads."""
+        """Load current published Organization Claim/Evidence context in two bounded reads.
+
+        ``predicates`` optionally narrows the Claim read to those predicates (and so the
+        Evidence read to those Claims) for callers that only consume a known predicate set.
+        """
 
         requested_ids = tuple(sorted({str(organization_id) for organization_id in organization_ids}))
         if not requested_ids:
             return {}
+        predicate_filter = (
+            () if predicates is None else (ClaimRow.predicate.in_(sorted(set(predicates))),)
+        )
 
         with self.sessions() as session:
             claim_rows = list(
@@ -3595,6 +3613,7 @@ class SqlAlchemyRepository:
                         ClaimRow.organization_id.in_(requested_ids),
                         ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
                         ClaimRow.superseded_at.is_(None),
+                        *predicate_filter,
                     )
                     .order_by(ClaimRow.organization_id, ClaimRow.id)
                 )
@@ -3627,9 +3646,8 @@ class SqlAlchemyRepository:
             organization_id: (
                 tuple(claims_by_organization[organization_id]),
                 {
-                    claim_id: tuple(items)
-                    for claim_id, items in evidence_by_claim.items()
-                    if claim_id in {claim.id for claim in claims_by_organization[organization_id]}
+                    claim.id: tuple(evidence_by_claim[claim.id])
+                    for claim in claims_by_organization[organization_id]
                 },
             )
             for organization_id in (UUID(item) for item in requested_ids)
