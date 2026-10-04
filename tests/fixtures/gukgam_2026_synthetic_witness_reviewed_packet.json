@@ -1,20 +1,27 @@
 {
-  "schema": "gukgam-witness-reviewed-packet.v1",
+  "schema": "gukgam-witness-reviewed-packet.v2",
   "review_status": "REVIEW_REQUIRED",
   "source": {
     "committee_name": "합성시험위원회",
+    "acquisition_channel": "OFFICIAL_SITE",
+    "artifact_format": "PDF",
+    "artifact_sha256": "4b178ca59c28981111abfa1f31004774310fcb2131c394455a77933aa7a2d17b",
+    "artifact_filename": "SYNTHETIC 증인 등 출석요구의 건.pdf",
     "page_url": "https://synthetic-test.na.go.kr/cmmit/bbs/SYNTHETIC/view.do?nttId=0&menuNo=0",
     "attachment_url": "https://synthetic-test.na.go.kr/cmmit/prevew/docsPreview/previewDocs.do?atchFileId=synthetic-1&fileSn=1&viewType=CONTBODY",
-    "attachment_filename": "SYNTHETIC 증인 등 출석요구의 건.pdf",
-    "attachment_type": "PDF",
-    "attachment_sha256": "4b178ca59c28981111abfa1f31004774310fcb2131c394455a77933aa7a2d17b",
+    "received_via": null,
+    "received_at": null,
     "list_title": "SYNTHETIC 증인 등 출석요구의 건",
     "list_version": "ADOPTED-2026-09-28",
     "adoption_date": "2026-09-28",
+    "assumed_year": null,
     "rights_mark": "SYNTHETIC_TEST_ONLY",
     "automation_gate": "AUTOMATED_COMMITTEE_HTML_BLOCKED"
   },
-  "declared_totals": {"증인": 2, "참고인": 1},
+  "declared_totals": {
+    "증인": 2,
+    "참고인": 1
+  },
   "rows": [
     {
       "row_number": 1,
@@ -22,10 +29,15 @@
       "name": "합성증인 갑",
       "affiliation_title": "합성기관 대표이사",
       "list_section": "일반증인",
-      "attendance_date": "2026-10-06",
       "target_institution": null,
       "request_reason_text": "합성 신청사유 문구",
-      "locator": {"page_number": 1, "table_index": 1, "table_row": 1}
+      "locator": {
+        "page_number": 1,
+        "table_index": 1,
+        "table_row": 1
+      },
+      "attendance_date_text": null,
+      "attendance_date": "2026-10-06"
     },
     {
       "row_number": 2,
@@ -33,10 +45,15 @@
       "name": "합성증인 을",
       "affiliation_title": "합성공단 이사장",
       "list_section": "기관증인",
-      "attendance_date": null,
       "target_institution": "합성공단",
       "request_reason_text": null,
-      "locator": {"page_number": 1, "table_index": 1, "table_row": 2}
+      "locator": {
+        "page_number": 1,
+        "table_index": 1,
+        "table_row": 2
+      },
+      "attendance_date_text": null,
+      "attendance_date": null
     },
     {
       "row_number": 3,
@@ -44,10 +61,15 @@
       "name": "합성참고인 병",
       "affiliation_title": null,
       "list_section": null,
-      "attendance_date": null,
       "target_institution": null,
       "request_reason_text": null,
-      "locator": {"page_number": 2, "table_index": 2, "table_row": 1}
+      "locator": {
+        "page_number": 2,
+        "table_index": 2,
+        "table_row": 1
+      },
+      "attendance_date_text": null,
+      "attendance_date": null
     }
   ]
 }

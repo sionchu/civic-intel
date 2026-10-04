@@ -17,6 +17,7 @@ from packages.verification.gukgam_witness_import import (
     GukgamWitnessCapture,
     GukgamWitnessImportError,
     build_gukgam_witness_capture,
+    claim_subject_status,
 )
 
 
@@ -55,14 +56,21 @@ def _load_capture(args: argparse.Namespace) -> GukgamWitnessCapture:
     )
 
 
-def _safe_report(capture: GukgamWitnessCapture) -> dict[str, object]:
+def _safe_report(
+    capture: GukgamWitnessCapture, subject_status: str
+) -> dict[str, object]:
     source = capture.packet.source
     return {
         "feeder": GUKGAM_WITNESS_FEEDER,
         "committee_name": source.committee_name,
+        "acquisition_channel": source.acquisition_channel,
+        "artifact_format": source.artifact_format,
         "list_version": source.list_version,
-        "adoption_date": source.adoption_date.isoformat(),
-        "attachment_sha256": source.attachment_sha256,
+        "list_year": source.list_year,
+        "adoption_date": source.adoption_date.isoformat() if source.adoption_date else None,
+        "artifact_sha256": source.artifact_sha256,
+        # Observation-only unless a committee Organization already exists; never created here.
+        "claim_subject": subject_status,
         "reviewed_packet_hash": capture.packet_hash,
         "witness_rows": sum(1 for r in capture.packet.rows if r.category == "증인"),
         "reference_person_rows": sum(
@@ -88,20 +96,25 @@ def main(argv: list[str] | None = None) -> int:
     ) as exc:
         parser.error(str(exc))
 
+    repository = SqlAlchemyRepository(args.database_url) if args.database_url else None
+    subject_status = claim_subject_status(
+        repository.organizations(current_only=True) if repository else None,
+        capture.packet.source.committee_name,
+    )
+
     if not args.commit:
         print(
             json.dumps(
-                {"status": "DRY_RUN"} | _safe_report(capture),
+                {"status": "DRY_RUN"} | _safe_report(capture, subject_status),
                 ensure_ascii=False,
                 indent=2,
                 sort_keys=True,
             )
         )
         return 0
-    if not args.database_url:
+    if repository is None:
         parser.error("--database-url is required with --commit")
 
-    repository = SqlAlchemyRepository(args.database_url)
     run = repository.start_source_run(
         GUKGAM_WITNESS_FEEDER, capture.scope_key, metadata=capture.run_metadata
     )
@@ -129,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
         json.dumps(
             {
                 "status": "COMMITTED",
-                **_safe_report(capture),
+                **_safe_report(capture, subject_status),
                 "run_id": str(finished.id),
                 "snapshot_id": str(committed.snapshot_id),
                 "observations_created": committed.observations_created,

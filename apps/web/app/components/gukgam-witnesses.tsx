@@ -17,6 +17,14 @@ function groupByCommittee(
   return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ko-KR"));
 }
 
+function locatorLabel(item: GukgamWitnessProjectionItem): string {
+  const place =
+    item.page_number === null
+      ? `표 ${item.table_index} ${item.table_row}행`
+      : `p.${item.page_number}`;
+  return `${place}, ${item.row_number}번`;
+}
+
 // Server component. Names are source-listed text: no Person link is rendered.
 export default async function GukgamWitnesses() {
   const result = await getGukgamWitnesses();
@@ -51,11 +59,23 @@ export default async function GukgamWitnesses() {
                       <li key={item.claim_id}>
                         <strong>{item.name}</strong>
                         <span>{item.affiliation_title ?? "소속·직위 미기재"}</span>
+                        {item.attendance_date_text ? (
+                          <span className="gukgam-witnesses-date">
+                            출석 {item.attendance_date_text}
+                          </span>
+                        ) : null}
                         <small>
-                          {item.list_version} · {item.adoption_date} 의결 ·{" "}
-                          <a href={item.source_url} rel="noreferrer noopener">
-                            공식 출처 (p.{item.page_number}, {item.row_number}번)
-                          </a>
+                          {item.list_version}
+                          {item.adoption_date ? ` · ${item.adoption_date} 의결` : ""} ·{" "}
+                          {item.source_url ? (
+                            <a href={item.source_url} rel="noreferrer noopener">
+                              공식 출처 ({locatorLabel(item)})
+                            </a>
+                          ) : (
+                            <span className="gukgam-witnesses-provenance">
+                              {item.provenance_label} ({locatorLabel(item)})
+                            </span>
+                          )}
                         </small>
                       </li>
                     ))}

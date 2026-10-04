@@ -25,3 +25,15 @@ test("Gukgam witness data helper targets the published-only route", async () => 
   const types = await read("../app/types.ts");
   assert.match(types, /SOURCE_LISTED_TEXT_NO_PERSON_LINK/);
 });
+
+test("Gukgam witness component labels owner-supplied copies and HWP table locators", async () => {
+  const component = await read("../app/components/gukgam-witnesses.tsx");
+  assert.match(component, /item\.provenance_label/);
+  assert.match(component, /item\.attendance_date_text/);
+  assert.match(component, /item\.page_number === null/);
+  assert.match(component, /item\.source_url \? \(/);
+  const types = await read("../app/types.ts");
+  assert.match(types, /page_number: number \| null/);
+  assert.match(types, /source_url: string \| null/);
+  assert.match(types, /"OWNER_SUPPLIED_COPY"/);
+});

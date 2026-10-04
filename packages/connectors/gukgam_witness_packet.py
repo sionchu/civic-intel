@@ -9,18 +9,25 @@ from datetime import date
 from typing import Any
 from urllib.parse import urlparse
 
-WITNESS_PACKET_SCHEMA = "gukgam-witness-reviewed-packet.v1"
+WITNESS_PACKET_SCHEMA = "gukgam-witness-reviewed-packet.v2"
 REVIEW_REQUIRED = "REVIEW_REQUIRED"
 HUMAN_REVIEWED = "HUMAN_REVIEWED"
 WITNESS_REVIEW_STATUSES = frozenset({REVIEW_REQUIRED, HUMAN_REVIEWED})
 WITNESS_AUTOMATION_GATE = "AUTOMATED_COMMITTEE_HTML_BLOCKED"
 WITNESS_CATEGORIES = ("증인", "참고인")
-ATTACHMENT_TYPES = frozenset({"PDF", "HWP", "HWPX"})
+ARTIFACT_FORMATS = frozenset({"PDF", "HWP", "HWPX"})
+PAGELESS_ARTIFACT_FORMATS = frozenset({"HWP", "HWPX"})
+CHANNEL_OFFICIAL_SITE = "OFFICIAL_SITE"
+CHANNEL_OWNER_SUPPLIED_COPY = "OWNER_SUPPLIED_COPY"
+ACQUISITION_CHANNELS = frozenset({CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY})
+OWNER_COPY_LABEL = "제공받은 사본 — 공식 게시 위치 확인 전"
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _LIST_VERSION = re.compile(r"^[0-9A-Za-z가-힣._-]{1,64}$")
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _PHONE = re.compile(r"\d{2,4}[-.\s]\d{3,4}[-.\s]\d{4}")
+# "10. 7." / "10.7" / "2026. 10. 7." (leading text only; trailing weekday/time is ignored)
+_PRINTED_DATE = re.compile(r"^\s*(?:(\d{4})\s*[.\-/]\s*)?(\d{1,2})\s*[.\-/]\s*(\d{1,2})(?!\d)")
 
 
 class GukgamWitnessPacketError(ValueError):
@@ -63,6 +70,12 @@ def _positive_int(value: object, field: str) -> int:
     return value
 
 
+def _optional_positive_int(value: object, field: str) -> int | None:
+    if value is None:
+        return None
+    return _positive_int(value, field)
+
+
 def _iso_date(value: object, field: str) -> date:
     try:
         return date.fromisoformat(_required_text(value, field))
@@ -97,18 +110,54 @@ def _official_https_url(value: object, field: str) -> str:
 
 
 @dataclass(frozen=True)
+class AssumedYear:
+    """Year the packet declares for printed dates that carry no year, with its basis."""
+
+    year: int
+    basis: str
+
+    @classmethod
+    def from_mapping(cls, raw: object) -> AssumedYear:
+        if not isinstance(raw, Mapping):
+            raise GukgamWitnessPacketError("witness packet assumed_year is malformed")
+        _exact_keys(raw, {"year", "basis"}, "witness packet assumed_year")
+        year = _positive_int(raw.get("year"), "assumed_year.year")
+        if not 2000 <= year <= 2100:
+            raise GukgamWitnessPacketError("witness packet assumed_year.year is out of range")
+        return cls(year=year, basis=_required_text(raw.get("basis"), "assumed_year.basis"))
+
+    def normalized(self) -> dict[str, object]:
+        return {"year": self.year, "basis": self.basis}
+
+
+@dataclass(frozen=True)
 class WitnessSource:
     committee_name: str
-    page_url: str
-    attachment_url: str
-    attachment_filename: str
-    attachment_type: str
-    attachment_sha256: str
+    acquisition_channel: str
+    artifact_format: str
+    artifact_sha256: str
+    artifact_filename: str | None
+    page_url: str | None
+    attachment_url: str | None
+    received_via: str | None
+    received_at: date | None
     list_title: str
     list_version: str
-    adoption_date: date
+    adoption_date: date | None
+    assumed_year: AssumedYear | None
     rights_mark: str | None
     automation_gate: str
+
+    @property
+    def is_owner_supplied_copy(self) -> bool:
+        return self.acquisition_channel == CHANNEL_OWNER_SUPPLIED_COPY
+
+    @property
+    def list_year(self) -> int:
+        if self.adoption_date is not None:
+            return self.adoption_date.year
+        assert self.assumed_year is not None  # enforced by from_mapping
+        return self.assumed_year.year
 
     @classmethod
     def from_mapping(cls, raw: Mapping[str, Any]) -> WitnessSource:
@@ -116,35 +165,32 @@ class WitnessSource:
             raw,
             {
                 "committee_name",
+                "acquisition_channel",
+                "artifact_format",
+                "artifact_sha256",
+                "artifact_filename",
                 "page_url",
                 "attachment_url",
-                "attachment_filename",
-                "attachment_type",
-                "attachment_sha256",
+                "received_via",
+                "received_at",
                 "list_title",
                 "list_version",
                 "adoption_date",
+                "assumed_year",
                 "rights_mark",
                 "automation_gate",
             },
             "witness packet source",
         )
-        page_url = _official_https_url(raw.get("page_url"), "source.page_url")
-        attachment_url = _official_https_url(
-            raw.get("attachment_url"), "source.attachment_url"
-        )
-        if urlparse(page_url).hostname != urlparse(attachment_url).hostname:
-            raise GukgamWitnessPacketError(
-                "witness packet attachment must be on the same official host as the page"
-            )
-        attachment_type = _required_text(
-            raw.get("attachment_type"), "source.attachment_type"
-        )
-        if attachment_type not in ATTACHMENT_TYPES:
-            raise GukgamWitnessPacketError("witness packet attachment_type is unsupported")
-        sha256 = _required_text(raw.get("attachment_sha256"), "source.attachment_sha256")
+        channel = _required_text(raw.get("acquisition_channel"), "source.acquisition_channel")
+        if channel not in ACQUISITION_CHANNELS:
+            raise GukgamWitnessPacketError("witness packet acquisition_channel is unsupported")
+        artifact_format = _required_text(raw.get("artifact_format"), "source.artifact_format")
+        if artifact_format not in ARTIFACT_FORMATS:
+            raise GukgamWitnessPacketError("witness packet artifact_format is unsupported")
+        sha256 = _required_text(raw.get("artifact_sha256"), "source.artifact_sha256")
         if not _SHA256.fullmatch(sha256):
-            raise GukgamWitnessPacketError("witness packet attachment_sha256 is invalid")
+            raise GukgamWitnessPacketError("witness packet artifact_sha256 is invalid")
         list_version = _required_text(raw.get("list_version"), "source.list_version")
         if not _LIST_VERSION.fullmatch(list_version):
             raise GukgamWitnessPacketError("witness packet list_version is not key-safe")
@@ -155,20 +201,76 @@ class WitnessSource:
             raise GukgamWitnessPacketError(
                 "witness packet automation gate is not the reviewed blocked state"
             )
+
+        page_url = (
+            _official_https_url(raw["page_url"], "source.page_url")
+            if raw.get("page_url") is not None
+            else None
+        )
+        attachment_url = (
+            _official_https_url(raw["attachment_url"], "source.attachment_url")
+            if raw.get("attachment_url") is not None
+            else None
+        )
+        if page_url and attachment_url and (
+            urlparse(page_url).hostname != urlparse(attachment_url).hostname
+        ):
+            raise GukgamWitnessPacketError(
+                "witness packet attachment must be on the same official host as the page"
+            )
+        filename = _optional_text(raw.get("artifact_filename"), "source.artifact_filename")
+        received_via = _optional_text(raw.get("received_via"), "source.received_via")
+        received_at = _optional_iso_date(raw.get("received_at"), "source.received_at")
+        adoption_date = _optional_iso_date(raw.get("adoption_date"), "source.adoption_date")
+        assumed_raw = raw.get("assumed_year")
+        assumed_year = AssumedYear.from_mapping(assumed_raw) if assumed_raw is not None else None
+
+        if channel == CHANNEL_OFFICIAL_SITE:
+            if page_url is None or attachment_url is None:
+                raise GukgamWitnessPacketError(
+                    "witness packet OFFICIAL_SITE requires page_url and attachment_url"
+                )
+            if filename is None:
+                raise GukgamWitnessPacketError("witness packet lacks source.artifact_filename")
+            if adoption_date is None:
+                raise GukgamWitnessPacketError("witness packet lacks source.adoption_date")
+            if received_via is not None or received_at is not None:
+                raise GukgamWitnessPacketError(
+                    "witness packet received_via/received_at apply to OWNER_SUPPLIED_COPY only"
+                )
+        else:
+            if received_via is None:
+                raise GukgamWitnessPacketError("witness packet lacks source.received_via")
+            if received_at is None:
+                raise GukgamWitnessPacketError("witness packet lacks source.received_at")
+            if adoption_date is None and assumed_year is None:
+                raise GukgamWitnessPacketError(
+                    "witness packet needs adoption_date or assumed_year to fix the list year"
+                )
+        if (
+            adoption_date is not None
+            and assumed_year is not None
+            and adoption_date.year != assumed_year.year
+        ):
+            raise GukgamWitnessPacketError(
+                "witness packet assumed_year conflicts with adoption_date"
+            )
         return cls(
             committee_name=_required_text(
                 raw.get("committee_name"), "source.committee_name"
             ),
+            acquisition_channel=channel,
+            artifact_format=artifact_format,
+            artifact_sha256=sha256,
+            artifact_filename=filename,
             page_url=page_url,
             attachment_url=attachment_url,
-            attachment_filename=_required_text(
-                raw.get("attachment_filename"), "source.attachment_filename"
-            ),
-            attachment_type=attachment_type,
-            attachment_sha256=sha256,
+            received_via=received_via,
+            received_at=received_at,
             list_title=_required_text(raw.get("list_title"), "source.list_title"),
             list_version=list_version,
-            adoption_date=_iso_date(raw.get("adoption_date"), "source.adoption_date"),
+            adoption_date=adoption_date,
+            assumed_year=assumed_year,
             rights_mark=_optional_text(raw.get("rights_mark"), "source.rights_mark"),
             automation_gate=WITNESS_AUTOMATION_GATE,
         )
@@ -176,14 +278,18 @@ class WitnessSource:
     def normalized(self) -> dict[str, object]:
         return {
             "committee_name": self.committee_name,
+            "acquisition_channel": self.acquisition_channel,
+            "artifact_format": self.artifact_format,
+            "artifact_sha256": self.artifact_sha256,
+            "artifact_filename": self.artifact_filename,
             "page_url": self.page_url,
             "attachment_url": self.attachment_url,
-            "attachment_filename": self.attachment_filename,
-            "attachment_type": self.attachment_type,
-            "attachment_sha256": self.attachment_sha256,
+            "received_via": self.received_via,
+            "received_at": self.received_at.isoformat() if self.received_at else None,
             "list_title": self.list_title,
             "list_version": self.list_version,
-            "adoption_date": self.adoption_date.isoformat(),
+            "adoption_date": self.adoption_date.isoformat() if self.adoption_date else None,
+            "assumed_year": self.assumed_year.normalized() if self.assumed_year else None,
             "rights_mark": self.rights_mark,
             "automation_gate": self.automation_gate,
         }
@@ -191,16 +297,41 @@ class WitnessSource:
 
 @dataclass(frozen=True)
 class WitnessRowLocator:
-    page_number: int
+    page_number: int | None
     table_index: int
     table_row: int
 
-    def normalized(self) -> dict[str, int]:
+    def normalized(self) -> dict[str, int | None]:
         return {
             "page_number": self.page_number,
             "table_index": self.table_index,
             "table_row": self.table_row,
         }
+
+
+def derive_attendance_date(
+    text: str | None, assumed_year: AssumedYear | None
+) -> date | None:
+    """Derive an ISO date from printed text only with a printed or declared year."""
+
+    if text is None:
+        return None
+    match = _PRINTED_DATE.match(text)
+    if match is None:
+        return None
+    printed_year, month, day = match.groups()
+    if printed_year is not None:
+        year = int(printed_year)
+    elif assumed_year is not None:
+        year = assumed_year.year
+    else:
+        return None
+    try:
+        return date(year, int(month), int(day))
+    except ValueError:
+        raise GukgamWitnessPacketError(
+            "witness packet row.attendance_date_text is not a valid date"
+        ) from None
 
 
 @dataclass(frozen=True)
@@ -210,13 +341,20 @@ class WitnessRow:
     name: str
     affiliation_title: str | None
     list_section: str | None
+    attendance_date_text: str | None
     attendance_date: date | None
     target_institution: str | None
     request_reason_text: str | None
     locator: WitnessRowLocator
 
     @classmethod
-    def from_mapping(cls, raw: Mapping[str, Any]) -> WitnessRow:
+    def from_mapping(
+        cls,
+        raw: Mapping[str, Any],
+        *,
+        artifact_format: str,
+        assumed_year: AssumedYear | None,
+    ) -> WitnessRow:
         _exact_keys(
             raw,
             {
@@ -225,6 +363,7 @@ class WitnessRow:
                 "name",
                 "affiliation_title",
                 "list_section",
+                "attendance_date_text",
                 "attendance_date",
                 "target_institution",
                 "request_reason_text",
@@ -241,6 +380,24 @@ class WitnessRow:
         _exact_keys(
             locator_raw, {"page_number", "table_index", "table_row"}, "witness row locator"
         )
+        page_number = _optional_positive_int(locator_raw.get("page_number"), "locator.page_number")
+        if page_number is None and artifact_format not in PAGELESS_ARTIFACT_FORMATS:
+            raise GukgamWitnessPacketError(
+                "witness packet locator.page_number is required for PDF artifacts"
+            )
+        text = _optional_text(raw.get("attendance_date_text"), "row.attendance_date_text")
+        explicit = _optional_iso_date(raw.get("attendance_date"), "row.attendance_date")
+        derived = derive_attendance_date(text, assumed_year)
+        if explicit is not None and text is not None:
+            if derived is None:
+                raise GukgamWitnessPacketError(
+                    "witness packet row.attendance_date needs a printed year or assumed_year"
+                )
+            if derived != explicit:
+                raise GukgamWitnessPacketError(
+                    "witness packet row.attendance_date differs from attendance_date_text"
+                )
+        attendance_date = explicit or derived
         return cls(
             row_number=_positive_int(raw.get("row_number"), "row.row_number"),
             category=category,
@@ -249,9 +406,8 @@ class WitnessRow:
                 raw.get("affiliation_title"), "row.affiliation_title"
             ),
             list_section=_optional_text(raw.get("list_section"), "row.list_section"),
-            attendance_date=_optional_iso_date(
-                raw.get("attendance_date"), "row.attendance_date"
-            ),
+            attendance_date_text=text,
+            attendance_date=attendance_date,
             target_institution=_optional_text(
                 raw.get("target_institution"), "row.target_institution"
             ),
@@ -259,7 +415,7 @@ class WitnessRow:
                 raw.get("request_reason_text"), "row.request_reason_text"
             ),
             locator=WitnessRowLocator(
-                page_number=_positive_int(locator_raw.get("page_number"), "locator.page_number"),
+                page_number=page_number,
                 table_index=_positive_int(locator_raw.get("table_index"), "locator.table_index"),
                 table_row=_positive_int(locator_raw.get("table_row"), "locator.table_row"),
             ),
@@ -272,6 +428,7 @@ class WitnessRow:
             "name": self.name,
             "affiliation_title": self.affiliation_title,
             "list_section": self.list_section,
+            "attendance_date_text": self.attendance_date_text,
             "attendance_date": (
                 self.attendance_date.isoformat() if self.attendance_date else None
             ),
@@ -309,17 +466,17 @@ class ReviewedGukgamWitnessPacket:
         return self.review_status == HUMAN_REVIEWED
 
     def record_key(self, row: WitnessRow) -> str:
-        """committee + list version + row number; never a name."""
+        """year + committee + list version + row number; never a name."""
 
         return (
-            f"{self.source.adoption_date.year}:{self.source.committee_name}:"
+            f"{self.source.list_year}:{self.source.committee_name}:"
             f"{self.source.list_version}:{row.row_number}"
         )
 
     @property
     def scope_key(self) -> str:
         return (
-            f"{self.source.adoption_date.year}:{self.source.committee_name}:"
+            f"{self.source.list_year}:{self.source.committee_name}:"
             f"{self.source.list_version}"
         )
 
@@ -352,11 +509,18 @@ def parse_reviewed_gukgam_witness_packet(
             raise GukgamWitnessPacketError("witness packet declared_totals value is invalid")
         totals[str(key)] = value
 
+    source = WitnessSource.from_mapping(source_raw)
     rows: list[WitnessRow] = []
     for item in rows_raw:
         if not isinstance(item, Mapping):
             raise GukgamWitnessPacketError("witness packet row is malformed")
-        rows.append(WitnessRow.from_mapping(item))
+        rows.append(
+            WitnessRow.from_mapping(
+                item,
+                artifact_format=source.artifact_format,
+                assumed_year=source.assumed_year,
+            )
+        )
     numbers = [row.row_number for row in rows]
     if len(set(numbers)) != len(numbers) or numbers != sorted(numbers):
         raise GukgamWitnessPacketError(
@@ -376,7 +540,7 @@ def parse_reviewed_gukgam_witness_packet(
             )
     return ReviewedGukgamWitnessPacket(
         review_status=str(status),
-        source=WitnessSource.from_mapping(source_raw),
+        source=source,
         declared_totals=totals,
         rows=tuple(rows),
     )

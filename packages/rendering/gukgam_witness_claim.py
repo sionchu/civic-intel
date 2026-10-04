@@ -5,7 +5,12 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from uuid import UUID, uuid5
 
-from packages.connectors.gukgam_witness_packet import WITNESS_CATEGORIES
+from packages.connectors.gukgam_witness_packet import (
+    CHANNEL_OFFICIAL_SITE,
+    CHANNEL_OWNER_SUPPLIED_COPY,
+    OWNER_COPY_LABEL,
+    WITNESS_CATEGORIES,
+)
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
@@ -21,8 +26,10 @@ from packages.verification.gukgam_witness_import import (
     GUKGAM_WITNESS_FEEDER,
     GUKGAM_WITNESS_SEMANTIC_SCOPE,
     GUKGAM_WITNESS_SOURCE_CONTRACT,
+    OWNER_COPY_SOURCE_CLASS,
 )
 
+OFFICIAL_SOURCE_CLASS = "official_reviewed_committee_attachment"
 GUKGAM_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS_SOURCE_TEXT"
 GUKGAM_WITNESS_CLAIM_NAMESPACE = UUID("3c1f2f55-0b0e-4b7e-9a25-6f4c1d8e7a10")
 GUKGAM_WITNESS_EVENT_SEMANTICS = "OFFICIAL_ATTENDANCE_REQUEST_LISTING_NOT_WRONGDOING"
@@ -99,11 +106,29 @@ def build_gukgam_witness_claim(
     else:
         raise GukgamWitnessClaimError("witness Claim subject scope is unsupported")
 
-    adoption_date = _obs_required(observation, "adoption_date")
+    adoption_date = _obs_text(observation, "adoption_date")
     list_title = _obs_required(observation, "list_title")
     list_version = _obs_required(observation, "list_version")
+    list_year = observation.normalized.get("list_year")
+    if isinstance(list_year, bool) or not isinstance(list_year, int):
+        raise GukgamWitnessClaimError("witness observation list_year is invalid")
+    channel = _obs_required(observation, "acquisition_channel")
+    if channel not in (CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY):
+        raise GukgamWitnessClaimError("witness observation acquisition channel is invalid")
+    expected_class = (
+        OWNER_COPY_SOURCE_CLASS if channel == CHANNEL_OWNER_SUPPLIED_COPY else OFFICIAL_SOURCE_CLASS
+    )
+    if policy.source_class != expected_class:
+        raise GukgamWitnessClaimError("witness acquisition channel contradicts the source policy")
     locator = observation.normalized.get("locator")
-    if not isinstance(locator, Mapping) or not isinstance(locator.get("page_number"), int):
+    if (
+        not isinstance(locator, Mapping)
+        or not isinstance(locator.get("table_index"), int)
+        or not isinstance(locator.get("table_row"), int)
+        or not (
+            locator.get("page_number") is None or isinstance(locator.get("page_number"), int)
+        )
+    ):
         raise GukgamWitnessClaimError("witness observation locator is invalid")
     row_number = observation.normalized.get("row_number")
     if not isinstance(row_number, int) or row_number < 1:
@@ -118,20 +143,40 @@ def build_gukgam_witness_claim(
         "committee_name": committee_name,
         "list_title": list_title,
         "list_version": list_version,
-        "adoption_date": adoption_date,
+        "list_year": str(list_year),
+        "acquisition_channel": channel,
         "category": category,
         "witness_name": name,
         "row_number": str(row_number),
-        "page_number": str(locator["page_number"]),
+        "table_index": str(locator["table_index"]),
+        "table_row": str(locator["table_row"]),
         "subject_scope": subject_scope,
         "event_semantics": GUKGAM_WITNESS_EVENT_SEMANTICS,
         "identity_semantics": GUKGAM_WITNESS_IDENTITY_SEMANTICS,
     }
     # request_reason_text is deliberately never copied: the policy denies excerpts.
-    for key in ("affiliation_title", "list_section", "attendance_date"):
+    if locator.get("page_number") is not None:
+        qualifiers["page_number"] = str(locator["page_number"])
+    for key in (
+        "adoption_date",
+        "affiliation_title",
+        "list_section",
+        "attendance_date_text",
+        "attendance_date",
+        "assumed_year_basis",
+    ):
         value = _obs_text(observation, key)
         if value is not None:
             qualifiers[key] = value
+    if channel == CHANNEL_OWNER_SUPPLIED_COPY:
+        qualifiers["provenance_label"] = OWNER_COPY_LABEL
+        received_via = _obs_required(observation, "received_via")
+        received_at = _obs_required(observation, "received_at")
+        qualifiers["received_via"] = received_via
+        qualifiers["received_at"] = received_at
+    valid_from_text = adoption_date or _obs_required(observation, "received_at")
+    if adoption_date is None:
+        qualifiers["valid_from_basis"] = "RECEIVED_AT"
 
     claim_id = uuid5(
         GUKGAM_WITNESS_CLAIM_NAMESPACE,
@@ -148,7 +193,7 @@ def build_gukgam_witness_claim(
         id=claim_id,
         organization_id=organization.id,
         proposition=(
-            f"{committee_name} 2026년도 국정감사 {list_title}({list_version})에 "
+            f"{committee_name} {list_year}년도 국정감사 {list_title}({list_version})에 "
             f"{name}이(가) {category}으로 기재되어 있다."
         ),
         subject=organization.name,
@@ -159,7 +204,7 @@ def build_gukgam_witness_claim(
         publication_status=PublicationStatus.PUBLISHED,
         asserted_as_true=True,
         valid_from=datetime.combine(
-            date.fromisoformat(adoption_date), time.min, tzinfo=UTC
+            date.fromisoformat(valid_from_text), time.min, tzinfo=UTC
         ),
         recorded_at=observation.recorded_at,
     )
@@ -197,16 +242,22 @@ class GukgamWitnessProjectionItem:
     name: str
     affiliation_title: str | None
     list_section: str | None
+    attendance_date_text: str | None
     attendance_date: str | None
+    attendance_year_basis: str | None
     list_title: str
     list_version: str
-    adoption_date: str
+    adoption_date: str | None
     row_number: int
-    page_number: int
+    page_number: int | None
+    table_index: int
+    table_row: int
     subject_scope: str
     organization_id: UUID
     organization_name: str
-    source_url: str
+    acquisition_channel: str
+    provenance_label: str | None
+    source_url: str | None
     claim_id: UUID
     evidence_ids: tuple[UUID, ...]
     source_ids: tuple[UUID, ...]
@@ -220,12 +271,18 @@ class GukgamWitnessProjectionItem:
             "name": self.name,
             "affiliation_title": self.affiliation_title,
             "list_section": self.list_section,
+            "attendance_date_text": self.attendance_date_text,
             "attendance_date": self.attendance_date,
+            "attendance_year_basis": self.attendance_year_basis,
             "list_title": self.list_title,
             "list_version": self.list_version,
             "adoption_date": self.adoption_date,
             "row_number": self.row_number,
             "page_number": self.page_number,
+            "table_index": self.table_index,
+            "table_row": self.table_row,
+            "acquisition_channel": self.acquisition_channel,
+            "provenance_label": self.provenance_label,
             "subject_scope": self.subject_scope,
             "organization": {"id": str(self.organization_id), "name": self.organization_name},
             "source_url": self.source_url,
@@ -268,6 +325,14 @@ class GukgamWitnessProjection:
                 ),
                 "Names are source-listed text and are not linked to canonical People.",
                 "News reports are never used as a source for these rows.",
+                (
+                    f"'{OWNER_COPY_LABEL}' rows come from a copy supplied to the operator; "
+                    "the official posting location has not been confirmed."
+                ),
+                (
+                    "Dates printed without a year are shown as printed; a derived date uses "
+                    "the year the reviewed packet declares, with its stated basis."
+                ),
             ],
         }
 
@@ -315,16 +380,28 @@ def build_gukgam_witness_projection(
                     f"witness projection Claim failed publication gate: {gate.failures}"
                 )
             category = _qualifier(claim, "category")
-            adoption_date = _qualifier(claim, "adoption_date")
+            adoption_date = claim.qualifiers.get("adoption_date")
+            channel = _qualifier(claim, "acquisition_channel")
+            if channel not in (CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY):
+                raise GukgamWitnessClaimError("witness projection acquisition channel is invalid")
             if category not in WITNESS_CATEGORIES:
                 raise GukgamWitnessClaimError("witness projection category is invalid")
             try:
-                adopted = date.fromisoformat(adoption_date)
+                list_year = int(_qualifier(claim, "list_year"))
                 row_number = int(_qualifier(claim, "row_number"))
-                page_number = int(_qualifier(claim, "page_number"))
+                table_index = int(_qualifier(claim, "table_index"))
+                table_row = int(_qualifier(claim, "table_row"))
+                raw_page = claim.qualifiers.get("page_number")
+                page_number = int(raw_page) if raw_page is not None else None
             except ValueError as exc:
                 raise GukgamWitnessClaimError("witness projection qualifier is invalid") from exc
-            if adopted.year != year or row_number < 1 or page_number < 1:
+            if (
+                list_year != year
+                or row_number < 1
+                or table_index < 1
+                or table_row < 1
+                or (page_number is not None and page_number < 1)
+            ):
                 raise GukgamWitnessClaimError("witness projection year/locator is invalid")
             subject_scope = _qualifier(claim, "subject_scope")
             if subject_scope not in (SUBJECT_SCOPE_COMMITTEE, SUBJECT_SCOPE_TARGET_INSTITUTION):
@@ -337,7 +414,12 @@ def build_gukgam_witness_projection(
                 if (
                     found is None
                     or policy is None
-                    or policy.source_class != "official_reviewed_committee_attachment"
+                    or policy.source_class
+                    != (
+                        OWNER_COPY_SOURCE_CLASS
+                        if channel == CHANNEL_OWNER_SUPPLIED_COPY
+                        else OFFICIAL_SOURCE_CLASS
+                    )
                     or item.snapshot_id is None
                     or item.feeder_observation_id is None
                     or item.excerpt is not None
@@ -352,16 +434,30 @@ def build_gukgam_witness_projection(
                     name=_qualifier(claim, "witness_name"),
                     affiliation_title=claim.qualifiers.get("affiliation_title"),
                     list_section=claim.qualifiers.get("list_section"),
+                    attendance_date_text=claim.qualifiers.get("attendance_date_text"),
                     attendance_date=claim.qualifiers.get("attendance_date"),
+                    attendance_year_basis=claim.qualifiers.get("assumed_year_basis"),
                     list_title=_qualifier(claim, "list_title"),
                     list_version=_qualifier(claim, "list_version"),
-                    adoption_date=adoption_date,
+                    adoption_date=adoption_date if isinstance(adoption_date, str) else None,
                     row_number=row_number,
                     page_number=page_number,
+                    table_index=table_index,
+                    table_row=table_row,
                     subject_scope=subject_scope,
                     organization_id=organization.id,
                     organization_name=organization.name,
-                    source_url=str(first_source.url),
+                    acquisition_channel=channel,
+                    provenance_label=(
+                        OWNER_COPY_LABEL if channel == CHANNEL_OWNER_SUPPLIED_COPY else None
+                    ),
+                    # An owner-supplied copy has no official location: never expose the
+                    # placeholder URL.
+                    source_url=(
+                        None
+                        if channel == CHANNEL_OWNER_SUPPLIED_COPY
+                        else str(first_source.url)
+                    ),
                     claim_id=claim.id,
                     evidence_ids=tuple(sorted({e.id for e in evidence}, key=str)),
                     source_ids=tuple(sorted({e.source_id for e in evidence}, key=str)),

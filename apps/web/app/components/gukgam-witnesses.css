@@ -19,3 +19,5 @@
 @media (max-width: 640px) {
   .gukgam-witnesses-category li { grid-template-columns: 1fr; }
 }
+.gukgam-witnesses-date { grid-column: 1 / -1; color: var(--color-ink-muted); font-size: 12px; }
+.gukgam-witnesses-provenance { font-weight: 600; }

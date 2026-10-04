@@ -140,18 +140,24 @@ export type GukgamWitnessProjectionItem = {
   name: string;
   affiliation_title: string | null;
   list_section: string | null;
+  attendance_date_text: string | null;
   attendance_date: string | null;
+  attendance_year_basis: string | null;
   list_title: string;
   list_version: string;
-  adoption_date: string;
+  adoption_date: string | null;
   row_number: number;
-  page_number: number;
+  page_number: number | null;
+  table_index: number;
+  table_row: number;
   subject_scope: "COMMITTEE" | "TARGET_INSTITUTION";
   organization: {
     id: string;
     name: string;
   };
-  source_url: string;
+  acquisition_channel: "OFFICIAL_SITE" | "OWNER_SUPPLIED_COPY";
+  provenance_label: string | null;
+  source_url: string | null;
   claim_id: string;
   evidence_ids: string[];
   source_ids: string[];
