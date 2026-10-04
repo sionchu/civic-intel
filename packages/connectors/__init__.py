@@ -37,6 +37,15 @@ from .open_assembly_schedule import (
     OpenAssemblyScheduleConnector,
     national_assembly_schedule_policy,
 )
+from .open_assembly_votes import (
+    AssemblyBillVoteSummary,
+    AssemblyMemberVoteRecord,
+    AssemblyRollCallContractError,
+    OpenAssemblyBillVoteSummaryConnector,
+    OpenAssemblyMemberVoteConnector,
+    RollCallVoteValue,
+    national_assembly_roll_call_vote_policy,
+)
 
 __all__ = [
     "HISTORICAL_API_CODE",
@@ -46,9 +55,12 @@ __all__ = [
     "LOCAL_ELECTION_TYPES",
     "AssemblyApiError",
     "AssemblyBillRecord",
+    "AssemblyBillVoteSummary",
     "AssemblyHistoricalCareerError",
     "AssemblyHistoricalCareerRecord",
     "AssemblyMemberRecord",
+    "AssemblyMemberVoteRecord",
+    "AssemblyRollCallContractError",
     "AssemblyScheduleRecord",
     "Connector",
     "ConnectorDocument",
@@ -61,10 +73,14 @@ __all__ = [
     "NecWinnerRecord",
     "OfficialRosterFixtureConnector",
     "OpenAssemblyBillConnector",
+    "OpenAssemblyBillVoteSummaryConnector",
     "OpenAssemblyMemberConnector",
+    "OpenAssemblyMemberVoteConnector",
     "OpenAssemblyScheduleConnector",
+    "RollCallVoteValue",
     "national_assembly_bill_policy",
     "national_assembly_member_policy",
+    "national_assembly_roll_call_vote_policy",
     "national_assembly_schedule_policy",
     "nec_local_election_policy",
     "parse_historical_career_records",
