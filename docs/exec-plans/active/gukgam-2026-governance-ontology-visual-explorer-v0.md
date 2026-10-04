@@ -1699,3 +1699,9 @@ cost, move the verified canonical data to it, deploy one exact verified master c
   without checkpoint change.
 - Follow-on DRAFT for the now exact-one MOIS-bound occurrences: 74 items / 70 Organizations,
   manifest `0bbb7d5d…cada`, preflight only. It needs its own Claim approval.
+
+## Current checkpoint — comprehensive schedule inventory (2026-10-04)
+- Owner-supplied copy of 국회사무처 의사국 "2026년도 국정감사 종합일정" (as of 2026-10-01, sha256 3bf5274964d7d34ffc7b5fb3ae6632e94b81658cec6bb3dd2073cbfc02dbc730) parsed into `docs/research/gukgam_2026_assembly_comprehensive_schedule_2026-10-01.json` (semantics DISCOVERY_SCHEDULE_INVENTORY_NOT_CLAIMS). 17 committees; per-date cell counts match the printed 합계 row; 0 ambiguous grid cells; two footnote lines flagged LAYOUT_CONTINUATION_LINE_NO_OWN_DATE_LABEL.
+- Ten committees are new relative to current Claim-backed coverage: 법제사법, 정무, 교육, 외교통일, 산업통상자원중소벤처업, 보건복지, 기후에너지환경노동, 국토교통, 정보, 성평등가족.
+- Official online origin not yet located from the sandbox (robots/egress); candidate pages recorded in `docs/research/gukgam_2026_origin_search_2026-10-04.json`. Not a Claim source until an official locator and reviewed packet exist.
+- Also received owner-supplied copies of the 보건복지위 plan (packet draft on branch work/gukgam-health-plan-packet) and the 교육위 witness list (19 증인 + 4 참고인; real-person packet kept outside git, REVIEW_REQUIRED).
