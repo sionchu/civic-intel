@@ -33,6 +33,8 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Assembly bill participation feeder](architecture/ASSEMBLY_BILL_PARTICIPATION_FEEDER.md)
 - [Assembly committee roster feeder](architecture/ASSEMBLY_COMMITTEE_ROSTER_FEEDER.md)
 - [Assembly committee roster source v0](exec-plans/completed/assembly-committee-roster-source-v0.md)
+- [Assembly subcommittee bill-review feeder](architecture/ASSEMBLY_SUBCOMMITTEE_BILL_REVIEW_FEEDER.md)
+- [Assembly subcommittee bill-review source v0](exec-plans/completed/assembly-subcommittee-bill-review-v0.md)
 - [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
