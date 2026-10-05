@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import OrganizationDirectory from "../components/organization-directory";
 import ReadState from "../components/read-state";
 import { getOrganizations } from "../data";
 import { buildPageMetadata } from "../site-metadata";
@@ -41,31 +41,9 @@ export default async function OrganizationsPage() {
               <span className="eyebrow">Current public directory</span>
               <h2 id="organization-list-title">{organizationsResult.data.length}개의 공개 기관 기록</h2>
             </div>
-            <p>기관을 선택하면 현재 공개된 내용의 Evidence와 Source provenance를 확인할 수 있습니다.</p>
+            <p>기관을 선택하면 공개된 Claim, Evidence와 출처를 확인할 수 있습니다.</p>
           </div>
-          <div className="organization-list">
-            {organizationsResult.data.map((organization, index) => (
-              <Link
-                className="organization-row"
-                href={`/organizations/${organization.id}`}
-                key={organization.id}
-                aria-label={`${organization.name} · Evidence organization record`}
-              >
-                <span className="row-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-                <span className="organization-avatar" aria-hidden="true">{organization.name.trim().slice(0, 1)}</span>
-                <span className="organization-row-main">
-                  <strong>{organization.name}</strong>
-                  <span>{organization.classification ?? "분류 공개 정보 없음"}</span>
-                </span>
-                <span className="organization-row-facts">
-                  <span><small>현재 임원 공개</small><strong>{organization.executive_count}건</strong></span>
-                  <span><small>Published Claim</small><strong>{organization.published_claim_count}건</strong></span>
-                </span>
-                <span className="row-proof">근거 {organization.evidence_count}개 · 기준일 {organization.as_of ?? "정보 없음"}</span>
-                <span className="row-arrow" aria-hidden="true">↗</span>
-              </Link>
-            ))}
-          </div>
+          <OrganizationDirectory organizations={organizationsResult.data} />
         </section>
       )}
     </div>

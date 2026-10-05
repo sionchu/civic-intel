@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 
-// Native <details> cannot open from :target, so open the evidence disclosure that the URL hash
-// (or a clicked in-page anchor) names.
+// Native <details> cannot open from :target, so open the evidence disclosure or Gukgam audit-day
+// disclosure that the URL hash (or a clicked in-page anchor) names.
 function openById(rawId: string) {
   const id = decodeURIComponent(rawId);
   const target = id ? document.getElementById(id) : null;
-  const disclosure = target?.querySelector<HTMLDetailsElement>(":scope > details.evidence-disclosure");
+  const disclosure = target?.querySelector<HTMLDetailsElement>(":scope > details.evidence-disclosure, :scope > details.gukgam-day-disclosure");
   if (!target || !disclosure) return;
   disclosure.open = true;
   requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));

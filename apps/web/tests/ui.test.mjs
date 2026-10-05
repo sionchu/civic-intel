@@ -40,7 +40,7 @@ test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", 
   assert.match(profile, /Wikimedia Commons/);
   assert.match(profile, /portrait\.license_url/);
   assert.doesNotMatch(profile, /src=\{portrait\.source_original_url\}/);
-  assert.match(profile, /profile-stamp/);
+  assert.doesNotMatch(profile, /profile-stamp/);
   assert.match(roster, /className="row-avatar"/);
   assert.doesNotMatch(roster, /portrait/);
 });
@@ -357,8 +357,8 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(page, /getGukgamTargets/);
   assert.match(page, /공개된 피감대상/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
-  assert.match(page, /이 일정의 Claim \/ Evidence 보기/);
-  assert.match(page, /Claim \/ Evidence audit trace/);
+  assert.match(page, /일정의 Claim \/ Evidence 보기/);
+  assert.doesNotMatch(page, /Claim \/ Evidence audit trace/);
   assert.match(page, /organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}/);
   assert.match(data, /getJson\("\/gukgam\/2026\/targets"\)/);
   assert.match(types, /PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1/);
@@ -648,4 +648,59 @@ test("Gukgam search receives only displayed facet values, not evidence IDs", asy
   assert.match(page, /facets: searchFacets\(discovery\.facets\)/);
   assert.match(page, /return facet \? \{ value: facet\.value \} : null;/);
   assert.match(search, /export type GukgamSearchFacets/);
+});
+
+test("Evidence Encyclopedia reading surfaces use field labels, coverage counts and no decorative clichés", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [labels, header, person, org, home, gukgam, opener, styles] = await Promise.all([
+    read("../app/claim-labels.ts"),
+    read("../app/components/record-header.tsx"),
+    read("../app/people/[id]/page.tsx"),
+    read("../app/organizations/[id]/page.tsx"),
+    read("../app/page.tsx"),
+    read("../app/gukgam/2026/page.tsx"),
+    read("../app/components/open-target-details.tsx"),
+    read("../app/styles.css"),
+  ]);
+  // Fact rows never fall back to an internal predicate code.
+  assert.match(labels, /UNMAPPED_PREDICATE_LABEL = "기타 공개 기록"/);
+  assert.match(labels, /NEC_LOCAL_ELECTION_CANDIDACY: "지방선거 후보 등록"/);
+  assert.match(labels, /ALIO_REVIEWED_PERSON_ROLE: "공공기관 임원 공시"/);
+  assert.doesNotMatch(person, /label: claim\.predicate/);
+  assert.match(person, /label: predicateLabel\(claim\.predicate\)/);
+  // Shared header states coverage and recording time, labelled as Civic Intel time, not event time.
+  for (const page of [person, org]) assert.match(page, /<RecordHeader/);
+  assert.match(header, /Civic Intel 기록 시각 · 실제 사건일이 아님/);
+  assert.match(header, /href="#sources"/);
+  // Coverage gaps render as one compact list.
+  assert.match(person, /entry\.kind === "LIMITATION" && !entry\.claim_id/);
+  assert.match(person, /className="limitation-list"/);
+  // Gukgam days are disclosures; the next date is open and hash links open the named day.
+  assert.match(gukgam, /className="gukgam-day-disclosure" open=\{group\.date === nextDate\}/);
+  assert.match(opener, /details\.gukgam-day-disclosure/);
+  assert.match(gukgam, /공개된 위원 명부 Claim 없음/);
+  // Home leads with the record path and the next official audit date.
+  assert.match(home, /focusDate\(scheduleGroups\)/);
+  assert.match(home, /전체 감사대상 목록이 아닙니다/);
+  // Decorative defaults stay out of public pages.
+  for (const page of [person, org, home, gukgam]) {
+    assert.doesNotMatch(page, /✦|<em>|entry-index|coverage-strip|profile-stamp/);
+    assert.doesNotMatch(page, /<span>0[1-9]<\/span>/);
+  }
+  assert.doesNotMatch(styles, /\.gukgam-hero|\.principles|\.eyebrow-mark|\.profile-stamp/);
+});
+
+test("large directories page deterministically and filter without ranking or identity changes", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [roster, orgDirectory, orgPage] = await Promise.all([
+    read("../app/components/roster-grid.tsx"),
+    read("../app/components/organization-directory.tsx"),
+    read("../app/organizations/page.tsx"),
+  ]);
+  assert.match(roster, /export const DIRECTORY_PAGE_SIZE = 60/);
+  assert.match(roster, /visiblePeople\.slice\(0, limit\)/);
+  assert.match(orgDirectory, /visible\.slice\(0, limit\)/);
+  assert.match(orgPage, /<OrganizationDirectory organizations=\{organizationsResult\.data\} \/>/);
+  assert.doesNotMatch(orgDirectory, /organizations\.sort|visible\.sort|score|rank|fetch\(/i);
+  for (const source of [roster, orgDirectory]) assert.doesNotMatch(source, /row-index|padStart/);
 });

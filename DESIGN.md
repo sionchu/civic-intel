@@ -63,8 +63,8 @@ breakpoint requires one.
 
 ### Layout and containers
 
-The content container is capped at 1180px with fluid 20–48px gutters. Home uses a two-column
-introduction that collapses to one column. People uses a readable directory column with flat
+The content container is capped at 1180px with fluid 20–48px gutters. Home is a single reading
+column: a short introduction, the next official Gukgam date, then directory entry rows. People uses a readable directory column with flat
 editorial rows and one mobile column. Profile pages keep their narrow index beside a readable
 content column and reflow below 820px. Long Korean values and identifiers wrap instead of clip.
 
@@ -90,10 +90,21 @@ Operational IDs and full audit details remain expandable; mutation success is ne
 Portraits are an optional Person-detail presentation asset only. A portrait is displayed only
 after an individual file-level rights review and an exact binding to a resolved canonical Person
 ID; the visible creator, source-file and license links remain beside the image. The local copy
-keeps the reviewed aspect ratio without an additional crop and falls back to the existing
-initials/CI stamp when the review is absent or withdrawn. Portrait coverage has no semantic
+keeps the reviewed aspect ratio without an additional crop; when the review is absent or withdrawn
+the header simply shows no image (no decorative stamp or placeholder). Portrait coverage has no semantic
 meaning, is not used by directory search, and never comes from face recognition, a generated
 likeness or a name-only match.
+
+### Record header
+
+Person and Organization pages share one `RecordHeader`: a plain kind label, the canonical name at
+reading size (not display size), the identity/record status chip, one plain-language sentence, and
+a coverage line (`공개 Claim` count, `출처` count linking to the source section, `최근 기록 반영`
+labelled as Civic Intel recording time rather than an event date). Counts describe what is
+published, never the subject.
+
+Fact-box labels come from `apps/web/app/claim-labels.ts`; an unmapped predicate reads
+`기타 공개 기록` and never exposes an internal code in the reading flow.
 
 ### Navigation
 
@@ -103,7 +114,10 @@ navigation.
 
 ### Tables and data-dense UI
 
-People are presented as stacked readable rows rather than a gallery or wide table. Evidence is
+People and Organizations are presented as stacked readable rows rather than a gallery or wide
+table, without decorative row numbers. Large directories draw 60 rows at a time with an explicit
+"더 보기" button; paging and the name/classification filters change only what is drawn, never order
+or membership. Evidence is
 presented as stacked readable rows. Source titles and policy summaries are visible; UUIDs, hashes
 and snapshot references stay behind `details` disclosure.
 
@@ -135,6 +149,14 @@ removing transforms and smooth scrolling.
 At narrow widths, cards become one column, the profile index becomes a normal flow panel and
 metadata wraps instead of clipping. The page includes a skip link, a Korean document language,
 semantic headings/landmarks, labelled search, visible focus and touch targets of at least 44px.
+
+### Anti-defaults
+
+Public pages do not use: marketing slogans or display-size hero headings before data, accent-coloured
+`<em>` words, decorative `01 / 02 / 03` numbering, KPI counter strips, sparkle glyphs, decorative
+stamps, one rounded card per coverage gap, or per-row UUID disclosures in schedules. Long event
+schedules collapse by day (`<details>`), with the current/next day open and hash links opening the
+named day.
 
 ## Do / Don't
 

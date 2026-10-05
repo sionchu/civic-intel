@@ -14,6 +14,10 @@ const FACETS = [
 
 type FilterKey = (typeof FACETS)[number][0];
 
+// Render the directory in deterministic pages so a large roster stays usable on mobile. Paging only
+// limits how many rows are drawn; order and membership are unchanged.
+export const DIRECTORY_PAGE_SIZE = 60;
+
 function facetValue(discovery: PeopleDiscovery | undefined, key: FilterKey): string | null {
   return discovery?.facets[key]?.value ?? null;
 }
@@ -21,6 +25,7 @@ function facetValue(discovery: PeopleDiscovery | undefined, key: FilterKey): str
 export default function RosterGrid({ people }: { people: Person[] }) {
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Partial<Record<FilterKey, string>>>({});
+  const [limit, setLimit] = useState(DIRECTORY_PAGE_SIZE);
   const searchTerm = query.trim().toLocaleLowerCase();
   const facetOptions = useMemo(
     () => FACETS.map(([key, label]) => ({
@@ -58,11 +63,13 @@ export default function RosterGrid({ people }: { people: Person[] }) {
 
   function updateFilter(key: FilterKey, value: string) {
     setFilters((current) => ({ ...current, [key]: value || undefined }));
+    setLimit(DIRECTORY_PAGE_SIZE);
   }
 
   function clearFilters() {
     setQuery("");
     setFilters({});
+    setLimit(DIRECTORY_PAGE_SIZE);
   }
 
   return (
@@ -81,7 +88,7 @@ export default function RosterGrid({ people }: { people: Person[] }) {
           <input
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => { setQuery(event.target.value); setLimit(DIRECTORY_PAGE_SIZE); }}
             placeholder="이름으로 찾기"
           />
         </label>
@@ -123,7 +130,7 @@ export default function RosterGrid({ people }: { people: Person[] }) {
         </div>
       ) : (
         <div className="roster-list">
-          {visiblePeople.map((person, index) => {
+          {visiblePeople.slice(0, limit).map((person) => {
             const facets = person.discovery?.facets;
             const sameNameCount = sameNameCounts.get(person.canonical_name) ?? 1;
             const role = facets?.role?.value;
@@ -139,7 +146,6 @@ export default function RosterGrid({ people }: { people: Person[] }) {
                 key={person.id}
                 aria-label={`${person.canonical_name}${differentiators ? ` · ${differentiators}` : ""} · Evidence profile`}
               >
-                <span className="row-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                 <span className="row-avatar" aria-hidden="true">{person.canonical_name.trim().slice(0, 1)}</span>
                 <span className="row-main">
                   <span className="row-name-line">
@@ -162,6 +168,12 @@ export default function RosterGrid({ people }: { people: Person[] }) {
             );
           })}
         </div>
+      )}
+      {visiblePeople.length > limit && (
+        <button className="directory-more" type="button" onClick={() => setLimit((current) => current + DIRECTORY_PAGE_SIZE)}>
+          {Math.min(DIRECTORY_PAGE_SIZE, visiblePeople.length - limit)}명 더 보기
+          <span>{limit} / {visiblePeople.length}명 표시 중</span>
+        </button>
       )}
     </>
   );
