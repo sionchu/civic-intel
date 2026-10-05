@@ -195,7 +195,9 @@ Proven:
 L3 is blocked by:
 
 1. issued-key execution;
-2. a bounded complete `CONF_ID` meeting universe;
+2. ~~a bounded complete `CONF_ID` meeting universe~~ — acquired for the plenary and committee
+   minutes indexes by [ASSEMBLY_MEETING_UNIVERSE_FEEDER.md](ASSEMBLY_MEETING_UNIVERSE_FEEDER.md)
+   (22nd Assembly: 1,954 meetings); expanding each universe `CONF_ID` is still open;
 3. page/checkpoint/resume/idempotency coverage;
 4. agenda-row and meeting-bill relation version semantics;
 5. reviewed committee and bill canonical joins.

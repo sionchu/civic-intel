@@ -512,3 +512,291 @@ def _load_document(document: ConnectorDocument, label: str) -> dict:
     if not isinstance(payload, dict):
         raise AssemblyApiError(f"{label} document is malformed")
     return payload
+
+
+# --------------------------------------------------------------------------- minutes indexes
+
+MINUTES_PDF_HOST = "record.assembly.go.kr"
+MINUTES_PDF_PATH = "/assembly/viewer/minutes/download/pdf.do"
+
+
+@dataclass(frozen=True)
+class AssemblyMinutesIndexRow:
+    """One agenda-item row of an Open Assembly minutes index; many rows share a CONF_ID."""
+
+    index_code: str
+    meeting_id: str
+    minutes_number: int
+    assembly_age: int
+    meeting_date: date
+    class_name: str
+    committee_name: str | None
+    committee_dept_code: str | None
+    title: str
+    minutes_pdf_url: str
+
+    def meeting_signature(self) -> tuple[object, ...]:
+        return (
+            self.index_code,
+            self.minutes_number,
+            self.assembly_age,
+            self.meeting_date,
+            self.class_name,
+            self.committee_name,
+            self.committee_dept_code,
+            self.title,
+            self.minutes_pdf_url,
+        )
+
+
+def minutes_pdf_url(value: str | None, minutes_number: int) -> str:
+    """Return the exact official minutes PDF URL or fail closed."""
+
+    if value is None:
+        raise AssemblyApiError("minutes index row lacks PDF_LINK_URL")
+    parsed = urlparse(value)
+    query = parse_qs(parsed.query, keep_blank_values=True)
+    if (
+        parsed.scheme != "https"
+        or parsed.netloc != MINUTES_PDF_HOST
+        or parsed.path != MINUTES_PDF_PATH
+        or set(query) != {"id"}
+        or query["id"] != [str(minutes_number)]
+    ):
+        raise AssemblyApiError("minutes index row PDF_LINK_URL is not the exact official PDF")
+    return f"https://{MINUTES_PDF_HOST}{MINUTES_PDF_PATH}?id={minutes_number}"
+
+
+class OpenAssemblyMinutesIndexConnector(Connector):
+    """One page of an Open Assembly minutes index for one Assembly age and CONF_DATE prefix.
+
+    The provider requires ``DAE_NUM`` and ``CONF_DATE``. A ``YYYY`` value returns every row of
+    that calendar year (verified live 2026-10-05: zero rows outside the requested year).
+    """
+
+    HOST = "open.assembly.go.kr"
+    COMMITTEE = "ncwgseseafwbuheph"
+    PLENARY = "nzbyfwhwaoanttzje"
+    INDEX_CODES: ClassVar[frozenset[str]] = frozenset({COMMITTEE, PLENARY})
+    TITLES: ClassVar[dict[str, str]] = {
+        COMMITTEE: "국회 국회사무처_위원회 회의록",
+        PLENARY: "국회 국회사무처_본회의 회의록",
+    }
+    SAFE_FIELDS = (
+        "CONF_ID",
+        "CONFER_NUM",
+        "DAE_NUM",
+        "CONF_DATE",
+        "CLASS_NAME",
+        "COMM_NAME",
+        "DEPT_CD",
+        "TITLE",
+        "SUB_NAME",
+        "PDF_LINK_URL",
+    )
+
+    def __init__(
+        self,
+        *,
+        index_code: str,
+        assembly_age: int,
+        year: int,
+        api_key: str | None = None,
+        page_index: int = 1,
+        page_size: int = 1000,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        if index_code not in self.INDEX_CODES:
+            raise ValueError("unsupported minutes index")
+        if assembly_age < 1:
+            raise ValueError("assembly_age must be >= 1")
+        if not 1948 <= year <= 9999:
+            raise ValueError("year must be a four-digit calendar year")
+        if page_index < 1:
+            raise ValueError("page_index must be >= 1")
+        if not 1 <= page_size <= 1000:
+            raise ValueError("page_size must be between 1 and 1000")
+        self.index_code = index_code
+        self.assembly_age = assembly_age
+        self.year = year
+        self._api_key = api_key
+        self.page_index = page_index
+        self.page_size = page_size
+        self._transport = transport
+
+    @property
+    def path(self) -> str:
+        return f"/portal/openapi/{self.index_code}"
+
+    @property
+    def base_url(self) -> str:
+        return f"https://{self.HOST}{self.path}"
+
+    def for_page(self, page_index: int) -> OpenAssemblyMinutesIndexConnector:
+        return OpenAssemblyMinutesIndexConnector(
+            index_code=self.index_code,
+            assembly_age=self.assembly_age,
+            year=self.year,
+            api_key=self._api_key,
+            page_index=page_index,
+            page_size=self.page_size,
+            transport=self._transport,
+        )
+
+    def for_year(self, year: int) -> OpenAssemblyMinutesIndexConnector:
+        return OpenAssemblyMinutesIndexConnector(
+            index_code=self.index_code,
+            assembly_age=self.assembly_age,
+            year=year,
+            api_key=self._api_key,
+            page_index=1,
+            page_size=self.page_size,
+            transport=self._transport,
+        )
+
+    def _query_params(self) -> dict[str, str]:
+        return {
+            "Type": "json",
+            "pIndex": str(self.page_index),
+            "pSize": str(self.page_size),
+            "DAE_NUM": str(self.assembly_age),
+            "CONF_DATE": str(self.year),
+        }
+
+    def discover(self) -> list[str]:
+        return [f"{self.base_url}?{urlencode(self._query_params())}"]
+
+    def _credential(self) -> str:
+        value = self._api_key or os.getenv("ASSEMBLY_API_KEY")
+        if not value:
+            raise MissingAssemblyApiKey("ASSEMBLY_API_KEY is required for live fetch")
+        return value
+
+    def _validated_query(self, url: str) -> dict[str, str]:
+        parsed = urlparse(url)
+        if parsed.scheme != "https" or parsed.netloc != self.HOST or parsed.path != self.path:
+            raise ValueError("unsupported minutes index API URL")
+        raw = parse_qs(parsed.query, keep_blank_values=True)
+        if {key.casefold() for key in raw} & {"key", "authkey", "servicekey"}:
+            raise ValueError("credentials must not be embedded in connector URLs")
+        query = {key: values[-1] for key, values in raw.items()}
+        if query != self._query_params():
+            raise ValueError("minutes index URL does not match the connector scope")
+        return query
+
+    def _response_parts(self, payload: dict) -> tuple[list[dict], int, str]:
+        blocks = payload.get(self.index_code)
+        if blocks is None:
+            result = payload.get("RESULT")
+            code = str(result.get("CODE") or "") if isinstance(result, dict) else ""
+            if code == "INFO-200":
+                return [], 0, code
+            raise AssemblyApiError(f"minutes index API returned {code or 'a malformed response'}")
+        if not isinstance(blocks, list) or not blocks:
+            raise AssemblyApiError("minutes index API returned a malformed response")
+        total: int | None = None
+        code = ""
+        rows: list[dict] = []
+        for block in blocks:
+            if not isinstance(block, dict):
+                continue
+            head = block.get("head")
+            if isinstance(head, list):
+                for item in head:
+                    if not isinstance(item, dict):
+                        continue
+                    if "list_total_count" in item:
+                        try:
+                            total = int(item["list_total_count"])
+                        except (TypeError, ValueError):
+                            raise AssemblyApiError("minutes index total count is invalid") from None
+                    result = item.get("RESULT")
+                    if isinstance(result, dict):
+                        code = str(result.get("CODE") or "")
+            candidate = block.get("row")
+            if isinstance(candidate, list):
+                if any(not isinstance(item, dict) for item in candidate):
+                    raise AssemblyApiError("minutes index API returned a malformed row")
+                rows.extend(candidate)
+        if code not in {"", "INFO-000"}:
+            raise AssemblyApiError(f"minutes index API returned {code}")
+        if total is None or total < 0:
+            raise AssemblyApiError("minutes index total count is unavailable")
+        return rows, total, code or "INFO-000"
+
+    def fetch(self, url: str) -> ConnectorDocument:
+        query = self._validated_query(url)
+        params = dict(query)
+        params["KEY"] = self._credential()
+        headers = {
+            "User-Agent": os.getenv(
+                "CIVIC_HTTP_USER_AGENT", "CivicIntel/0.1 (+contact@example.invalid)"
+            )
+        }
+        try:
+            with httpx.Client(transport=self._transport, timeout=60, headers=headers) as client:
+                response = client.get(self.base_url, params=params)
+                response.raise_for_status()
+                payload = response.json()
+        except (httpx.HTTPError, ValueError, json.JSONDecodeError):
+            raise AssemblyApiError("minutes index API request failed") from None
+        if not isinstance(payload, dict):
+            raise AssemblyApiError("minutes index API returned a malformed response")
+        rows, total, code = self._response_parts(payload)
+        safe_rows = [{key: row.get(key) for key in self.SAFE_FIELDS} for row in rows]
+        body = json.dumps(
+            {
+                self.index_code: [
+                    {"head": [{"list_total_count": total}, {"RESULT": {"CODE": code}}]},
+                    {"row": safe_rows},
+                ]
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        return ConnectorDocument(
+            url=url,
+            title=self.TITLES[self.index_code],
+            publisher="국회 국회사무처",
+            published_at=None,
+            body=body,
+            metadata={
+                "api_code": self.index_code,
+                "assembly_age": str(self.assembly_age),
+                "conf_date_prefix": str(self.year),
+                "page_index": str(self.page_index),
+                "page_size": str(self.page_size),
+                "row_count": str(len(rows)),
+                "list_total_count": str(total),
+                "result_code": code,
+            },
+        )
+
+    def parse_rows(self, document: ConnectorDocument) -> tuple[AssemblyMinutesIndexRow, ...]:
+        payload = _load_document(document, "minutes index")
+        rows, _, _ = self._response_parts(payload)
+        label = "minutes index"
+        parsed: list[AssemblyMinutesIndexRow] = []
+        for row in rows:
+            minutes_number = _required_int(row, "CONFER_NUM", label=label)
+            age = _required_int(row, "DAE_NUM", label=label)
+            meeting_date = _date_value(row, "CONF_DATE", label=label)
+            if age != self.assembly_age:
+                raise AssemblyApiError("minutes index row DAE_NUM is outside the requested age")
+            if meeting_date.year != self.year:
+                raise AssemblyApiError("minutes index row CONF_DATE is outside the requested year")
+            parsed.append(
+                AssemblyMinutesIndexRow(
+                    index_code=self.index_code,
+                    meeting_id=_required(row, "CONF_ID", label=label),
+                    minutes_number=minutes_number,
+                    assembly_age=age,
+                    meeting_date=meeting_date,
+                    class_name=_required(row, "CLASS_NAME", label=label),
+                    committee_name=_optional(row, "COMM_NAME"),
+                    committee_dept_code=_optional(row, "DEPT_CD"),
+                    title=_required(row, "TITLE", label=label),
+                    minutes_pdf_url=minutes_pdf_url(_optional(row, "PDF_LINK_URL"), minutes_number),
+                )
+            )
+        return tuple(parsed)
