@@ -325,7 +325,7 @@ and Gukgam schedule observation records.
 | Gukgam Organization coverage | Source schedule collected; binding incomplete | 41 existing-Organization occurrences and 70 MOIS proposals require review; 159 labels remain unmatched. |
 | CleanEye local-public-institution executives | L0 RESEARCHED; BLOCKED | No approved repeatable named-executive route under the current source/robots contract. |
 | Government Public Ethics employment review | L1 CONTRACT_STAGED; L3 blocked | Complete result universe, correction/coverage and permitted route contract unresolved. |
-| National Assembly asset disclosure | L0 RESEARCHED; BLOCKED | Release coverage, revision/key semantics and permitted acquisition route unresolved. |
+| National Assembly asset disclosure | L1 CONTRACT_STAGED (human-assisted Gazette packet) | Reviewed-packet importer with synthetic fixture only; per-issue rights, revision semantics, issue coverage and permitted automated route unresolved. |
 | Presidential Office/personnel lanes | L1 CONTRACT_STAGED; live/L3 blocked | Source-specific route/rights contract is not yet sufficient for automated live ingestion. |
 | Assembly historical member careers | L1 packet parser; L3 blocked | No complete code manifest, stable row key or correction/version contract. |
 | Assembly proposal-reason / major-content text | L0 RESEARCHED; BLOCKED | No verified structured source; bill-detail HTML scraping remains prohibited. |

@@ -7,7 +7,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
+
+from packages.connectors.assembly_minutes import MINUTES_HOST, MINUTES_PDF_PATH
 
 WITNESS_PACKET_SCHEMA = "gukgam-witness-reviewed-packet.v2"
 REVIEW_REQUIRED = "REVIEW_REQUIRED"
@@ -20,7 +22,12 @@ ARTIFACT_FORMATS = frozenset({"PDF", "HWP", "HWPX", "XLSX"})
 PAGELESS_ARTIFACT_FORMATS = frozenset({"HWP", "HWPX", "XLSX"})
 CHANNEL_OFFICIAL_SITE = "OFFICIAL_SITE"
 CHANNEL_OWNER_SUPPLIED_COPY = "OWNER_SUPPLIED_COPY"
-ACQUISITION_CHANNELS = frozenset({CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY})
+# The committee adopted the list in a full-committee meeting and the official minutes
+# (record.assembly.go.kr) print it; the operator saved that exact minutes PDF.
+CHANNEL_OFFICIAL_MINUTES = "OFFICIAL_MINUTES"
+ACQUISITION_CHANNELS = frozenset(
+    {CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY, CHANNEL_OFFICIAL_MINUTES}
+)
 OWNER_COPY_LABEL = "제공받은 사본 — 공식 게시 위치 확인 전"
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -106,6 +113,26 @@ def _official_https_url(value: object, field: str) -> str:
     if any(token in lowered for token in ("servicekey=", "authkey=", "token=", "key=")):
         raise GukgamWitnessPacketError(
             f"witness packet {field} must not contain credentials"
+        )
+    return url
+
+
+def _official_minutes_pdf_url(value: object, field: str) -> str:
+    url = _required_text(value, field)
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query, keep_blank_values=True)
+    if (
+        parsed.scheme != "https"
+        or parsed.hostname != MINUTES_HOST
+        or parsed.path != MINUTES_PDF_PATH
+        or parsed.username
+        or parsed.password
+        or parsed.fragment
+        or set(query) != {"id"}
+        or not query["id"][0].isdigit()
+    ):
+        raise GukgamWitnessPacketError(
+            f"witness packet {field} must be the exact official minutes pdf.do?id=<n> URL"
         )
     return url
 
@@ -208,12 +235,17 @@ class WitnessSource:
             if raw.get("page_url") is not None
             else None
         )
-        attachment_url = (
-            _official_https_url(raw["attachment_url"], "source.attachment_url")
-            if raw.get("attachment_url") is not None
-            else None
-        )
-        if page_url and attachment_url and (
+        if channel == CHANNEL_OFFICIAL_MINUTES:
+            attachment_url: str | None = _official_minutes_pdf_url(
+                raw.get("attachment_url"), "source.attachment_url"
+            )
+        else:
+            attachment_url = (
+                _official_https_url(raw["attachment_url"], "source.attachment_url")
+                if raw.get("attachment_url") is not None
+                else None
+            )
+        if channel != CHANNEL_OFFICIAL_MINUTES and page_url and attachment_url and (
             urlparse(page_url).hostname != urlparse(attachment_url).hostname
         ):
             raise GukgamWitnessPacketError(
@@ -235,6 +267,23 @@ class WitnessSource:
                 raise GukgamWitnessPacketError("witness packet lacks source.artifact_filename")
             if adoption_date is None:
                 raise GukgamWitnessPacketError("witness packet lacks source.adoption_date")
+            if received_via is not None or received_at is not None:
+                raise GukgamWitnessPacketError(
+                    "witness packet received_via/received_at apply to OWNER_SUPPLIED_COPY only"
+                )
+        elif channel == CHANNEL_OFFICIAL_MINUTES:
+            if artifact_format != "PDF":
+                raise GukgamWitnessPacketError("witness packet OFFICIAL_MINUTES must be a PDF")
+            if page_url is not None:
+                raise GukgamWitnessPacketError(
+                    "witness packet OFFICIAL_MINUTES carries the minutes PDF URL only"
+                )
+            if filename is None:
+                raise GukgamWitnessPacketError("witness packet lacks source.artifact_filename")
+            if adoption_date is None:
+                raise GukgamWitnessPacketError(
+                    "witness packet OFFICIAL_MINUTES requires the meeting date as adoption_date"
+                )
             if received_via is not None or received_at is not None:
                 raise GukgamWitnessPacketError(
                     "witness packet received_via/received_at apply to OWNER_SUPPLIED_COPY only"

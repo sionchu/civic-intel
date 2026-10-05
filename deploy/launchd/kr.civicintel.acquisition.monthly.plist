@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>kr.civicintel.acquisition.monthly</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__DEPLOY_DIR__/deploy/launchd/run-acquisition.sh</string>
+    <string>monthly</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Day</key><integer>2</integer><key>Hour</key><integer>5</integer><key>Minute</key><integer>37</integer></dict>
+  <key>StandardOutPath</key><string>__LOG_DIR__/acquisition-monthly.out.log</string>
+  <key>StandardErrorPath</key><string>__LOG_DIR__/acquisition-monthly.err.log</string>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+</dict>
+</plist>

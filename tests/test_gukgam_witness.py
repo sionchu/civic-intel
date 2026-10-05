@@ -561,3 +561,92 @@ def test_owner_copy_projection_labels_rows_and_hides_placeholder_location(
     assert "SYNTHETIC messenger file" not in serialized
     assert "신청사유" not in serialized
     assert OWNER_COPY_LABEL in " ".join(body["limitations"])
+
+
+MINUTES_URL = "https://record.assembly.go.kr/assembly/viewer/minutes/download/pdf.do?id=99999"
+
+
+def minutes_payload(status: str = "HUMAN_REVIEWED") -> dict:
+    raw = payload(status)
+    raw["source"].update(
+        acquisition_channel="OFFICIAL_MINUTES",
+        page_url=None,
+        attachment_url=MINUTES_URL,
+        artifact_filename="SYNTHETIC 제439회 제3차 전체회의 회의록.pdf",
+    )
+    return raw
+
+
+def test_official_minutes_channel_parses_and_binds_the_minutes_policy() -> None:
+    packet = parse_reviewed_gukgam_witness_packet(minutes_payload())
+    assert packet.source.acquisition_channel == "OFFICIAL_MINUTES"
+    capture = build_gukgam_witness_capture(packet, artifact_bytes=ARTIFACT_BYTES)
+    assert str(capture.source.url) == MINUTES_URL
+    assert capture.policy.domain == "record.assembly.go.kr"
+    assert capture.policy.source_class == "official_national_assembly_minutes"
+    assert capture.policy.can_fetch is False
+    assert capture.snapshot.fulltext is None
+    assert capture.snapshot.metadata["list_carrier"] == "OFFICIAL_COMMITTEE_MINUTES"
+    assert all(o.identity_hints == {} for o in capture.observations(uuid4()))
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda p: p["source"].update(attachment_url=None), "attachment_url"),
+        (
+            lambda p: p["source"].update(
+                attachment_url="https://record.assembly.go.kr/assembly/viewer/minutes/xml.do?id=1"
+            ),
+            "minutes pdf.do",
+        ),
+        (lambda p: p["source"].update(attachment_url=MINUTES_URL + "&key=x"), "minutes pdf.do"),
+        (
+            lambda p: p["source"].update(
+                page_url="https://synthetic-test.na.go.kr/cmmit/bbs/x/view.do?nttId=0"
+            ),
+            "minutes PDF URL only",
+        ),
+        (lambda p: p["source"].update(artifact_format="HWP"), "must be a PDF"),
+        (lambda p: p["source"].update(adoption_date=None), "meeting date"),
+        (lambda p: p["source"].update(received_via="x"), "OWNER_SUPPLIED_COPY only"),
+        (lambda p: p["rows"][0]["locator"].update(page_number=None), "required for PDF"),
+    ],
+)
+def test_official_minutes_packet_rules(mutate, message: str) -> None:  # type: ignore[no-untyped-def]
+    raw = copy.deepcopy(minutes_payload("REVIEW_REQUIRED"))
+    mutate(raw)
+    with pytest.raises(GukgamWitnessPacketError, match=message):
+        parse_reviewed_gukgam_witness_packet(raw)
+
+
+def test_minutes_channel_claim_requires_the_minutes_policy() -> None:
+    from packages.rendering.gukgam_witness_claim import expected_source_class
+    from packages.verification.gukgam_witness_import import owner_supplied_witness_policy
+
+    assert expected_source_class("OFFICIAL_MINUTES") == "official_national_assembly_minutes"
+    assert expected_source_class("OFFICIAL_SITE") == "official_reviewed_committee_attachment"
+    assert expected_source_class("OWNER_SUPPLIED_COPY") == OWNER_COPY_SOURCE_CLASS
+    capture = build_gukgam_witness_capture(
+        parse_reviewed_gukgam_witness_packet(minutes_payload()), artifact_bytes=ARTIFACT_BYTES
+    )
+    observation = capture.observations(uuid4())[0]
+    claim, evidence = build_gukgam_witness_claim(
+        Organization(name="합성시험위원회"),
+        observation=observation,
+        snapshot=capture.snapshot,
+        source=capture.source,
+        policy=capture.policy,
+        subject_scope=SUBJECT_SCOPE_COMMITTEE,
+    )
+    assert claim.qualifiers["acquisition_channel"] == "OFFICIAL_MINUTES"
+    assert evidence.excerpt is None
+    with pytest.raises(GukgamWitnessClaimError, match="inconsistent|contradicts"):
+        build_gukgam_witness_claim(
+            Organization(name="합성시험위원회"),
+            observation=observation,
+            snapshot=capture.snapshot,
+            source=capture.source,
+            policy=owner_supplied_witness_policy(),
+            subject_scope=SUBJECT_SCOPE_COMMITTEE,
+        )

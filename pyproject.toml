@@ -15,11 +15,19 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["mypy>=1.11,<2", "pytest>=8.3,<9", "ruff>=0.6,<1"]
+# Text-layer extraction for the human-assisted Assembly minutes lane only (lazy import).
+minutes-pdf = ["pypdf>=5.9,<7"]
 
 [project.scripts]
 civic-quality = "packages.verification.quality:main"
 civic-stage-assembly = "workers.assembly_roster:main"
+civic-stage-assembly-committees = "workers.assembly_committees:main"
+civic-stage-assembly-subcommittee-review = "workers.assembly_subcommittee_review:main"
+civic-stage-assembly-meeting-graph = "workers.assembly_meeting_graph:main"
+civic-stage-assembly-meeting-universe = "workers.assembly_meeting_universe:main"
+civic-stage-assembly-votes = "workers.assembly_roll_call_votes:main"
 civic-stage-gwanbo-personnel = "workers.gwanbo_personnel:main"
+civic-stage-mpm-key-positions = "workers.mpm_key_positions:main"
 civic-stage-legislative = "workers.legislative_activity:main"
 civic-stage-local-election = "workers.local_elections:main"
 civic-stage-policy-research = "workers.policy_research:main"
@@ -30,12 +38,14 @@ civic-stage-alio-money = "workers.alio_business_expense:main"
 civic-import-alio-reviewed-claims = "workers.alio_reviewed_claim_import:main"
 civic-materialize-alio-safe-people = "workers.alio_safe_person_materialization:main"
 civic-materialize-nec-safe-people = "workers.nec_safe_person_materialization:main"
+civic-import-assembly-minutes = "workers.assembly_minutes_import:main"
 civic-import-gukgam-reviewed-claim = "workers.gukgam_reviewed_claim_import:main"
 civic-preflight-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch_manifest:main"
 civic-import-gukgam-reviewed-claim-batch = "workers.gukgam_reviewed_claim_batch_commit:main"
 civic-preflight-orggo-reviewed-organizations = "workers.orggo_reviewed_organization_manifest:main"
 civic-import-orggo-reviewed-organizations = "workers.orggo_reviewed_organization_commit:main"
 civic-sync = "workers.sync:main"
+civic-acquire = "workers.scheduled_acquisition:main"
 
 [build-system]
 requires = ["setuptools>=70"]
