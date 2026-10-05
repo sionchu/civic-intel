@@ -37,6 +37,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Assembly subcommittee bill-review source v0](exec-plans/completed/assembly-subcommittee-bill-review-v0.md)
 - [Assembly meeting graph feeder](architecture/ASSEMBLY_MEETING_GRAPH_FEEDER.md)
 - [Assembly meeting graph source v0](exec-plans/completed/assembly-meeting-graph-v0.md)
+- [Assembly meeting graph L3 v0](exec-plans/completed/assembly-meeting-graph-l3-v0.md)
 - [Assembly meeting universe feeder](architecture/ASSEMBLY_MEETING_UNIVERSE_FEEDER.md)
 - [Assembly meeting universe source v0](exec-plans/completed/assembly-meeting-universe-v0.md)
 - [Assembly plenary roll-call vote feeder](architecture/ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md)

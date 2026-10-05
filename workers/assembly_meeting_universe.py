@@ -206,10 +206,31 @@ class AssemblyMeetingUniverseEnumerator:
                     "the year before from_year still lists meetings; lower bound not proven"
                 )
 
-    def enumerate(self) -> AssemblyMeetingUniverseResult:
+    def _authorize(self) -> None:
         if self.policy.domain != self.connector.HOST:
             raise PolicyDenied("SourcePolicy domain does not match the minutes index connector")
         require_policy(self.policy, PolicyAction.FETCH)
+
+    def _fetch_universe_pages(
+        self,
+    ) -> list[tuple[OpenAssemblyMinutesIndexConnector, ConnectorDocument, tuple]]:
+        self._assert_lower_bound()
+        pages: list[tuple[OpenAssemblyMinutesIndexConnector, ConnectorDocument, tuple]] = []
+        for index_code in self.INDEXES:
+            for year in range(self.from_year, self.to_year + 1):
+                pages.extend(self._fetch_year(self._index(index_code, year)))
+        return pages
+
+    def fetch_meetings(self) -> tuple[list[AssemblyMeeting], str]:
+        """Fetch and validate the universe without persisting it (for downstream lanes)."""
+
+        self._authorize()
+        pages = self._fetch_universe_pages()
+        meetings = aggregate_meetings([row for _, _, page_rows in pages for row in page_rows])
+        return meetings, universe_fingerprint(meetings)
+
+    def enumerate(self) -> AssemblyMeetingUniverseResult:
+        self._authorize()
         require_policy(self.policy, PolicyAction.STORE_METADATA)
         self.repository.assert_ready()
         run = self.repository.start_source_run(
@@ -225,11 +246,7 @@ class AssemblyMeetingUniverseEnumerator:
         commits = 0
         try:
             # Fetch and validate the whole universe before committing anything.
-            self._assert_lower_bound()
-            pages: list[tuple[OpenAssemblyMinutesIndexConnector, ConnectorDocument, tuple]] = []
-            for index_code in self.INDEXES:
-                for year in range(self.from_year, self.to_year + 1):
-                    pages.extend(self._fetch_year(self._index(index_code, year)))
+            pages = self._fetch_universe_pages()
             rows = [row for _, _, page_rows in pages for row in page_rows]
             meetings = aggregate_meetings(rows)
             fingerprint = universe_fingerprint(meetings)
