@@ -36,6 +36,15 @@ class AssemblyRollCallCoverageError(AssemblyApiError):
     pass
 
 
+TALLY_MATCHED = "MATCHED"
+# The two official datasets disagree: member rows are complete but their YES/NO/ABSTAIN counts
+# differ from the bill-level published tallies (observed live on 2026-10-05). Both are kept
+# as published; no value is corrected or chosen.
+TALLY_SOURCE_CONFLICT = "SOURCE_CONFLICT"
+# Fewer/more member rows than the published member total (including zero rows).
+TALLY_MEMBER_ROWS_INCOMPLETE = "MEMBER_ROWS_INCOMPLETE"
+
+
 @dataclass(frozen=True)
 class AssemblyRollCallEnumerationResult:
     run: SourceRun
@@ -43,10 +52,13 @@ class AssemblyRollCallEnumerationResult:
     bills_committed_this_run: int
     bills_committed_total: int
     complete: bool
+    tally_exceptions: dict[str, str]
 
 
-def normalized_member_vote(record: AssemblyMemberVoteRecord) -> dict[str, object]:
-    return {
+def normalized_member_vote(
+    record: AssemblyMemberVoteRecord, reconciliation: dict[str, object] | None = None
+) -> dict[str, object]:
+    normalized: dict[str, object] = {
         "bill_id": record.bill_id,
         "bill_no": record.bill_no,
         "bill_name": record.bill_name,
@@ -63,6 +75,9 @@ def normalized_member_vote(record: AssemblyMemberVoteRecord) -> dict[str, object
         "bill_url": _safe_detail_url(record.bill_url),
         "vote_semantics": "official_member_plenary_roll_call_record",
     }
+    if reconciliation is not None:
+        normalized.update(reconciliation)
+    return normalized
 
 
 def roll_call_content_hash(normalized: dict[str, object]) -> str:
@@ -93,27 +108,41 @@ def _member_vote_identity_hints(record: AssemblyMemberVoteRecord) -> dict[str, o
     }
 
 
-def validate_bill_tallies(
+def reconcile_bill_tallies(
     summary: AssemblyBillVoteSummary, records: list[AssemblyMemberVoteRecord]
-) -> None:
-    """Member rows must reproduce the bill's published tallies exactly."""
+) -> dict[str, object]:
+    """Compare member rows with the bill's published tallies; never correct either side."""
 
     counts = Counter(record.vote_value for record in records)
-    yes = counts[RollCallVoteValue.YES]
-    no = counts[RollCallVoteValue.NO]
-    abstain = counts[RollCallVoteValue.ABSTAIN]
-    if yes != summary.yes_total or no != summary.no_total or abstain != summary.abstain_total:
-        raise AssemblyRollCallCoverageError(
-            "member vote rows do not reproduce the published YES/NO/ABSTAIN tallies"
-        )
-    if yes + no + abstain != summary.vote_total:
-        raise AssemblyRollCallCoverageError(
-            "member vote rows do not reproduce the published vote total"
-        )
+    row_tallies = {
+        "yes": counts[RollCallVoteValue.YES],
+        "no": counts[RollCallVoteValue.NO],
+        "abstain": counts[RollCallVoteValue.ABSTAIN],
+        "not_participating": counts[RollCallVoteValue.NOT_PARTICIPATING],
+        "member_rows": len(records),
+    }
+    published = {
+        "yes": summary.yes_total,
+        "no": summary.no_total,
+        "abstain": summary.abstain_total,
+        "vote_total": summary.vote_total,
+        "member_total": summary.member_total,
+    }
     if len(records) != summary.member_total:
-        raise AssemblyRollCallCoverageError(
-            "member vote row count does not match the published member total"
-        )
+        status = TALLY_MEMBER_ROWS_INCOMPLETE
+    elif (row_tallies["yes"], row_tallies["no"], row_tallies["abstain"]) != (
+        summary.yes_total,
+        summary.no_total,
+        summary.abstain_total,
+    ):
+        status = TALLY_SOURCE_CONFLICT
+    else:
+        status = TALLY_MATCHED
+    reconciliation: dict[str, object] = {"bill_tally_reconciliation": status}
+    if status != TALLY_MATCHED:
+        reconciliation["published_bill_tallies"] = published
+        reconciliation["member_row_tallies"] = row_tallies
+    return reconciliation
 
 
 class AssemblyRollCallVoteEnumerator:
@@ -238,7 +267,12 @@ class AssemblyRollCallVoteEnumerator:
 
     def _fetch_bill_votes(
         self, summary: AssemblyBillVoteSummary
-    ) -> tuple[OpenAssemblyMemberVoteConnector, ConnectorDocument, list[AssemblyMemberVoteRecord]]:
+    ) -> tuple[
+        OpenAssemblyMemberVoteConnector,
+        ConnectorDocument,
+        list[AssemblyMemberVoteRecord],
+        dict[str, object],
+    ]:
         connector = self.connector.member_votes(summary.bill_id, page_size=self.member_page_size)
         document = connector.fetch(connector.discover()[0])
         metadata = document.metadata
@@ -276,13 +310,16 @@ class AssemblyRollCallVoteEnumerator:
                     )
                 raise AssemblyRollCallCoverageError("duplicate MONA_CD appears within one bill")
             by_member[record.member_code] = record
-        validate_bill_tallies(summary, records)
-        return connector, document, records
+        return connector, document, records, reconcile_bill_tallies(summary, records)
 
     # -- run ----------------------------------------------------------------------------
 
     def _checkpoint_metadata(
-        self, fingerprint: str, bill_count: int, bills_committed: int
+        self,
+        fingerprint: str,
+        bill_count: int,
+        bills_committed: int,
+        tally_exceptions: dict[str, str] | None = None,
     ) -> dict[str, object]:
         return {
             "source_contract": self.SOURCE_CONTRACT,
@@ -292,6 +329,7 @@ class AssemblyRollCallVoteEnumerator:
             "universe_fingerprint": fingerprint,
             "universe_bill_count": bill_count,
             "bills_committed": bills_committed,
+            "tally_exceptions": dict(sorted((tally_exceptions or {}).items())),
         }
 
     def _resume_position(self, checkpoint, fingerprint: str, bill_count: int) -> int:
@@ -351,12 +389,17 @@ class AssemblyRollCallVoteEnumerator:
         )
         commits = 0
         bills_this_run = 0
+        tally_exceptions: dict[str, str] = {}
         try:
             summaries, universe_pages = self._fetch_universe()
             fingerprint = universe_fingerprint(summaries)
             bill_count = len(summaries)
             if resume and prior_checkpoint is not None:
                 position = self._resume_position(prior_checkpoint, fingerprint, bill_count)
+                prior = prior_checkpoint.metadata.get("tally_exceptions") or {}
+                if not isinstance(prior, dict):
+                    raise AssemblyRollCallCoverageError("resume checkpoint tally list is invalid")
+                tally_exceptions = {str(k): str(v) for k, v in prior.items()}
             else:
                 position = 0
                 # A fresh run records the summary pages that define the universe and tallies.
@@ -379,11 +422,15 @@ class AssemblyRollCallVoteEnumerator:
                 if self.max_bills is not None and bills_this_run >= self.max_bills:
                     break
                 summary = summaries[position]
-                connector, document, records = self._fetch_bill_votes(summary)
+                connector, document, records, reconciliation = self._fetch_bill_votes(summary)
+                if reconciliation["bill_tally_reconciliation"] != TALLY_MATCHED:
+                    tally_exceptions[summary.bill_id] = str(
+                        reconciliation["bill_tally_reconciliation"]
+                    )
                 ingestion = IngestionPipeline(connector).ingest_document(document, self.policy)
                 observations = []
                 for record in records:
-                    normalized = normalized_member_vote(record)
+                    normalized = normalized_member_vote(record, reconciliation)
                     observations.append(
                         FeederObservation(
                             feeder=self.FEEDER,
@@ -407,7 +454,7 @@ class AssemblyRollCallVoteEnumerator:
                     observations=observations,
                     cursor=str(position),
                     checkpoint_metadata=self._checkpoint_metadata(
-                        fingerprint, bill_count, position
+                        fingerprint, bill_count, position, tally_exceptions
                     ),
                 )
                 commits += 1
@@ -429,6 +476,7 @@ class AssemblyRollCallVoteEnumerator:
                 bills_committed_this_run=bills_this_run,
                 bills_committed_total=position,
                 complete=complete,
+                tally_exceptions=dict(sorted(tally_exceptions.items())),
             )
         except Exception as exc:
             status = SourceRunStatus.PARTIAL if commits else SourceRunStatus.FAILED
@@ -490,6 +538,8 @@ def main(argv: list[str] | None = None) -> int:
                 "complete": result.complete,
                 "observations_created": result.run.observations_created,
                 "observations_unchanged": result.run.observations_unchanged,
+                "tally_exception_count": len(result.tally_exceptions),
+                "tally_exceptions": result.tally_exceptions,
             },
             ensure_ascii=False,
             indent=2,

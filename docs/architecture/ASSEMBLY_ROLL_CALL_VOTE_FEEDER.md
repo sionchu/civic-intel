@@ -76,8 +76,9 @@ this review.
 
 - keyed pagination (`pIndex`/`pSize`) behavior and the real `pSize` ceiling — the sample key
   ignores both;
-- whether every `ncocpgfiaoituanbr` bill returns member rows reconciling to its tallies across
-  a whole term (the portal Q&A contains a report of missing member records on some bills);
+- (answered 2026-10-05, keyed run) not every bill reconciles: e.g. one 22nd-term bill publishes
+  tallies 195/0/2 while its 296 complete member rows count 196/0/1. Such bills are recorded as
+  tally exceptions (below), not dropped and not corrected;
 - whether one `BILL_ID` can carry more than one plenary vote (e.g. 수정안 and 원안, or 재의);
   if it does, `MONA_CD` repeats within a bill and the run fails closed;
 - correction/republication semantics and request limits.
@@ -113,8 +114,16 @@ Per bill:
 - `RESULT_VOTE_MOD` is one of the four published values; anything else (including empty) fails;
 - `MONA_CD` is unique within the bill; a repeated member fails as duplicate (identical) or
   conflicting (different);
-- member-row counts reproduce `YES_TCNT`, `NO_TCNT`, `BLANK_TCNT`, `VOTE_TCNT` and
-  `MEMBER_TCNT` exactly.
+- member rows are reconciled against the bill's published tallies. The outcome is stored on
+  every observation of that bill as `bill_tally_reconciliation`:
+  - `MATCHED`: row counts reproduce `YES_TCNT`, `NO_TCNT`, `BLANK_TCNT` and `MEMBER_TCNT`;
+  - `SOURCE_CONFLICT`: member rows are complete but their YES/NO/ABSTAIN counts differ from the
+    published tallies — the two official datasets disagree;
+  - `MEMBER_ROWS_INCOMPLETE`: the row count differs from `MEMBER_TCNT` (including zero rows).
+  Non-`MATCHED` observations also carry `published_bill_tallies` and `member_row_tallies`.
+  Neither side is corrected or chosen; the bill IDs are listed in the checkpoint metadata and
+  the run receipt (`tally_exceptions`). Any later Claim or derived use must exclude or flag
+  these bills.
 
 Bills are processed in ascending `BILL_ID` order because the provider lists newest-first and
 its order shifts as votes are added.
@@ -187,7 +196,11 @@ Claim/ClaimEvidence/Source/SourcePolicy gate.
 
 ## Maturity
 
-`L1 CONTRACT_STAGED`: connectors, the bounded enumerator, persistent run/checkpoint/resume and
-deterministic fixture tests exist, and the row contract was checked against keyless live
-samples. `L2 SINGLE_PULL` requires one keyed live bill fetch through this connector; `L3`
-requires a keyed full-term run whose every bill reconciles to its published tallies.
+`L2 SINGLE_PULL` reached 2026-10-05: keyed live bills were fetched through this connector into
+a disposable SQLite DB (3 bills / 880 observations, then `--resume` 5 bills / 1,498). `L3`
+requires a complete keyed full-term run with explicit tally exceptions. Evidence 2026-10-05
+(Windows, disposable SQLite, resumed across three invocations): 22nd term, 1,911 of 1,911 bills,
+568,649 member-vote observations, run `SUCCESS`, one tally exception
+(`PRC_G2Z5L1L1C2F1O1S6A0I6O4J4T5B8G3`: `SOURCE_CONFLICT`). Still open for L3 sign-off: a live
+idempotent re-run (unchanged-count proof) and request-limit observation; fixture tests cover
+idempotency and new-version behaviour.
