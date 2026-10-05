@@ -3,14 +3,49 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import ClassVar
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
 
+from packages.domain.contracts import SourcePolicy
+from packages.domain.enums import SourceCollectionMode
+
 from .base import Connector, ConnectorDocument
+from .open_assembly import POLICY_ID as ASSEMBLY_SOURCE_POLICY_ID
 from .open_assembly import AssemblyApiError, MissingAssemblyApiKey
+
+POLICY_ID = ASSEMBLY_SOURCE_POLICY_ID
+
+
+def national_assembly_subcommittee_policy() -> SourcePolicy:
+    reviewed_at = datetime(2026, 10, 5, tzinfo=UTC)
+    return SourcePolicy(
+        id=POLICY_ID,
+        domain="open.assembly.go.kr",
+        source_class="official_open_api",
+        collection_mode=SourceCollectionMode.API,
+        can_fetch=True,
+        can_store_metadata=True,
+        can_store_fulltext=False,
+        can_send_to_ai=False,
+        can_show_excerpt=False,
+        can_commercialize=True,
+        terms_checked_at=reviewed_at,
+        license="이용허락범위 제한 없음",
+        rate_limit=(
+            "Provider service page shows request limit 200000; normal use requires an issued "
+            "Open Assembly API key. Public no-key sample mode is page 1 / 5 rows only."
+        ),
+        policy_note=(
+            "Reviewed 2026-10-05 against the official Open Assembly TVBPMCONFINFO "
+            "소위 심사정보(법률안) service page and Open API terms. Attribution to 열린국회정보 "
+            "is required. Civic Intel stores structured review metadata only, does not retain "
+            "fulltext, and does not create Person, Organization, Bill, Claim or publication "
+            "objects from this lane."
+        ),
+    )
 
 
 @dataclass(frozen=True)
@@ -99,6 +134,19 @@ class OpenAssemblySubcommitteeReviewConnector(Connector):
     @property
     def has_filters(self) -> bool:
         return any((self.bill_no, self.bill_id, self.direct_referral))
+
+    def for_page(self, page_index: int) -> OpenAssemblySubcommitteeReviewConnector:
+        return OpenAssemblySubcommitteeReviewConnector(
+            assembly_age=self.assembly_age,
+            api_key=self._api_key,
+            page_index=page_index,
+            page_size=self.page_size,
+            bill_no=self.bill_no,
+            bill_id=self.bill_id,
+            direct_referral=self.direct_referral,
+            sample_mode=self.sample_mode,
+            transport=self._transport,
+        )
 
     def _credential(self) -> str | None:
         if self.sample_mode:
