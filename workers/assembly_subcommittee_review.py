@@ -4,10 +4,10 @@ import argparse
 import json
 from dataclasses import asdict, dataclass
 
-from packages.connectors.open_assembly_bills import national_assembly_bill_policy
 from packages.connectors.open_assembly_subcommittee import (
     AssemblySubcommitteeReviewRecord,
     OpenAssemblySubcommitteeReviewConnector,
+    national_assembly_subcommittee_policy,
 )
 from packages.domain.contracts import SourcePolicy
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
@@ -54,7 +54,7 @@ class AssemblySubcommitteeReviewStager:
         policy: SourcePolicy | None = None,
     ) -> None:
         self.connector = connector
-        self.policy = policy or national_assembly_bill_policy()
+        self.policy = policy or national_assembly_subcommittee_policy()
 
     def stage(self) -> StagedAssemblySubcommitteeReview:
         if self.policy.domain != self.connector.HOST:

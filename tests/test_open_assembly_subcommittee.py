@@ -9,9 +9,9 @@ from packages.connectors.open_assembly import (
     AssemblyApiError,
     MissingAssemblyApiKey,
 )
-from packages.connectors.open_assembly_bills import national_assembly_bill_policy
 from packages.connectors.open_assembly_subcommittee import (
     OpenAssemblySubcommitteeReviewConnector,
+    national_assembly_subcommittee_policy,
 )
 from packages.domain.enums import SourceCollectionMode
 from packages.verification.policy import PolicyDenied
@@ -285,6 +285,21 @@ def test_provider_error_never_exposes_api_key() -> None:
     assert SECRET not in str(exc_info.value)
 
 
+def test_subcommittee_policy_covers_reviewed_endpoint_and_rights() -> None:
+    policy = national_assembly_subcommittee_policy()
+    assert policy.domain == "open.assembly.go.kr"
+    assert policy.can_fetch is True
+    assert policy.can_store_metadata is True
+    assert policy.can_store_fulltext is False
+    assert policy.can_send_to_ai is False
+    assert policy.can_show_excerpt is False
+    assert policy.can_commercialize is True
+    assert "TVBPMCONFINFO" in (policy.policy_note or "")
+    assert "2026-10-05" in (policy.policy_note or "")
+    assert "열린국회정보" in (policy.policy_note or "")
+    assert "200000" in (policy.rate_limit or "")
+
+
 def test_stager_enforces_source_policy_before_network() -> None:
     def forbidden(request: httpx.Request) -> httpx.Response:
         pytest.fail(f"policy denial should happen before network: {request}")
@@ -294,7 +309,7 @@ def test_stager_enforces_source_policy_before_network() -> None:
         api_key=SECRET,
         transport=httpx.MockTransport(forbidden),
     )
-    blocked = national_assembly_bill_policy().model_copy(
+    blocked = national_assembly_subcommittee_policy().model_copy(
         update={
             "collection_mode": SourceCollectionMode.BLOCKED,
             "can_fetch": False,

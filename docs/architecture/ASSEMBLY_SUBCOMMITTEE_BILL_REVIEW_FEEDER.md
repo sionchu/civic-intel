@@ -2,12 +2,16 @@
 
 ## Purpose
 
-Stage official National Assembly subcommittee bill-review metadata from Open Assembly without
-inventing a review-event identifier or prematurely binding the rows to canonical committees,
-Bills, Claims, or Organizations.
+Acquire the official National Assembly `TVBPMCONFINFO` subcommittee bill-review universe as
+immutable, bill-scoped source observations.
 
-The source records how a bill was referred to and, when available, tabled and processed in a
-subcommittee. It is not a transcript and does not identify speakers or individual legislators.
+This lane records provider-declared review context for a bill: committee/subcommittee routing,
+referral, table and processing coordinates, result text, direct-referral flag and provider note.
+
+It is an **acquisition-only enrichment lane**. It does not identify speakers or individual
+legislators and does not create canonical People, Organizations, Bills, Claims or public output.
+
+For the 22nd Assembly the lane is **L3 FULL_ENUMERATION**.
 
 ## Official source — reviewed 2026-10-05
 
@@ -15,158 +19,338 @@ Service detail:
 
 https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OOWY4R001216HX11542
 
-API code and endpoint:
+API:
 
-- TVBPMCONFINFO
-- https://open.assembly.go.kr/portal/openapi/TVBPMCONFINFO
-
-The official page reports version 1 dated 2026-07-07 and a request-limit value of 200000.
+- code: `TVBPMCONFINFO`
+- endpoint: https://open.assembly.go.kr/portal/openapi/TVBPMCONFINFO
+- official page version: 1
+- official page date: 2026-07-07
+- provider-displayed request-limit value: `200000`
 
 ### Request contract
 
 Standard Open Assembly arguments:
 
-- KEY — required for normal use
-- Type — xml/json
-- pIndex — page index
-- pSize — page size
+- `KEY` — required for normal keyed use
+- `Type` — xml/json
+- `pIndex` — page index
+- `pSize` — page size
 
 Service-specific arguments:
 
-- AGE — required Assembly term; official example 22
-- BILL_NO — optional bill number
-- BILL_ID — optional bill ID
-- ENROLL_TYPE — optional direct-subcommittee-referral flag; official example Y
+- `AGE` — required Assembly term
+- `BILL_NO` — optional bill number
+- `BILL_ID` — optional bill ID
+- `ENROLL_TYPE` — optional direct-subcommittee-referral flag
 
-All service filters other than AGE are optional, so the API contract supports an unfiltered query
-within one declared AGE. Full enumeration is not claimed until an issued key is used and every page
-passes the normal L3 coverage gates.
+L3 enumeration requires an **unfiltered AGE scope**. A connector with BILL_NO, BILL_ID or
+ENROLL_TYPE filters is rejected by the enumerator.
+
+The connector supports `pSize <= 1000`. The 22nd-Assembly L3 run used `pSize=1000`.
 
 ## Output contract
 
-The official service documents exactly 16 fields:
+The provider documents 16 fields:
 
-- AGE — 대수
-- BILL_NO — 의안번호
-- BILL_ID — 의안ID
-- COMMITTEE_ID — 위원회ID
-- COMMITTEE_NAME — 소관위명
-- SUB_COMMITTEE_NAME — 소위원회명
-- PRESENT_SESSION — 상정회기
-- PRESENT_CHA — 상정차수
-- PROC_SESSION — 의결회기
-- PROC_CHA — 의결차수
-- SUBMIT_DT — 회부일
-- PRESENT_DT — 상정일
-- PROC_DT — 처리일
-- PROC_RESULT_CD — 의안심의결과
-- ENROLL_TYPE — 소위직접회부여부
-- CONF_BIGO — 소위회부정보
+- `AGE` — 대수
+- `BILL_NO` — 의안번호
+- `BILL_ID` — 의안ID
+- `COMMITTEE_ID` — 위원회ID
+- `COMMITTEE_NAME` — 소관위명
+- `SUB_COMMITTEE_NAME` — 소위원회명
+- `PRESENT_SESSION` — 상정회기
+- `PRESENT_CHA` — 상정차수
+- `PROC_SESSION` — 의결회기
+- `PROC_CHA` — 의결차수
+- `SUBMIT_DT` — 회부일
+- `PRESENT_DT` — 상정일
+- `PROC_DT` — 처리일
+- `PROC_RESULT_CD` — 의안심의결과
+- `ENROLL_TYPE` — 소위직접회부여부
+- `CONF_BIGO` — 소위회부정보
 
-No person, contact, address, room, or staff fields are documented.
+No person, contact, address, room or staff fields are documented.
 
-## L2 official sample proof
+Missing provider values remain null. Non-empty dates must parse as ISO `YYYY-MM-DD`.
+`ENROLL_TYPE` must be Y or N when present.
 
-The official no-key sample for AGE=22 was verified twice:
+`PROC_RESULT_CD` is retained as provider result text. Civic Intel does not reinterpret it as an
+internal code because the live values are human-readable result labels.
 
-1. the provider sample URL shown on the service page returned XML;
-2. the Civic Intel connector requested the same sample as JSON with page 1 / size 5.
+## Why the L3 observation key is BILL_ID
 
-Both reported:
+The API does **not** publish a stable review-row/event ID.
 
-- result code INFO-000;
-- list_total_count 18324;
-- five sample rows.
+A keyed 22nd-Assembly audit enumerated all **18,324 provider rows** over **19 pages** and measured
+the complete multiplicity before any persistent row-key decision.
 
-The first sample row had BILL_ID
-PRC_R2I4R0J5J3T0L1S0T1F7I2T5J6G9L8, COMMITTEE_ID 9700407, SUBMIT_DT 2024-08-21,
-ENROLL_TYPE N, and no subcommittee/table/decision fields yet.
+### Complete multiplicity audit
 
-Other sample rows demonstrated populated subcommittee/session/date/result fields, including
-PROC_RESULT_CD values such as 대안반영폐기.
+- provider rows: **18,324**
+- unique `BILL_ID`: **17,727**
+- BILL_ID values with more than one provider row: **471**
+- maximum provider rows for one BILL_ID: **5**
+- BILL_ID values mapping to more than one BILL_NO: **0**
+- exact distinct normalized provider rows: **18,319**
+- exact duplicate surplus rows: **5**
+- BILL_ID + COMMITTEE_ID duplicate keys: **305**
+- BILL_ID + COMMITTEE_ID + SUB_COMMITTEE_NAME duplicate keys: **63**
+- even the full semantic row tuple has five duplicate keys because the provider emits five exact
+  repeated rows
 
-## Semantic mapping
+Missingness in the same complete universe:
 
-Civic Intel preserves the provider semantics directly:
+- SUB_COMMITTEE_NAME null: **10,120**
+- PRESENT_DT null: **10,130**
+- PROC_DT null: **12,821**
+- PROC_RESULT_CD null: **12,821**
+- CONF_BIGO null: **16,030**
 
-- SUBMIT_DT -> referral_date
-- PRESENT_DT -> present_date
-- PROC_DT -> process_date
-- PRESENT_SESSION / PRESENT_CHA -> table session / meeting sequence
-- PROC_SESSION / PROC_CHA -> processing session / meeting sequence
-- PROC_RESULT_CD -> source-reported review result text
-- ENROLL_TYPE -> direct_referral boolean when Y/N
-- CONF_BIGO -> source review/referral note
+The audit required zero retries and kept `list_total_count=18324` on every page.
 
-A missing provider value remains null. The connector rejects malformed non-empty ISO dates,
-unexpected ENROLL_TYPE values, and AGE drift.
+Audit-statistics digest:
 
-PROC_RESULT_CD is not reinterpreted as an internal Civic Intel code simply because its provider
-field name ends in _CD. The sample values are human-readable result text.
+`f62e7d09eb887ab0ed88c5d8c9686c874348367ac83d284d8787949abb054d44`
 
-## Record identity boundary
+### Identity decision
 
-The provider documents BILL_ID as bill identity but does **not** document a stable subcommittee
-review-row/event ID.
+`BILL_ID` is not a source-row ID, so Civic Intel does **not** create one observation per provider
+row.
 
-Civic Intel therefore does not assign a FeederObservation provider_record_key in this L2 slice.
+Instead, L3 uses one observation packet per `BILL_ID`:
 
-Do not assume BILL_ID is unique across the full TVBPMCONFINFO universe. The official contract does
-not state row-level uniqueness. A complete keyed enumeration must measure BILL_ID duplication rather
-than infer it.
+`provider_record_key = BILL_ID`
 
-Before L3, analyze exact duplicate frequency for BILL_ID and candidate source-derived composites.
-Only then approve an immutable observation key.
+This is justified because the complete AGE=22 universe proved that each BILL_ID maps to exactly one
+BILL_NO while legitimately carrying several review rows.
+
+The packet preserves those rows as a deterministic sorted `reviews` collection.
+
+Exact repeated provider rows collapse to one review variant with:
+
+`provider_row_count`
+
+Packet-level fields preserve the original multiplicity:
+
+- `provider_row_total`
+- `distinct_review_rows`
+- `duplicate_provider_rows`
+
+The packet also records its source-page locators:
+
+- `source_pages`
+- `source_page_count`
+
+These page values are acquisition provenance, not a provider Bill or review-event identifier.
+
+## Provider ordering and page boundaries
+
+A second full layout audit found:
+
+- 17,727 BILL_ID groups in provider order
+- 17,727 contiguous BILL_ID runs
+- **0 non-contiguous BILL_ID groups**
+- only **1 BILL_ID** spans a page boundary
+- that one packet spans pages 16 and 17
+- maximum rows per BILL_ID remains 5
+- BILL_ID -> BILL_NO conflicts remain 0
+
+Provider-order digest:
+
+`83a4665b15d140df0f14aa8038daeba6d0ba652546e74ea552d5d31c147fb00d`
+
+A packet is therefore committed only when its final source page has been reached. All fetched
+pages are persisted as Source/Snapshot evidence; the packet observation anchors to its last source
+page following the existing meeting-graph L3 pattern.
+
+The cross-page live packet correctly records `source_pages=[16,17]` and anchors to the page-17
+snapshot.
+
+## L3 enumeration contract
+
+Feeder:
+
+`assembly_subcommittee_bill_reviews`
+
+Scope:
+
+`assembly_age:<AGE>`
+
+22nd-Assembly scope:
+
+`assembly_age:22`
+
+Source contract:
+
+`assembly_age_subcommittee_review_packets_by_bill_id`
+
+The enumerator:
+
+1. rejects sample mode and filtered connectors;
+2. fetches every page for the declared AGE;
+3. requires stable `list_total_count`;
+4. validates expected rows on every page;
+5. rejects AGE drift;
+6. groups the full source universe by BILL_ID;
+7. rejects any BILL_ID -> multiple BILL_NO mapping;
+8. canonicalizes review variants and exact duplicate counts;
+9. computes a deterministic universe fingerprint over packet hashes;
+10. persists every fetched page as an immutable SourceSnapshot;
+11. commits BILL_ID packet observations at their anchor page;
+12. stores page/packet counts, duplicate surplus and universe fingerprint in the checkpoint;
+13. on resume, re-fetches/revalidates the complete universe before continuing after the last
+    committed page;
+14. refuses resume if the universe fingerprint, counts, contract, AGE or page size changed.
+
+No identity hints are emitted.
+
+## Live L3 proof — 22nd Assembly
+
+Final-code / final-policy disposable run:
+
+- provider rows: **18,324**
+- source pages: **19 / 19**
+- BILL_ID packet observations: **17,727**
+- exact duplicate surplus rows: **5**
+- created: **17,727**
+- unchanged: 0
+- status: **SUCCESS**
+- checkpoint: **19**
+
+Immediate fresh rerun on the same DB:
+
+- provider rows: **18,324**
+- packets: **17,727**
+- created: **0**
+- unchanged: **17,727**
+- status: **SUCCESS**
+- checkpoint: **19**
+- same universe fingerprint
+
+### Partial / resume proof
+
+A separate final-policy disposable DB intentionally stopped after three pages:
+
+- status: **PARTIAL**
+- pages committed: **3 / 19**
+- observations created: **2,813**
+
+Normal `--resume` re-fetched and revalidated the complete source universe, then continued after
+page 3:
+
+- pages committed this run: **16**
+- pages committed total: **19**
+- observations created: **14,914**
+- final status: **SUCCESS**
+
+Fixture tests also cover:
+
+- unchanged rerun;
+- changed packet -> one immutable new version;
+- max-page checkpoint/resume;
+- synthetic persistence failure with last successful checkpoint retained;
+- changed-universe resume rejection;
+- total drift;
+- incomplete page;
+- BILL_ID -> multiple BILL_NO rejection;
+- sample/filtered scope rejection;
+- policy denial before network;
+- provider failure before persistence with secret-safe error handling.
+
+## SourceSnapshot representation drift
+
+The final live DB contains 19 Source URLs and 21 immutable SourceSnapshots.
+
+Between the first and second full pulls, page 1 and page 3 produced a different sanitized page-body
+hash while **all 17,727 BILL_ID packet observations remained unchanged**.
+
+The provider did not expose a correction/version marker explaining that page-level difference.
+Civic Intel therefore does not label it a correction.
+
+The page-level change is preserved as new SourceSnapshots. Packet observations version only when
+their deterministic normalized review packet changes.
+
+Immediately repeated keyed probes of pages 1 and 3 then produced stable body, provider-order and
+sorted semantic-row hashes across three rounds.
+
+This is why raw page representation and semantic BILL_ID packet versioning remain separate.
+
+## Cross-source corroboration
+
+BILL_ID remains a provider namespace. L3 does not require another lane to authorize the source row.
+
+A read-only comparison against the existing 22nd-Assembly meeting-graph L3 database found:
+
+- subcommittee BILL_ID packets: **17,727**
+- meeting-graph distinct bill IDs observed in any row: **18,956**
+- subcommittee BILL_ID found in meeting graph: **17,016**
+- subcommittee BILL_ID not found in meeting graph: **711**
+- subcommittee BILL_ID found in meeting-graph exact-bill set: **17,013**
+- subcommittee BILL_ID appearing in meeting-graph conflict set: **149**
+
+The 711 subcommittee-only IDs remain valid TVBPMCONFINFO source truth. Their absence from the
+meeting-graph lane is not a deletion or correction rule.
+
+The subcommittee universe contains **25 distinct COMMITTEE_ID values** and no observed
+COMMITTEE_ID -> multiple COMMITTEE_NAME conflict in the complete audit.
+
+COMMITTEE_ID is not automatically materialized as a canonical Organization.
 
 ## SourcePolicy and credentials
 
-The connector reuses the existing reviewed open.assembly.go.kr bill SourcePolicy as an L2
-network-permission gate.
+This source uses the shared `open.assembly.go.kr` policy identity with a source-specific reviewed
+policy contract dated 2026-10-05.
 
-Normal mode requires ASSEMBLY_API_KEY. The credential is appended only to the outgoing HTTP
-request and never enters discovered URLs, normalized bodies, staged output, metadata, or errors.
+The review records:
 
-The official Open Assembly terms require issued-key use for normal operation and source attribution.
-Before persistent L3 collection, reconcile the shared domain policy note to explicitly include
-TVBPMCONFINFO and the 2026-10-05 terms/source review.
+- official TVBPMCONFINFO service page;
+- Open Assembly Open API terms;
+- attribution requirement to 열린국회정보;
+- `이용허락범위 제한 없음`;
+- provider-displayed request-limit value `200000`;
+- normal keyed use;
+- public no-key sample mode limited to page 1 / 5 rows.
 
-## Sample mode
+Civic Intel stores structured metadata only:
 
-The official developer guide defines a bounded sample mode when no key is supplied. Civic Intel
-exposes it explicitly and fixes it to:
+- fulltext storage: disabled
+- AI transmission: disabled
+- excerpt publication: disabled
 
-- page 1
-- size 5
-- a required AGE
+`ASSEMBLY_API_KEY` is appended only to the outgoing HTTP request. It is not included in
+discovered URLs, normalized documents, snapshots, observations, checkpoints or error messages.
 
-Sample mode exists only for source-contract verification. Its list_total_count is provider metadata,
-not evidence that Civic Intel enumerated the universe.
+A final fresh disposable DB verified:
 
-## Identity and publication boundary
+- SourcePolicy review contains TVBPMCONFINFO;
+- terms_checked_at = 2026-10-05;
+- rate-limit note contains 200000;
+- credential/fulltext leakage checks = 0.
 
-This source creates no:
+## Canonical identity / publication boundary
 
-- Person or identity candidate;
+This L3 lane creates no:
+
+- Person;
+- PersonAlias;
 - Organization / InstitutionalBody;
+- canonical Bill;
 - CommitteeMembershipEpisode;
-- canonical Bill binding;
 - Claim / ClaimEvidence;
-- public projection.
+- public projection;
+- ideology/partisanship/behavioral score.
 
-COMMITTEE_ID and BILL_ID are provider namespaces that can support later exact joins only after the
-relevant source-specific review.
+The final live proof contained:
+
+- People: **0**
+- Organizations: **0**
+- Claims: **0**
+
+BILL_ID and COMMITTEE_ID can support future reviewed exact joins, but acquisition success does not
+authorize materialization or publication.
 
 ## Maturity
 
-L2 SINGLE_PULL.
+**L3 FULL_ENUMERATION** for the 22nd Assembly.
 
-Evidence:
-
-- current official service/request/output contract verified;
-- typed connector with strict parsing;
-- credential-safe official sample mode;
-- deterministic regression tests;
-- live official JSON sample through the new connector.
-
-L3 remains blocked by issued-key execution, full enumeration, stable row-key proof, correction
-semantics, and committee/bill join review.
+L4 scheduling/freshness is not part of this milestone.

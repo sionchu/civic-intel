@@ -35,6 +35,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Assembly committee roster source v0](exec-plans/completed/assembly-committee-roster-source-v0.md)
 - [Assembly subcommittee bill-review feeder](architecture/ASSEMBLY_SUBCOMMITTEE_BILL_REVIEW_FEEDER.md)
 - [Assembly subcommittee bill-review source v0](exec-plans/completed/assembly-subcommittee-bill-review-v0.md)
+- [Assembly subcommittee bill-review L3 v0](exec-plans/completed/assembly-subcommittee-review-l3-v0.md)
 - [Assembly meeting graph feeder](architecture/ASSEMBLY_MEETING_GRAPH_FEEDER.md)
 - [Assembly meeting graph source v0](exec-plans/completed/assembly-meeting-graph-v0.md)
 - [Assembly meeting graph L3 v0](exec-plans/completed/assembly-meeting-graph-l3-v0.md)
