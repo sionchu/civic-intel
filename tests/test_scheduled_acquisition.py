@@ -16,6 +16,7 @@ KEYS = {
     "MOIS_ORG_CODE_API_KEY": "mois-secret-123",
     "CIVIC_DART_BUSINESS_YEAR": "2025",
     "CIVIC_DART_REPORT_CODE": "11011",
+    "CIVIC_ASSEMBLY_FROM_YEAR": "2024",
 }
 
 
@@ -80,11 +81,16 @@ def test_success_failure_and_partial_mapping_with_redaction() -> None:
 def test_main_writes_receipt_outside_repo_and_uses_exit_codes(tmp_path: Path, monkeypatch) -> None:
     env = {"CIVIC_ACQUISITION_RECEIPTS_DIR": str(tmp_path)}
     monkeypatch.setattr(sa.subprocess, "run", fake_runner('{"status": "SUCCESS"}'))
-    # weekly: ALIO (no key) succeeds, MOIS has no key -> blocked -> exit 3
+    # weekly: ALIO (no key) succeeds; keyed jobs have no key -> blocked -> exit 3
     assert sa.main(["--cadence", "weekly"], env=env, today=TODAY) == 3
     lines = (tmp_path / "2026-10.jsonl").read_text(encoding="utf-8").splitlines()
     statuses = {item["job"]: item["status"] for item in json.loads(lines[-1])["jobs"]}
-    assert statuses == {"alio-executives": "SUCCESS", "mois-organization-codes": "BLOCKED_CREDENTIAL"}
+    assert statuses == {
+        "assembly-votes": "BLOCKED_CREDENTIAL",
+        "assembly-meeting-graph": "BLOCKED_CREDENTIAL",
+        "alio-executives": "SUCCESS",
+        "mois-organization-codes": "BLOCKED_CREDENTIAL",
+    }
     assert not (tmp_path / "acquisition.lock").exists()
 
 
@@ -99,3 +105,24 @@ def test_lock_prevents_overlapping_runs(tmp_path: Path, monkeypatch) -> None:
 def test_resume_requires_one_job() -> None:
     with pytest.raises(SystemExit):
         sa.main(["--cadence", "daily", "--resume"], env={}, today=TODAY)
+
+
+def test_assembly_meeting_jobs_require_explicit_from_year():
+    job = next(item for item in sa.JOBS if item.name == "assembly-meeting-graph")
+    with pytest.raises(sa.AcquisitionConfigError, match="CIVIC_ASSEMBLY_FROM_YEAR"):
+        job.argv({"CIVIC_ASSEMBLY_AGE": "22"}, date(2026, 10, 5))
+    env = {"CIVIC_ASSEMBLY_AGE": "22", "CIVIC_ASSEMBLY_FROM_YEAR": "2024"}
+    assert job.argv(env, date(2026, 10, 5)) == (
+        "--age", "22", "--from-year", "2024", "--enumerate",
+    )
+    universe = next(item for item in sa.JOBS if item.name == "assembly-meeting-universe")
+    assert universe.cadence == "daily"
+    assert universe.argv(env, date(2026, 10, 5)) == ("--age", "22", "--from-year", "2024")
+
+
+def test_assembly_votes_job_enumerates_the_configured_term():
+    job = next(item for item in sa.JOBS if item.name == "assembly-votes")
+    assert job.cadence == "weekly"
+    assert job.module == "workers.assembly_roll_call_votes"
+    assert job.argv({"CIVIC_ASSEMBLY_AGE": "22"}, date(2026, 10, 5)) == ("--age", "22", "--enumerate")
+    assert job.required_env == ("ASSEMBLY_API_KEY",)

@@ -13,6 +13,9 @@ freshness, reconciliation and monitoring evidence are still required.
 |---|---|---|---|
 | `assembly-roster` | daily | `workers.assembly_roster --enumerate` | `ASSEMBLY_API_KEY` |
 | `assembly-bills` | daily | `workers.legislative_activity --age $CIVIC_ASSEMBLY_AGE (22) --enumerate-bills` | `ASSEMBLY_API_KEY` |
+| `assembly-meeting-universe` | daily | `workers.assembly_meeting_universe --age $CIVIC_ASSEMBLY_AGE --from-year $CIVIC_ASSEMBLY_FROM_YEAR` (explicit; no default) | `ASSEMBLY_API_KEY` |
+| `assembly-votes` | weekly | `workers.assembly_roll_call_votes --age $CIVIC_ASSEMBLY_AGE --enumerate` | `ASSEMBLY_API_KEY` |
+| `assembly-meeting-graph` | weekly | `workers.assembly_meeting_graph_enumeration --age $CIVIC_ASSEMBLY_AGE --from-year $CIVIC_ASSEMBLY_FROM_YEAR --enumerate` (~40 min for the 22nd Assembly) | `ASSEMBLY_API_KEY` |
 | `alio-executives` | weekly | `workers.public_institutions` | none |
 | `mois-organization-codes` | weekly | `workers.mois_organization_codes` | `MOIS_ORG_CODE_API_KEY` |
 | `opendart-listed-executives` | monthly | `workers.corporate_talent --dataset EXECUTIVE_STATUS --enumerate --listed-only` for `$CIVIC_DART_BUSINESS_YEAR` / `$CIVIC_DART_REPORT_CODE` (explicit; no default) | `DART_API_KEY` |

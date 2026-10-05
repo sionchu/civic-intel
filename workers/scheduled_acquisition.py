@@ -77,6 +77,36 @@ def _assembly_bills(env: Mapping[str, str], _today: date) -> tuple[str, ...]:
     return ("--age", age, "--enumerate-bills")
 
 
+
+def _assembly_age(env: Mapping[str, str]) -> str:
+    age = env.get("CIVIC_ASSEMBLY_AGE", "22").strip()
+    if not age.isdigit():
+        raise AcquisitionConfigError("CIVIC_ASSEMBLY_AGE must be an Assembly term number")
+    return age
+
+
+def _assembly_votes(env: Mapping[str, str], _today: date) -> tuple[str, ...]:
+    return ("--age", _assembly_age(env), "--enumerate")
+
+
+def _assembly_meeting_scope(env: Mapping[str, str]) -> tuple[str, ...]:
+    from_year = env.get("CIVIC_ASSEMBLY_FROM_YEAR", "").strip()
+    if not (from_year.isdigit() and len(from_year) == 4):
+        raise AcquisitionConfigError(
+            "CIVIC_ASSEMBLY_FROM_YEAR (YYYY) must name the first calendar year of the Assembly "
+            "term explicitly; the run proves the prior year is empty"
+        )
+    return ("--age", _assembly_age(env), "--from-year", from_year)
+
+
+def _assembly_meeting_universe(env: Mapping[str, str], _today: date) -> tuple[str, ...]:
+    return _assembly_meeting_scope(env)
+
+
+def _assembly_meeting_graph(env: Mapping[str, str], _today: date) -> tuple[str, ...]:
+    return (*_assembly_meeting_scope(env), "--enumerate")
+
+
 def _dart_period(env: Mapping[str, str], _today: date) -> tuple[str, ...]:
     year = env.get("CIVIC_DART_BUSINESS_YEAR", "").strip()
     report = env.get("CIVIC_DART_REPORT_CODE", "").strip()
@@ -99,6 +129,20 @@ JOBS: tuple[AcquisitionJob, ...] = (
     AcquisitionJob(
         "assembly-bills", "daily", "workers.legislative_activity", _assembly_bills,
         ("ASSEMBLY_API_KEY",), "bill participation observations; no --publish-claims",
+    ),
+    AcquisitionJob(
+        "assembly-meeting-universe", "daily", "workers.assembly_meeting_universe",
+        _assembly_meeting_universe, ("ASSEMBLY_API_KEY",),
+        "CONF_ID meeting universe from the plenary + committee minutes indexes",
+    ),
+    AcquisitionJob(
+        "assembly-votes", "weekly", "workers.assembly_roll_call_votes", _assembly_votes,
+        ("ASSEMBLY_API_KEY",), "plenary roll-call member votes for the whole term; no Claims",
+    ),
+    AcquisitionJob(
+        "assembly-meeting-graph", "weekly", "workers.assembly_meeting_graph_enumeration",
+        _assembly_meeting_graph, ("ASSEMBLY_API_KEY",),
+        "per-meeting detail/agenda/bill lists for every universe CONF_ID; no agenda->bill joins",
     ),
     AcquisitionJob(
         "alio-executives", "weekly", "workers.public_institutions", _fixed(),
