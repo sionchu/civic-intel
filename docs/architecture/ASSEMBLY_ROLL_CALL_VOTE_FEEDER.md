@@ -7,7 +7,7 @@ for one National Assembly term: for each plenary-voted bill, every seated member
 result keyed by the provider member code `MONA_CD`.
 
 It is an **acquisition-only** lane. It creates no Person, links no identity, publishes no Claim
-and renders nothing. Maturity is `L1 CONTRACT_STAGED` (see "Maturity" below).
+and renders nothing. The 22nd-Assembly lane is `L3 FULL_ENUMERATION` (see "Maturity" below).
 
 ## Out of scope
 
@@ -72,16 +72,22 @@ The `ncocpgfiaoituanbr` service name 의안별 표결현황 is corroborated by t
 shape and a secondary developer reference; its own official service page was not located in
 this review.
 
-### UNVERIFIED (needs a keyed live run)
+### Keyed behavior observed 2026-10-05
 
-- keyed pagination (`pIndex`/`pSize`) behavior and the real `pSize` ceiling — the sample key
-  ignores both;
-- (answered 2026-10-05, keyed run) not every bill reconciles: e.g. one 22nd-term bill publishes
-  tallies 195/0/2 while its 296 complete member rows count 196/0/1. Such bills are recorded as
-  tally exceptions (below), not dropped and not corrected;
-- whether one `BILL_ID` can carry more than one plenary vote (e.g. 수정안 and 원안, or 재의);
-  if it does, `MONA_CD` repeats within a bill and the run fails closed;
-- correction/republication semantics and request limits.
+- keyed pagination is operational: the 1,911-row bill universe was fetched completely with
+  `pSize=1000` over two summary pages, and every member-vote request used `pSize=1000`.
+  The provider therefore accepts 1000 for these services; a higher ceiling was not probed.
+- not every bill reconciles: one 22nd-term bill publishes tallies 195/0/2 while its 296 complete
+  member rows count 196/0/1. It is recorded as `SOURCE_CONFLICT`, not dropped or corrected.
+- the complete 22nd-term run found no repeated `MONA_CD` inside one `BILL_ID`; any future
+  repeated member still fails closed because the provider does not publish an independent
+  vote-event identifier.
+- the service page displays request-limit value `200000`. A keyed HTTP probe returned 200 and
+  exposed no response headers containing rate/limit/retry/remaining/quota. A second keyed
+  member-vote probe after a transient full-run request failure also returned HTTP 200,
+  `INFO-000`, 300 rows and no such headers. The reset period is not documented or inferred.
+- correction/republication timing remains unpublished. Immutable observation versioning preserves
+  any later provider change instead of overwriting it.
 
 ## Bounded universe
 
@@ -196,11 +202,58 @@ Claim/ClaimEvidence/Source/SourcePolicy gate.
 
 ## Maturity
 
-`L2 SINGLE_PULL` reached 2026-10-05: keyed live bills were fetched through this connector into
-a disposable SQLite DB (3 bills / 880 observations, then `--resume` 5 bills / 1,498). `L3`
-requires a complete keyed full-term run with explicit tally exceptions. Evidence 2026-10-05
-(Windows, disposable SQLite, resumed across three invocations): 22nd term, 1,911 of 1,911 bills,
-568,649 member-vote observations, run `SUCCESS`, one tally exception
-(`PRC_G2Z5L1L1C2F1O1S6A0I6O4J4T5B8G3`: `SOURCE_CONFLICT`). Still open for L3 sign-off: a live
-idempotent re-run (unchanged-count proof) and request-limit observation; fixture tests cover
-idempotency and new-version behaviour.
+**L3 FULL_ENUMERATION** for the 22nd Assembly.
+
+### Full-term proof
+
+The keyed disposable run covered all **1,911 / 1,911** bill-summary rows and **568,649**
+member-vote records. It completed with one explicit tally exception:
+
+`PRC_G2Z5L1L1C2F1O1S6A0I6O4J4T5B8G3 = SOURCE_CONFLICT`.
+
+The conflict is retained on its observations; neither official dataset is silently preferred.
+
+### Final-contract convergence and idempotency proof
+
+The original full-term acquisition crossed the tally-reconciliation contract change at checkpoint
+590: observations before that point did not yet contain `bill_tally_reconciliation`, while later
+observations did. A fresh 2026-10-05 run on the same disposable database therefore converged the
+historical prefix by creating immutable new versions instead of rewriting old observations.
+
+Across the convergence run and its checkpoint-safe resumes:
+
+- records seen: **568,649**
+- new immutable versions: **175,612**
+- unchanged under the final contract: **393,037**
+- final status: **SUCCESS**
+- universe fingerprint unchanged
+- same single `SOURCE_CONFLICT` bill retained
+
+Two transient generic API-request failures occurred at bill checkpoints 410 and 532. The worker
+left committed checkpoints intact and `--resume` completed from each checkpoint. A direct keyed
+probe of the next bill after the second failure immediately returned HTTP 200 / `INFO-000`,
+demonstrating that the failure was not a deterministic row-contract failure.
+
+Immediately after convergence, a second fresh full-term run was started under the same final code
+and database. Its process was externally interrupted after checkpoint 1008, with:
+
+- created: **0**
+- unchanged: **299,948**
+
+The stale RUNNING receipt was explicitly closed as PARTIAL without moving the checkpoint, and
+`--resume` completed the remaining 903 bills:
+
+- created: **0**
+- unchanged: **268,701**
+- final status: **SUCCESS**
+
+Aggregated idempotency proof for the full universe:
+
+- **observations_created = 0**
+- **observations_unchanged = 568,649**
+- checkpoint **1911 / 1911**
+- same universe and tally-exception semantics
+
+This satisfies the L3 full-enumeration, checkpoint/resume and unchanged-rerun contract. It does
+**not** authorize Person materialization, Claim publication, vote-derived ideology/alignment
+scoring, or scheduled production sync.
