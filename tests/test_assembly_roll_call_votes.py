@@ -463,25 +463,37 @@ def test_unknown_vote_value_fails_before_any_vote_commit(tmp_path: Path) -> None
 
 
 @pytest.mark.parametrize(
-    ("override", "message"),
+    ("override", "status"),
     [
-        ({"YES_TCNT": 0, "VOTE_TCNT": 2}, "YES/NO/ABSTAIN"),
-        ({"MEMBER_TCNT": 5}, "published member total"),
+        ({"YES_TCNT": 0, "VOTE_TCNT": 2}, "SOURCE_CONFLICT"),
+        ({"MEMBER_TCNT": 5}, "MEMBER_ROWS_INCOMPLETE"),
     ],
 )
-def test_member_rows_must_reproduce_published_tallies(
-    tmp_path: Path, override: dict, message: str
+def test_tally_disagreement_is_recorded_not_corrected(
+    tmp_path: Path, override: dict, status: str
 ) -> None:
     repository = migrated_repository(tmp_path / "votes-tally.db")
     api = VoteApi()
     api.summary_overrides["B1"] = override
 
-    with pytest.raises(AssemblyRollCallCoverageError, match=message):
-        enumerator(api, repository).enumerate()
-    assert repository.feeder_observations(FEEDER, SCOPE) == []
+    result = enumerator(api, repository).enumerate()
+    assert result.complete is True
+    assert result.tally_exceptions == {"B1": status}
+    observations = repository.feeder_observations(FEEDER, SCOPE)
+    flagged = [o for o in observations if o.normalized["bill_id"] == "B1"]
+    others = [o for o in observations if o.normalized["bill_id"] != "B1"]
+    assert flagged and all(o.normalized["bill_tally_reconciliation"] == status for o in flagged)
+    assert all("published_bill_tallies" in o.normalized for o in flagged)
+    assert all("member_row_tallies" in o.normalized for o in flagged)
+    assert all(o.normalized["bill_tally_reconciliation"] == "MATCHED" for o in others)
+    assert all("published_bill_tallies" not in o.normalized for o in others)
+    checkpoint = repository.source_checkpoint(FEEDER, SCOPE)
+    assert checkpoint.metadata["tally_exceptions"] == {"B1": status}
+    # No vote value is rewritten to make the totals agree.
+    assert {o.normalized["vote_value_published"] for o in flagged} <= {"찬성", "반대", "기권", "불참"}
 
 
-def test_bill_without_member_rows_fails_closed(tmp_path: Path) -> None:
+def test_bill_without_member_rows_is_recorded_as_incomplete(tmp_path: Path) -> None:
     repository = migrated_repository(tmp_path / "votes-empty-bill.db")
     api = VoteApi()
     api.member_rows_override["B1"] = []
@@ -494,8 +506,22 @@ def test_bill_without_member_rows_fails_closed(tmp_path: Path) -> None:
         "BLANK_TCNT": 1,
     }
 
-    with pytest.raises(AssemblyRollCallCoverageError, match="tallies"):
-        enumerator(api, repository).enumerate()
+    result = enumerator(api, repository).enumerate()
+    assert result.tally_exceptions == {"B1": "MEMBER_ROWS_INCOMPLETE"}
+    assert not [
+        o for o in repository.feeder_observations(FEEDER, SCOPE) if o.normalized["bill_id"] == "B1"
+    ]
+
+
+def test_tally_exceptions_survive_resume(tmp_path: Path) -> None:
+    repository = migrated_repository(tmp_path / "votes-tally-resume.db")
+    api = VoteApi()
+    api.summary_overrides["B1"] = {"YES_TCNT": 0, "VOTE_TCNT": 2}
+    first = enumerator(api, repository, max_bills=1).enumerate()
+    assert first.complete is False
+    second = enumerator(api, repository).enumerate(resume=True)
+    assert second.complete is True
+    assert second.tally_exceptions == {"B1": "SOURCE_CONFLICT"}
 
 
 @pytest.mark.parametrize(
