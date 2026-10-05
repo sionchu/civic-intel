@@ -226,6 +226,11 @@ class _OpenAssemblyMeetingConnector(Connector):
         cls, payload: dict
     ) -> tuple[list[dict], int | None, str | None]:
         blocks = payload.get(cls.API_CODE)
+        if blocks is None:
+            # A meeting with no rows (e.g. no bills) is answered with a top-level INFO-200.
+            result = payload.get("RESULT")
+            if isinstance(result, dict) and str(result.get("CODE") or "") == "INFO-200":
+                return [], 0, "INFO-200"
         if not isinstance(blocks, list) or not blocks:
             raise AssemblyApiError(f"{cls.LABEL} API returned a malformed response")
         total_count: int | None = None
@@ -366,11 +371,21 @@ class OpenAssemblyMeetingDetailConnector(_OpenAssemblyMeetingConnector):
         return safe
 
     def parse_detail(self, document: ConnectorDocument) -> AssemblyMeetingDetailRecord:
+        records = self.parse_detail_rows(document)
+        if len(records) != 1:
+            raise AssemblyApiError("meeting-detail source must return exactly one row")
+        return records[0]
+
+    def parse_detail_rows(
+        self, document: ConnectorDocument
+    ) -> tuple[AssemblyMeetingDetailRecord, ...]:
+        """Every detail row as published (the provider may emit one row per meeting type)."""
+
         payload = _load_document(document, self.LABEL)
         rows, _, _ = self._response_parts(payload)
-        if len(rows) != 1:
-            raise AssemblyApiError("meeting-detail source must return exactly one row")
-        row = rows[0]
+        return tuple(self._detail_record(row) for row in rows)
+
+    def _detail_record(self, row: dict) -> AssemblyMeetingDetailRecord:
         return AssemblyMeetingDetailRecord(
             meeting_id=_required(row, "CONF_ID", label=self.LABEL),
             assembly_term=_required(row, "ERACO", label=self.LABEL),

@@ -179,25 +179,66 @@ Credentials never enter discovered URLs, normalized bodies, metadata, staged out
 Open Assembly source-attribution requirements apply. Before persistent L3 ingestion, reconcile the
 shared policy note for the three meeting endpoints and current terms review.
 
+## L3 per-age enumeration — keyed, 2026-10-05
+
+`civic-stage-assembly-meeting-graph-age --age 22 --from-year 2024 --enumerate`
+(`workers/assembly_meeting_graph_enumeration.py`).
+
+The universe is the meeting-universe lane ([ASSEMBLY_MEETING_UNIVERSE_FEEDER.md](ASSEMBLY_MEETING_UNIVERSE_FEEDER.md)),
+re-fetched and validated at the start of every run. For each `CONF_ID`, in sorted order, the run
+fetches every page of `VCONFDETAIL`, `VCONFBLLLIST` and `VCONFBILLLIST` and requires:
+
+- at least one detail row; several detail rows are accepted only when they differ in nothing but
+  the meeting-type Y/N flags (observed: 4 meetings, e.g. `053887` is published once with
+  `HRG_YN=Y` and once with `PBHRG_YN=Y`). The merged flag is True if any row says Y and the
+  per-row flag sets are kept verbatim (`detail_row_flag_sets`); any other difference fails closed;
+- detail `CONF_DT` equal to the minutes-index date;
+- every agenda and bill row carrying the detail's `ERACO / SESS / DGR`;
+- stable provider totals and complete pages.
+
+One FeederObservation per `CONF_ID` (feeder `assembly_meeting_graph`, scope `assembly_age:22`):
+the detail fields, `agendas` in provider order, `bills`, and the bill reconciliation below.
+`agenda_to_bill_edges` is always 0.
+
+### Provider quirks in VCONFBILLLIST (recorded, not corrected)
+
+- Identical repeated rows: collapsed into one entry with `provider_row_count`
+  (546 surplus rows across the term).
+- One `BILL_ID` listed in one meeting with **different** bill names (different proposers and
+  printed 의안번호 in the name): 188 instances, 152 distinct `BILL_ID`s, 51 meetings. Every
+  variant row is kept, the `BILL_ID` is listed in `bill_id_conflicts`, and it is **excluded** from
+  `exact_bill_ids`. The printed 의안번호 inside `BILL_NM` is not used to repair the identifier.
+
+### Result
+
+| measure | value |
+|---|---|
+| meetings (`CONF_ID`) | 1,954 — SUCCESS, complete |
+| agenda rows | 49,144 (max 764 in one meeting) |
+| bill rows as published | 46,345 |
+| distinct bill entries | 45,799 |
+| exact meeting → bill edges | 45,423 over 18,953 distinct `BILL_ID`s |
+| meetings with a `BILL_ID` conflict | 51 |
+| meetings with no bill rows | 429 |
+| meetings with a subcommittee name | 711 |
+| snapshots | 5,862 |
+| Person / Organization / Claim | 0 / 0 / 0 |
+
+Checkpoint metadata stores the universe fingerprint; `--resume` continues at the next meeting and
+refuses to run if the universe changed. `--max-meetings` bounds one invocation (run ends PARTIAL).
+
 ## Maturity
 
-**L2 SINGLE_PULL**
+**L3 FULL_ENUMERATION** for the 22nd Assembly over the meeting universe (plenary + committee
+minutes indexes): every `CONF_ID` expanded, keyed, with resume and an idempotent re-run recorded
+in [assembly-meeting-graph-l3-v0.md](../exec-plans/completed/assembly-meeting-graph-l3-v0.md).
 
-Proven:
+Still open:
 
-- current official request/output contracts;
-- typed connectors for all three services;
-- strict graph-context reconciliation across `CONF_ID / ERACO / SESS / DGR`;
-- privacy/credential-safe URLs;
-- live aligned sample;
-- no inferred agenda-to-bill join.
-
-L3 is blocked by:
-
-1. issued-key execution;
-2. ~~a bounded complete `CONF_ID` meeting universe~~ — acquired for the plenary and committee
-   minutes indexes by [ASSEMBLY_MEETING_UNIVERSE_FEEDER.md](ASSEMBLY_MEETING_UNIVERSE_FEEDER.md)
-   (22nd Assembly: 1,954 meetings); expanding each universe `CONF_ID` is still open;
-3. page/checkpoint/resume/idempotency coverage;
-4. agenda-row and meeting-bill relation version semantics;
-5. reviewed committee and bill canonical joins.
+1. agenda rows are stored inside the meeting observation; no per-agenda-row provider key is
+   approved (the provider documents none);
+2. `BILL_ID` conflicts need a reviewed resolution path (e.g. against the bill feeder's own rows)
+   before those edges can be used;
+3. reviewed committee (`CMIT_NM` / `DEPT_CD`) and bill canonical joins;
+4. national audit / investigation meetings are outside the universe;
+5. scheduling in `civic-acquire`.
