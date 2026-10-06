@@ -106,3 +106,29 @@ def test_sections_route_lines_and_skip_other_sections() -> None:
     assert [item.education.institution_name for item in education] == ["송정초등학교", "영남대학교"]
     assert [item.marker for item in career] == ["CURRENT", "FORMER"]
     assert all("책" not in item.line_text for item in entries)
+
+
+def test_generic_university_head_keeps_its_preceding_name_words() -> None:
+    (entry,) = _education("버지니아 폴리테크닉 주립대학교(행정학 박사)")
+    assert entry.institution_name == "버지니아 폴리테크닉 주립대학교"
+
+
+def test_admissions_office_or_course_words_are_not_degrees_or_departments() -> None:
+    assert _education("원광대학교 입학사정관실장") == ()
+    (entry,) = _education("명지대학교 정치학 박사과정 수료")
+    assert entry.department_text is None and entry.degree_text == "박사과정 수료"
+
+
+def test_spaced_headers_trailing_markers_and_party_names() -> None:
+    entries = parse_biography((
+        "□ 경 력",
+        "과학기술정보방송통신위원회 간사(前)",
+        "국민의힘 원내부대표",
+        "국회 정부 및 공공기관 등의 해외자원개발 진상규명을 위한 국정조사특별위원회 위원",
+        "저서/ 섬진강(2005)",
+    ))
+    assert [(item.marker, item.career.category) for item in entries] == [
+        ("FORMER", "OTHER"),
+        ("NONE", "PARTY"),
+        ("NONE", "LEGISLATURE"),
+    ]

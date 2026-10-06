@@ -84,10 +84,12 @@ def biography_lines(text: str | None) -> tuple[str, ...]:
     return tuple(lines)
 
 
-_BULLET = re.compile(r"^[\-·•▶▷▣○●■□◎◇◆*ㆍ※►▸•\s]+")
+_BULLET = re.compile(r"^[\-－·•▶▷▣○●■□◎◇◆◈▲△▼▽*ㆍ※►▸•\s]+")
 _MARKER = re.compile(r"^(?:\(?\s*(現|現職|현|현재|前|전|전직)\s*\)|\[\s*(現|현|前|전)\s*\]|(現|前)\s)\s*")
-_HEADER = re.compile(r"^[\[<【(\s]*(?:주요\s*)?(학력|경력|약력|저서|수상|상훈|기타|활동)(?:\s*사항)?[\]>】)\s]*$")
-_DATE = r"(\d{4})(?:\s*[.\-/년]\s*(\d{1,2}))?(?:\s*[.\-/월]\s*(\d{1,2}))?\s*[.일]?"
+_HEADER = re.compile(r"^[\[<【(]*(?:주요)?(학력|경력|약력|저서|수상|상훈|기타|활동|현직|전직)(?:사항)?[\]>】)]*$")
+_TRAILING_MARKER = re.compile(r"\s*[(\[]\s*(現|現職|현|현직|前|전|전직)\s*[)\]]\s*$")
+_SKIP_PREFIX = re.compile(r"^(저서|수상|상훈|논문)\s*[/:：]")
+_DATE = r"(\d{4})(?:\s*[.\-/년]\s*(\d{1,2}))?(?:\s*[.\-/월]\s*(\d{1,2}))?\s*[.일년]?"
 
 
 def _strip_bullets(line: str) -> str:
@@ -95,13 +97,13 @@ def _strip_bullets(line: str) -> str:
 
 
 def section_of(line: str) -> str | None:
-    match = _HEADER.match(_strip_bullets(line))
+    match = _HEADER.match(re.sub(r"\s+", "", _strip_bullets(line)))
     if not match:
         return None
     word = match.group(1)
     if word == "학력":
         return "EDUCATION"
-    if word in {"경력", "약력", "활동"}:
+    if word in {"경력", "약력", "활동", "현직", "전직"}:
         return "CAREER"
     return "OTHER"
 
@@ -192,9 +194,9 @@ def split_marker(text: str) -> tuple[str, str]:
 # Education
 
 
-_DEGREE_WORDS = re.compile(r"졸업|수료|학사|석사|박사|중퇴|입학|재학|학위")
+_DEGREE_WORDS = re.compile(r"졸업|수료|(?<!입)학사|석사|박사|중퇴|재학|학위")
 _HONORARY = re.compile(r"명예\s*[가-힣]*\s*(?:박사|학위)")
-_TEACHING = re.compile(r"교수|강사|겸임|초빙|총장|이사장|원장|연구원|연구위원|위원|동문회장|회장|감사|직원")
+_TEACHING = re.compile(r"교수|강사|겸임|초빙|총장|학장|처장|실장|사정관|이사장|원장|연구원|연구위원|위원|동문회장|회장|감사|직원")
 _SCHOOL_SUFFIX = ("고등학교", "중학교", "초등학교", "국민학교")
 _SHORT_SCHOOL = re.compile(r"^([가-힣]{2,8})(여고|고|여중|중|초)$")
 _SHORT_SCHOOL_FORMS = {
@@ -205,7 +207,7 @@ _SHORT_SCHOOL_FORMS = {
     "초": ("ELEMENTARY_SCHOOL", "초등학교"),
 }
 _SHORT_UNIV = re.compile(r"^([가-힣]{1,8})대$")
-_DEPARTMENT = re.compile(r"(학과|학부|전공|과정|대학)$")
+_DEPARTMENT = re.compile(r"(학과|학부|전공|대학)$")
 _COUNTRY = re.compile(r"^(미국|영국|일본|중국|독일|프랑스|캐나다|호주|러시아|스위스|네덜란드|스웨덴|대만|싱가포르|뉴질랜드)\s+")
 
 
@@ -230,7 +232,7 @@ def _degree(text: str) -> str | None:
         (r"석사\s*과정\s*수료|석사\s*수료", "석사과정 수료"),
         (r"박사", "박사"),
         (r"석사", "석사"),
-        (r"학사", "학사"),
+        (r"(?<!입)학사", "학사"),
         (r"중퇴", "중퇴"),
         (r"수료", "수료"),
         (r"재학", "재학"),
@@ -271,6 +273,9 @@ def _education_part(
     for index, word in enumerate(words):
         if "대학교" in word:
             name = word[: word.index("대학교") + 3]
+            if len(name) <= 5 and index > 0:
+                # A generic head ("주립대학교", "국립대학교") belongs to the preceding words.
+                name = " ".join([*words[:index], name])
             rest = words[index + 1 :]
             graduate = next((item for item in rest if item.endswith("대학원")), None)
             if word.endswith("대학원") and word != name:
@@ -340,9 +345,13 @@ CAREER_CATEGORIES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("TRANSITION_COMMITTEE", re.compile(r"인수위원회|인수위")),
     ("CAMPAIGN", re.compile(r"선거대책|선대위|선대본|선거캠프|캠프|경선|선거운동본부|후보\s*(?:비서실|특보|대변인)")),
     ("PRESIDENTIAL_OFFICE", re.compile(r"대통령\s*비서실|대통령실|청와대|국가안보실")),
-    ("GOVERNMENT_COMMITTEE", re.compile(r"(대통령\s*직속|국무총리\s*소속|국무총리실|정부)\s*[가-힣·\s]*위원회")),
-    ("LEGISLATURE", re.compile(r"국회의원|국회\s|국회의장|국회사무처|입법조사처|의원\s*보좌관|보좌관|비서관")),
-    ("PARTY", re.compile(r"[가-힣]+당\s|당\s*대표|최고위원|원내대표|대변인|정책위원회|당원협의회|지역위원장|시당|도당|중앙당")),
+    ("LEGISLATURE", re.compile(r"국회|입법조사처|의원\s*보좌관|보좌관|비서관")),
+    ("GOVERNMENT_COMMITTEE", re.compile(r"(대통령\s*직속|국무총리\s*(?:소속|직속)?)\s*[가-힣·\s]*위원")),
+    ("PARTY", re.compile(
+        r"국민의힘|더불어민주당|민주당|조국혁신당|개혁신당|진보당|기본소득당|사회민주당|정의당|새누리당|"
+        r"한나라당|자유한국당|미래통합당|새정치민주연합|열린우리당|국민의당|바른미래당|바른정당|민주통합당|"
+        r"통합진보당|새천년민주당|당\s*대표|최고위원|원내대표|원내부대표|대변인|당원협의회|지역위원장|시당|도당|중앙당"
+    )),
     ("LOCAL_GOVERNMENT", re.compile(r"도의회|시의회|구의회|군의회|도지사|시장|구청장|군수|부지사|부시장|교육감")),
     ("PUBLIC_SERVICE", re.compile(r"장관|차관|청장|처장|국장|과장|사무관|서기관|이사관|공무원|외교부|대사|총영사|검사|판사|검찰|법원|경찰|감사원|[가-힣]+부\s")),
     ("MILITARY", re.compile(r"육군|해군|공군|해병|합참|사단|전역|예비역|중장|소장|준장|대령|중령")),
@@ -411,7 +420,13 @@ def parse_biography(lines: tuple[str, ...]) -> tuple[BiographyEntry, ...]:
         if section == "OTHER":
             continue
         body = _strip_bullets(line)
+        if _SKIP_PREFIX.match(body):
+            continue
+        trailing = _TRAILING_MARKER.search(body)
         marker, body = split_marker(body)
+        if trailing and marker == "NONE":
+            marker = "CURRENT" if trailing.group(1) in {"現", "現職", "현", "현직"} else "FORMER"
+            body = body[: trailing.start()].strip()
         period, body = split_period(body)
         if marker == "NONE":
             marker, body = split_marker(body)
