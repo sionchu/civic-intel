@@ -153,7 +153,9 @@ test("public reads preserve distinct error states without blanket fallbacks", as
   const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
   const state = await readFile(new URL("../app/components/read-state.tsx", import.meta.url), "utf8");
   const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
-  assert.match(data, /CIVIC_API_URL/);
+  const transport = await readFile(new URL("../app/public-read.ts", import.meta.url), "utf8");
+  assert.match(transport, /CIVIC_API_URL/);
+  assert.match(data, /readPublic\(path, options\)/);
   assert.match(data, /ACCESS_DENIED/);
   assert.match(data, /SERVICE_UNAVAILABLE/);
   assert.doesNotMatch(data, /fallback/);
@@ -667,7 +669,7 @@ test("모두의국감 public brand replaces developer-facing names without renam
     read("../app/components/roster-grid.tsx"),
     read("../app/not-found.tsx"),
     read("../app/icon.svg"),
-    read("../app/data.ts"),
+    read("../app/public-read.ts"),
   ]);
   assert.match(site, /SITE_NAME = "모두의국감"/);
   assert.match(site, /siteName: SITE_NAME/);
@@ -723,7 +725,7 @@ test("Sites snapshot export keeps reader-time dates and ?q= correct without a se
   assert.match(script, /\/ready/);
   assert.match(script, /rmSync\(join\(stage, "app", "admin"\)/);
   assert.match(script, /output: "export"/);
-  assert.match(script, /FORBIDDEN_TOKENS/);
+  assert.match(script, /forbiddenToken\(text, apiOrigin\)/);
   assert.match(script, /snapshot-manifest\.json/);
   assert.doesNotMatch(script, /process\.env\.(DATABASE_URL|CIVIC_OPERATOR_TOKEN|[A-Z_]+_API_KEY)/);
   assert.match(eslint, /\.sites-build/);

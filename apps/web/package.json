@@ -11,7 +11,7 @@
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/check-portrait-assets.mjs && node --test tests/ui.test.mjs tests/gukgam-witnesses.test.mjs"
+    "test": "node scripts/check-portrait-assets.mjs && node --test tests/ui.test.mjs tests/gukgam-witnesses.test.mjs tests/sites-storage.test.mjs"
   },
   "dependencies": {
     "cytoscape": "3.34.3",
