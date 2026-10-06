@@ -136,9 +136,18 @@ the observation stays internal.
 
 ## Identity rule
 
-Witnesses are NOT linked to canonical Person records. No name matching, no identity hints
-(`identity_hints = {}`), no `PersonObservationLink`. The name is source-listed text, exactly like
-ALIO executive names on organization pages ("현재 임원현황").
+The import and the committee/target witness Claim never link a canonical Person: no name matching,
+no identity hints (`identity_hints = {}`), no automatic `PersonObservationLink`. The name is
+source-listed text, exactly like ALIO executive names on organization pages ("현재 임원현황"), and
+the Organization-subject Claim keeps `SOURCE_LISTED_TEXT_NO_PERSON_LINK`.
+
+Since 2026-10-06 an operator may link one exact published row to one existing RESOLVED Person
+through the admin `LINK_PERSON` review (see `IDENTITY_RESOLUTION.md`, "Reviewed links for
+no-Person-ID source rows"). The row must state an institution of that Person's own role record;
+name equality alone is refused. The result is a separate Person Claim
+`LISTED_AS_GUKGAM_WITNESS` (DRAFT until PUBLISH) that copies only public qualifiers (never
+`request_reason_text`, `received_via` or `received_at`). `GET /gukgam/2026/witnesses` adds
+`linked_person` to a row only when such a Person Claim is published for a public Person.
 
 Attachment: rows attach to the committee Organization (scope `COMMITTEE`, Organization named exactly
 the committee or "국회 {committee}"), or to an audited Organization only when the row's

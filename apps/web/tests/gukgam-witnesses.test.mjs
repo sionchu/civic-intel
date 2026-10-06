@@ -14,9 +14,13 @@ test("Gukgam witnesses component is a server component with source-listed flat r
   assert.match(component, /증인이 없다는 뜻은 아닙니다/);
 });
 
-test("Gukgam witness names never link to Person pages", async () => {
+test("Gukgam witness names link to a Person only through a reviewed published link", async () => {
   const component = await read("../app/components/gukgam-witnesses.tsx");
-  assert.doesNotMatch(component, /next\/link|\/people\/|person_id/);
+  // The only Person link is the API's reviewed linked_person; never a name lookup or person_id.
+  assert.match(component, /item\.linked_person \? \(/);
+  assert.equal(component.match(/\/people\//g)?.length, 1);
+  assert.doesNotMatch(component, /person_id|getPeople|canonical_name/);
+  assert.match(component, /사람이 검토해 공개한 행만/);
 });
 
 test("Gukgam witness data helper targets the published-only route", async () => {
