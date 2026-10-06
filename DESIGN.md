@@ -23,8 +23,8 @@ page (GOV.UK Frontend, TheyWorkForYou) than to a product landing page.
 - Use whitespace, thin dividers and type to establish hierarchy. Use color for semantic feedback
   only, with one restrained civic accent.
 - Prefer flat editorial rows and grouped fields over galleries, dashboards or nested cards.
-- Explain what is visible, where it comes from and how it was checked without leading with
-  implementation vocabulary.
+- Say what is shown in as few words as possible. The record, its status chip and its source link
+  carry the explanation; prose does not repeat it.
 
 External design references may inform this grammar, but they do not override product behavior,
 evidence rules, accessibility or existing component conventions. No external brand assets, copy,
@@ -169,6 +169,10 @@ search inputs, selects and primary filter buttons are 48px tall.
 - Don't add decorative ordinal numbers (01/02/03), italic or colored accent words in headings,
   initial-letter avatars, circular arrow badges, KPI tiles or "where to start" card grids.
 - Don't use English uppercase eyebrows or labels on public pages.
+- Don't add reassurance or disclaimer prose ("근거와 출처와 함께…", "없다는 뜻이 아니라…",
+  "자동으로 합치지 않습니다", footer promises). Home carries one scope line. A short factual note is
+  kept only where a misreading could harm someone, such as witness lists being 출석 요구, not a
+  finding of wrongdoing.
 - Don't use the KRDS government masthead, identifier, emblem or any government-site styling; this
   is not a government service.
 - Don't copy third-party design-system assets (fonts, icons, tokens) without a license that allows it.

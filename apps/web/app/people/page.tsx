@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = buildPageMetadata({
   title: "인물 찾기",
-  description: "공개 기준을 통과한 인물 기록을 이름으로 찾고, 역할·이력의 근거와 출처를 확인합니다.",
+  description: "국회의원과 국감 관련 인물의 공개 기록을 이름으로 찾습니다.",
   path: "/people",
 });
 
@@ -38,7 +38,7 @@ export default async function PeoplePage({
       <header className="people-header">
         <div>
           <h1>인물 찾기</h1>
-          <p className="profile-lede">국회의원과 국감 관련 인물의 공개 기록을 이름으로 찾습니다. 이름이 같아도 다른 사람이면 따로 보여줍니다.</p>
+          <p className="profile-lede">국회의원과 국감 관련 인물을 이름으로 찾습니다.</p>
         </div>
       </header>
 
@@ -50,7 +50,7 @@ export default async function PeoplePage({
           </section>
         ) : (
           <p className="empty-state" role="status">
-            <span><strong>현재 공개 인물 기록이 없습니다.</strong><small>대상이 없다는 의미가 아니라 현재 공개 조건의 결과가 비어 있다는 뜻입니다.</small></span>
+            <span><strong>아직 공개된 인물 기록이 없습니다.</strong></span>
           </p>
         )
       ) : (

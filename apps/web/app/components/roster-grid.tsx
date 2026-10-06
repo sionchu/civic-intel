@@ -136,7 +136,7 @@ export default function RosterGrid({
 
       {incompletePeople > 0 && (
         <p className="incomplete-note" role="status">
-          {incompletePeople}명은 정당·지역구 같은 기본 정보가 아직 공개되지 않아 필터를 쓰면 빠질 수 있습니다. 빈 값은 추측해서 채우지 않습니다.
+          {incompletePeople}명은 기본 정보가 없어 필터를 쓰면 빠질 수 있습니다.
         </p>
       )}
 
@@ -182,7 +182,7 @@ export default function RosterGrid({
       {witnessMatches.length > 0 && (
         <section className="witness-matches" aria-labelledby="witness-matches-title">
           <h3 id="witness-matches-title">국감 공식 증인·참고인 명단 기재 {witnessMatches.length}건</h3>
-          <p>위원회 공식 명단에 적힌 이름을 출처 그대로 보여줍니다. 위의 인물 기록과 자동으로 연결하지 않으며, 동명이인일 수 있습니다. 출석 요구일 뿐 위법 판단이 아닙니다.</p>
+          <p>공식 명단에 적힌 이름이며, 위 인물과 같은 사람인지는 확인하지 않았습니다. 출석 요구 명단이며 위법 판단이 아닙니다.</p>
           <ul>
             {witnessMatches.map((row) => (
               <li key={row.claimId}>

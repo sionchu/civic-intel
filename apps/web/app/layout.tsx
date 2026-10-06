@@ -38,14 +38,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <footer className="site-footer">
             <div className="footer-brand">
               <span className="brand-mark small" aria-hidden="true">국감</span>
-              <div>
-                <strong>{SITE_NAME}</strong>
-                <p>공개 기준을 통과한 기록만 근거·출처와 함께 보여줍니다.</p>
-              </div>
+              <strong>{SITE_NAME}</strong>
             </div>
             <div className="footer-note">
-              <span className="micro-label">읽기 전용 공개 기록</span>
-              <span>평가·순위·점수를 만들지 않습니다.</span>
               {SNAPSHOT_AT && <span>자료 기준 {SNAPSHOT_AT} (공개 기록 스냅샷)</span>}
             </div>
           </footer>

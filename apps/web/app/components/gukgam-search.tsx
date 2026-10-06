@@ -128,7 +128,7 @@ export default function GukgamSearch({
     <section className="gukgam-search" aria-labelledby="gukgam-search-title">
       <div className="gukgam-search-heading">
         <h2 id="gukgam-search-title">인물·기관 검색</h2>
-        <p>이름, 역할, 정당, 지역구, 위원회 또는 기관명으로 찾습니다. 검색은 보이는 기록을 거를 뿐 기록끼리 새로 연결하지 않습니다.</p>
+        <p>이름, 역할, 정당, 지역구, 위원회 또는 기관명으로 찾습니다.</p>
       </div>
 
       <label className="gukgam-search-field">
@@ -174,8 +174,7 @@ export default function GukgamSearch({
         </div>
       ) : resultCount === 0 ? (
         <div className="gukgam-search-idle" role="status">
-          <strong>현재 공개 기록에서 일치 항목이 없습니다.</strong>
-          <span>기록이 없다는 뜻이 아니라 현재 공개·검색 가능한 범위의 결과가 비어 있습니다.</span>
+          <strong>일치하는 기록이 없습니다.</strong>
         </div>
       ) : (
         <div className="gukgam-search-results" aria-live="polite">

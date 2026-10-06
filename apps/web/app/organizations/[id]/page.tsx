@@ -270,7 +270,6 @@ export default async function OrganizationPage({
             <h1>{organization.name}</h1>
             <span className="status AVAILABLE">AVAILABLE</span>
           </div>
-          <p className="profile-lede">이 기관에 대해 공개 근거가 확인된 기록을 출처와 함께 보여줍니다.</p>
         </div>
       </header>
 
@@ -293,7 +292,6 @@ export default async function OrganizationPage({
           <section className="organization-section" id="key-facts" aria-labelledby="organization-overview-title">
             <div className="section-intro">
               <h2 id="organization-overview-title">핵심 기록</h2>
-              <p>기관 분류와 국정감사 일정은 공개된 기관 기록에서 가져옵니다. 임원 공시 건수는 그 기록을 센 값입니다.</p>
             </div>
             {factRows.length > 0 ? <FactBox rows={factRows} /> : (
               <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 기록이 아직 없습니다.</p>
@@ -304,7 +302,6 @@ export default async function OrganizationPage({
             <section className="organization-section" id="gukgam-2026" aria-labelledby="organization-gukgam-title">
               <div className="section-intro">
                 <h2 id="organization-gukgam-title">2026 국정감사</h2>
-                <p>공식 위원회 계획서에 피감대상으로 기재된 일정과, 그 위원회의 국회 명부상 위원입니다.</p>
               </div>
               {gukgamReadError ? (
                 <ReadState error={gukgamReadError} />
@@ -325,8 +322,7 @@ export default async function OrganizationPage({
                     ))}
                   </ul>
                   <p className="gukgam-scope-note">
-                    계획서상 일정이며 감사가 실제로 열렸거나 결과가 나왔다는 기록이 아닙니다.
-                    위원은 국회 명부 기준이며 이 기관을 질의했다는 뜻이 아닙니다.
+                    위원회 계획서상 일정입니다.
                   </p>
                   {gukgamCommitteeNames.map((name) => {
                     const committee = committeeByName.get(name);
@@ -339,12 +335,6 @@ export default async function OrganizationPage({
                       <ReadState key={name} error={committeesResult.error} />
                     ) : null;
                   })}
-                  {executiveClaims.length > 0 && (
-                    <p className="gukgam-scope-note">
-                      이 기관의 임원은 <Link href="#executives">현재 임원현황</Link>의 공시상 이름이며,
-                      위 위원 인물과 자동으로 연결하지 않습니다.
-                    </p>
-                  )}
                 </>
               )}
             </section>
@@ -353,7 +343,6 @@ export default async function OrganizationPage({
           <section className="organization-section" id="records" aria-labelledby="organization-records-title">
             <div className="section-intro">
               <h2 id="organization-records-title">기록</h2>
-              <p>공개된 기록마다 근거와 출처 이용 조건을 펼쳐 볼 수 있습니다.</p>
             </div>
             <PendingLanes lanes={pendingLanes} />
             {claims.length === 0 && (
@@ -391,7 +380,6 @@ export default async function OrganizationPage({
             <section className="organization-section ontology-section" id="official-connections" aria-labelledby="organization-ontology-title">
               <div className="section-intro">
                 <h2 id="organization-ontology-title">공식 기록상 연결</h2>
-                <p>공공기관 경영정보 공개시스템(ALIO)에 공시된 임원만 보여줍니다. 공시에 적힌 이름이며 인물 기록과 자동으로 연결하지 않습니다.</p>
               </div>
               {ontologyResult.state === "error" ? (
                 <ReadState error={ontologyResult.error} />
@@ -404,7 +392,6 @@ export default async function OrganizationPage({
           <section className="source-library organization-source-library" id="sources" aria-labelledby="organization-sources-title">
             <div className="section-intro">
               <h2 id="organization-sources-title">이 기록의 출처</h2>
-              <p>출처마다 공개일, 확인 시각과 이용 조건을 보여줍니다. 식별자는 상세 정보 안에 있습니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 ? (

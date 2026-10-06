@@ -223,7 +223,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <h1>{person.canonical_name}</h1>
             <span className={`status identity ${person.identity_status}`}>{person.identity_status}</span>
           </div>
-          <p className="profile-lede">공개 근거가 확인된 기록만 출처와 함께 보여줍니다. 여기에 없는 항목은 없다는 뜻이 아니라 아직 확인되지 않았다는 뜻입니다.</p>
         </div>
         {portrait ? (
           <figure className="profile-portrait">
@@ -269,7 +268,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <section className="person-section" id="key-facts" aria-labelledby="key-facts-title">
             <div className="section-intro">
               <h2 id="key-facts-title">핵심 기록</h2>
-              <p>공개된 기록을 항목별로 모았습니다. 근거를 누르면 아래에서 출처까지 볼 수 있습니다.</p>
             </div>
             {factRows.length > 0 ? <FactBox rows={factRows} /> : (
               <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 기록이 아직 없습니다.</p>
@@ -280,7 +278,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <section className="person-section" id="gukgam-2026" aria-labelledby="person-gukgam-title">
               <div className="section-intro">
                 <h2 id="person-gukgam-title">2026 국정감사</h2>
-                <p>근거가 공개된 위원회 소속 기록입니다. 해당 기관에 질의했다는 뜻은 아닙니다.</p>
               </div>
               {targetsResult.state === "error" && <ReadState error={targetsResult.error} />}
               {memberCommittees.map(({ committee, member }) => {
@@ -337,7 +334,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <section className="person-section" id="records" aria-labelledby="records-title">
             <div className="section-intro">
               <h2 id="records-title">기록</h2>
-              <p>공개된 기록과 아직 확인되지 않은 영역을 나눠 보여줍니다.</p>
             </div>
             {profile ? (
               <>
@@ -356,14 +352,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </div>
               </>
             ) : (
-              <p className="empty-state"><span><strong>기록을 구성할 수 없습니다.</strong><small><span className="status UNKNOWN">UNKNOWN</span> 기록을 구성할 공개 근거가 없습니다.</small></span></p>
+              <p className="empty-state"><span><span className="status UNKNOWN">UNKNOWN</span> <strong>아직 공개된 기록이 없습니다.</strong></span></p>
             )}
           </section>
 
           <section className="ontology-section person-section" id="official-connections" aria-labelledby="ontology-title">
             <div className="section-intro">
               <h2 id="ontology-title">공식 기록상 연결</h2>
-              <p>공개 근거가 직접 뒷받침하는 관계만 그림과 같은 내용의 목록으로 보여줍니다.</p>
             </div>
             {ontologyResult.state === "error" ? (
               <ReadState error={ontologyResult.error} />
@@ -371,7 +366,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} gukgamCommittees={gukgamCommittees} />
             ) : (
               <p className="empty-state" role="status">
-                <span><strong>현재 공개 가능한 연결이 없습니다.</strong><small>관계가 없다는 뜻이 아니라, 연결을 뒷받침할 공개 근거가 아직 없다는 뜻입니다.</small></span>
+                <span><strong>아직 공개된 연결이 없습니다.</strong></span>
               </p>
             )}
           </section>
@@ -379,7 +374,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <section className="source-library person-section" id="sources" aria-labelledby="sources-title">
             <div className="section-intro">
               <h2 id="sources-title">이 프로필의 출처</h2>
-              <p>출처마다 공개일, 확인 시각과 이용 조건을 보여줍니다. 식별자는 상세 정보 안에 있습니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 && !sourceError ? <p className="empty">표시할 출처가 없습니다.</p> : (

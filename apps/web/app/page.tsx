@@ -35,7 +35,7 @@ export default async function HomePage() {
     <div className="site-page home-page">
       <section className="home-intro home-search" aria-labelledby="hero-title">
         <h1 id="hero-title">국정감사 인물 기록 검색</h1>
-        <p className="lede">국회의원과 2026 국정감사 관련 인물의 공개 기록을 출처와 함께 찾습니다.</p>
+        <p className="lede">국회의원과 2026 국정감사 관련 인물의 공개 기록을 찾습니다.</p>
         <form className="home-search-form" action="/people" method="get" role="search">
           <label className="gukgam-search-field">
             <span className="sr-only">인물 이름으로 검색</span>
@@ -51,7 +51,6 @@ export default async function HomePage() {
           </label>
           <button className="primary-action" type="submit">검색</button>
         </form>
-        <p className="home-trust-note">동명이인과 미확인 관계는 자동으로 합치지 않습니다.</p>
       </section>
 
       {peopleResult.state === "error" && <div className="home-read-state"><ReadState error={peopleResult.error} /></div>}
@@ -95,16 +94,7 @@ export default async function HomePage() {
 
       <section className="principles" id="coverage" aria-labelledby="principles-title">
         <h2 id="principles-title">자료 범위</h2>
-        <p className="principles-lede">
-          모든 국감 참여자나 전체 증인 명단이 아닙니다. 여기에 없는 사람이나 관계는 없다는 뜻이 아니라 아직 확인되지
-          않았다는 뜻입니다.
-        </p>
-        <dl className="principles-list">
-          <div><dt>인물 구분</dt><dd>이름이 같다는 이유만으로 기록을 합치지 않습니다.</dd></div>
-          <div><dt>근거</dt><dd>표시된 내용마다 근거를 열어 볼 수 있고, 확인되지 않은 값은 비워 둡니다.</dd></div>
-          <div><dt>출처와 기준일</dt><dd>공식 출처와 기준일을 함께 표시합니다.</dd></div>
-          <div><dt>평가하지 않음</dt><dd>정치 성향, 점수, 순위를 만들지 않습니다. 증인·참고인 명단의 이름은 인물 기록에 자동으로 연결하지 않습니다.</dd></div>
-        </dl>
+        <p className="principles-lede">공식 기록으로 확인된 내용만 싣습니다. 모든 국감 참여자나 전체 증인 명단은 아닙니다.</p>
       </section>
     </div>
   );

@@ -21,7 +21,7 @@ export default async function OrganizationsPage() {
       <header className="people-header">
         <h1>기관</h1>
         <p className="profile-lede">
-          공개 근거가 있는 기관과 공시된 임원 현황을 봅니다. 기관을 누르면 기록마다 출처를 확인할 수 있습니다.
+          공공기관과 공시된 임원 현황입니다.
         </p>
       </header>
 
@@ -29,7 +29,7 @@ export default async function OrganizationsPage() {
         <ReadState error={organizationsResult.error} />
       ) : organizationsResult.data.length === 0 ? (
         <p className="empty-state" role="status">
-          <span><strong>현재 공개 기관 기록이 없습니다.</strong><small>공개 근거가 있는 기관만 표시합니다.</small></span>
+          <span><strong>아직 공개된 기관 기록이 없습니다.</strong></span>
         </p>
       ) : (
         <section className="directory-section" aria-labelledby="organization-list-title">
