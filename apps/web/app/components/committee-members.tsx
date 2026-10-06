@@ -20,7 +20,7 @@ export default function CommitteeMembers({
       </summary>
       {committee.members.length === 0 ? (
         <p className="committee-members-empty" role="status">
-          <span className="status UNKNOWN">UNKNOWN</span> 현재 공개 기준을 통과한 위원 Claim이 없습니다. 위원이 없다는 뜻이 아닙니다.
+          <span className="status UNKNOWN">UNKNOWN</span> 근거가 확인된 위원 기록이 아직 없습니다. 위원이 없다는 뜻이 아닙니다.
         </p>
       ) : (
         <ul className="committee-member-list">

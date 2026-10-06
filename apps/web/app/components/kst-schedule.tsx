@@ -35,24 +35,21 @@ export function TodayAuditLine({ serverToday, days }: { serverToday: string; day
   const nextDate = nextDateOf(days.map((day) => day.date), today);
   if (todayDay) {
     return (
-      <>
-        <p className="coverage-value"><strong>{todayDay.count}</strong><span>건</span></p>
-        <p className="coverage-caption">
-          오늘 공개 기준을 통과한 감사 일정 · {todayDay.committeeCount}개 위원회
-        </p>
-        <Link className="inline-action" href={`/gukgam/2026#audit-${today}`}>오늘 일정 보기 <span aria-hidden="true">↗</span></Link>
-      </>
+      <p className="coverage-caption">
+        감사 {todayDay.count}건 · 위원회 {todayDay.committeeCount}곳{" "}
+        <Link href={`/gukgam/2026#audit-${today}`}>오늘 일정 보기</Link>
+      </p>
     );
   }
   return (
-    <>
-      <p className="coverage-caption">현재 공개 기준에서 오늘 표시할 일정이 없습니다.</p>
+    <p className="coverage-caption">
+      오늘은 공개된 감사 일정이 없습니다.
       {nextDate && (
-        <Link className="inline-action" href={`/gukgam/2026#audit-${nextDate}`}>
-          다음 공개 일정 {formatAuditDate(nextDate)} <span aria-hidden="true">↗</span>
-        </Link>
+        <>
+          {" "}<Link href={`/gukgam/2026#audit-${nextDate}`}>다음 일정 {formatAuditDate(nextDate)}</Link>
+        </>
       )}
-    </>
+    </p>
   );
 }
 
@@ -61,7 +58,7 @@ export function NextAuditAction({ serverToday, dates }: { serverToday: string; d
   const nextDate = nextDateOf(dates, today);
   return (
     <a className="primary-action" href={nextDate ? `#audit-${nextDate}` : "#gukgam-published-targets-title"}>
-      {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"} <span aria-hidden="true">↓</span>
+      {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"}
     </a>
   );
 }

@@ -15,7 +15,7 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /method_version/);
   assert.match(page, /correction_semantics/);
   assert.match(page, /UNKNOWN/);
-  assert.match(page, /근거와 출처 확인/);
+  assert.match(page, /이 프로필의 출처/);
 });
 
 test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", async () => {
@@ -40,8 +40,7 @@ test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", 
   assert.match(profile, /Wikimedia Commons/);
   assert.match(profile, /portrait\.license_url/);
   assert.doesNotMatch(profile, /src=\{portrait\.source_original_url\}/);
-  assert.match(profile, /profile-stamp/);
-  assert.match(roster, /className="row-avatar"/);
+  assert.doesNotMatch(profile + roster, /profile-stamp|row-avatar/);
   assert.doesNotMatch(roster, /portrait/);
 });
 
@@ -89,13 +88,13 @@ test("Visual System v2 keeps Home editorial and People content-first", async () 
   const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
 
-  assert.match(home, /이력과 근거/);
+  assert.match(home, /국정감사 인물 기록 검색/);
   assert.match(home, /action="\/people"/);
   assert.match(home, /인물 구분/);
   assert.match(home, /근거/);
   assert.match(home, /출처와 기준일/);
   assert.doesNotMatch(home, /<RosterGrid|hero-panel|signal-strip/);
-  assert.match(people, /명의 공개 기록/);
+  assert.match(people, /인물 목록 \{peopleResult\.data\.length\}명/);
   assert.doesNotMatch(people, /profile-stamp/);
   assert.match(roster, /className="roster-row"/);
   assert.match(roster, /className="row-proof"/);
@@ -198,10 +197,10 @@ test("Gukgam 2026 is an event surface inside Civic Intel, not a parallel product
   const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
   assert.match(layout, /href="\/gukgam\/2026"/);
   assert.match(home, /국감 일정/);
-  assert.match(page, /모두의국감 \/ 2026 국정감사/);
+  assert.match(page, /<h1>국감 2026<\/h1>/);
   assert.match(page, /getPeople/);
   assert.match(page, /getOrganizations/);
-  assert.match(page, /검증된 만큼만/);
+  assert.match(page, /자료 반영 기준/);
   assert.doesNotMatch(page, /오늘의 국감|공격 의원|옹호 의원|인맥|친분|배후/);
 });
 
@@ -233,7 +232,7 @@ test("Gukgam search filters existing public records without creating identity ma
   assert.match(search, /organization\.name/);
   assert.match(search, /href=\{"\/people\/" \+ person\.id\}/);
   assert.match(search, /href=\{"\/organizations\/" \+ organization\.id\}/);
-  assert.match(search, /새로운 identity 연결을 만들지 않습니다/);
+  assert.match(search, /기록끼리 새로 연결하지 않습니다/);
   assert.doesNotMatch(search, /fetch\(|axios|confidence|probability|score|rank/i);
 });
 
@@ -245,13 +244,12 @@ test("Organization detail renders source-listed executive ontology without Perso
   const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
   assert.match(page, /getOrganizationOntology/);
   assert.match(page, /OntologyLocalGraph/);
-  assert.match(page, /source-listed record/);
-  assert.match(page, /canonical Person으로 자동 연결하지 않습니다/);
+  assert.match(page, /인물 기록과 자동으로 연결하지 않습니다/);
   assert.match(data, /\/ontology\/organizations\/\$\{id\}/);
   assert.match(types, /SOURCE_LISTED_ROLE_HOLDER/);
   assert.match(types, /LISTS_EXECUTIVE/);
   assert.match(graph, /공식 공시상 임원/);
-  assert.match(graph, /canonical Person이 아닙니다/);
+  assert.match(graph, /인물 기록이 아닙니다/);
   assert.doesNotMatch(graph, /href=.*people.*target|confidence|probability|score/i);
 });
 
@@ -357,7 +355,7 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(page, /getGukgamTargets/);
   assert.match(page, /공개된 피감대상/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
-  assert.match(page, /이 일정의 Claim \/ Evidence 보기/);
+  assert.match(page, /이 일정의 근거 보기/);
   assert.match(page, /Claim·Evidence 확인 경로/);
   assert.match(page, /organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}/);
   assert.match(data, /getJson\("\/gukgam\/2026\/targets"\)/);
@@ -614,14 +612,14 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   const org = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(person, /getGukgamTargets\(\)/);
   assert.match(person, /id="gukgam-2026"/);
-  assert.match(person, /위원회 소속 기록이며 해당 기관 질의 여부를 뜻하지 않습니다/);
+  assert.match(person, /해당 기관에 질의했다는 뜻은 아닙니다/);
   assert.match(person, /\/gukgam\/2026#audit-\$\{date\}/);
   assert.match(person, /\/organizations\/\$\{organization\.id\}/);
   assert.match(person, /memberCommittees\.length > 0/);
   assert.match(person, /section\.entries\.length === 0/);
   assert.match(person, /section\.entries\.length === 0 \? null/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
-  assert.match(lanes, /소스 레인 미개통/);
+  assert.match(lanes, /아직 연결된 출처가 없다는 뜻입니다/);
   assert.match(org, /pendingLanes/);
   assert.doesNotMatch(org + person, /현재 임원 이름 공개 기록이 없습니다|검토된 항목이 없습니다/);
 });
@@ -686,7 +684,7 @@ test("모두의국감 public brand replaces developer-facing names without renam
   assert.match(home, /모든 국감 참여자나 전체 증인 명단이 아닙니다/);
   assert.match(home, /동명이인과 미확인 관계는 자동으로 합치지 않습니다/);
   const kst = await read("../app/components/kst-schedule.tsx");
-  assert.match(kst, /현재 공개 기준에서 오늘 표시할 일정이 없습니다/);
+  assert.match(kst, /오늘은 공개된 감사 일정이 없습니다/);
   assert.doesNotMatch(home, /모든 공직자|완전한 이력|전체 국감 참여자/);
   // Internal API/env naming is unchanged by the public rename.
   assert.match(data, /CIVIC_API_URL/);
@@ -788,8 +786,15 @@ test("public design floor: readable sizes, 48px controls, Korean labels, status 
   const pages = await Promise.all([
     "../app/page.tsx", "../app/gukgam/2026/page.tsx", "../app/people/[id]/page.tsx",
     "../app/organizations/[id]/page.tsx", "../app/organizations/page.tsx", "../app/components/roster-grid.tsx",
+    "../app/people/page.tsx", "../app/people/loading.tsx", "../app/components/gukgam-search.tsx",
   ].map(read));
   for (const page of pages) {
     assert.doesNotMatch(page, /<em>|eyebrow-mark|row-index|Evidence & audit|Published claims|Methodology & coverage/);
+    // Plain public layout: no label-above-heading eyebrows, decorative avatars, arrow badges or KPI tiles.
+    assert.doesNotMatch(page, /className="eyebrow"|row-avatar|organization-avatar|gukgam-search-avatar|row-arrow|profile-stamp|entry-index|coverage-strip|signal-strip/);
   }
+  // One sans family, flat surfaces, no gradients on cards.
+  assert.doesNotMatch(css, /Serif|Georgia|Batang/);
+  assert.match(css, /--shadow-card: none/);
+  assert.doesNotMatch(css, /linear-gradient\(145deg/);
 });

@@ -98,7 +98,6 @@ export default function RosterGrid({
     <>
       <div className="roster-toolbar">
         <div>
-          <span className="micro-label">인물 목록</span>
           <p className="toolbar-count">
             <strong>{visiblePeople.length}명</strong>
             <span>표시 중 / 전체 {people.length}명</span>
@@ -137,16 +136,15 @@ export default function RosterGrid({
 
       {incompletePeople > 0 && (
         <p className="incomplete-note" role="status">
-          {incompletePeople}개 profile은 일부 공개 기본 프로필 Claim이 없어 해당 필터에서 제외될 수 있습니다. 빈 값은 추론하지 않습니다.
+          {incompletePeople}명은 정당·지역구 같은 기본 정보가 아직 공개되지 않아 필터를 쓰면 빠질 수 있습니다. 빈 값은 추측해서 채우지 않습니다.
         </p>
       )}
 
       {visiblePeople.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-state-mark" aria-hidden="true">∅</span>
           <div>
             <strong>{people.length === 0 ? "현재 공개 기록이 없습니다." : "일치하는 인물 기록이 없습니다."}</strong>
-            <p>{people.length === 0 ? "현재 공개 조건에서 표시할 사람이 없습니다." : "표시된 이름과 공개 Claim 값으로만 검색합니다."}</p>
+            <p>{people.length === 0 ? "현재 공개 조건에서 표시할 사람이 없습니다." : "이름과 공개된 기본 정보로만 찾습니다."}</p>
             {people.length > 0 && hasActiveFilters && <button className="clear-filters" type="button" onClick={clearFilters}>필터 초기화</button>}
           </div>
         </div>
@@ -166,26 +164,16 @@ export default function RosterGrid({
                 className="roster-row"
                 href={`/people/${person.id}`}
                 key={person.id}
-                aria-label={`${person.canonical_name}${differentiators ? ` · ${differentiators}` : ""} · Evidence profile`}
+                aria-label={`${person.canonical_name}${differentiators ? ` · ${differentiators}` : ""} · 인물 기록`}
               >
-                <span className="row-avatar" aria-hidden="true">{person.canonical_name.trim().slice(0, 1)}</span>
                 <span className="row-main">
                   <span className="row-name-line">
                     <h3>{person.canonical_name}</h3>
                     {sameNameCount > 1 && <span className="same-name-note">동명이인 · {sameNameCount}명</span>}
                   </span>
-                  <span className="row-role">{role ?? "역할 정보 없음"}</span>
+                  <span className="row-role">{differentiators || "공개된 기본 정보 없음"}</span>
                 </span>
-                <span className="row-facts">
-                  <span><small>정당</small><strong>{party ?? "공개 정보 없음"}</strong></span>
-                  <span><small>지역구</small><strong>{district ?? "공개 정보 없음"}</strong></span>
-                </span>
-                <span className="row-secondary">
-                  <span><small>위원회</small><strong>{committees ?? "공개 정보 없음"}</strong></span>
-                  <span><small>초선/재선</small><strong>{reelection ?? "공개 정보 없음"}</strong></span>
-                </span>
-                <span className="row-proof">근거 {person.discovery?.evidence_ids.length ?? 0}개 · 기준일 {person.discovery?.as_of ?? "정보 없음"}</span>
-                <span className="row-arrow" aria-hidden="true">↗</span>
+                <span className="row-proof">근거 {person.discovery?.evidence_ids.length ?? 0}개{person.discovery?.as_of ? ` · 기준일 ${person.discovery.as_of}` : ""}</span>
               </Link>
             );
           })}

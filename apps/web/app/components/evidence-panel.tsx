@@ -179,7 +179,7 @@ export default function EvidencePanel({
           <div>
             <dt>근거</dt>
             <dd>
-              {claim.evidence.length === 0 ? "연결된 Evidence가 없습니다." : (
+              {claim.evidence.length === 0 ? "연결된 근거가 없습니다." : (
                 <ul className="evidence-rows">
                   {claim.evidence.map((item) => {
                     const source = sourceById.get(item.source_id);

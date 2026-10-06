@@ -122,7 +122,7 @@ function MoneyCard({
       </div>
       <h3>기관장 업무추진비 공시액의 회계연도 간 변화</h3>
       <p className="money-scope">
-        {money.details.organization.role_scope} · {money.details.organization.code} · Claim-backed read
+        {money.details.organization.role_scope} · {money.details.organization.code} · 공개 기록 기반
       </p>
       <div className="money-values" aria-label="Annual disclosed values">
         <div className="money-value">
@@ -142,7 +142,7 @@ function MoneyCard({
         <div><span>증감률</span><strong>{percent === null ? "계산 없음" : `${percent}%`}</strong></div>
       </div>
       <p className="money-note">
-        이 카드는 두 개의 published organization Claim을 산술 비교한 파생 읽기 결과입니다.
+        이 카드는 공개된 두 해의 기관 기록을 단순 비교한 계산 결과입니다.
         특정 개인의 지출, 낭비·부당집행·비리 또는 기관 간 우열을 뜻하지 않습니다.
       </p>
       <EvidenceTraceList traces={money.evidence} sourceById={sourceById} claimLabel="연결된 연간 입력 참조" />
@@ -215,7 +215,7 @@ export default async function OrganizationPage({
 
   const factRows: FactRow[] = [
     ...(classificationClaim
-      ? [{ key: classificationClaim.id, label: "ALIO 기관 분류", value: classificationClaim.object_text, claim: classificationClaim }]
+      ? [{ key: classificationClaim.id, label: "기관 분류(ALIO)", value: classificationClaim.object_text, claim: classificationClaim }]
       : []),
     ...(executiveClaims.length > 0
       ? [{ key: "executive-count", label: "현재 임원 공시", value: `${executiveClaims.length}건`, derived: { href: "#executives" } }]
@@ -266,24 +266,18 @@ export default async function OrganizationPage({
       <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> 기관 목록</Link>
       <header className="profile-header organization-header">
         <div>
-          <div className="eyebrow">기관 기록 · 공개 근거</div>
           <div className="profile-title-row">
             <h1>{organization.name}</h1>
             <span className="status AVAILABLE">AVAILABLE</span>
           </div>
-          <p className="profile-lede">현재 canonical organization에 연결된 published Claim과 근거 경로를 읽기 전용으로 표시합니다.</p>
-        </div>
-        <div className="profile-stamp" aria-hidden="true">
-          <span className="micro-label">공개 기록</span>
-          <strong>ORG</strong>
-          <span>근거 · 읽기 전용</span>
+          <p className="profile-lede">이 기관에 대해 공개 근거가 확인된 기록을 출처와 함께 보여줍니다.</p>
         </div>
       </header>
 
       <OpenTargetDetails />
       <div className="profile-layout">
         <aside className="profile-index" aria-label="이 페이지">
-          <div className="index-heading"><span className="micro-label">이 페이지</span></div>
+          <h2 className="index-heading">이 페이지</h2>
           <nav>
             <ul className="page-anchors">
               <li><a href="#key-facts">핵심 기록</a></li>
@@ -298,19 +292,19 @@ export default async function OrganizationPage({
         <div className="profile-content">
           <section className="organization-section" id="key-facts" aria-labelledby="organization-overview-title">
             <div className="section-intro">
-              <div><span className="eyebrow">공개된 기록</span><h2 id="organization-overview-title">핵심 기록</h2></div>
-              <p>기관 분류와 국정감사 일정은 published organization Claim에서만 가져오며, 임원 공시 건수는 그 Claim을 센 집계입니다.</p>
+              <h2 id="organization-overview-title">핵심 기록</h2>
+              <p>기관 분류와 국정감사 일정은 공개된 기관 기록에서 가져옵니다. 임원 공시 건수는 그 기록을 센 값입니다.</p>
             </div>
             {factRows.length > 0 ? <FactBox rows={factRows} /> : (
-              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 Claim이 아직 없습니다.</p>
+              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 기록이 아직 없습니다.</p>
             )}
           </section>
 
           {hasGukgam && (
             <section className="organization-section" id="gukgam-2026" aria-labelledby="organization-gukgam-title">
               <div className="section-intro">
-                <div><span className="eyebrow">2026 국정감사 · 근거가 공개된 항목만</span><h2 id="organization-gukgam-title">2026 국정감사</h2></div>
-                <p>공식 위원회 계획서에 피감대상으로 기재된 일정과, 그 위원회에 기재된 국회 명부상 위원을 보여줍니다.</p>
+                <h2 id="organization-gukgam-title">2026 국정감사</h2>
+                <p>공식 위원회 계획서에 피감대상으로 기재된 일정과, 그 위원회의 국회 명부상 위원입니다.</p>
               </div>
               {gukgamReadError ? (
                 <ReadState error={gukgamReadError} />
@@ -326,7 +320,7 @@ export default async function OrganizationPage({
                           {item.venue ? ` · ${item.venue}` : ""}
                         </span>
                         <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
-                        <Link className="inline-action" href={`#claim-${item.claim_id}`}>Claim / Evidence <span aria-hidden="true">↓</span></Link>
+                        <Link className="inline-action" href={`#claim-${item.claim_id}`}>근거 보기</Link>
                       </li>
                     ))}
                   </ul>
@@ -358,12 +352,12 @@ export default async function OrganizationPage({
 
           <section className="organization-section" id="records" aria-labelledby="organization-records-title">
             <div className="section-intro">
-              <div><span className="eyebrow">공개된 기록</span><h2 id="organization-records-title">기록</h2></div>
-              <p>기관에 대해 현재 공개 가능한 Claim만 표시하며, 각 항목에서 근거와 출처 정책을 펼쳐 볼 수 있습니다.</p>
+              <h2 id="organization-records-title">기록</h2>
+              <p>공개된 기록마다 근거와 출처 이용 조건을 펼쳐 볼 수 있습니다.</p>
             </div>
             <PendingLanes lanes={pendingLanes} />
             {claims.length === 0 && (
-              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 현재 연결된 공개 Claim이 없습니다.</p>
+              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 현재 연결된 공개 기록이 없습니다.</p>
             )}
             {executiveClaims.length > 0 && (
               <div className="organization-records-block" id="executives">
@@ -385,7 +379,7 @@ export default async function OrganizationPage({
             {showMoney && (
               <div className="organization-records-block" id="money">
                 <h3>회계연도 간 변화</h3>
-                <p className="records-note">두 개의 연간 공시 Claim을 비교한 읽기 전용 결과입니다. 파생 결과 자체는 새로운 Claim이 아닙니다.</p>
+                <p className="records-note">두 해의 공시를 비교한 계산 결과이며, 그 자체로 새로운 기록은 아닙니다.</p>
                 {money ? (
                   <MoneyCard money={money} sourceById={sourceById} />
                 ) : moneyResult.state === "error" ? <ReadState error={moneyResult.error} /> : null}
@@ -396,8 +390,8 @@ export default async function OrganizationPage({
           {showConnections && (
             <section className="organization-section ontology-section" id="official-connections" aria-labelledby="organization-ontology-title">
               <div className="section-intro">
-                <div><span className="eyebrow">공식 기록 기준</span><h2 id="organization-ontology-title">공식 기록상 연결</h2></div>
-                <p>ALIO published Claim이 명시한 임원 기록만 기관 중심 local graph로 보여줍니다. 이름은 source-listed record이며 canonical Person으로 자동 연결하지 않습니다.</p>
+                <h2 id="organization-ontology-title">공식 기록상 연결</h2>
+                <p>공공기관 경영정보 공개시스템(ALIO)에 공시된 임원만 보여줍니다. 공시에 적힌 이름이며 인물 기록과 자동으로 연결하지 않습니다.</p>
               </div>
               {ontologyResult.state === "error" ? (
                 <ReadState error={ontologyResult.error} />
@@ -409,8 +403,8 @@ export default async function OrganizationPage({
 
           <section className="source-library organization-source-library" id="sources" aria-labelledby="organization-sources-title">
             <div className="section-intro">
-              <div><span className="eyebrow">근거와 출처 확인</span><h2 id="organization-sources-title">이 기록의 출처</h2></div>
-              <p>출처의 공개일, 확인 시각과 policy 요약은 바로 확인하고, 식별자는 감사 ID에서 확인합니다.</p>
+              <h2 id="organization-sources-title">이 기록의 출처</h2>
+              <p>출처마다 공개일, 확인 시각과 이용 조건을 보여줍니다. 식별자는 상세 정보 안에 있습니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 ? (

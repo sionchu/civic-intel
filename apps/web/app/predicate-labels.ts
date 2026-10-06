@@ -1,0 +1,46 @@
+// Public Korean labels for Claim predicates. The code stays the contract; readers see the label.
+// An unlisted predicate falls back to a neutral label and keeps its code for auditability.
+const PREDICATE_LABELS: Record<string, string> = {
+  HELD_ROLE: "직위",
+  ASSEMBLY_PARTY: "정당",
+  ASSEMBLY_DISTRICT: "지역구",
+  ASSEMBLY_COMMITTEES: "소속 위원회",
+  ASSEMBLY_REELECTION: "선수",
+  ASSEMBLY_BILL_PARTICIPATION: "법안 발의",
+  NOMINATED_AS: "지명",
+  DESIGNATED_AS: "지정",
+  APPOINTED_AS: "임명",
+  APPOINTED_TO: "임명",
+  ELECTED_AS: "당선",
+  CURRENT_OFFICE: "현직",
+  HOLDS_OFFICE: "현직",
+  SERVED_AS: "경력",
+  WORKED_AS: "경력",
+  HAS_AUTHORITY: "권한",
+  RESPONSIBLE_FOR: "담당 업무",
+  CURRENT_RESPONSIBILITY: "담당 업무",
+  LEADS: "이끄는 조직",
+  CHAIRS: "위원장·의장",
+  SUPERVISES: "감독",
+  APPOINTMENT_RATIONALE: "임명 배경",
+  SELECTED_BECAUSE: "임명 배경",
+  APPOINTMENT_LOGIC: "임명 배경",
+  HAS_REPUTATION: "평판(보도 인용)",
+  CONTROVERSY: "논란",
+  ALLEGATION: "의혹 제기",
+  RESPONSE_TO_ALLEGATION: "의혹에 대한 해명",
+  DISPUTED_CLAIM: "다툼이 있는 주장",
+  CONTESTED_ASSERTION: "다툼이 있는 주장",
+  DISCLOSED_BUSINESS_EXPENSE: "공시된 업무추진비",
+  NEC_LOCAL_ELECTION_CANDIDACY: "지방선거 후보 등록",
+  ALIO_REVIEWED_PERSON_ROLE: "공공기관 임원",
+  ALIO_CURRENT_EXECUTIVE_DISCLOSURE: "공공기관 임원 공시",
+  ALIO_INSTITUTION_CLASSIFICATION: "기관 분류",
+  LISTED_AS_GUKGAM_AUDIT_TARGET: "국감 피감대상",
+  LISTED_AS_GUKGAM_WITNESS_SOURCE_TEXT: "국감 증인·참고인 명단 기재",
+  OPERATOR_REVIEWED_CORRECTION: "검토 정정",
+};
+
+export function predicateLabel(predicate: string): string {
+  return PREDICATE_LABELS[predicate] ?? "기타 기록";
+}
