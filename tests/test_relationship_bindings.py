@@ -114,3 +114,11 @@ def test_revolving_door_needs_strictly_ordered_stated_periods() -> None:
     same_month = career(person, "삼성전자 고문", "BUSINESS",
                         period_start="2015-03-01", period_start_precision="MONTH")
     assert career_transitions([government, same_month]) == []
+
+
+def test_candidate_name_and_president_elect_bind_without_party_or_ordinal() -> None:
+    assert campaign_key("제19대 대통령선거 문재인 후보 중앙선거대책위원회")[0] == "campaign:20170509:더불어민주당"
+    assert campaign_key("제19대 대통령선거 문재인 안철수 공동") is None  # two nominees: ambiguous
+    assert transition_key("김대중 대통령직 인수위원회")[0] == "transition:19971218"
+    assert transition_key("문재인정부 국정기획자문위원회(인수위)")[0] == "transition:20170509"
+    assert transition_key("이재명 경기도지사 인수위 기획재정분과") is None

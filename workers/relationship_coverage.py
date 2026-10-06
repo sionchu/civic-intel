@@ -252,8 +252,8 @@ def audit(repository: SqlAlchemyRepository) -> dict[str, object]:
     graph = load_relationship_graph(repository)
     populations = {
         "assembly_member": {a.person_id for a in graph.affiliations if a.via.kind == "PARTY"},
-        "public_institution_executive": {a.person_id for a in graph.affiliations if a.via.kind == "PUBLIC_INSTITUTION"},
-        "company_executive": {a.person_id for a in graph.affiliations if a.via.kind == "COMPANY"},
+        "public_institution_executive": {a.person_id for a in graph.affiliations if a.predicate == "ALIO_REVIEWED_PERSON_ROLE"},
+        "company_executive": {a.person_id for a in graph.affiliations if a.predicate == "OPENDART_DISCLOSED_EXECUTIVE_ROLE"},
         "audit_witness": {a.person_id for a in graph.affiliations if a.affiliation_type == "AUDIT_WITNESS_LISTED"},
     }
     layer_people: dict[str, set[UUID]] = defaultdict(set)

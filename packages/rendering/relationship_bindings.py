@@ -124,6 +124,8 @@ class Election:
 
 # Reviewed from the NEC election history (선거통계시스템 역대선거). Ordinal → election.
 PRESIDENTIAL = {
+    15: Election("19971218", "제15대 대통령선거", date(1997, 12, 18)),
+    16: Election("20021219", "제16대 대통령선거", date(2002, 12, 19)),
     17: Election("20071219", "제17대 대통령선거", date(2007, 12, 19)),
     18: Election("20121219", "제18대 대통령선거", date(2012, 12, 19)),
     19: Election("20170509", "제19대 대통령선거", date(2017, 5, 9)),
@@ -176,8 +178,30 @@ def party_of(text: str) -> str | None:
     return next(iter(found)) if len(found) == 1 else None
 
 
+# Reviewed major presidential candidates (NEC 역대선거 후보자) → nominating party.
+PRESIDENTIAL_CANDIDATES: dict[str, dict[str, str]] = {
+    "20071219": {"이명박": "한나라당", "정동영": "대통합민주신당"},
+    "20121219": {"박근혜": "새누리당", "문재인": "민주통합당"},
+    "20170509": {"문재인": "더불어민주당", "홍준표": "자유한국당", "안철수": "국민의당",
+                 "유승민": "바른정당", "심상정": "정의당"},
+    "20220309": {"이재명": "더불어민주당", "윤석열": "국민의힘", "심상정": "정의당"},
+    "20250603": {"이재명": "더불어민주당", "김문수": "국민의힘", "이준석": "개혁신당"},
+}
+# President-elect name → the election whose transition body it was (ordinal may be absent).
+TRANSITION_PRESIDENTS = {"김대중": 15, "노무현": 16, "이명박": 17, "박근혜": 18, "윤석열": 20}
+_PRESIDENTIAL_ELECTIONS_BY_CODE = {item.code: item for item in PRESIDENTIAL.values()}
+
+
 def campaign_key(text: str) -> tuple[str, str, Election] | None:
     election, party = election_of(text), party_of(text)
+    if election is not None and party is None and election.code in PRESIDENTIAL_CANDIDATES:
+        compact = re.sub(r"\s+", "", text)
+        named = {
+            nominee_party
+            for name, nominee_party in PRESIDENTIAL_CANDIDATES[election.code].items()
+            if name in compact
+        }
+        party = next(iter(named)) if len(named) == 1 else None
     if election is None or party is None:
         return None
     return f"campaign:{election.code}:{party}", f"{election.label} {party} 선거대책기구", election
@@ -193,13 +217,28 @@ def registry_from_rows(
 
 
 def transition_key(text: str) -> tuple[str, str] | None:
-    """Presidential transition committee of a reviewed presidential election ordinal."""
+    """Presidential transition body of a reviewed presidential election.
+
+    Bound from an explicit ordinal (제N대) or the named president-elect; 문재인 2017's
+    국정기획자문위원회 and 이재명 2025's 국정기획위원회 were the transition bodies of their elections.
+    Regional (도지사·시장) transition committees never bind.
+    """
 
     compact = re.sub(r"\s+", "", text)
-    if "대통령직인수위원회" not in compact and "대통령인수위" not in compact:
+    if re.search(r"도지사|시장|군수|구청장|교육감", compact):
         return None
-    match = _ORDINAL.search(compact)
-    election = PRESIDENTIAL.get(int(match.group(1))) if match and match.group(2) == "대" else None
+    election: Election | None = None
+    if "국정기획자문위원회" in compact:
+        election = PRESIDENTIAL[19]
+    elif "국정기획위원회" in compact and "이재명" in compact:
+        election = PRESIDENTIAL[21]
+    elif "인수위" in compact and "대통령" in compact:
+        match = _ORDINAL.search(compact)
+        if match and match.group(2) == "대":
+            election = PRESIDENTIAL.get(int(match.group(1)))
+        else:
+            named = {TRANSITION_PRESIDENTS[name] for name in TRANSITION_PRESIDENTS if name in compact}
+            election = PRESIDENTIAL.get(next(iter(named))) if len(named) == 1 else None
     if election is None:
         return None
-    return f"transition:{election.code}", f"{election.label.replace('대통령선거', '대통령직 인수위원회')}"
+    return f"transition:{election.code}", f"{election.label} 당선인 인수 기구"

@@ -316,7 +316,8 @@ RULES: tuple[DerivationRule, ...] = (
     ),
     DerivationRule(
         "shared_career_org", "1.1", "SAME_CAREER_ORGANIZATION", Layer.CAREER,
-        ("CAREER_ORGANIZATION", "CAMPAIGN", "TRANSITION_COMMITTEE", "GOVERNMENT_COMMITTEE"),
+        ("CAREER_ORGANIZATION", "CAMPAIGN", "TRANSITION_COMMITTEE", "GOVERNMENT_COMMITTEE",
+         "UNIVERSITY_EMPLOYER"),
         (BIOGRAPHY_CAREER_PREDICATE,),
         "캠프=공식 선거(NEC 선거 표)+정확한 정당명, 인수위=대통령선거 회차가 같으면 DERIVED; 그 밖의 경력 문자열은 CANDIDATE",
         "SAME_CAMPAIGN / SAME_TRANSITION_COMMITTEE / SAME_GOVERNMENT_COMMITTEE / SAME_EMPLOYER; 기간 중첩 시 *_OVERLAP",
@@ -337,6 +338,7 @@ CAREER_RELATION_TYPES = {
     "TRANSITION_COMMITTEE": "SAME_TRANSITION_COMMITTEE",
     "GOVERNMENT_COMMITTEE": "SAME_GOVERNMENT_COMMITTEE",
     "CAREER_ORGANIZATION": "SAME_EMPLOYER",
+    "UNIVERSITY_EMPLOYER": "SAME_EMPLOYER",
 }
 NON_PATH_KINDS = frozenset({"PARTY", "BILL"})
 NON_RELATION_CAREER_CATEGORIES = frozenset({"LEGISLATURE", "PARTY", "OTHER"})
@@ -369,7 +371,7 @@ _REGISTRY_LAYERS = {
     "PUBLIC_INSTITUTION": Layer.PUBLIC_INSTITUTION,
     "GOVERNMENT_BODY": Layer.GOVERNMENT,
 }
-CAREER_REGISTRY_KINDS = frozenset(_REGISTRY_LAYERS)
+CAREER_REGISTRY_KINDS = frozenset({*_REGISTRY_LAYERS, "UNIVERSITY"})
 UNIVERSITY_KINDS = frozenset({"UNIVERSITY"})
 
 
@@ -395,9 +397,24 @@ def _career_via(
                 ViaEntity(key, "TRANSITION_COMMITTEE", label, Binding.ELECTION_PARTY_CAMPAIGN),
                 Layer.CAMPAIGN,
             )
+    if kind == "GOVERNMENT_COMMITTEE" and context.registry is not None:
+        entity = context.registry.bind(organization_text, frozenset({"GOVERNMENT_BODY"}))
+        if entity is not None:
+            return (
+                ViaEntity(entity.key, "GOVERNMENT_COMMITTEE", entity.label,
+                          Binding(entity.binding), entity.organization_id),
+                Layer.GOVERNMENT,
+            )
     if kind == "CAREER_ORGANIZATION" and context.registry is not None:
         entity = context.registry.bind(organization_text, CAREER_REGISTRY_KINDS)
         if entity is not None:
+            if entity.kind == "UNIVERSITY":
+                # Teaching/research at a university: the university node, as an employer.
+                return (
+                    ViaEntity(entity.key, "UNIVERSITY_EMPLOYER", entity.label,
+                              Binding(entity.binding), entity.organization_id),
+                    Layer.CAREER,
+                )
             return (
                 ViaEntity(entity.key, entity.kind, entity.label, Binding(entity.binding),
                           entity.organization_id),
