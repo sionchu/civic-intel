@@ -27,6 +27,9 @@ const FACT_PREDICATES: [string, string][] = [
   ["ASSEMBLY_REELECTION", "선수"],
 ];
 
+// Per-bill activity records are listed in their own record sections, not as key facts.
+const ACTIVITY_RECORD_PREDICATES = new Set(["ASSEMBLY_BILL_PARTICIPATION", "ASSEMBLY_PLENARY_VOTE"]);
+
 // Person Claims linked to one exact source row after human identity review.
 const LINKED_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS";
 const SOURCE_RECORD_LABELS: Record<string, string> = {
@@ -127,7 +130,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       })),
     ),
     ...publishedClaims
-      .filter((claim) => !knownPredicates.has(claim.predicate) && claim.predicate !== "ASSEMBLY_BILL_PARTICIPATION")
+      .filter((claim) => !knownPredicates.has(claim.predicate) && !ACTIVITY_RECORD_PREDICATES.has(claim.predicate))
       .map((claim) => ({
         key: claim.id,
         label: SOURCE_RECORD_LABELS[claim.predicate] ?? claim.predicate,
