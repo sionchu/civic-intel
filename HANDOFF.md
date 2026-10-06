@@ -1,5 +1,14 @@
 # HANDOFF
 
+## Current state — 2026-10-06 (모두의국감 public launch)
+
+Public brand 모두의국감 (public surface only; internals stay Civic Intel) is prepared on
+`feat/moduigukgam-public-launch` / PR #193 from master `c82423a`. Plan:
+`docs/exec-plans/active/moduigukgam-public-launch-v0.md` (`READY_FOR_CODEX_DEPLOY`). Next action:
+merge after green CI, then Codex (on the Mac) follows `docs/operations/CODEX_MODUIGUKGAM_SITES_DEPLOY_HANDOFF.md`.
+Owner decision (2026-10-06): build a static public-read snapshot from the Mac canonical DB
+(`npm --prefix apps/web run build:sites`) and publish it through ChatGPT Sites; needs the Mac online.
+
 ## Current state — 2026-10-04 evening (Mac offline; Windows interim dev)
 
 The Mac mini (canonical DB + public host) lost its network path on 2026-10-04 (Tailscale only via

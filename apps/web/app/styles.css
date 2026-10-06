@@ -911,3 +911,28 @@ main { flex: 1; }
 @media (max-width: 600px) {
   .people-header h1 { font-size: clamp(2.25rem, 11vw, 3rem); }
 }
+
+/* 모두의국감 search-first Home */
+.home-search h1 { font-size: clamp(2.4rem, 5.6vw, 4.8rem); letter-spacing: -.06em; line-height: 1.1; }
+.home-search-form { display: flex; min-width: 0; align-items: stretch; gap: 10px; margin-top: 32px; }
+.home-search-form .gukgam-search-field { flex: 1 1 auto; min-width: 0; }
+.home-search-form .primary-action { flex: 0 0 auto; min-height: 58px; border: 0; white-space: nowrap; cursor: pointer; }
+.home-trust-note { max-width: 60ch; margin: 14px 0 0; color: var(--color-ink-muted); font-size: 13px; line-height: 1.7; }
+.home-coverage .coverage-caption + .inline-action { margin-top: 12px; }
+.home-coverage .coverage-note { margin-top: 20px; }
+@media (max-width: 600px) {
+  .home-intro.home-search { padding-top: 36px; padding-bottom: 48px; }
+  .home-search h1 { font-size: clamp(2.1rem, 9.5vw, 3rem); }
+  .home-search-form { flex-direction: column; }
+  .home-search-form .primary-action { justify-content: center; min-height: 52px; }
+  .header-inner { flex-wrap: wrap; row-gap: 2px; padding-top: 10px; padding-bottom: 6px; }
+  .global-nav { width: 100%; justify-content: space-between; }
+}
+
+/* 국감 witness-list name matches on 인물 찾기 (source-listed text, not People) */
+.witness-matches { margin-top: 32px; padding-top: 20px; border-top: 2px solid var(--color-ink); }
+.witness-matches h3 { margin: 0 0 6px; font-size: 17px; }
+.witness-matches > p { max-width: 64ch; margin: 0 0 12px; color: var(--color-ink-muted); font-size: 13px; }
+.witness-matches ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-line); }
+.witness-matches li a { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--color-line); color: var(--color-ink); text-decoration: none; }
+.witness-matches li span, .witness-matches li small { color: var(--color-ink-muted); font-size: 13px; overflow-wrap: anywhere; }

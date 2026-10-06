@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/prepare-standalone.mjs",
+    "build:sites": "node scripts/build-sites-snapshot.mjs",
     "check:standalone": "node scripts/check-standalone.mjs",
     "check:portraits": "node scripts/check-portrait-assets.mjs",
     "start": "node .next/standalone/server.js",

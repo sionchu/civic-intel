@@ -28,6 +28,7 @@ const GUKGAM_TARGET_PREDICATE = "LISTED_AS_GUKGAM_AUDIT_TARGET";
 
 export const dynamic = "force-dynamic";
 
+
 export async function generateMetadata({
   params,
 }: {
@@ -37,8 +38,8 @@ export async function generateMetadata({
   const result = await getOrganization(id);
   if (result.state === "error") {
     return buildPageMetadata({
-      title: "Organization record",
-      description: "Civic Intel 공개 기관 기록",
+      title: "기관 기록",
+      description: "모두의국감 공개 기관 기록",
       path: `/organizations/${id}`,
     });
   }
@@ -179,7 +180,7 @@ export default async function OrganizationPage({
     if (organizationResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
     return (
       <div className="site-page organization-page">
-        <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> Organizations</Link>
+        <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> 기관 목록</Link>
         <ReadState error={organizationResult.error} />
       </div>
     );
@@ -262,7 +263,7 @@ export default async function OrganizationPage({
 
   return (
     <div className="site-page organization-page">
-      <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> Organizations</Link>
+      <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> 기관 목록</Link>
       <header className="profile-header organization-header">
         <div>
           <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Organization record / Published evidence</div>

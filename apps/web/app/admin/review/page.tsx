@@ -23,7 +23,8 @@ import WorkPlaybook, { type PlaybookCatalog } from "./work-playbook";
 import "./work-playbook.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "인물·수집 데이터 관리 | Civic Intel", robots: { index: false, follow: false } };
+// Generic title: the public 404 for this route must not reveal that an operator surface exists.
+export const metadata: Metadata = { title: { absolute: "모두의국감" }, robots: { index: false, follow: false } };
 const TABS = { playbook: "업무 플레이북", "people-review": "인물 검토·등록", history: "변경 이력", overview: "수집 현황", records: "DB 목록·연결", manifest: "검토 manifest", catalog: "출처 계획·제약" };
 const STATUS_OPTIONS: Record<string, Record<string, string>> = {
   claims: { DRAFT: "초안", REVIEW: "검토 중", PUBLISHED: "공개", WITHHELD: "비공개", CURRENT: "현재 버전", SUPERSEDED: "대체된 버전" },

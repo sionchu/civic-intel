@@ -17,6 +17,7 @@ import type { Claim, ProfileEntry } from "../../types";
 
 export const dynamic = "force-dynamic";
 
+
 const FACT_PREDICATES: [string, string][] = [
   ["HELD_ROLE", "직위"],
   ["ASSEMBLY_PARTY", "정당"],
@@ -34,8 +35,8 @@ export async function generateMetadata({
   const result = await getPerson(id);
   if (result.state === "error") {
     return buildPageMetadata({
-      title: "Person record",
-      description: "Civic Intel 공개 Person 기록",
+      title: "인물 기록",
+      description: "모두의국감 공개 인물 기록",
       path: `/people/${id}`,
     });
   }
@@ -53,7 +54,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     if (personResult.error.code === "PUBLIC_RECORD_NOT_FOUND") notFound();
     return (
       <div className="site-page profile-page">
-        <Link href="/people" className="back-link"><span aria-hidden="true">←</span> People</Link>
+        <Link href="/people" className="back-link"><span aria-hidden="true">←</span> 인물 찾기</Link>
         <ReadState error={personResult.error} />
       </div>
     );
@@ -214,15 +215,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="site-page profile-page">
-      <Link href="/people" className="back-link"><span aria-hidden="true">←</span> People</Link>
+      <Link href="/people" className="back-link"><span aria-hidden="true">←</span> 인물 찾기</Link>
       <header className="profile-header">
         <div>
-          <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Evidence profile / Resolved identity</div>
+          <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> 모두의국감 / 인물 기록</div>
           <div className="profile-title-row">
             <h1>{person.canonical_name}</h1>
             <span className={`status identity ${person.identity_status}`}>{person.identity_status}</span>
           </div>
-          <p className="profile-lede">canonical identity에 연결된 published evidence를 현재 읽기 화면으로 투영합니다.</p>
+          <p className="profile-lede">공개 기준을 통과한 이 인물의 기록을 근거와 출처와 함께 보여줍니다. 표시되지 않은 항목은 없다는 뜻이 아니라 아직 확인되지 않았다는 뜻입니다.</p>
         </div>
         {portrait ? (
           <figure className="profile-portrait">
@@ -248,9 +249,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </figure>
         ) : (
           <div className="profile-stamp" aria-hidden="true">
-            <span className="micro-label">PUBLIC RECORD</span>
-            <strong>CI</strong>
-            <span>directory / 01</span>
+            <span className="micro-label">공개 기록</span>
+            <strong>국감</strong>
+            <span>모두의국감</span>
           </div>
         )}
       </header>

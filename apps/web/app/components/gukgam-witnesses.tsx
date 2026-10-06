@@ -56,7 +56,7 @@ export default async function GukgamWitnesses() {
                   </h4>
                   <ul>
                     {rows.map((item) => (
-                      <li key={item.claim_id}>
+                      <li key={item.claim_id} id={`witness-${item.claim_id}`}>
                         <strong>{item.name}</strong>
                         <span>{item.affiliation_title ?? "소속·직위 미기재"}</span>
                         {item.attendance_date_text ? (
@@ -87,9 +87,9 @@ export default async function GukgamWitnesses() {
         ))
       )}
       <ul className="gukgam-witnesses-limitations">
-        {projection.limitations.map((limitation) => (
-          <li key={limitation}>{limitation}</li>
-        ))}
+        <li>검토를 마친 공식 명단 가운데 공개 기준을 통과한 행만 표시합니다. 전체 증인 명단이 아닙니다.</li>
+        <li>명단은 의결·추가·종합감사 변경에 따라 바뀔 수 있고, 이후 버전이 앞선 행을 대체할 수 있습니다.</li>
+        <li>여기에 없다는 것이 출석 요구가 없었다는 뜻은 아닙니다. 이름은 인물 기록과 자동으로 연결하지 않습니다.</li>
       </ul>
     </section>
   );

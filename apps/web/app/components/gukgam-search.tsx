@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { useQueryState } from "./query-param";
+
 import type { OrganizationSummary, Person } from "../types";
 
 // Search receives only the displayed facet values (not evidence IDs) to keep the page light.
@@ -58,7 +60,7 @@ export default function GukgamSearch({
   people: GukgamSearchPerson[];
   organizations: OrganizationSummary[];
 }) {
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useQueryState(initialQuery);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [peopleLimit, setPeopleLimit] = useState(INITIAL_RESULT_LIMIT);
   const [organizationLimit, setOrganizationLimit] = useState(INITIAL_RESULT_LIMIT);
@@ -130,7 +132,7 @@ export default function GukgamSearch({
           <h2 id="gukgam-search-title">인물과 기관에서 시작</h2>
         </div>
         <p>
-          이름, 공개된 역할·정당·지역구·위원회 또는 기관명으로 현재 Civic Intel 기록을
+          이름, 공개된 역할·정당·지역구·위원회 또는 기관명으로 현재 공개 기록을
           좁혀보세요. 검색은 표시 대상을 필터링할 뿐 새로운 identity 연결을 만들지 않습니다.
         </p>
       </div>
@@ -173,7 +175,7 @@ export default function GukgamSearch({
         <div className="gukgam-search-idle" role="status">
           <strong>검색어를 입력하세요.</strong>
           <span>
-            현재 공개 범위: People {people.length}명 · Organizations {organizations.length}개
+            현재 공개 범위: 인물 {people.length}명 · 기관 {organizations.length}개
           </span>
         </div>
       ) : resultCount === 0 ? (
@@ -186,7 +188,7 @@ export default function GukgamSearch({
           {peopleResults.length > 0 && (
             <div className="gukgam-search-group">
               <div className="gukgam-search-group-heading">
-                <strong>People</strong>
+                <strong>인물</strong>
                 <span>{peopleResults.length} / {peopleMatches.length}건 표시</span>
               </div>
               <div className="gukgam-search-list">
@@ -231,7 +233,7 @@ export default function GukgamSearch({
                     )
                   }
                 >
-                  People {Math.min(RESULT_PAGE_SIZE, peopleMatches.length - peopleResults.length)}개 더 보기
+                  인물 {Math.min(RESULT_PAGE_SIZE, peopleMatches.length - peopleResults.length)}개 더 보기
                 </button>
               )}
             </div>
@@ -240,7 +242,7 @@ export default function GukgamSearch({
           {organizationResults.length > 0 && (
             <div className="gukgam-search-group">
               <div className="gukgam-search-group-heading">
-                <strong>Organizations</strong>
+                <strong>기관</strong>
                 <span>{organizationResults.length} / {organizationMatches.length}건 표시</span>
               </div>
               <div className="gukgam-search-list">
@@ -274,7 +276,7 @@ export default function GukgamSearch({
                     )
                   }
                 >
-                  Organizations {Math.min(
+                  기관 {Math.min(
                     RESULT_PAGE_SIZE,
                     organizationMatches.length - organizationResults.length,
                   )}개 더 보기

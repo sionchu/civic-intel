@@ -25,7 +25,7 @@ def _transport(*, indexing: bool, leak: bool = False) -> httpx.MockTransport:
             )
             return httpx.Response(
                 200,
-                text=f"<html><head>{robots}</head><body>Civic Intel 국감 2026{leaked}</body></html>",
+                text=f"<html><head>{robots}</head><body>모두의국감 국감 일정{leaked}</body></html>",
             )
         if path == "/gukgam/2026":
             return httpx.Response(

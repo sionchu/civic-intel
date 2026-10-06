@@ -5,6 +5,10 @@ import { indexingEnabled, publicSiteBaseUrl } from "./site-metadata";
 
 export const dynamic = "force-dynamic";
 
+// The Sites snapshot is exported with trailing slashes; keep sitemap URLs equal to canonical URLs.
+const trailing = process.env.CIVIC_SITES_EXPORT === "1" ? "/" : "";
+const page = (path: string, base: URL) => new URL(path === "/" ? path : `${path}${trailing}`, base).toString();
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = publicSiteBaseUrl();
   if (!indexingEnabled() || !base) return [];
@@ -15,16 +19,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const core: MetadataRoute.Sitemap = [
-    { url: new URL("/", base).toString(), changeFrequency: "weekly" },
-    { url: new URL("/people", base).toString(), changeFrequency: "daily" },
-    { url: new URL("/organizations", base).toString(), changeFrequency: "daily" },
-    { url: new URL("/gukgam/2026", base).toString(), changeFrequency: "daily" },
+    { url: page("/", base), changeFrequency: "weekly" },
+    { url: page("/people", base), changeFrequency: "daily" },
+    { url: page("/organizations", base), changeFrequency: "daily" },
+    { url: page("/gukgam/2026", base), changeFrequency: "daily" },
   ];
 
   const people: MetadataRoute.Sitemap =
     peopleResult.state === "success"
       ? peopleResult.data.map((person) => ({
-          url: new URL(`/people/${person.id}`, base).toString(),
+          url: page(`/people/${person.id}`, base),
           changeFrequency: "weekly" as const,
         }))
       : [];
@@ -32,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const organizations: MetadataRoute.Sitemap =
     organizationsResult.state === "success"
       ? organizationsResult.data.map((organization) => ({
-          url: new URL(`/organizations/${organization.id}`, base).toString(),
+          url: page(`/organizations/${organization.id}`, base),
           changeFrequency: "weekly" as const,
         }))
       : [];

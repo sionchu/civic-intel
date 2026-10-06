@@ -4,11 +4,13 @@ import Link from "next/link";
 import GukgamSearch, { type GukgamSearchFacets } from "../../components/gukgam-search";
 import type { Person } from "../../types";
 import CommitteeMembers from "../../components/committee-members";
+import GukgamWitnesses from "../../components/gukgam-witnesses";
+import { AuditDateIndex, AuditDaySection, KstToday, NextAuditAction } from "../../components/kst-schedule";
 import ReadState from "../../components/read-state";
 import { getGukgamCommittees, getGukgamTargets, getOrganizations, getPeople } from "../../data";
 import { buildPageMetadata } from "../../site-metadata";
 import { committeeAnchor } from "./committees";
-import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./schedule";
+import { groupByDateAndCommittee, seoulDate } from "./schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +32,7 @@ function searchFacets(facets: FacetSource): GukgamSearchFacets {
 
 export const metadata = buildPageMetadata({
   title: "국감 2026",
-  description: "2026 국정감사를 인물·기관·공식 기록과 Evidence를 통해 탐색하는 Civic Intel 이벤트 화면",
+  description: "2026 국정감사 일정·피감기관·감사 위원을 공식 기록과 근거로 확인하는 모두의국감 화면",
   path: "/gukgam/2026",
 });
 
@@ -57,7 +59,12 @@ export default async function Gukgam2026Page({
   const today = seoulDate(new Date());
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
   const scheduleGroups = groupByDateAndCommittee(targetItems, today);
-  const nextDate = focusDate(scheduleGroups);
+  const scheduleDays = scheduleGroups.map((group) => ({
+    date: group.date,
+    count: group.count,
+    committeeCount: group.committees.length,
+  }));
+  const scheduleDates = scheduleDays.map((day) => day.date);
   const coveredCommittees = [...new Set(targetItems.map((item) => item.committee_name))].sort(
     (left, right) => left.localeCompare(right, "ko"),
   );
@@ -70,18 +77,17 @@ export default async function Gukgam2026Page({
     <div className="site-page gukgam-page">
       <header className="gukgam-hero">
         <div className="gukgam-hero-copy">
-          <p className="eyebrow">Civic Intel / Event surface</p>
+          <p className="eyebrow">모두의국감 / 2026 국정감사</p>
           <h1>국감 <em>2026</em></h1>
           <p className="lede">
             국정감사에서 등장하는 인물과 기관을 기존 공개 기록과 공식 Evidence에 연결해 살펴봅니다.
             일정·피감기관·증인·참고인 정보는 출처 정책과 검증을 통과한 범위만 순차 반영합니다.
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href={nextDate ? `#audit-${nextDate}` : "#gukgam-published-targets-title"}>
-              {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"} <span aria-hidden="true">↓</span>
-            </a>
-            <Link className="inline-action" href="/people">인물 탐색 <span aria-hidden="true">↗</span></Link>
-            <Link className="inline-action" href="/organizations">기관 탐색 <span aria-hidden="true">↗</span></Link>
+            <NextAuditAction serverToday={today} dates={scheduleDates} />
+            <a className="inline-action" href="#gukgam-witnesses-title">증인·참고인 명단 <span aria-hidden="true">↓</span></a>
+            <Link className="inline-action" href="/people">인물 찾기 <span aria-hidden="true">↗</span></Link>
+            <Link className="inline-action" href="/organizations">기관 보기 <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
         <aside className="gukgam-method" aria-label="국감 화면의 공개 원칙">
@@ -132,7 +138,7 @@ export default async function Gukgam2026Page({
               </div>
               <div>
                 <dt>오늘 (KST)</dt>
-                <dd>{formatAuditDate(today)}</dd>
+                <dd><KstToday serverToday={today} /></dd>
               </div>
             </dl>
             <p className="gukgam-scope-note">
@@ -141,44 +147,17 @@ export default async function Gukgam2026Page({
               열렸거나 어떤 결과가 나왔다는 기록이 아닙니다. 일정은 위원회 의결로 바뀔 수 있습니다.
             </p>
 
-            <nav className="gukgam-date-index" aria-label="감사일별 이동">
-              <ol>
-                {scheduleGroups.map((group) => (
-                  <li key={group.date} className={group.relation}>
-                    <a
-                      href={`#audit-${group.date}`}
-                      aria-current={group.date === nextDate ? "date" : undefined}
-                    >
-                      <span>{formatAuditDate(group.date)}</span>
-                      <small>
-                        {group.relation === "today" ? "오늘 · " : group.date === nextDate ? "다음 · " : ""}
-                        {group.count}건
-                      </small>
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
+            <AuditDateIndex serverToday={today} days={scheduleDays} />
 
             <div className="gukgam-schedule" id="gukgam-schedule">
               {scheduleGroups.map((group) => (
-                <section
+                <AuditDaySection
                   key={group.date}
-                  id={`audit-${group.date}`}
-                  className={`gukgam-day ${group.relation}`}
-                  aria-labelledby={`audit-${group.date}-title`}
+                  serverToday={today}
+                  date={group.date}
+                  dates={scheduleDates}
+                  count={group.count}
                 >
-                  <header className="gukgam-day-heading">
-                    <h3 id={`audit-${group.date}-title`}>{formatAuditDate(group.date)}</h3>
-                    <span>
-                      {group.relation === "today"
-                        ? "오늘 열리는 감사 일정"
-                        : group.relation === "past"
-                          ? "지난 일정 · 계획 기준"
-                          : group.date === nextDate ? "다음 감사일" : "예정"}
-                      {" · "}{group.count}건
-                    </span>
-                  </header>
                   {group.committees.map((committee) => (
                     <div className="gukgam-committee" key={committee.committee}>
                       <h4>{committee.committee}</h4>
@@ -226,7 +205,7 @@ export default async function Gukgam2026Page({
                       )}
                     </div>
                   ))}
-                </section>
+                </AuditDaySection>
               ))}
             </div>
           </>
@@ -287,14 +266,16 @@ export default async function Gukgam2026Page({
         )}
       </section>
 
-      <section className="gukgam-coverage-strip" aria-label="현재 Civic Intel 공개 범위">
+      <GukgamWitnesses />
+
+      <section className="gukgam-coverage-strip" aria-label="현재 공개 범위">
         <div>
-          <span className="micro-label">People</span>
+          <span className="micro-label">인물</span>
           <strong>{peopleCount ?? "—"}</strong>
           <small>현재 공개 Person 기록</small>
         </div>
         <div>
-          <span className="micro-label">Organizations</span>
+          <span className="micro-label">기관</span>
           <strong>{organizationCount ?? "—"}</strong>
           <small>현재 공개 기관 기록</small>
         </div>
@@ -337,19 +318,19 @@ export default async function Gukgam2026Page({
             <span className="entry-index">01</span>
             <strong>인물에서 시작</strong>
             <p>현재 공개된 Person을 선택하고 경력·공직 기록과 Evidence를 읽습니다.</p>
-            <span className="entry-action">People <span aria-hidden="true">↗</span></span>
+            <span className="entry-action">인물 찾기 <span aria-hidden="true">↗</span></span>
           </Link>
           <Link className="gukgam-entry" href="/organizations">
             <span className="entry-index">02</span>
             <strong>기관에서 시작</strong>
             <p>피감기관으로 이어질 수 있는 공공기관·기관 임원 기록과 공개 Claim을 확인합니다.</p>
-            <span className="entry-action">Organizations <span aria-hidden="true">↗</span></span>
+            <span className="entry-action">기관 <span aria-hidden="true">↗</span></span>
           </Link>
           <Link className="gukgam-entry" href="/people">
             <span className="entry-index">03</span>
             <strong>공식 연결 보기</strong>
             <p>Person 상세의 local graph에서 현재 Evidence Core가 지원하는 공식 연결을 확인합니다.</p>
-            <span className="entry-action">Connections <span aria-hidden="true">↗</span></span>
+            <span className="entry-action">공식 연결 <span aria-hidden="true">↗</span></span>
           </Link>
         </div>
       </section>
