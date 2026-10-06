@@ -343,3 +343,138 @@ def test_assembly_profile_uses_role_aware_content_and_dated_career_only() -> Non
     assert "국회회원은 국회의원 명부에 등재되어 있다." not in str(
         section(profile, "career_timeline")
     )
+
+
+def opendart_role_claim(**qualifiers: str) -> Claim:
+    return Claim(
+        id=UUID("30000000-0000-0000-0000-000000000301"),
+        person_id=PERSON_ID,
+        proposition="테스트전자는 OpenDART 임원 현황 공시에 김프로필을 상무로 기재했다.",
+        subject="김프로필",
+        predicate="OPENDART_DISCLOSED_EXECUTIVE_ROLE",
+        object_text="테스트전자 상무",
+        qualifiers={"corp_name": "테스트전자", "business_year": "2025", **qualifiers},
+        epistemic_status=EpistemicStatus.CLAIM,
+        publication_status=PublicationStatus.PUBLISHED,
+    )
+
+
+def opendart_role_evidence(claim: Claim) -> ClaimEvidence:
+    return ClaimEvidence(
+        id=UUID("40000000-0000-0000-0000-000000000301"),
+        claim_id=claim.id,
+        source_id=SOURCE_ID,
+        snapshot_id=UUID("50000000-0000-0000-0000-000000000301"),
+        feeder_observation_id=UUID("60000000-0000-0000-0000-000000000301"),
+        stance=EvidenceStance.SUPPORT,
+    )
+
+
+def test_empty_sections_carry_projection_only_reasons() -> None:
+    claim = nomination_claim()
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [nomination_evidence()]}, [], []
+    )
+
+    reasons = {item["id"]: item["reason"] for item in profile["sections"]}
+    assert reasons["identity"] is None
+    assert reasons["summary"] is None
+    assert reasons["assembly_base_profile"] == "NOT_APPLICABLE"
+    assert section(profile, "assembly_base_profile")["status"] == "NOT_APPLICABLE"
+    assert reasons["recent_changes"] == "INSUFFICIENT_EVIDENCE"
+    assert reasons["current_power_tasks"] == "SOURCE_NOT_COLLECTED"
+    assert reasons["decision_episodes"] == "SOURCE_NOT_COLLECTED"
+    assert reasons["stakeholders"] == "SOURCE_NOT_COLLECTED"
+    assert reasons["controversies"] == "SOURCE_NOT_COLLECTED"
+    assert reasons["repeated_patterns"] == "INSUFFICIENT_EVIDENCE"
+    # A published nomination makes the hearing lane applicable; no question is generated.
+    assert reasons["hearing_questions"] == "DERIVATION_NOT_AVAILABLE"
+    assert section(profile, "hearing_questions")["entries"] == []
+    assert reasons["forecast"] == "DERIVATION_NOT_AVAILABLE"
+    assert section(profile, "forecast")["entries"] == []
+    assert profile["coverage"]["not_applicable"] == 1
+
+    limited = {
+        item["details"]["section_id"]: item["details"]["reason"]
+        for item in section(profile, "limitations")["entries"]
+        if item["kind"] == "LIMITATION"
+    }
+    assert "assembly_base_profile" not in limited
+    assert limited["current_power_tasks"] == "SOURCE_NOT_COLLECTED"
+
+
+def test_hearing_questions_are_not_applicable_without_a_published_nomination() -> None:
+    claim = opendart_role_claim()
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [opendart_role_evidence(claim)]}, [], []
+    )
+
+    hearing = section(profile, "hearing_questions")
+    assert hearing["status"] == "NOT_APPLICABLE"
+    assert hearing["reason"] == "NOT_APPLICABLE"
+    assert hearing["entries"] == []
+    assert profile["coverage"]["not_applicable"] == 2
+
+
+def test_company_disclosed_responsibility_feeds_current_power_as_attributed_claim() -> None:
+    claim = opendart_role_claim(responsibility="경영지원 총괄")
+    evidence = opendart_role_evidence(claim)
+    profile = build_profile_projection(person(), [claim], {claim.id: [evidence]}, [], [])
+
+    power = section(profile, "current_power_tasks")
+    assert power["status"] == "PARTIAL"
+    assert power["reason"] is None
+    [entry] = power["entries"]
+    assert entry["title"] == "테스트전자 공시 담당업무: 경영지원 총괄"
+    assert entry["epistemic_status"] == "CLAIM"
+    assert entry["claim_id"] == str(claim.id)
+    assert entry["evidence_ids"] == [str(evidence.id)]
+    assert entry["evidence"][0]["feeder_observation_id"] == str(evidence.feeder_observation_id)
+    assert entry["details"]["responsibility"] == "경영지원 총괄"
+    assert entry["details"]["responsibility_semantics"] == (
+        "company_disclosed_responsibility_not_authority"
+    )
+
+
+def test_blank_unpublished_or_evidenceless_responsibility_yields_no_power_entry() -> None:
+    blank = opendart_role_claim(responsibility="-")
+    unpublished = opendart_role_claim(responsibility="재무").model_copy(
+        update={"publication_status": PublicationStatus.DRAFT}
+    )
+    for claim, evidence in (
+        (blank, [opendart_role_evidence(blank)]),
+        (unpublished, [opendart_role_evidence(unpublished)]),
+        (opendart_role_claim(responsibility="재무"), []),
+    ):
+        profile = build_profile_projection(person(), [claim], {claim.id: evidence}, [], [])
+        power = section(profile, "current_power_tasks")
+        assert power["entries"] == []
+        assert power["reason"] == "SOURCE_NOT_COLLECTED"
+
+
+def test_independent_episodes_make_patterns_eligible_but_never_generate_one() -> None:
+    claim = nomination_claim()
+    evidence = nomination_evidence()
+    episodes = [
+        {
+            "id": f"episode-{index}",
+            "person_id": str(PERSON_ID),
+            "description": f"Public decision episode {index}",
+            "action": "acted",
+            "target": "policy",
+            "outcome": "published",
+            "source_ids": [str(SOURCE_ID)],
+            "independent_origin_ids": [f"origin-{index}"],
+            "claim_id": str(claim.id),
+            "evidence_ids": [str(evidence.id)],
+        }
+        for index in (1, 2)
+    ]
+    one = build_profile_projection(person(), [claim], {claim.id: [evidence]}, [], episodes[:1])
+    two = build_profile_projection(person(), [claim], {claim.id: [evidence]}, [], episodes)
+
+    assert section(one, "repeated_patterns")["reason"] == "INSUFFICIENT_EVIDENCE"
+    patterns = section(two, "repeated_patterns")
+    assert patterns["reason"] == "DERIVATION_NOT_AVAILABLE"
+    assert patterns["status"] == "UNKNOWN"
+    assert patterns["entries"] == []

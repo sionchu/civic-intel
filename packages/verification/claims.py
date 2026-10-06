@@ -31,7 +31,9 @@ class GateResult:
 
 
 def is_atomic(proposition: str) -> bool:
-    text = proposition.strip()
+    # A source title quoted in 「」 (e.g. "12.3. …" or "Charles B. Rangel") is one object, not
+    # additional sentences or conjunctions of the proposition.
+    text = re.sub(r"「[^」]*」", "「」", proposition.strip())
     if len(re.findall(r"[.!?](?:\s|$)", text)) > 1:
         return False
     return not bool(re.search(r"\b(and|그리고|하며|했으며)\b", text, re.IGNORECASE))

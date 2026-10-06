@@ -4,7 +4,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import ClassVar
+from typing import ClassVar, Self
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
@@ -193,6 +193,18 @@ class _AssemblyCommitteeConnector(Connector):
             if str(value).strip()
         }
         self._transport = transport
+
+    def for_page(self, page_index: int) -> Self:
+        """Return the same connector contract for another page without exposing the key."""
+
+        return type(self)(
+            api_key=self._api_key,
+            page_index=page_index,
+            page_size=self.page_size,
+            sample_mode=self.sample_mode,
+            filters=self.filters,
+            transport=self._transport,
+        )
 
     @property
     def path(self) -> str:

@@ -69,12 +69,9 @@ from packages.verification.assembly_base_profile import (
     is_assembly_base_profile_field,
 )
 from packages.verification.assembly_legislative_activity import (
-    ASSEMBLY_LEGISLATIVE_FEEDER,
-    ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
-    ASSEMBLY_LEGISLATIVE_SEMANTIC_SCOPE,
-    ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
     AssemblyLegislativeActivityError,
 )
+from packages.verification.assembly_member_claims import AssemblyMemberClaimLane
 from packages.verification.claims import validate_claim_publication
 from packages.verification.golden import GoldenSet, load_golden_set
 from packages.verification.materialization import (
@@ -611,6 +608,8 @@ class SqlAlchemyRepository:
         feeder: str,
         scope_key: str,
         provider_record_key: str | None = None,
+        *,
+        key_suffix: str | None = None,
     ) -> list[FeederObservation]:
         statement = select(FeederObservationRow).where(
             FeederObservationRow.feeder == feeder,
@@ -619,6 +618,11 @@ class SqlAlchemyRepository:
         if provider_record_key is not None:
             statement = statement.where(
                 FeederObservationRow.provider_record_key == provider_record_key
+            )
+        if key_suffix is not None:
+            # Composite provider keys such as {BILL_ID}:{MONA_CD}; the suffix is literal.
+            statement = statement.where(
+                FeederObservationRow.provider_record_key.endswith(key_suffix, autoescape=True)
             )
         with self.sessions() as session:
             rows = session.scalars(statement.order_by(FeederObservationRow.recorded_at))
@@ -1808,13 +1812,16 @@ class SqlAlchemyRepository:
                 session.rollback()
                 raise
 
-    def _import_assembly_legislative_claims_in_session(
+    def _import_assembly_member_claims_in_session(
         self,
         session: Session,
         items: Sequence[
             tuple[Person, FeederObservation, Sequence[Claim], Sequence[ClaimEvidence]]
         ],
+        lane: AssemblyMemberClaimLane,
     ) -> tuple[Claim, ...]:
+        error = lane.error
+        label = lane.label
         if not items:
             return ()
 
@@ -1823,39 +1830,39 @@ class SqlAlchemyRepository:
         ] = []
         requested_claim_ids: set[UUID] = set()
         requested_evidence_ids: set[UUID] = set()
-        requested_keys: set[tuple[str, str, str]] = set()
+        requested_keys: set[tuple[str, ...]] = set()
 
         for person, observation, claims, evidence in items:
             if len(claims) != 1 or len(evidence) != 1:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity requires one Claim and one Evidence per participant"
+                raise error(
+                    f"{label} requires one Claim and one Evidence per participant"
                 )
             claim = claims[0]
             item = evidence[0]
             if claim.id in requested_claim_ids or item.id in requested_evidence_ids:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity contains duplicate deterministic IDs"
+                raise error(
+                    f"{label} contains duplicate deterministic IDs"
                 )
             requested_claim_ids.add(claim.id)
             requested_evidence_ids.add(item.id)
 
             observation_row = session.get(FeederObservationRow, str(observation.id))
             if observation_row is None or self._observation(observation_row) != observation:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly bill observation changed since Claim build"
+                raise error(
+                    f"{label} observation changed since Claim build"
                 )
             if (
-                observation.feeder != ASSEMBLY_LEGISLATIVE_FEEDER
-                or observation.semantic_scope != ASSEMBLY_LEGISLATIVE_SEMANTIC_SCOPE
+                observation.feeder != lane.feeder
+                or observation.semantic_scope != lane.semantic_scope
             ):
-                raise AssemblyLegislativeActivityError(
-                    "observation is outside the Assembly legislative-activity scope"
+                raise error(
+                    f"observation is outside the {label} scope"
                 )
 
             person_row = session.get(PersonRow, str(person.id))
             if person_row is None:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity Person does not exist"
+                raise error(
+                    f"{label} Person does not exist"
                 )
             stored_person = self._person(person_row)
             if (
@@ -1863,62 +1870,58 @@ class SqlAlchemyRepository:
                 or stored_person.identity_status != IdentityStatus.RESOLVED
                 or stored_person.superseded_at is not None
             ):
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity Person is not the current resolved row"
+                raise error(
+                    f"{label} Person is not the current resolved row"
                 )
 
             snapshot_row = session.get(SourceSnapshotRow, str(observation.snapshot_id))
             if snapshot_row is None:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly bill observation snapshot does not exist"
+                raise error(
+                    f"{label} observation snapshot does not exist"
                 )
             source_row = session.get(SourceRow, snapshot_row.source_id)
             if source_row is None:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly bill observation Source does not exist"
+                raise error(
+                    f"{label} observation Source does not exist"
                 )
             policy_row = session.get(SourcePolicyRow, source_row.policy_id)
             if policy_row is None:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly bill observation SourcePolicy does not exist"
+                raise error(
+                    f"{label} observation SourcePolicy does not exist"
                 )
             source = self._source(source_row)
             policy = self._policy(policy_row)
             if snapshot_row.source_id != source_row.id or source.policy_id != policy.id:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly bill observation provenance chain is inconsistent"
+                raise error(
+                    f"{label} observation provenance chain is inconsistent"
                 )
             try:
                 require_policy(policy, PolicyAction.STORE_METADATA)
             except PolicyDenied as exc:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly bill SourcePolicy forbids metadata publication"
+                raise error(
+                    f"{label} SourcePolicy forbids metadata publication"
                 ) from exc
 
             if (
                 claim.person_id != person.id
                 or claim.organization_id is not None
-                or claim.predicate != ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE
+                or claim.predicate != lane.predicate
                 or claim.publication_status != PublicationStatus.PUBLISHED
                 or claim.epistemic_status != EpistemicStatus.FACT
                 or not claim.asserted_as_true
-                or claim.qualifiers.get("source_contract")
-                != ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT
+                or claim.qualifiers.get("source_contract") != lane.source_contract
                 or claim.qualifiers.get("source_scope") != observation.scope_key
                 or claim.qualifiers.get("semantic_scope") != observation.semantic_scope
                 or claim.qualifiers.get("provider_record_key")
                 != observation.provider_record_key
                 or claim.qualifiers.get("immutable_observation_hash")
                 != observation.content_hash
-                or claim.qualifiers.get("bill_id") != observation.provider_record_key
                 or claim.qualifiers.get("provider_identity_namespace") != "assembly_mona_cd"
                 or not claim.qualifiers.get("provider_person_key")
-                or claim.qualifiers.get("participation_role")
-                not in {"REPRESENTATIVE_PROPOSER", "CO_PROPOSER"}
-                or claim.object_text != observation.normalized.get("bill_name")
+                or not lane.claim_matches_observation(claim, observation)
             ):
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity Claim provenance is invalid"
+                raise error(
+                    f"{label} Claim provenance is invalid"
                 )
             if (
                 item.claim_id != claim.id
@@ -1928,8 +1931,8 @@ class SqlAlchemyRepository:
                 or item.stance != EvidenceStance.SUPPORT
                 or item.excerpt is not None
             ):
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity Evidence provenance is invalid"
+                raise error(
+                    f"{label} Evidence provenance is invalid"
                 )
 
             provider_person_key = claim.qualifiers["provider_person_key"]
@@ -1958,13 +1961,13 @@ class SqlAlchemyRepository:
                     or roster_row.normalized_json.get("member_code")
                     != roster_row.provider_record_key
                 ):
-                    raise AssemblyLegislativeActivityError(
+                    raise error(
                         "Assembly current-roster identity contract is invalid"
                     )
                 identity_person_ids.add(linked_person_row.id)
             if identity_person_ids != {str(person.id)}:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity requires an exact current-roster MONA_CD link"
+                raise error(
+                    f"{label} requires an exact current-roster MONA_CD link"
                 )
 
             gate = validate_claim_publication(
@@ -1975,17 +1978,15 @@ class SqlAlchemyRepository:
                 {policy.id: policy},
             )
             if not gate.publishable:
-                raise AssemblyLegislativeActivityError(
-                    f"Assembly legislative activity Claim failed publication gate: {gate.failures}"
+                raise error(
+                    f"{label} Claim failed publication gate: {gate.failures}"
                 )
-            logical_key = (
-                str(person.id),
-                claim.qualifiers["bill_id"],
-                claim.qualifiers["participation_role"],
-            )
+            logical_key = lane.logical_key(str(person.id), claim.qualifiers)
+            if logical_key is None:
+                raise error(f"{label} Claim lacks its logical key")
             if logical_key in requested_keys:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity contains duplicate current logical keys"
+                raise error(
+                    f"{label} contains duplicate current logical keys"
                 )
             requested_keys.add(logical_key)
             prepared.append((person, observation, claim, item, source, policy))
@@ -1998,37 +1999,32 @@ class SqlAlchemyRepository:
                 )
             )
         )
-        existing_by_key: dict[tuple[str, str, str], list[ClaimRow]] = {}
+        existing_by_key: dict[tuple[str, ...], list[ClaimRow]] = {}
         for row in current_rows:
             if (
-                row.predicate != ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE
-                or row.qualifiers.get("source_contract")
-                != ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT
+                row.predicate != lane.predicate
+                or row.qualifiers.get("source_contract") != lane.source_contract
             ):
                 continue
-            bill_id = row.qualifiers.get("bill_id")
-            role = row.qualifiers.get("participation_role")
-            if not isinstance(bill_id, str) or not isinstance(role, str):
+            row_key = lane.logical_key(str(row.person_id), row.qualifiers)
+            if row_key is None:
                 continue
-            existing_by_key.setdefault((str(row.person_id), bill_id, role), []).append(row)
+            existing_by_key.setdefault(row_key, []).append(row)
 
         results: list[Claim] = []
         for person, observation, claim, item, source, policy in prepared:
-            key = (
-                str(person.id),
-                claim.qualifiers["bill_id"],
-                claim.qualifiers["participation_role"],
-            )
+            key = lane.logical_key(str(person.id), claim.qualifiers)
+            assert key is not None
             matching = existing_by_key.get(key, [])
             if len(matching) > 1:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity has duplicate current logical Claims"
+                raise error(
+                    f"{label} has duplicate current logical Claims"
                 )
             if matching:
                 existing_row = matching[0]
                 if existing_row.id != str(claim.id):
-                    raise AssemblyLegislativeActivityError(
-                        "Assembly legislative activity conflicts with another immutable observation version"
+                    raise error(
+                        f"{label} conflicts with another immutable observation version"
                     )
                 stored_claim = self._claim(existing_row)
                 stored_evidence = [
@@ -2045,18 +2041,18 @@ class SqlAlchemyRepository:
                     or self._evidence_import_semantics(stored_evidence)
                     != self._evidence_import_semantics([item])
                 ):
-                    raise AssemblyLegislativeActivityError(
-                        "Assembly legislative activity Claim ID has conflicting stored semantics"
+                    raise error(
+                        f"{label} Claim ID has conflicting stored semantics"
                     )
                 results.append(stored_claim)
                 continue
             if session.get(ClaimRow, str(claim.id)) is not None:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity Claim ID is already in use"
+                raise error(
+                    f"{label} Claim ID is already in use"
                 )
             if session.get(ClaimEvidenceRow, str(item.id)) is not None:
-                raise AssemblyLegislativeActivityError(
-                    "Assembly legislative activity Evidence ID is already in use"
+                raise error(
+                    f"{label} Evidence ID is already in use"
                 )
             session.add(
                 ClaimRow(
@@ -2094,18 +2090,19 @@ class SqlAlchemyRepository:
             results.append(claim)
         return tuple(results)
 
-    def import_assembly_legislative_claims_batch(
+    def import_assembly_member_claims_batch(
         self,
         items: Sequence[
             tuple[Person, FeederObservation, Sequence[Claim], Sequence[ClaimEvidence]]
         ],
+        lane: AssemblyMemberClaimLane,
     ) -> tuple[Claim, ...]:
-        """Atomically publish exact bill participation Claims or recover an identical import."""
+        """Atomically publish exact MONA_CD-keyed Claims of one lane or recover an identical import."""
 
         self.assert_ready()
         with self.sessions() as session:
             try:
-                results = self._import_assembly_legislative_claims_in_session(session, items)
+                results = self._import_assembly_member_claims_in_session(session, items, lane)
                 session.commit()
                 return results
             except Exception:
