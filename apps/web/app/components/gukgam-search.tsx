@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { useQueryState } from "./query-param";
+
 import type { OrganizationSummary, Person } from "../types";
 
 // Search receives only the displayed facet values (not evidence IDs) to keep the page light.
@@ -58,7 +60,7 @@ export default function GukgamSearch({
   people: GukgamSearchPerson[];
   organizations: OrganizationSummary[];
 }) {
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useQueryState(initialQuery);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [peopleLimit, setPeopleLimit] = useState(INITIAL_RESULT_LIMIT);
   const [organizationLimit, setOrganizationLimit] = useState(INITIAL_RESULT_LIMIT);

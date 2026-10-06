@@ -8,6 +8,9 @@ export function generateMetadata(): Metadata {
   return buildRootMetadata();
 }
 
+// Set only by the Sites snapshot build: when the public read snapshot was generated (KST).
+const SNAPSHOT_AT = process.env.CIVIC_SNAPSHOT_AT?.trim() || null;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
@@ -43,6 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <div className="footer-note">
               <span className="micro-label">읽기 전용 공개 기록</span>
               <span>평가·순위·점수를 만들지 않습니다.</span>
+              {SNAPSHOT_AT && <span>자료 기준 {SNAPSHOT_AT} (공개 기록 스냅샷)</span>}
             </div>
           </footer>
         </div>

@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import ReadState from "./components/read-state";
 import { getGukgamTargets, getPeople } from "./data";
-import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./gukgam/2026/schedule";
+import { KstToday, TodayAuditLine } from "./components/kst-schedule";
+import { groupByDateAndCommittee, seoulDate } from "./gukgam/2026/schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +23,11 @@ export default async function HomePage() {
   const scheduleGroups = targetsResult.state === "success"
     ? groupByDateAndCommittee(targetsResult.data.items, today)
     : [];
-  const todayGroup = scheduleGroups.find((group) => group.relation === "today") ?? null;
-  const nextDate = focusDate(scheduleGroups);
+  const scheduleDays = scheduleGroups.map((group) => ({
+    date: group.date,
+    count: group.count,
+    committeeCount: group.committees.length,
+  }));
 
   return (
     <div className="site-page home-page">
@@ -58,27 +62,12 @@ export default async function HomePage() {
         <aside className="home-coverage" aria-label="오늘의 국감 일정과 공개 범위">
           <div className="home-coverage-heading">
             <span className="micro-label">오늘 (KST)</span>
-            <span className="coverage-index">{formatAuditDate(today)}</span>
+            <span className="coverage-index"><KstToday serverToday={today} /></span>
           </div>
           {targetsResult.state === "error" ? (
             <p className="coverage-caption">국감 일정을 불러오지 못했습니다.</p>
-          ) : todayGroup ? (
-            <>
-              <p className="coverage-value"><strong>{todayGroup.count}</strong><span>건</span></p>
-              <p className="coverage-caption">
-                오늘 공개 기준을 통과한 감사 일정 · {todayGroup.committees.length}개 위원회
-              </p>
-              <Link className="inline-action" href={`/gukgam/2026#audit-${today}`}>오늘 일정 보기 <span aria-hidden="true">↗</span></Link>
-            </>
           ) : (
-            <>
-              <p className="coverage-caption">현재 공개 기준에서 오늘 표시할 일정이 없습니다.</p>
-              {nextDate && (
-                <Link className="inline-action" href={`/gukgam/2026#audit-${nextDate}`}>
-                  다음 공개 일정 {formatAuditDate(nextDate)} <span aria-hidden="true">↗</span>
-                </Link>
-              )}
-            </>
+            <TodayAuditLine serverToday={today} days={scheduleDays} />
           )}
           <p className="coverage-note">
             {peopleCount === null

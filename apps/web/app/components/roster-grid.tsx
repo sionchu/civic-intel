@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { useQueryState } from "./query-param";
+
 import type { Person, PeopleDiscovery } from "../types";
 
 const FACETS = [
@@ -19,7 +21,7 @@ function facetValue(discovery: PeopleDiscovery | undefined, key: FilterKey): str
 }
 
 export default function RosterGrid({ people, initialQuery = "" }: { people: Person[]; initialQuery?: string }) {
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useQueryState(initialQuery);
   const [filters, setFilters] = useState<Partial<Record<FilterKey, string>>>({});
   const searchTerm = query.trim().toLocaleLowerCase();
   const facetOptions = useMemo(

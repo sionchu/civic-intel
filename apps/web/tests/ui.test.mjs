@@ -314,7 +314,7 @@ test("Gukgam search deep-links the current query without changing the canonical 
   assert.match(page, /searchParams: Promise<\{ q\?: string \| string\[\] \}>/);
   assert.match(page, /params\.q\.slice\(0, 80\)/);
   assert.match(page, /initialQuery=\{initialQuery\}/);
-  assert.match(search, /useState\(initialQuery\)/);
+  assert.match(search, /useQueryState\(initialQuery\)/);
   assert.match(search, /url\.searchParams\.set\("q", trimmed\.slice\(0, 80\)\)/);
   assert.match(search, /window\.history\.replaceState/);
   assert.match(search, /maxLength=\{80\}/);
@@ -462,7 +462,9 @@ test("Gukgam schedule keeps scope limits and evidence links visible", async () =
   assert.match(page, /계획 사실/);
   assert.match(page, /오늘 \(KST\)/);
   assert.match(page, /근거 계획서 공개일/);
-  assert.match(page, /aria-label="감사일별 이동"/);
+  const kst = await readFile(new URL("../app/components/kst-schedule.tsx", import.meta.url), "utf8");
+  assert.match(page, /<AuditDateIndex serverToday=\{today\} days=\{scheduleDays\} \/>/);
+  assert.match(kst, /aria-label="감사일별 이동"/);
   const organization = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
   const panel = await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
   assert.match(organization, /<EvidencePanel/);
@@ -679,12 +681,45 @@ test("모두의국감 public brand replaces developer-facing names without renam
   assert.match(home, /maxLength=\{80\}/);
   assert.doesNotMatch(home, /fetch\(|score|rank|probability|confidence/i);
   assert.match(people, /params\.q\.slice\(0, 80\)/);
-  assert.match(roster, /useState\(initialQuery\)/);
+  assert.match(roster, /useQueryState\(initialQuery\)/);
   // Scope language stays bounded and the schedule copy is source-gated.
   assert.match(home, /모든 국감 참여자나 전체 증인 명단이 아닙니다/);
   assert.match(home, /동명이인과 미확인 관계는 자동으로 합치지 않습니다/);
-  assert.match(home, /현재 공개 기준에서 오늘 표시할 일정이 없습니다/);
+  const kst = await read("../app/components/kst-schedule.tsx");
+  assert.match(kst, /현재 공개 기준에서 오늘 표시할 일정이 없습니다/);
   assert.doesNotMatch(home, /모든 공직자|완전한 이력|전체 국감 참여자/);
   // Internal API/env naming is unchanged by the public rename.
   assert.match(data, /CIVIC_API_URL/);
+});
+
+test("Sites snapshot export keeps reader-time dates and ?q= correct without a server", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [kst, query, person, organization, layout, home, script, eslint] = await Promise.all([
+    read("../app/components/kst-schedule.tsx"),
+    read("../app/components/query-param.ts"),
+    read("../app/people/[id]/page.tsx"),
+    read("../app/organizations/[id]/page.tsx"),
+    read("../app/layout.tsx"),
+    read("../app/page.tsx"),
+    read("../scripts/build-sites-snapshot.mjs"),
+    read("../eslint.config.mjs"),
+  ]);
+  // "Today" is computed in the reader's browser (KST) after hydration, never frozen at build time.
+  assert.match(kst, /useSyncExternalStore\(subscribe, \(\) => seoulDate\(new Date\(\)\), \(\) => serverToday\)/);
+  assert.match(home, /<TodayAuditLine serverToday=\{today\} days=\{scheduleDays\} \/>/);
+  assert.match(query, /useSyncExternalStore\(subscribe, readQueryParam, \(\) => initialQuery\)/);
+  assert.match(query, /\.slice\(0, 80\)/);
+  // Server builds keep per-request detail pages; only the staged snapshot copy prerenders them.
+  for (const page of [person, organization]) assert.doesNotMatch(page, /generateStaticParams/);
+  assert.match(script, /export async function generateStaticParams/);
+  assert.match(script, /Snapshot export cannot list/);
+  assert.match(layout, /CIVIC_SNAPSHOT_AT/);
+  // The export build reads only the public API, drops the operator surface and fails closed.
+  assert.match(script, /\/ready/);
+  assert.match(script, /rmSync\(join\(stage, "app", "admin"\)/);
+  assert.match(script, /output: "export"/);
+  assert.match(script, /FORBIDDEN_TOKENS/);
+  assert.match(script, /snapshot-manifest\.json/);
+  assert.doesNotMatch(script, /process\.env\.(DATABASE_URL|CIVIC_OPERATOR_TOKEN|[A-Z_]+_API_KEY)/);
+  assert.match(eslint, /\.sites-build/);
 });

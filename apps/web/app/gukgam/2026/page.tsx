@@ -4,11 +4,12 @@ import Link from "next/link";
 import GukgamSearch, { type GukgamSearchFacets } from "../../components/gukgam-search";
 import type { Person } from "../../types";
 import CommitteeMembers from "../../components/committee-members";
+import { AuditDateIndex, AuditDaySection, KstToday, NextAuditAction } from "../../components/kst-schedule";
 import ReadState from "../../components/read-state";
 import { getGukgamCommittees, getGukgamTargets, getOrganizations, getPeople } from "../../data";
 import { buildPageMetadata } from "../../site-metadata";
 import { committeeAnchor } from "./committees";
-import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./schedule";
+import { groupByDateAndCommittee, seoulDate } from "./schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,12 @@ export default async function Gukgam2026Page({
   const today = seoulDate(new Date());
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
   const scheduleGroups = groupByDateAndCommittee(targetItems, today);
-  const nextDate = focusDate(scheduleGroups);
+  const scheduleDays = scheduleGroups.map((group) => ({
+    date: group.date,
+    count: group.count,
+    committeeCount: group.committees.length,
+  }));
+  const scheduleDates = scheduleDays.map((day) => day.date);
   const coveredCommittees = [...new Set(targetItems.map((item) => item.committee_name))].sort(
     (left, right) => left.localeCompare(right, "ko"),
   );
@@ -77,9 +83,7 @@ export default async function Gukgam2026Page({
             일정·피감기관·증인·참고인 정보는 출처 정책과 검증을 통과한 범위만 순차 반영합니다.
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href={nextDate ? `#audit-${nextDate}` : "#gukgam-published-targets-title"}>
-              {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"} <span aria-hidden="true">↓</span>
-            </a>
+            <NextAuditAction serverToday={today} dates={scheduleDates} />
             <Link className="inline-action" href="/people">인물 찾기 <span aria-hidden="true">↗</span></Link>
             <Link className="inline-action" href="/organizations">기관 보기 <span aria-hidden="true">↗</span></Link>
           </div>
@@ -132,7 +136,7 @@ export default async function Gukgam2026Page({
               </div>
               <div>
                 <dt>오늘 (KST)</dt>
-                <dd>{formatAuditDate(today)}</dd>
+                <dd><KstToday serverToday={today} /></dd>
               </div>
             </dl>
             <p className="gukgam-scope-note">
@@ -141,44 +145,17 @@ export default async function Gukgam2026Page({
               열렸거나 어떤 결과가 나왔다는 기록이 아닙니다. 일정은 위원회 의결로 바뀔 수 있습니다.
             </p>
 
-            <nav className="gukgam-date-index" aria-label="감사일별 이동">
-              <ol>
-                {scheduleGroups.map((group) => (
-                  <li key={group.date} className={group.relation}>
-                    <a
-                      href={`#audit-${group.date}`}
-                      aria-current={group.date === nextDate ? "date" : undefined}
-                    >
-                      <span>{formatAuditDate(group.date)}</span>
-                      <small>
-                        {group.relation === "today" ? "오늘 · " : group.date === nextDate ? "다음 · " : ""}
-                        {group.count}건
-                      </small>
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
+            <AuditDateIndex serverToday={today} days={scheduleDays} />
 
             <div className="gukgam-schedule" id="gukgam-schedule">
               {scheduleGroups.map((group) => (
-                <section
+                <AuditDaySection
                   key={group.date}
-                  id={`audit-${group.date}`}
-                  className={`gukgam-day ${group.relation}`}
-                  aria-labelledby={`audit-${group.date}-title`}
+                  serverToday={today}
+                  date={group.date}
+                  dates={scheduleDates}
+                  count={group.count}
                 >
-                  <header className="gukgam-day-heading">
-                    <h3 id={`audit-${group.date}-title`}>{formatAuditDate(group.date)}</h3>
-                    <span>
-                      {group.relation === "today"
-                        ? "오늘 열리는 감사 일정"
-                        : group.relation === "past"
-                          ? "지난 일정 · 계획 기준"
-                          : group.date === nextDate ? "다음 감사일" : "예정"}
-                      {" · "}{group.count}건
-                    </span>
-                  </header>
                   {group.committees.map((committee) => (
                     <div className="gukgam-committee" key={committee.committee}>
                       <h4>{committee.committee}</h4>
@@ -226,7 +203,7 @@ export default async function Gukgam2026Page({
                       )}
                     </div>
                   ))}
-                </section>
+                </AuditDaySection>
               ))}
             </div>
           </>

@@ -28,6 +28,7 @@ const GUKGAM_TARGET_PREDICATE = "LISTED_AS_GUKGAM_AUDIT_TARGET";
 
 export const dynamic = "force-dynamic";
 
+
 export async function generateMetadata({
   params,
 }: {

@@ -11,3 +11,5 @@ node_modules/
 .next/
 *.tsbuildinfo
 out/
+.sites-build/
+dist/

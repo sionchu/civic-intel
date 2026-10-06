@@ -17,6 +17,7 @@ import type { Claim, ProfileEntry } from "../../types";
 
 export const dynamic = "force-dynamic";
 
+
 const FACT_PREDICATES: [string, string][] = [
   ["HELD_ROLE", "직위"],
   ["ASSEMBLY_PARTY", "정당"],
