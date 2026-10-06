@@ -342,3 +342,12 @@ def test_candidate_report_is_read_only_and_needs_a_second_anchor(world) -> None:
     conflicting = build_person_link_candidate_report(repository, lanes=("opendart",))
     assert conflicting["candidates"] == []
     assert conflicting["summary"]["opendart_executive"]["birth_year_month_conflict_refused"] == 1
+
+
+def test_claim_sentences_use_the_right_korean_particles() -> None:
+    from packages.verification.person_record_links import _as, _object
+
+    assert _object("김기관") == "김기관을" and _object("박지수") == "박지수를"
+    assert _as("대표이사") == "대표이사로" and _as("증인") == "증인으로"
+    assert _as("사외이사(감사위원)") == "사외이사(감사위원)으로"  # non-Hangul ending stays explicit
+    assert _as("본부장") == "본부장으로" and _as("이사회 의장") == "이사회 의장으로"

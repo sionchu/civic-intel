@@ -379,9 +379,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   </div>
                 );
               })}
-              <p className="gukgam-scope-note">
-                국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 일정은 공식 계획서상 일정입니다.
-              </p>
+              {memberCommittees.length > 0 && (
+                <p className="gukgam-scope-note">
+                  국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 일정은 공식 계획서상 일정입니다.
+                </p>
+              )}
             </section>
           )}
 

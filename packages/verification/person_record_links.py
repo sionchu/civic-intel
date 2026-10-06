@@ -122,6 +122,23 @@ def witness_institution_anchors(
     )
 
 
+def _final_consonant(word: str) -> int | None:
+    """Hangul final-consonant index of the last syllable (0 = none); None for non-Hangul."""
+
+    last = word.strip()[-1:] or " "
+    code = ord(last) - 0xAC00
+    return code % 28 if 0 <= code < 11172 else None
+
+
+def _object(word: str) -> str:
+    return f"{word}{'를' if _final_consonant(word) == 0 else '을'}"
+
+
+def _as(word: str) -> str:
+    final = _final_consonant(word)
+    return f"{word}{'로' if final in (0, 8) else '으로'}"
+
+
 def _required(values: Mapping[str, Any], key: str) -> str:
     value = values.get(key)
     if not isinstance(value, str) or not value.strip():
@@ -158,7 +175,8 @@ def build_linked_witness_claim(
         subject=person_name,
         predicate=LINKED_WITNESS_PREDICATE,
         proposition=(
-            f"{committee}의 {list_title}({list_version})은 {person_name}을 {category}으로 기재한다."
+            f"{committee}의 {list_title}({list_version})은 {_object(person_name)} {_as(category)} "
+            "기재한다."
         ),
         object_text=f"{committee} · {category}",
         qualifiers={
@@ -215,7 +233,7 @@ def build_opendart_role_claim(
         predicate=OPENDART_ROLE_PREDICATE,
         proposition=(
             f"{corp_name}의 OpenDART 임원 현황 공시(접수번호 {receipt_no})는 "
-            f"{person_name}을 {position}으로 기재한다."
+            f"{_object(person_name)} {_as(position)} 기재한다."
         ),
         object_text=f"{corp_name} · {position}",
         qualifiers={
