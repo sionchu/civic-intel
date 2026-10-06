@@ -1,5 +1,13 @@
 # HANDOFF
 
+## Current state — 2026-10-06 (모두의국감 public launch)
+
+Public brand 모두의국감 (public surface only; internals stay Civic Intel) is prepared on
+`feat/moduigukgam-public-launch` / PR #193 from master `c82423a`. Plan:
+`docs/exec-plans/active/moduigukgam-public-launch-v0.md` (`READY_FOR_CODEX_DEPLOY`). Next action:
+merge after green CI, then Codex follows `docs/operations/CODEX_MODUIGUKGAM_SITES_DEPLOY_HANDOFF.md`.
+Deploy is gated on owner decision G1 (Railway production Web origin + DB snapshot, or C1/C2).
+
 ## Current state — 2026-10-04 evening (Mac offline; Windows interim dev)
 
 The Mac mini (canonical DB + public host) lost its network path on 2026-10-04 (Tailscale only via
