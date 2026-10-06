@@ -315,6 +315,7 @@ CAREER_RELATION_TYPES = {
     "CAREER_ORGANIZATION": "SAME_EMPLOYER",
 }
 NON_PATH_KINDS = frozenset({"PARTY", "BILL"})
+NON_RELATION_CAREER_CATEGORIES = frozenset({"LEGISLATURE", "PARTY", "OTHER"})
 
 
 # --------------------------------------------------------------------------------------------
@@ -536,8 +537,9 @@ def extract_affiliation(
         )
     if claim.predicate == BIOGRAPHY_CAREER_PREDICATE and contract == BIOGRAPHY_CONTRACT:
         organization_text = q.get("organization_text")
-        category = q.get("career_category", "CAREER_ORGANIZATION")
-        if not organization_text:
+        category = q.get("career_category", "OTHER")
+        # Legislature/party lines duplicate official roster facts; OTHER is unclassified text.
+        if not organization_text or category in NON_RELATION_CAREER_CATEGORIES:
             return None
         kind = category if category in CAREER_RELATION_TYPES else "CAREER_ORGANIZATION"
         start, end, precision = _biography_bounds(q)

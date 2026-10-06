@@ -216,10 +216,16 @@ def test_conflicting_evidence_is_kept_visible() -> None:
 
 def test_former_biography_role_is_not_marked_current() -> None:
     item = affiliation(claim(uuid4(), "ASSEMBLY_BIOGRAPHY_CAREER", {
-        "source_contract": "assembly_member_profile_biography", "organization_text": "국민의힘",
-        "career_category": "PARTY", "current_marker": "FORMER",
+        "source_contract": "assembly_member_profile_biography", "organization_text": "한국개발연구원",
+        "career_category": "CIVIC", "current_marker": "FORMER",
     }, status=EpistemicStatus.CLAIM))
     assert item.period.ongoing is None
+    # Party/legislature biography lines duplicate roster facts and never become text affiliations.
+    party_line = affiliation(claim(uuid4(), "ASSEMBLY_BIOGRAPHY_CAREER", {
+        "source_contract": "assembly_member_profile_biography", "organization_text": "국민의힘",
+        "career_category": "PARTY",
+    }, status=EpistemicStatus.CLAIM))
+    assert party_line is None
 
 
 def test_party_requires_roster_field_and_is_excluded_from_default_paths() -> None:
