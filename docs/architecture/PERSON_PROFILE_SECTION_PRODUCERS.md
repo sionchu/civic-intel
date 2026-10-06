@@ -21,7 +21,7 @@ People with any published Assembly roster or bill Claim take the separate Assemb
 `limitations`), fed by the Assembly roster, historical and bill-participation feeders.
 `current_role` also shows committee offices (`ASSEMBLY_COMMITTEE_ROLE`, 위원장·간사) from the
 committee member-list lane ([feeder](ASSEMBLY_COMMITTEE_ROSTER_FEEDER.md)), once that lane is run.
-`decision_episodes` (의사결정 에피소드: 본회의 표결) shows the 20 most recent published
+`decision_episodes` (의사결정 에피소드: 본회의 표결) shows the 10 most recent published
 `ASSEMBLY_PLENARY_VOTE` Claims with whole-record counts
 ([feeder](ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md#vote-claims-separate-publication-step)); the section is
 emitted only when such Claims exist. Repeated patterns stay eligibility-only: vote Claims are not

@@ -211,7 +211,7 @@ row it publishes one `ASSEMBLY_PLENARY_VOTE` FACT Claim restating the published 
 shares the exact-`MONA_CD` import contract with bill participation and committee roles. A changed
 vote for the same bill fails closed for review.
 
-The Assembly profile shows the 20 most recent votes as decision episodes (action: plenary vote,
+The Assembly profile shows the 10 most recent votes as decision episodes (action: plenary vote,
 target: the bill, outcome: the member's recorded vote) and the whole-record counts per vote value.
 The person API embeds only the rendered vote Claims. The out-of-scope list above still applies:
 no attendance, alignment, party-line or ideology value is derived from these Claims.
