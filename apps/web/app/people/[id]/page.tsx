@@ -27,6 +27,9 @@ const FACT_PREDICATES: [string, string][] = [
   ["ASSEMBLY_REELECTION", "선수"],
 ];
 
+// Person Claims linked to one exact source row after human identity review.
+const LINKED_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS";
+
 export async function generateMetadata({
   params,
 }: {
@@ -107,6 +110,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       })
     : [];
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
+  const witnessListings = publishedClaims.filter((claim) => claim.predicate === LINKED_WITNESS_PREDICATE);
+  const hasGukgam = memberCommittees.length > 0 || witnessListings.length > 0;
   const emptyLanes = profile ? profile.sections.filter((section) => section.entries.length === 0).map((section) => section.label) : [];
 
   const renderEntry = (entry: ProfileEntry) => {
@@ -256,7 +261,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <nav>
             <ul className="page-anchors">
               <li><a href="#key-facts">핵심 기록</a></li>
-              {memberCommittees.length > 0 && <li><a href="#gukgam-2026">국정감사</a></li>}
+              {hasGukgam && <li><a href="#gukgam-2026">국정감사</a></li>}
               <li><a href="#records">기록</a></li>
               <li><a href="#official-connections">연결</a></li>
               <li><a href="#sources">출처</a></li>
@@ -274,11 +279,40 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             )}
           </section>
 
-          {memberCommittees.length > 0 && (
+          {hasGukgam && (
             <section className="person-section" id="gukgam-2026" aria-labelledby="person-gukgam-title">
               <div className="section-intro">
                 <h2 id="person-gukgam-title">2026 국정감사</h2>
+                {memberCommittees.length === 0 && (
+                  <p>위원회 증인·참고인 명단에 기재된 기록입니다. 출석 요구일 뿐 혐의·잘못·출석·증언을 뜻하지 않습니다.</p>
+                )}
               </div>
+              {witnessListings.map((claim) => (
+                <div className="person-gukgam-committee" key={claim.id}>
+                  <h3>
+                    <Link href={committeeHref(claim.qualifiers.committee_name)}>{claim.qualifiers.committee_name}</Link>{" "}
+                    {claim.qualifiers.category}
+                  </h3>
+                  {claim.qualifiers.provenance_label && (
+                    <p className="committee-targets-pending" role="note">{claim.qualifiers.provenance_label}</p>
+                  )}
+                  <dl className="person-gukgam-facts">
+                    <div><dt>명단 기재 소속·직위</dt><dd>{claim.qualifiers.affiliation_title ?? "미기재"}</dd></div>
+                    <div>
+                      <dt>출석 요구일</dt>
+                      <dd>{claim.qualifiers.attendance_date_text ?? claim.qualifiers.attendance_date ?? "명단에 기재 없음"}</dd>
+                    </div>
+                    <div>
+                      <dt>근거</dt>
+                      <dd>
+                        <a href={`#claim-${claim.id}`}>{claim.qualifiers.source_tag ?? "명단"} · {claim.qualifiers.list_version}</a>
+                        {" · "}
+                        <Link href={`/gukgam/2026#witness-${claim.qualifiers.source_claim_id}`}>명단에서 보기</Link>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              ))}
               {targetsResult.state === "error" && <ReadState error={targetsResult.error} />}
               {memberCommittees.map(({ committee, member }) => {
                 const items = targetItems.filter((item) => item.committee_name === committee.committee_name);
@@ -325,9 +359,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   </div>
                 );
               })}
-              <p className="gukgam-scope-note">
-                국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 일정은 공식 계획서상 일정입니다.
-              </p>
+              {memberCommittees.length > 0 && (
+                <p className="gukgam-scope-note">
+                  국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 일정은 공식 계획서상 일정입니다.
+                </p>
+              )}
             </section>
           )}
 

@@ -46,6 +46,36 @@ const QUALIFIER_LABELS: Record<string, string> = {
   term_end: "임기 종료",
   disclosure_no: "공시번호",
   classification_text: "기관 분류",
+  list_title: "명단",
+  list_version: "명단 판",
+  list_year: "연도",
+  adoption_date: "의결일",
+  category: "증인·참고인",
+  affiliation_title: "명단 기재 소속·직위",
+  list_section: "명단 구분",
+  attendance_date_text: "출석 요구일(기재)",
+  attendance_date: "출석 요구일",
+  assumed_year_basis: "연도 근거",
+  acquisition_channel: "수집 경로",
+  source_tag: "출처 태그",
+  provenance_label: "출처 상태",
+  row_number: "명단 행",
+  table_index: "표",
+  table_row: "표 행",
+  corp_name: "회사",
+  corp_code: "DART 고유번호",
+  stock_code: "종목코드",
+  business_year: "사업연도",
+  report_code: "보고서 코드",
+  receipt_no: "공시 접수번호",
+  settlement_date: "결산기준일",
+  position: "직위(공시)",
+  registered_status: "등기 여부",
+  full_time_status: "상근 여부",
+  responsibility: "담당 업무",
+  tenure_text: "재직 기간(공시)",
+  tenure_end_on: "임기 만료일",
+  reported_main_career: "주요경력(회사 공시·독립 검증 전)",
 };
 
 // Shown elsewhere in the panel, or identifiers / hashes that belong in the audit disclosure.
@@ -54,12 +84,19 @@ const HIDDEN_QUALIFIERS = new Set([
   "source_scope", "semantic_scope", "event_semantics",
   "provider_record_key", "observation_provider_record_key", "immutable_observation_hash",
   "audited_target_index", "alio_apba_id", "classification", "executive_kind",
+  "source_claim_id", "source_observation_id", "identity_review_id", "identity_scope",
+  "reported_main_career_semantics", "organization_id",
 ]);
 
 const CONTRACT_NOTES: Record<string, string> = {
   assembly_member_roster: "국회 의원 명부의 필드를 값 그대로 옮긴 기록",
   gukgam_reviewed_plan_attachment_v1: "검토를 거친 국정감사 계획서 첨부의 일정 항목",
   alio_item_4_current_executive_roster: "ALIO 항목 4 임원현황 공시의 항목",
+  alio_reviewed_person_role: "ALIO 임원현황 공시 행을 사람이 검토해 이 인물에 연결한 기록",
+  gukgam_witness_reviewed_person_link:
+    "위원회 증인·참고인 명단의 한 행을 사람이 검토해 이 인물에 연결한 기록. 출석 요구 기재이며 혐의나 잘못을 뜻하지 않음",
+  opendart_reviewed_executive_role:
+    "회사가 OpenDART 임원 현황 공시에 기재한 내용을 사람이 검토해 이 인물에 연결한 기록. 주요경력은 회사 제출 내용",
 };
 
 const SCOPE_NOTES: Record<string, string> = {

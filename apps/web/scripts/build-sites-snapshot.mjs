@@ -156,8 +156,8 @@ for (const path of walk(out)) {
 
 // Sites caps an uncompressed deployment at 256 MiB. The exported client navigates with
 // `<route>/index.txt` and prefetches the flattened segment files only, so the nested segment folders
-// and `__next._full.txt` (byte-identical to the sibling index.txt) are never requested. Drop them;
-// no page content or data is removed.
+// and `__next._full.txt` (byte-identical to the sibling index.txt) are never requested. Drop them,
+// and the detail-route page segments below; no page content or data is removed.
 const SITES_MAX_BYTES = 256 * 1024 * 1024;
 for (const path of walk(out)) {
   const parts = relative(out, path).split(/[\\/]/);
@@ -169,6 +169,15 @@ for (const path of walk(out)) {
     const sibling = join(out, ...parts.slice(0, -1), "index.txt");
     if (!existsSync(sibling) || !readFileSync(sibling).equals(readFileSync(path))) {
       fail(`${parts.join("/")} differs from its index.txt; refusing to drop it`);
+    }
+    rmSync(path);
+  } else if (/^__next\..+\.\$d\$id\.__PAGE__\.txt$/.test(parts.at(-1))) {
+    // Detail-page segment prefetch payloads (`/people/[id]`, `/organizations/[id]`) repeat their
+    // sibling index.txt. The client treats a missing prefetch segment as a cache miss and navigates
+    // with `<route>/index.txt` (verified in the exported client), so dropping these keeps every page
+    // and record while staying under the Sites limit.
+    if (!existsSync(join(out, ...parts.slice(0, -1), "index.txt"))) {
+      fail(`${parts.join("/")} has no sibling index.txt; refusing to drop it`);
     }
     rmSync(path);
   }

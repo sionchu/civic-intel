@@ -207,3 +207,15 @@ OpenDART SourcePolicy.
 
 Current executive-status maturity is `L3 FULL_ENUMERATION`. Compensation and ownership remain
 separate L2 enrichment/source lanes and do not inherit executive Person-discovery authority.
+
+### Reviewed link to an existing Person
+
+The automatic rule above is unchanged. An operator may link one exact executive-status row to one
+existing RESOLVED Person through the admin `LINK_PERSON` review with official bridge Evidence from
+that Person's own records. A disclosed birth year/month that contradicts the Person's birth date
+refuses the link. The resulting `OPENDART_DISCLOSED_EXECUTIVE_ROLE` Person Claim states only that
+the company disclosed this Person in this role in filing `rcept_no`; it copies company, role,
+registered/full-time status, responsibility, tenure and `reported_main_career` (labelled
+company-disclosed, not independently verified). Birth year/month and the largest-shareholder
+relation are not copied. There is no REGISTER path: rows whose person has no canonical Person stay
+observation-only.

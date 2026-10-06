@@ -275,8 +275,19 @@ class GukgamWitnessProjectionItem:
     source_ids: tuple[UUID, ...]
     snapshot_ids: tuple[UUID, ...]
     observation_ids: tuple[UUID, ...]
+    linked_person: tuple[UUID, str] | None = None
 
     def to_dict(self) -> dict[str, object]:
+        linked = (
+            {}
+            if self.linked_person is None
+            else {
+                "linked_person": {
+                    "id": str(self.linked_person[0]),
+                    "name": self.linked_person[1],
+                }
+            }
+        )
         return {
             "committee_name": self.committee_name,
             "category": self.category,
@@ -304,6 +315,7 @@ class GukgamWitnessProjectionItem:
             "source_ids": [str(i) for i in self.source_ids],
             "snapshot_ids": [str(i) for i in self.snapshot_ids],
             "observation_ids": [str(i) for i in self.observation_ids],
+            **linked,
         }
 
 
@@ -336,7 +348,10 @@ class GukgamWitnessProjection:
                     "A listed 증인/참고인 is an attendance request, not a finding of "
                     "wrongdoing and not evidence of attendance or testimony."
                 ),
-                "Names are source-listed text and are not linked to canonical People.",
+                (
+                    "Names are source-listed text. A row links to a canonical Person only after "
+                    "a human-reviewed identity link and a separately published Person Claim."
+                ),
                 "News reports are never used as a source for these rows.",
                 (
                     f"'{OWNER_COPY_LABEL}' rows come from a copy supplied to the operator; "
@@ -364,8 +379,13 @@ def build_gukgam_witness_projection(
     sources: Mapping[UUID, Source],
     policies: Mapping[UUID, SourcePolicy],
     year: int = 2026,
+    person_links: Mapping[UUID, tuple[UUID, str]] | None = None,
 ) -> GukgamWitnessProjection:
-    """Project only publishable reviewed witness-list Organization Claims."""
+    """Project only publishable reviewed witness-list Organization Claims.
+
+    ``person_links`` maps a witness Claim ID to a public Person whose published, reviewed Person
+    Claim restates that exact row. Rows without such a link stay source-listed text.
+    """
 
     organization_by_id = {o.id: o for o in organizations if o.superseded_at is None}
     items: list[GukgamWitnessProjectionItem] = []
@@ -480,6 +500,7 @@ def build_gukgam_witness_projection(
                             key=str,
                         )
                     ),
+                    linked_person=(person_links or {}).get(claim.id),
                 )
             )
     items.sort(

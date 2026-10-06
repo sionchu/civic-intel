@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { getGukgamWitnesses } from "../data";
 import type { GukgamWitnessProjectionItem } from "../types";
 import ReadState from "./read-state";
@@ -25,7 +27,8 @@ function locatorLabel(item: GukgamWitnessProjectionItem): string {
   return `${place}, ${item.row_number}번`;
 }
 
-// Server component. Names are source-listed text: no Person link is rendered.
+// Server component. Names are source-listed text. A Person link appears only when a reviewed,
+// separately published Person Claim restates this exact row.
 export default async function GukgamWitnesses() {
   const result = await getGukgamWitnesses();
   if (result.state === "error") return <ReadState error={result.error} />;
@@ -56,7 +59,11 @@ export default async function GukgamWitnesses() {
                   <ul>
                     {rows.map((item) => (
                       <li key={item.claim_id} id={`witness-${item.claim_id}`}>
-                        <strong>{item.name}</strong>
+                        <strong>
+                          {item.linked_person ? (
+                            <Link href={`/people/${item.linked_person.id}`}>{item.name}</Link>
+                          ) : item.name}
+                        </strong>
                         <span className="gukgam-witnesses-tag">
                           {item.source_tag}
                           {item.acquisition_channel === "OWNER_SUPPLIED_COPY" ? " · 아직 공식 발표 아님" : ""}
@@ -89,7 +96,7 @@ export default async function GukgamWitnesses() {
           </div>
         ))
       )}
-      <p className="gukgam-witnesses-limitations">전체 명단이 아니며, 의결에 따라 바뀔 수 있습니다.</p>
+      <p className="gukgam-witnesses-limitations">전체 명단이 아니며, 의결에 따라 바뀔 수 있습니다. 사람이 검토해 공개한 행만 인물 기록과 연결합니다.</p>
     </section>
   );
 }

@@ -53,6 +53,7 @@ from packages.rendering.profile_projection import (
     build_profile_projection,
 )
 from packages.verification.claims import validate_claim_publication
+from packages.verification.person_record_links import LINKED_WITNESS_PREDICATE
 
 
 class PublicApiError(Exception):
@@ -576,12 +577,26 @@ def create_app(
             )
         source_map = target.sources(evidence.source_id for evidence in all_evidence)
         policy_map = target.policies(source.policy_id for source in source_map.values())
+        people_by_id = {person.id: person for person in target.public_people()}
+        person_links: dict[UUID, tuple[UUID, str]] = {}
+        linked_contexts = target.published_person_claim_contexts(
+            people_by_id, predicates={LINKED_WITNESS_PREDICATE}
+        )
+        for person_id, (person_claims, _) in linked_contexts.items():
+            for claim in person_claims:
+                source_claim_id = claim.qualifiers.get("source_claim_id")
+                if source_claim_id:
+                    person_links[UUID(source_claim_id)] = (
+                        person_id,
+                        people_by_id[person_id].canonical_name,
+                    )
         return build_gukgam_witness_projection(
             current_organizations,
             witness_contexts,
             sources=source_map,
             policies=policy_map,
             year=2026,
+            person_links=person_links,
         ).to_dict()
 
     @app.get("/people/{person_id}/claims")
