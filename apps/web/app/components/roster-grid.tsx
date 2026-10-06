@@ -152,7 +152,7 @@ export default function RosterGrid({
         </div>
       ) : (
         <div className="roster-list">
-          {visiblePeople.map((person, index) => {
+          {visiblePeople.map((person) => {
             const facets = person.discovery?.facets;
             const sameNameCount = sameNameCounts.get(person.canonical_name) ?? 1;
             const role = facets?.role?.value;
@@ -168,7 +168,6 @@ export default function RosterGrid({
                 key={person.id}
                 aria-label={`${person.canonical_name}${differentiators ? ` · ${differentiators}` : ""} · Evidence profile`}
               >
-                <span className="row-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                 <span className="row-avatar" aria-hidden="true">{person.canonical_name.trim().slice(0, 1)}</span>
                 <span className="row-main">
                   <span className="row-name-line">

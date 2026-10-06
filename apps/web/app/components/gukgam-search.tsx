@@ -128,7 +128,7 @@ export default function GukgamSearch({
     <section className="gukgam-search" aria-labelledby="gukgam-search-title">
       <div className="gukgam-search-heading">
         <div>
-          <span className="eyebrow">Search / current public records</span>
+          <span className="eyebrow">현재 공개 기록 검색</span>
           <h2 id="gukgam-search-title">인물과 기관에서 시작</h2>
         </div>
         <p>

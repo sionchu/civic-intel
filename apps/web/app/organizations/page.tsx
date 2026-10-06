@@ -44,14 +44,13 @@ export default async function OrganizationsPage() {
             <p>기관을 선택하면 현재 공개된 내용의 Evidence와 Source provenance를 확인할 수 있습니다.</p>
           </div>
           <div className="organization-list">
-            {organizationsResult.data.map((organization, index) => (
+            {organizationsResult.data.map((organization) => (
               <Link
                 className="organization-row"
                 href={`/organizations/${organization.id}`}
                 key={organization.id}
                 aria-label={`${organization.name} · Evidence organization record`}
               >
-                <span className="row-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                 <span className="organization-avatar" aria-hidden="true">{organization.name.trim().slice(0, 1)}</span>
                 <span className="organization-row-main">
                   <strong>{organization.name}</strong>
@@ -59,7 +58,7 @@ export default async function OrganizationsPage() {
                 </span>
                 <span className="organization-row-facts">
                   <span><small>현재 임원 공개</small><strong>{organization.executive_count}건</strong></span>
-                  <span><small>Published Claim</small><strong>{organization.published_claim_count}건</strong></span>
+                  <span><small>공개 Claim</small><strong>{organization.published_claim_count}건</strong></span>
                 </span>
                 <span className="row-proof">근거 {organization.evidence_count}개 · 기준일 {organization.as_of ?? "정보 없음"}</span>
                 <span className="row-arrow" aria-hidden="true">↗</span>

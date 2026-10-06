@@ -189,20 +189,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <p className="claim-title">{entry.title}</p>
           <div className="change-sequence" aria-label="Compared dated sequence">
             <div className="change-point">
-              <span className="micro-label">EARLIER · {changeDetails.earlier?.date ?? "UNKNOWN"}</span>
+              <span className="micro-label">이전 · {changeDetails.earlier?.date ?? "UNKNOWN"}</span>
               <strong>{changeDetails.earlier?.role_text ?? "표시값 없음"}</strong>
               <small>{changeDetails.earlier?.predicate ?? "UNKNOWN"} · Claim {changeDetails.earlier?.claim_id ?? "UNKNOWN"}</small>
             </div>
             <span className="change-arrow" aria-hidden="true">→</span>
             <div className="change-point later">
-              <span className="micro-label">LATER · {changeDetails.later?.date ?? "UNKNOWN"}</span>
+              <span className="micro-label">이후 · {changeDetails.later?.date ?? "UNKNOWN"}</span>
               <strong>{changeDetails.later?.role_text ?? "표시값 없음"}</strong>
               <small>{changeDetails.later?.predicate ?? "UNKNOWN"} · Claim {changeDetails.later?.claim_id ?? "UNKNOWN"}</small>
             </div>
           </div>
           {changeDetails.derived_reason && <p className="change-reason">{changeDetails.derived_reason}</p>}
           <details className="audit-details">
-            <summary>Methodology & coverage</summary>
+            <summary>계산 방법과 범위</summary>
             <small>
               Method {changeDetails.method_version ?? "UNKNOWN"}<br />
               Scope {changeDetails.input_scope?.provider_record_identity ?? "UNKNOWN"}<br />
@@ -298,7 +298,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       <Link href="/people" className="back-link"><span aria-hidden="true">←</span> 인물 찾기</Link>
       <header className="profile-header">
         <div>
-          <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> 모두의국감 / 인물 기록</div>
+          <div className="eyebrow">모두의국감 / 인물 기록</div>
           <div className="profile-title-row">
             <h1>{person.canonical_name}</h1>
             <span className={`status identity ${person.identity_status}`}>{person.identity_status}</span>
@@ -354,7 +354,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <div className="profile-content">
           <section className="person-section" id="key-facts" aria-labelledby="key-facts-title">
             <div className="section-intro">
-              <div><span className="eyebrow">Published claims</span><h2 id="key-facts-title">핵심 기록</h2></div>
+              <div><span className="eyebrow">공개된 기록</span><h2 id="key-facts-title">핵심 기록</h2></div>
               <p>현재 공개된 Claim만 항목별로 모았습니다. 각 행의 근거를 누르면 아래 기록에서 출처까지 펼쳐집니다.</p>
             </div>
             {factRows.length > 0 ? <FactBox rows={factRows} /> : (
@@ -365,7 +365,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           {hasGukgam && (
             <section className="person-section" id="gukgam-2026" aria-labelledby="person-gukgam-title">
               <div className="section-intro">
-                <div><span className="eyebrow">Gukgam 2026 / Claim-backed</span><h2 id="person-gukgam-title">2026 국정감사</h2></div>
+                <div><span className="eyebrow">2026 국정감사 · 근거가 공개된 항목만</span><h2 id="person-gukgam-title">2026 국정감사</h2></div>
                 <p>
                   {memberCommittees.length > 0
                     ? "위원회 소속 기록이며 해당 기관 질의 여부를 뜻하지 않습니다."
@@ -454,7 +454,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
           <section className="person-section" id="records" aria-labelledby="records-title">
             <div className="section-intro">
-              <div><span className="eyebrow">Evidence profile</span><h2 id="records-title">기록</h2></div>
+              <div><span className="eyebrow">근거별 기록</span><h2 id="records-title">기록</h2></div>
               <p>published Claim/Evidence 범위와 아직 비어 있는 영역을 구분합니다.</p>
             </div>
             {profile ? (
@@ -485,7 +485,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <section className="ontology-section person-section" id="official-connections" aria-labelledby="ontology-title">
             <div className="section-intro">
               <div>
-                <span className="eyebrow">Governance ontology / local view</span>
+                <span className="eyebrow">공식 기록 기준</span>
                 <h2 id="ontology-title">공식 기록상 연결</h2>
               </div>
               <p>현재 공개 Claim/Evidence에서 직접 지원되는 관계만 local graph와 동일한 텍스트 목록으로 보여줍니다.</p>
@@ -504,11 +504,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
           <section className="source-library person-section" id="sources" aria-labelledby="sources-title">
             <div className="section-intro">
-              <div><span className="eyebrow">Evidence & audit</span><h2 id="sources-title">이 프로필의 출처</h2></div>
+              <div><span className="eyebrow">근거와 출처 확인</span><h2 id="sources-title">이 프로필의 출처</h2></div>
               <p>출처의 공개일, 확인 시각과 policy 요약은 바로 보이고 식별자는 감사 ID 안에 둡니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
-            {sources.length === 0 && !sourceError ? <p className="empty">No source cards available.</p> : (
+            {sources.length === 0 && !sourceError ? <p className="empty">표시할 출처가 없습니다.</p> : (
               <div className="source-grid">
                 {sources.map((source) => <SourceCard key={source.id} source={source} />)}
               </div>

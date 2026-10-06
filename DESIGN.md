@@ -44,6 +44,11 @@ The light theme uses these roles in `apps/web/app/styles.css`:
 - `--color-danger` / `--color-danger-soft`: refute, conflict and service-failure states.
 - `--color-focus`: keyboard focus ring.
 
+Text tokens meet WCAG AA (4.5:1) on every surface they are used on: `--color-ink-muted` `#5c6862`
+is ≥4.9:1 on canvas, surface and surface-muted, and `--color-warning` `#8c5800` is ≥5.0:1 on the
+same set. Placeholders use `--color-ink-muted`, never a lighter gray. Re-check this table whenever a
+token changes.
+
 Status colors are semantic only: green is not a confidence score, amber is not a risk score and
 red is not a wrongdoing claim. `UNKNOWN` is a neutral unresolved evidence state, not an error;
 transport failure and source conflict use distinct feedback treatment and language.
@@ -51,9 +56,17 @@ transport failure and source conflict use distinct feedback treatment and langua
 ### Typography
 
 Use a system sans stack with Korean-safe fallbacks for body text, controls and dense evidence
-metadata. Use a Korean-safe serif fallback stack for display headings and names. Body copy stays
-between 15px and 18px with generous line height. Uppercase tracking is reserved for small route
-labels, not primary content.
+metadata. Use a Korean-safe serif fallback stack for display headings and names. Size floors follow
+the KRDS numeric scale (principles only; no KRDS assets or government identity):
+
+- No text below 13px anywhere, including chips, micro labels and table metadata.
+- Body copy is 17px with 1.65 line height; supporting copy 15px; dense metadata 13px.
+- Page `h1` is capped at `clamp(…, …, 3.75rem)` (60px); section headings at 2.5rem (40px).
+- Letter spacing stays between -0.02em and 0.01em; no `text-transform: uppercase`.
+- Numbers use `font-variant-numeric: tabular-nums` (set on `body`) and `Intl.NumberFormat("ko-KR")`.
+
+Public labels, eyebrows and summaries are Korean. Domain status codes (`FACT`, `UNKNOWN` …) and the
+data-model names `Claim`/`Evidence` stay verbatim because they are the published contract.
 
 ### Spacing scale
 
@@ -111,6 +124,9 @@ and snapshot references stay behind `details` disclosure.
 
 Use the existing domain labels verbatim: `FACT`, `CLAIM`, `INFERENCE`, `HYPOTHESIS`, `UNKNOWN`,
 `AVAILABLE`, `PARTIAL`, `RESOLVED`, `REVIEW_REQUIRED`, `HARD_CONFLICT` and `SOURCE CONFLICT`.
+Status never relies on color alone: `.status` chips also carry a decorative shape (✓ resolved or
+supported, ◇ claim/review/partial, ? unknown or unresolved, ! conflict or service failure) with empty
+alt text, so the text label remains the accessible name.
 Empty states explain what is absent without implying a negative fact.
 
 Public reads distinguish an empty eligible result, a missing public record, insufficient comparison
@@ -134,7 +150,8 @@ removing transforms and smooth scrolling.
 
 At narrow widths, cards become one column, the profile index becomes a normal flow panel and
 metadata wraps instead of clipping. The page includes a skip link, a Korean document language,
-semantic headings/landmarks, labelled search, visible focus and touch targets of at least 44px.
+semantic headings/landmarks, labelled search, visible focus and touch targets of at least 44px;
+search inputs, selects and primary filter buttons are 48px tall.
 
 ## Do / Don't
 
@@ -142,6 +159,12 @@ semantic headings/landmarks, labelled search, visible focus and touch targets of
 - Do keep source and policy context one interaction away from a claim.
 - Don't add scores, rankings, inferred affiliations or unsupported asset/vote dashboards.
 - Don't turn a provider row, name or review item into a canonical Person control.
+- Don't add decorative ordinal numbers (01/02/03), italic or colored accent words in headings, or
+  decorative glyphs in eyebrows.
+- Don't use English uppercase eyebrows or labels on public pages.
+- Don't use the KRDS government masthead, identifier, emblem or any government-site styling; this
+  is not a government service.
+- Don't copy third-party design-system assets (fonts, icons, tokens) without a license that allows it.
 
 ## Implementation notes
 
