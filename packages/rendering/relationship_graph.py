@@ -14,6 +14,11 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from packages.domain.contracts import Organization, Person
+from packages.rendering.relationship_bindings import (
+    OrganizationRegistry,
+    RegistryEntity,
+    registry_from_rows,
+)
 from packages.rendering.relationship_projection import (
     AUDIT_TARGET_PREDICATE,
     BINDABLE,
@@ -28,6 +33,7 @@ from packages.rendering.relationship_projection import (
     CosponsorshipPair,
     OrganizationLink,
     RelationStatus,
+    career_transitions,
     derive_pair,
     eligible_relation_claim,
     extract_affiliation,
@@ -68,6 +74,40 @@ def committee_crosswalk(organizations: dict[UUID, Organization]) -> dict[str, UU
             if name.endswith("위원회"):
                 by_name.setdefault(name, []).append(organization.id)
     return {name: ids[0] for name, ids in by_name.items() if len(ids) == 1}
+
+
+MOIS_GOVERNMENT_TYPES = frozenset({
+    "국가행정기관", "자치행정조직", "교육행정조직", "헌법조직", "사법조직", "입법조직", "국군조직",
+    "대한민국정부", "경제자유구역청(조합)", "위원회",
+})
+MOIS_PUBLIC_INSTITUTION_TYPES = frozenset({"산하기관", "정부투자기관 및 기타"})
+MOIS_UNIVERSITY_TYPES = frozenset({"고등교육기관"})
+
+
+def build_registry(repository: SqlAlchemyRepository) -> OrganizationRegistry:
+    """Canonical ALIO institutions (0) > OpenDART listed companies (1) > MOIS codes (2)."""
+
+    entries: list[tuple[str, RegistryEntity, int]] = []
+    for name, kind, key, organization_id in repository.organization_registry_rows():
+        if kind == "ALIO_INSTITUTION":
+            entries.append((name, RegistryEntity(
+                f"organization:{key}", "PUBLIC_INSTITUTION", name, "CANONICAL_ORGANIZATION",
+                UUID(organization_id) if organization_id else None), 0))
+        elif kind == "OPENDART_CORP":
+            entries.append((name, RegistryEntity(
+                f"opendart_corp:{key}", "COMPANY", name, "EXACT_REGISTRY_NAME"), 1))
+        elif kind.startswith("MOIS:"):
+            type_big = kind[len("MOIS:"):]
+            mapped = (
+                "GOVERNMENT_BODY" if type_big in MOIS_GOVERNMENT_TYPES
+                else "PUBLIC_INSTITUTION" if type_big in MOIS_PUBLIC_INSTITUTION_TYPES
+                else "UNIVERSITY" if type_big in MOIS_UNIVERSITY_TYPES
+                else None
+            )
+            if mapped is not None:
+                entries.append((name, RegistryEntity(
+                    f"mois_org:{key}", mapped, name, "EXACT_REGISTRY_NAME"), 2))
+    return registry_from_rows(entries)
 
 
 def load_relationship_graph(repository: SqlAlchemyRepository) -> RelationshipGraphInputs:
@@ -128,6 +168,7 @@ def load_relationship_graph(repository: SqlAlchemyRepository) -> RelationshipGra
             for claim, evidence in eligible
         },
         organizations=organizations,
+        registry=build_registry(repository),
     )
     affiliations = tuple(
         affiliation
@@ -196,7 +237,7 @@ RELATIONSHIP_LIMITATIONS = (
     "관계는 공개 공식자료의 같은 조직·명단·의안 기재를 결정적 규칙으로 비교한 결과다. 친분·영향력·유착·인과를 뜻하지 않는다.",
     "현재 수집 범위(국회 위원명단·명부, ALIO·OpenDART 검토 연결, 국정감사 증인·피감기관 명단, 의안 공동발의)에 없는 관계는 없는 것이 아니라 UNKNOWN이다.",
     "기간이 확인되지 않은 소속은 겹침(overlap)을 만들지 않는다.",
-    "약력 텍스트의 학교·경력 조직은 canonical binding이 없어 CANDIDATE이며 기본 응답에 포함되지 않는다.",
+    "약력(의원 본인 관리 텍스트)의 학교·기관·기업·캠프는 공식 registry(행정표준코드, ALIO, OpenDART, NEC 선거)와 정확히 하나로 일치할 때만 연결한다. 일치하지 않거나 동명 고교처럼 모호하면 CANDIDATE로 두고 기본 응답에서 뺀다.",
 )
 
 
@@ -245,6 +286,9 @@ def person_relationships_payload(
         "affiliations": [item.to_dict() for item in own],
         "groups": sorted(groups.values(), key=lambda item: (str(item["layer"]), str(item["via"]["label"]))),  # type: ignore[index]
         "relation_count": len(relations),
+        "career_transitions": career_transitions(
+            inputs.affiliations_of(person_id), include_candidates=include_candidates
+        ),
         "cosponsorship": [
             item.to_dict() | {"counterpart": _person_label(inputs, item.other_person_id)}
             for item in cosponsorship[:limit_per_via]

@@ -18,9 +18,9 @@ from workers.assembly_member_biographies import AssemblyBiographyEnumerator
 
 SECRET = "biography-secret-must-not-persist"
 BIOGRAPHIES = {
-    "M-001": "[학력]\r\n서울대학교 법과대학 졸업\r\n[경력]\r\n현) 국회 정무위원회 위원\r\n"
+    "M-001": "[학력]\r\n춘천고등학교 졸업\r\n서울대학교 법과대학 졸업\r\n[경력]\r\n현) 국회 정무위원회 위원\r\n"
     "2022.3~2022.5 제20대 대통령직 인수위원회 자문위원\r\n대표전화 02-788-1234",
-    "M-002": "<학력>\r\n서울대학교 법과대학 졸업\r\n<경력>\r\n2022.4~2022.5 제20대 대통령직 인수위원회 자문위원",
+    "M-002": "<학력>\r\n춘천고등학교 졸업\r\n서울대학교 법과대학 졸업\r\n<경력>\r\n2022.4~2022.5 제20대 대통령직 인수위원회 자문위원",
 }
 
 
@@ -63,7 +63,7 @@ def build(tmp_path: Path):
         repository, api_key=SECRET, transport=httpx.MockTransport(BiographyApi().handle)
     ).enumerate()
     biography = AssemblyBiographyPublisher(repository).publish_latest_successful()
-    assert biography.education_claims == 2 and biography.career_claims == 3
+    assert biography.education_claims == 4 and biography.career_claims == 3
     people = {
         claim.qualifiers["provider_person_key"]: claim.person_id
         for claim in repository.claims(published_only=True, current_only=True)
@@ -106,9 +106,11 @@ def test_person_relationships_compare_and_path_are_claim_traceable(tmp_path: Pat
     types = {
         relation["relation_type"] for group in payload["groups"] for relation in group["relations"]
     }
-    # Committee C1 (code) binds; the roster party binds too. School/campaign text stays CANDIDATE.
-    assert "SAME_PARLIAMENTARY_COMMITTEE" in types and "SAME_PARTY" in types
-    assert not types & {"SAME_SCHOOL", "SAME_DEPARTMENT", "SAME_TRANSITION_COMMITTEE"}
+    # Committee code, roster party, exact university name and the presidential transition
+    # committee bind; a high-school name (homonyms across regions) stays CANDIDATE.
+    assert {"SAME_PARLIAMENTARY_COMMITTEE", "SAME_PARTY", "SAME_DEPARTMENT",
+            "SAME_TRANSITION_COMMITTEE_OVERLAP"} <= types
+    assert "SAME_HIGH_SCHOOL" not in types
     committee = next(group for group in payload["groups"] if group["via"]["label"] == "C1위원회")
     relation = committee["relations"][0]
     assert relation["counterpart"]["id"] == str(second)
@@ -116,16 +118,13 @@ def test_person_relationships_compare_and_path_are_claim_traceable(tmp_path: Pat
     assert len(relation["source_claim_ids"]) == 2 and relation["evidence_ids"]
     assert payload["cosponsorship"][0]["shared_bill_count"] == 1
 
-    assert compare["multiplex_layers"] == ["LEGISLATIVE", "POLITICAL"]
+    assert compare["multiplex_layers"] == ["CAMPAIGN", "EDUCATION", "LEGISLATIVE", "POLITICAL"]
     assert compare["cosponsorship"]["relation_type"] == "BILL_COSPONSORSHIP"
     assert compare["shortest_evidence_path"]["path_length"] == 2
-    candidate_types = {item["relation_type"] for item in with_candidates["direct_relations"]}
-    assert {"SAME_DEPARTMENT", "SAME_TRANSITION_COMMITTEE_OVERLAP"} <= candidate_types
-    assert all(
-        item["status"] == "CANDIDATE"
-        for item in with_candidates["direct_relations"]
-        if item["layer"] in {"EDUCATION", "CAMPAIGN"}
-    )
+    candidates = [
+        item for item in with_candidates["direct_relations"] if item["status"] == "CANDIDATE"
+    ]
+    assert [item["relation_type"] for item in candidates] == ["SAME_HIGH_SCHOOL"]
     assert path["path_length"] == 2 and path["edges"][0]["claim_ids"]
     assert "PARTY" in path["excluded_kinds"]
     assert {rule["rule_id"] for rule in rules["rules"]} >= {"shared_parliamentary_committee", "bill_cosponsorship"}

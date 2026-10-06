@@ -3821,6 +3821,55 @@ class SqlAlchemyRepository:
                         result[evidence_id] = UUID(run_id)
         return result
 
+    def organization_registry_rows(self) -> list[tuple[str, str, str, str | None]]:
+        """Official names already held, as (name, kind, provider key, Organization id).
+
+        kind is ``ALIO_INSTITUTION`` (current canonical Organization with an ALIO classification
+        Claim), ``OPENDART_CORP`` (listed-company master name from executive observations) or
+        ``MOIS:{type_big}`` (MOIS standard code representative institution, not stopped).
+        Read-only; callers decide binding precedence.
+        """
+
+        rows: list[tuple[str, str, str, str | None]] = []
+        normalized = FeederObservationRow.normalized_json
+        with self.sessions() as session:
+            for organization_id, name in session.execute(
+                select(OrganizationRow.id, OrganizationRow.name)
+                .join(ClaimRow, ClaimRow.organization_id == OrganizationRow.id)
+                .where(
+                    OrganizationRow.superseded_at.is_(None),
+                    ClaimRow.predicate == "ALIO_INSTITUTION_CLASSIFICATION",
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                )
+                .distinct()
+            ):
+                rows.append((str(name), "ALIO_INSTITUTION", str(organization_id), str(organization_id)))
+            for corp_code, corp_name in session.execute(
+                select(
+                    normalized["corp_code"].as_string(), normalized["corp_name"].as_string()
+                )
+                .where(FeederObservationRow.feeder == "opendart_disclosed_executives")
+                .distinct()
+            ):
+                if corp_code and corp_name:
+                    rows.append((str(corp_name), "OPENDART_CORP", str(corp_code), None))
+            for org_code, full_name, type_big in session.execute(
+                select(
+                    normalized["org_code"].as_string(),
+                    normalized["full_name"].as_string(),
+                    normalized["type_big"].as_string(),
+                ).where(
+                    FeederObservationRow.feeder == "mois_standard_organization_codes",
+                    normalized["org_code"].as_string()
+                    == normalized["representative_org_code"].as_string(),
+                    normalized["stop_selector"].as_string() == "0",
+                )
+            ):
+                if org_code and full_name:
+                    rows.append((str(full_name), f"MOIS:{type_big or ''}", str(org_code), None))
+        return rows
+
     def current_claims_by_ids(self, claim_ids: Iterable[UUID]) -> dict[UUID, Claim]:
         keys = sorted({str(item) for item in claim_ids})
         result: dict[UUID, Claim] = {}

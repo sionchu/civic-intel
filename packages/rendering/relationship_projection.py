@@ -27,6 +27,12 @@ from uuid import UUID, uuid5
 
 from packages.domain.contracts import Claim, ClaimEvidence, Organization
 from packages.domain.enums import EpistemicStatus, EvidenceStance, PublicationStatus
+from packages.rendering.relationship_bindings import (
+    OrganizationRegistry,
+    campaign_key,
+    transition_key,
+    university_key,
+)
 
 RELATION_PROJECTION_SEMANTICS = "DETERMINISTIC_READ_TIME_PROJECTION_FROM_PUBLISHED_CLAIMS"
 RULESET_VERSION = "1.0"
@@ -87,6 +93,12 @@ class Binding(StrEnum):
     PROVIDER_CODE = "PROVIDER_CODE"
     SOURCE_SCOPED_EXACT_VALUE = "SOURCE_SCOPED_EXACT_VALUE"
     EXACT_OFFICIAL_COMMITTEE_NAME_CROSSWALK = "EXACT_OFFICIAL_COMMITTEE_NAME_CROSSWALK"
+    # Biography text whose span equals exactly one registry entity (Organization, DART, MOIS).
+    EXACT_REGISTRY_NAME = "EXACT_REGISTRY_NAME"
+    # Exact full domestic university name or reviewed short-form alias.
+    EXACT_UNIVERSITY_NAME = "EXACT_UNIVERSITY_NAME"
+    # Reviewed NEC election + exact party name (campaign) or presidential transition committee.
+    ELECTION_PARTY_CAMPAIGN = "ELECTION_PARTY_CAMPAIGN"
     # Free text in one source (biography line). Not bindable: relations stay CANDIDATE.
     SOURCE_TEXT_UNBOUND = "SOURCE_TEXT_UNBOUND"
 
@@ -97,6 +109,9 @@ BINDABLE = frozenset(
         Binding.PROVIDER_CODE,
         Binding.SOURCE_SCOPED_EXACT_VALUE,
         Binding.EXACT_OFFICIAL_COMMITTEE_NAME_CROSSWALK,
+        Binding.EXACT_REGISTRY_NAME,
+        Binding.EXACT_UNIVERSITY_NAME,
+        Binding.ELECTION_PARTY_CAMPAIGN,
     }
 )
 
@@ -281,21 +296,32 @@ RULES: tuple[DerivationRule, ...] = (
         path_default=False,
     ),
     DerivationRule(
-        "shared_school_candidate", "1.0", "SAME_SCHOOL", Layer.EDUCATION,
+        "shared_school", "1.1", "SAME_UNIVERSITY", Layer.EDUCATION,
         ("EDUCATIONAL_INSTITUTION",), (BIOGRAPHY_EDUCATION_PREDICATE,),
-        "약력 텍스트의 학교명이 정규화 후 같다. canonical 학교 binding이 없어 CANDIDATE",
-        "SAME_SCHOOL / SAME_DEPARTMENT candidate; 재학기간이 둘 다 있으면 EDUCATION_TIME_OVERLAP",
+        "약력 학력 행의 국내 대학 정식명(또는 검토된 약칭)이 같으면 DERIVED. 고교·해외·약칭 미검토는 이름이 같아도 CANDIDATE",
+        "SAME_UNIVERSITY / SAME_GRADUATE_SCHOOL / SAME_HIGH_SCHOOL / SAME_DEPARTMENT; 재학기간이 둘 다 있으면 EDUCATION_TIME_OVERLAP",
         ("같은 학교는 친분이 아니다", "출생연도 차이로 선후배를 추정하지 않는다",
-         "대학교와 대학원·부속고등학교는 다른 entity다", "기간이 없으면 overlap을 만들지 않는다"),
+         "대학교와 부속·부설 고등학교는 다른 entity다", "동명 고등학교가 여러 지역에 있어 고교는 binding하지 않는다",
+         "기간이 없으면 overlap을 만들지 않는다"),
         overlap_relation_type="EDUCATION_TIME_OVERLAP",
+        path_default=False,
     ),
     DerivationRule(
-        "shared_career_org_candidate", "1.0", "SAME_CAREER_ORGANIZATION", Layer.CAREER,
+        "shared_government_body", "1.0", "SAME_GOVERNMENT_BODY", Layer.GOVERNMENT,
+        ("GOVERNMENT_BODY",), (BIOGRAPHY_CAREER_PREDICATE,),
+        "약력 경력 행이 행정표준코드 대표기관명과 정확히 하나로 일치",
+        "SAME_GOVERNMENT_BODY; 근무기간이 둘 다 확인되면 GOVERNMENT_OVERLAP",
+        ("같은 부처 근무 경력은 같은 부서·같은 시기를 뜻하지 않는다", "기간이 없으면 overlap을 만들지 않는다"),
+        overlap_relation_type="GOVERNMENT_OVERLAP",
+    ),
+    DerivationRule(
+        "shared_career_org", "1.1", "SAME_CAREER_ORGANIZATION", Layer.CAREER,
         ("CAREER_ORGANIZATION", "CAMPAIGN", "TRANSITION_COMMITTEE", "GOVERNMENT_COMMITTEE"),
         (BIOGRAPHY_CAREER_PREDICATE,),
-        "약력 경력 행의 조직 문자열이 정규화 후 같다. canonical binding이 없어 CANDIDATE",
-        "SAME_CAMPAIGN / SAME_GOVERNMENT_COMMITTEE / SAME_EMPLOYER candidate; 기간 중첩 시 *_OVERLAP",
-        ("캠프 인연으로 임명됐다는 인과를 만들지 않는다", "기간이 없으면 overlap을 만들지 않는다"),
+        "캠프=공식 선거(NEC 선거 표)+정확한 정당명, 인수위=대통령선거 회차가 같으면 DERIVED; 그 밖의 경력 문자열은 CANDIDATE",
+        "SAME_CAMPAIGN / SAME_TRANSITION_COMMITTEE / SAME_GOVERNMENT_COMMITTEE / SAME_EMPLOYER; 기간 중첩 시 *_OVERLAP",
+        ("캠프 인연으로 임명됐다는 인과를 만들지 않는다", "경선캠프와 본선 선대위를 시기 구분 없이 같은 캠프로 묶으므로 역할 시기는 보장하지 않는다",
+         "기간이 없으면 overlap을 만들지 않는다"),
         overlap_relation_type="CAREER_PERIOD_OVERLAP",
     ),
 )
@@ -335,6 +361,57 @@ class AffiliationContext:
     witness_committee_org: Mapping[UUID, UUID] = field(default_factory=dict)
     capture_keys: Mapping[UUID, tuple[str, ...]] = field(default_factory=dict)
     organizations: Mapping[UUID, Organization] = field(default_factory=dict)
+    registry: OrganizationRegistry | None = None
+
+
+_REGISTRY_LAYERS = {
+    "COMPANY": Layer.BUSINESS,
+    "PUBLIC_INSTITUTION": Layer.PUBLIC_INSTITUTION,
+    "GOVERNMENT_BODY": Layer.GOVERNMENT,
+}
+CAREER_REGISTRY_KINDS = frozenset(_REGISTRY_LAYERS)
+UNIVERSITY_KINDS = frozenset({"UNIVERSITY"})
+
+
+def _career_via(
+    kind: str, organization_text: str, line: str, context: AffiliationContext
+) -> tuple[ViaEntity, Layer]:
+    """Bind one biography career line to a campaign, transition committee or registry entity."""
+
+    if kind == "CAMPAIGN":
+        campaign = campaign_key(line)
+        if campaign is not None:
+            key, label, election = campaign
+            return (
+                ViaEntity(key, "CAMPAIGN", label, Binding.ELECTION_PARTY_CAMPAIGN, None,
+                          (("election_code", election.code),)),
+                Layer.CAMPAIGN,
+            )
+    if kind == "TRANSITION_COMMITTEE":
+        transition = transition_key(line)
+        if transition is not None:
+            key, label = transition
+            return (
+                ViaEntity(key, "TRANSITION_COMMITTEE", label, Binding.ELECTION_PARTY_CAMPAIGN),
+                Layer.CAMPAIGN,
+            )
+    if kind == "CAREER_ORGANIZATION" and context.registry is not None:
+        entity = context.registry.bind(organization_text, CAREER_REGISTRY_KINDS)
+        if entity is not None:
+            return (
+                ViaEntity(entity.key, entity.kind, entity.label, Binding(entity.binding),
+                          entity.organization_id),
+                _REGISTRY_LAYERS[entity.kind],
+            )
+    layer = (
+        Layer.CAMPAIGN if kind in {"CAMPAIGN", "TRANSITION_COMMITTEE"}
+        else Layer.GOVERNMENT if kind == "GOVERNMENT_COMMITTEE" else Layer.CAREER
+    )
+    return (
+        ViaEntity(f"career_text:{kind}:{normalize_institution_text(organization_text)}",
+                  kind, organization_text, Binding.SOURCE_TEXT_UNBOUND),
+        layer,
+    )
 
 
 def eligible_relation_claim(claim: Claim, evidence: Sequence[ClaimEvidence]) -> bool:
@@ -525,10 +602,27 @@ def extract_affiliation(
         if not institution:
             return None
         start, end, precision = _biography_bounds(q)
+        attributes = tuple(
+            (key, q[key]) for key in ("institution_level", "department_text") if q.get(key)
+        )
+        bound = university_key(institution, q.get("institution_level"), q.get("country_text"))
+        school_entity = (
+            context.registry.lookup(bound, UNIVERSITY_KINDS)
+            if bound and context.registry is not None
+            else None
+        )
+        if school_entity is not None:
+            via = ViaEntity(school_entity.key, "EDUCATIONAL_INSTITUTION", school_entity.label,
+                            Binding.EXACT_REGISTRY_NAME, None, attributes)
+        elif bound:
+            via = ViaEntity(f"university:{bound}", "EDUCATIONAL_INSTITUTION", bound,
+                            Binding.EXACT_UNIVERSITY_NAME, None, attributes)
+        else:
+            via = ViaEntity(f"school_text:{normalize_institution_text(institution)}",
+                            "EDUCATIONAL_INSTITUTION", institution, Binding.SOURCE_TEXT_UNBOUND,
+                            None, attributes)
         return Affiliation(
-            via=ViaEntity(f"school_text:{normalize_institution_text(institution)}",
-                          "EDUCATIONAL_INSTITUTION", institution, Binding.SOURCE_TEXT_UNBOUND,
-                          None, tuple((key, q[key]) for key in ("institution_level", "department_text") if q.get(key))),
+            via=via,
             layer=Layer.EDUCATION, affiliation_type="EDUCATION", role=q.get("degree_text"),
             period=Period(start=start, end=end, precision=precision),
             **common,
@@ -541,11 +635,11 @@ def extract_affiliation(
             return None
         kind = category if category in CAREER_RELATION_TYPES else "CAREER_ORGANIZATION"
         start, end, precision = _biography_bounds(q)
+        line = q.get("line_text", organization_text)
+        via, layer = _career_via(kind, organization_text, line, context)
         return Affiliation(
-            via=ViaEntity(f"career_text:{kind}:{normalize_institution_text(organization_text)}",
-                          kind, organization_text, Binding.SOURCE_TEXT_UNBOUND),
-            layer=Layer.CAMPAIGN if kind in {"CAMPAIGN", "TRANSITION_COMMITTEE"}
-            else Layer.GOVERNMENT if kind == "GOVERNMENT_COMMITTEE" else Layer.CAREER,
+            via=via,
+            layer=layer,
             affiliation_type=f"BIOGRAPHY_{category}", role=q.get("role_text"),
             period=Period(start=start, end=end, precision=precision,
                           as_of=_as_date(claim.valid_from),
@@ -609,7 +703,7 @@ class DerivedRelation:
     def layer(self) -> Layer:
         """Career-text relations keep the affiliation's layer (campaign, government, career)."""
 
-        if self.rule.rule_id == "shared_career_org_candidate":
+        if self.rule.rule_id == "shared_career_org":
             return self.subject.layer
         return self.rule.layer
 
@@ -695,18 +789,30 @@ def derive_pair(left: Affiliation, right: Affiliation) -> DerivedRelation | None
     relation_type = rule.relation_type
     if left.via.kind in CAREER_RELATION_TYPES:
         relation_type = CAREER_RELATION_TYPES[left.via.kind]
+    disclosed = {"DISCLOSED_EXECUTIVE", "OUTSIDE_DIRECTOR"}
+    if rule.rule_id == "shared_company_board" and not (
+        left.affiliation_type in disclosed and right.affiliation_type in disclosed
+    ):
+        # A biography employment line is not a board seat.
+        relation_type = "SAME_EMPLOYER"
+    if rule.rule_id == "shared_school":
+        levels = {dict(item.via.attributes).get("institution_level") for item in (left, right)}
+        if levels == {"GRADUATE_SCHOOL"}:
+            relation_type = "SAME_GRADUATE_SCHOOL"
+        elif levels <= {"HIGH_SCHOOL"}:
+            relation_type = "SAME_HIGH_SCHOOL"
+        elif levels & {"MIDDLE_SCHOOL", "ELEMENTARY_SCHOOL"}:
+            relation_type = "SAME_SCHOOL"
     if overlap == Overlap.VERIFIED and rule.overlap_relation_type:
-        relation_type = (
-            f"{relation_type}_OVERLAP" if rule.rule_id == "shared_career_org_candidate"
-            else rule.overlap_relation_type
-        )
-    if rule.rule_id == "shared_school_candidate":
+        if rule.rule_id == "shared_career_org":
+            relation_type = f"{relation_type}_OVERLAP"
+        elif relation_type == "SAME_EMPLOYER":
+            relation_type = "EMPLOYMENT_OVERLAP"
+        else:
+            relation_type = rule.overlap_relation_type
+    if rule.rule_id == "shared_school" and overlap != Overlap.VERIFIED:
         left_dept = dict(left.via.attributes).get("department_text")
-        if (
-            overlap != Overlap.VERIFIED
-            and left_dept
-            and left_dept == dict(right.via.attributes).get("department_text")
-        ):
+        if left_dept and left_dept == dict(right.via.attributes).get("department_text"):
             relation_type = "SAME_DEPARTMENT"
     bindable = left.via.binding in BINDABLE and right.via.binding in BINDABLE
     status = RelationStatus.DERIVED if bindable else RelationStatus.CANDIDATE
@@ -925,3 +1031,65 @@ def shortest_evidence_path(
         "excluded_kinds": sorted(NON_PATH_KINDS - allowed_extra),
         "interpretation_note": INTERPRETATION_NOTE,
     }
+
+
+# --------------------------------------------------------------------------------------------
+# Career transitions (revolving door)
+
+SECTOR_BY_KIND = {
+    "GOVERNMENT_BODY": "GOVERNMENT",
+    "PUBLIC_INSTITUTION": "PUBLIC_INSTITUTION",
+    "COMPANY": "BUSINESS",
+}
+REVOLVING_DOOR_TYPES = {
+    ("GOVERNMENT", "BUSINESS"): "GOVERNMENT_TO_BUSINESS",
+    ("BUSINESS", "GOVERNMENT"): "BUSINESS_TO_GOVERNMENT",
+    ("PUBLIC_INSTITUTION", "BUSINESS"): "PUBLIC_INSTITUTION_TO_PRIVATE",
+    ("BUSINESS", "PUBLIC_INSTITUTION"): "PRIVATE_TO_PUBLIC",
+}
+
+
+def _month(value: date) -> tuple[int, int]:
+    return value.year, value.month
+
+
+def career_transitions(
+    affiliations: Sequence[Affiliation], *, include_candidates: bool = False
+) -> list[dict[str, object]]:
+    """Ordered sector moves of one Person from stated periods only (rule revolving_door 1.0).
+
+    A move A → B is emitted only when A has a stated end and B a stated start in a strictly later
+    month. The output describes a sequence; it never states a reason for the move.
+    """
+
+    dated = [
+        item
+        for item in affiliations
+        if item.via.kind in SECTOR_BY_KIND
+        and (include_candidates or item.via.binding in BINDABLE)
+    ]
+    moves: list[dict[str, object]] = []
+    for earlier in dated:
+        for later in dated:
+            if earlier is later or earlier.period.end is None or later.period.start is None:
+                continue
+            if _month(earlier.period.end) >= _month(later.period.start):
+                continue
+            kind = REVOLVING_DOOR_TYPES.get(
+                (SECTOR_BY_KIND[earlier.via.kind], SECTOR_BY_KIND[later.via.kind])
+            )
+            if kind is None:
+                continue
+            bound = earlier.via.binding in BINDABLE and later.via.binding in BINDABLE
+            moves.append({
+                "transition_type": kind,
+                "status": (RelationStatus.DERIVED if bound else RelationStatus.CANDIDATE).value,
+                "rule_id": "revolving_door",
+                "rule_version": "1.0",
+                "from": earlier.via.to_dict() | {"period": earlier.period.to_dict(), "role": earlier.role},
+                "to": later.via.to_dict() | {"period": later.period.to_dict(), "role": later.role},
+                "source_claim_ids": [str(earlier.claim_id), str(later.claim_id)],
+                "basis": "STATED_PERIODS_STRICTLY_ORDERED_BY_MONTH",
+                "interpretation_note": INTERPRETATION_NOTE,
+            })
+    return sorted(moves, key=lambda item: (str(item["to"]["period"]["start"]), str(item["transition_type"])))  # type: ignore[index]
