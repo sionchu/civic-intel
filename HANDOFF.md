@@ -1,5 +1,23 @@
 # HANDOFF
 
+## Current state — 2026-10-07 (Evidence Graph relationship layer)
+
+Branch `feat/evidence-graph-relations` (base `f91f19b`) adds the read-time relationship projection
+([EVIDENCE_GRAPH](docs/architecture/EVIDENCE_GRAPH.md)): code-keyed `ASSEMBLY_COMMITTEE_MEMBERSHIP`
+Claims, the member-profile biography lane (`ASSEMBLY_BIOGRAPHY_EDUCATION/CAREER`, attributed CLAIM),
+versioned derivation rules, `/relationships/{people/{id},compare,path,rules}` and the read-only
+`workers/relationship_coverage.py` audit. No schema change (rev `0008`), no new store.
+
+Verified only on the disposable Mac DB `civic_intel_graph_rehearsal` (copy of canonical,
+2026-10-07): 477 membership + 240,490 bill-participation + 4,853 biography Claims; DERIVED pairs
+excluding party 212 → 47,869; numbers in
+[EVIDENCE_GRAPH_STATUS_2026-10-07](docs/research/EVIDENCE_GRAPH_STATUS_2026-10-07.md). Canonical DB,
+Mac API and Sites untouched.
+
+Next (owner decisions first): approve the canonical apply (backup → `--publish-memberships`,
+`legislative_activity --publish-claims`, biography `--enumerate/--publish`) and whether verbatim
+biography lines may be shown publicly; then a profile/compare UI over `/relationships/*`.
+
 ## Current state — 2026-10-06 (person profile section producers)
 
 Merged #200, #201 and #202 (master `0143c23`). Every Person profile section's upstream producer is
