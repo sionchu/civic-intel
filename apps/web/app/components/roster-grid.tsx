@@ -7,6 +7,16 @@ import { useQueryState } from "./query-param";
 
 import type { Person, PeopleDiscovery } from "../types";
 
+// A source-listed 국감 witness row: text only, never a Person.
+export type WitnessListing = {
+  claimId: string;
+  name: string;
+  affiliationTitle: string | null;
+  committeeName: string;
+  category: string;
+  attendanceDateText: string | null;
+};
+
 const FACETS = [
   ["party", "정당"],
   ["district", "지역구"],
@@ -20,7 +30,15 @@ function facetValue(discovery: PeopleDiscovery | undefined, key: FilterKey): str
   return discovery?.facets[key]?.value ?? null;
 }
 
-export default function RosterGrid({ people, initialQuery = "" }: { people: Person[]; initialQuery?: string }) {
+export default function RosterGrid({
+  people,
+  initialQuery = "",
+  witnesses = [],
+}: {
+  people: Person[];
+  initialQuery?: string;
+  witnesses?: WitnessListing[];
+}) {
   const [query, setQuery] = useQueryState(initialQuery);
   const [filters, setFilters] = useState<Partial<Record<FilterKey, string>>>({});
   const searchTerm = query.trim().toLocaleLowerCase();
@@ -47,6 +65,13 @@ export default function RosterGrid({ people, initialQuery = "" }: { people: Pers
       return nameMatches && facetsMatch;
     }),
     [filters, people, searchTerm],
+  );
+  const compactTerm = searchTerm.replace(/\s+/g, "");
+  const witnessMatches = useMemo(
+    () => compactTerm
+      ? witnesses.filter((row) => row.name.toLocaleLowerCase().replace(/\s+/g, "").includes(compactTerm))
+      : [],
+    [compactTerm, witnesses],
   );
   const hasActiveFilters = Boolean(searchTerm || Object.values(filters).some(Boolean));
   const incompletePeople = people.filter((person) => (
@@ -118,7 +143,7 @@ export default function RosterGrid({ people, initialQuery = "" }: { people: Pers
         <div className="empty-state">
           <span className="empty-state-mark" aria-hidden="true">∅</span>
           <div>
-            <strong>{people.length === 0 ? "현재 공개 기록이 없습니다." : "검색 결과가 없습니다."}</strong>
+            <strong>{people.length === 0 ? "현재 공개 기록이 없습니다." : "일치하는 인물 기록이 없습니다."}</strong>
             <p>{people.length === 0 ? "현재 공개 조건에서 표시할 사람이 없습니다." : "표시된 이름과 공개 Claim 값으로만 검색합니다."}</p>
             {people.length > 0 && hasActiveFilters && <button className="clear-filters" type="button" onClick={clearFilters}>필터 초기화</button>}
           </div>
@@ -164,6 +189,23 @@ export default function RosterGrid({ people, initialQuery = "" }: { people: Pers
             );
           })}
         </div>
+      )}
+      {witnessMatches.length > 0 && (
+        <section className="witness-matches" aria-labelledby="witness-matches-title">
+          <h3 id="witness-matches-title">국감 공식 증인·참고인 명단 기재 {witnessMatches.length}건</h3>
+          <p>위원회 공식 명단에 적힌 이름을 출처 그대로 보여줍니다. 위의 인물 기록과 자동으로 연결하지 않으며, 동명이인일 수 있습니다. 출석 요구일 뿐 위법 판단이 아닙니다.</p>
+          <ul>
+            {witnessMatches.map((row) => (
+              <li key={row.claimId}>
+                <a href={`/gukgam/2026#witness-${row.claimId}`}>
+                  <strong>{row.name}</strong>
+                  <span>{row.affiliationTitle ?? "소속·직위 미기재"}</span>
+                  <small>{row.committeeName} · {row.category}{row.attendanceDateText ? ` · 출석 ${row.attendanceDateText}` : ""}</small>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </>
   );

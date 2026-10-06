@@ -65,7 +65,7 @@ test("People is the canonical identity-scoped discovery route", async () => {
   assert.doesNotMatch(home, /<RosterGrid/);
   assert.match(home, /href="\/people"/);
   assert.match(page, /getPeople/);
-  assert.match(page, /<RosterGrid people=\{peopleResult\.data\} initialQuery=\{initialQuery\} \/>/);
+  assert.match(page, /<RosterGrid people=\{peopleResult\.data\} initialQuery=\{initialQuery\} witnesses=\{witnesses\} \/>/);
   assert.match(roster, /type=\"search\"/);
   assert.match(roster, /canonical_name/);
   assert.match(roster, /href=\{`\/people\/\$\{person\.id\}`\}/);
@@ -722,4 +722,27 @@ test("Sites snapshot export keeps reader-time dates and ?q= correct without a se
   assert.match(script, /snapshot-manifest\.json/);
   assert.doesNotMatch(script, /process\.env\.(DATABASE_URL|CIVIC_OPERATOR_TOKEN|[A-Z_]+_API_KEY)/);
   assert.match(eslint, /\.sites-build/);
+});
+
+test("Official 국감 witness lists are shown and searchable as source text, never as People", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [gukgam, people, roster, witnesses] = await Promise.all([
+    read("../app/gukgam/2026/page.tsx"),
+    read("../app/people/page.tsx"),
+    read("../app/components/roster-grid.tsx"),
+    read("../app/components/gukgam-witnesses.tsx"),
+  ]);
+  assert.match(gukgam, /<GukgamWitnesses \/>/);
+  assert.match(gukgam, /href="#gukgam-witnesses-title"/);
+  assert.match(witnesses, /id=\{`witness-\$\{item\.claim_id\}`\}/);
+  assert.match(witnesses, /전체 증인 명단이 아닙니다/);
+  assert.doesNotMatch(witnesses, /projection\.limitations/);
+  assert.match(people, /getGukgamWitnesses\(\)/);
+  assert.match(people, /witnesses=\{witnesses\}/);
+  assert.match(roster, /export type WitnessListing/);
+  assert.match(roster, /href=\{`\/gukgam\/2026#witness-\$\{row\.claimId\}`\}/);
+  assert.match(roster, /인물 기록과 자동으로 연결하지 않으며, 동명이인일 수 있습니다/);
+  // A witness row never links to a Person page and carries no Person identifier.
+  const section = roster.slice(roster.indexOf("witness-matches"));
+  assert.doesNotMatch(section, /\/people\/|person\.id|person_id/);
 });

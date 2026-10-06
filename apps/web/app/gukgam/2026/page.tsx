@@ -4,6 +4,7 @@ import Link from "next/link";
 import GukgamSearch, { type GukgamSearchFacets } from "../../components/gukgam-search";
 import type { Person } from "../../types";
 import CommitteeMembers from "../../components/committee-members";
+import GukgamWitnesses from "../../components/gukgam-witnesses";
 import { AuditDateIndex, AuditDaySection, KstToday, NextAuditAction } from "../../components/kst-schedule";
 import ReadState from "../../components/read-state";
 import { getGukgamCommittees, getGukgamTargets, getOrganizations, getPeople } from "../../data";
@@ -84,6 +85,7 @@ export default async function Gukgam2026Page({
           </p>
           <div className="hero-actions">
             <NextAuditAction serverToday={today} dates={scheduleDates} />
+            <a className="inline-action" href="#gukgam-witnesses-title">증인·참고인 명단 <span aria-hidden="true">↓</span></a>
             <Link className="inline-action" href="/people">인물 찾기 <span aria-hidden="true">↗</span></Link>
             <Link className="inline-action" href="/organizations">기관 보기 <span aria-hidden="true">↗</span></Link>
           </div>
@@ -263,6 +265,8 @@ export default async function Gukgam2026Page({
           </>
         )}
       </section>
+
+      <GukgamWitnesses />
 
       <section className="gukgam-coverage-strip" aria-label="현재 공개 범위">
         <div>

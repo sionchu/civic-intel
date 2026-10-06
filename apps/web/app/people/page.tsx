@@ -1,6 +1,6 @@
 import RosterGrid from "../components/roster-grid";
 import ReadState from "../components/read-state";
-import { getPeople } from "../data";
+import { getGukgamWitnesses, getPeople } from "../data";
 import { buildPageMetadata } from "../site-metadata";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,18 @@ export default async function PeoplePage({
 }) {
   const params = await searchParams;
   const initialQuery = typeof params.q === "string" ? params.q.slice(0, 80) : "";
-  const peopleResult = await getPeople();
+  const [peopleResult, witnessResult] = await Promise.all([getPeople(), getGukgamWitnesses()]);
+  // Witness names are source-listed text; only display fields are passed, never IDs beyond the Claim anchor.
+  const witnesses = witnessResult.state === "success"
+    ? witnessResult.data.items.map((item) => ({
+        claimId: item.claim_id,
+        name: item.name,
+        affiliationTitle: item.affiliation_title,
+        committeeName: item.committee_name,
+        category: item.category,
+        attendanceDateText: item.attendance_date_text,
+      }))
+    : [];
 
   return (
     <div className="site-page people-page">
@@ -40,7 +51,7 @@ export default async function PeoplePage({
               </div>
               <p>사람을 선택하면 공개된 근거(Claim·Evidence)와 출처의 범위를 함께 확인할 수 있습니다. 같은 이름의 기록은 합치지 않고 따로 표시합니다.</p>
             </div>
-            <RosterGrid people={peopleResult.data} initialQuery={initialQuery} />
+            <RosterGrid people={peopleResult.data} initialQuery={initialQuery} witnesses={witnesses} />
           </section>
         ) : (
           <p className="empty-state" role="status">
