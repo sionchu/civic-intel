@@ -11,6 +11,7 @@ from packages.connectors.open_assembly_historical import (
     HISTORICAL_REVIEWED_INPUT_SCOPE,
     SOURCE_RECORD_IDENTITY_UNAVAILABLE,
 )
+from packages.domain.admin import PERSON_ROLE_PREDICATE
 from packages.domain.contracts import Claim, ClaimEvidence, Person, Source, SourcePolicy
 from packages.domain.enums import (
     EpistemicStatus,
@@ -28,6 +29,12 @@ from packages.verification.assembly_base_profile import (
 from packages.verification.assembly_legislative_activity import (
     ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
     ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
+)
+from packages.verification.person_record_links import (
+    LINKED_WITNESS_COPIED_QUALIFIERS,
+    LINKED_WITNESS_PREDICATE,
+    OPENDART_COPIED_FIELDS,
+    OPENDART_ROLE_PREDICATE,
 )
 
 CHANGE_METHOD_VERSION = "change.role-sequence.v1"
@@ -95,6 +102,34 @@ APPOINTMENT_LOGIC_PREDICATES = frozenset(
         "APPOINTMENT_LOGIC",
     }
 )
+# Person Claims attached to one exact source row after review. Each section is emitted only when
+# it has published entries, so an empty lane never renders as a blank dashboard.
+SOURCE_RECORD_SECTIONS: tuple[tuple[str, str, str, str], ...] = (
+    (
+        "gukgam_2026",
+        "2026 국정감사",
+        LINKED_WITNESS_PREDICATE,
+        "위원회가 의결한 증인·참고인 명단의 기재 사실입니다. 출석 요구일 뿐 혐의·잘못·출석·증언을 뜻하지 않습니다.",
+    ),
+    (
+        "public_institution_roles",
+        "공공기관 임원 공시",
+        PERSON_ROLE_PREDICATE,
+        "ALIO 공시가 이 인물을 해당 직위로 기재했다는 기록입니다. 공시된 주요경력은 별도 검증 전입니다.",
+    ),
+    (
+        "corporate_roles",
+        "기업 임원 공시",
+        OPENDART_ROLE_PREDICATE,
+        "회사가 OpenDART 임원 현황 공시에 이 인물을 해당 직위로 기재했다는 기록입니다. 공시된 주요경력은 회사 제출 내용이며 독립 검증된 경력이 아닙니다.",
+    ),
+)
+SOURCE_RECORD_DETAIL_KEYS: dict[str, tuple[str, ...]] = {
+    LINKED_WITNESS_PREDICATE: LINKED_WITNESS_COPIED_QUALIFIERS,
+    PERSON_ROLE_PREDICATE: ("position_text", "as_of"),
+    OPENDART_ROLE_PREDICATE: (*OPENDART_COPIED_FIELDS, "reported_main_career_semantics"),
+}
+
 CONTROVERSY_PREDICATES = frozenset(
     {
         "CONTROVERSY",
@@ -124,6 +159,10 @@ def _claim_entry(
         "asserted_as_true": claim.asserted_as_true,
         "resolution_note": claim.resolution_note,
     }
+    for key in SOURCE_RECORD_DETAIL_KEYS.get(claim.predicate, ()):
+        value = claim.qualifiers.get(key)
+        if value is not None:
+            details[key] = value
     if claim.predicate == ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE:
         for key in (
             "bill_no",
@@ -198,6 +237,18 @@ def _claim_entries_for(
     selected = [claim for claim in claims if claim.predicate in predicates]
     selected.sort(key=lambda item: (item.qualifiers.get("date", ""), str(item.id)))
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _source_record_sections(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    sections = []
+    for section_id, label, predicate, note in SOURCE_RECORD_SECTIONS:
+        entries = _claim_entries_for(claims, evidence_by_claim, frozenset({predicate}))
+        if entries:
+            sections.append(_section(section_id, label, entries, note=note))
+    return sections
 
 
 def _assembly_base_profile_entries(
@@ -780,6 +831,7 @@ def build_profile_projection(
     stakeholder_entries = _relationship_entries(relationships, evidence_by_claim)
     controversy_entries = _controversy_entries(claims, evidence_by_claim)
 
+    source_record_sections = _source_record_sections(claims, evidence_by_claim)
     assembly_role_entries = _assembly_role_entries(claims, evidence_by_claim)
     assembly_career_entries = _assembly_dated_career_entries(claims, evidence_by_claim)
     assembly_activity_entries = _assembly_activity_entries(claims, evidence_by_claim)
@@ -842,6 +894,7 @@ def build_profile_projection(
                     else "현재 역할·위원회 published Claim이 없습니다."
                 ),
             ),
+            *source_record_sections,
             _section(
                 "career_timeline",
                 "경력 타임라인",
@@ -952,6 +1005,7 @@ def build_profile_projection(
 
     sections: list[dict[str, Any]] = [
         _section("identity", "신원", identity_entries, status="AVAILABLE", note=identity_note),
+        *source_record_sections,
         _section(
             "assembly_base_profile",
             "국회 기본 프로필",
@@ -1143,7 +1197,11 @@ def build_profile_projection(
 
     statuses = [section["status"] for section in sections]
     return {
-        "section_order": [section_id for section_id, _ in SECTION_DEFINITIONS],
+        "section_order": [
+            SECTION_DEFINITIONS[0][0],
+            *(section["id"] for section in source_record_sections),
+            *(section_id for section_id, _ in SECTION_DEFINITIONS[1:]),
+        ],
         "sections": sections,
         "coverage": {
             "available": statuses.count("AVAILABLE"),
