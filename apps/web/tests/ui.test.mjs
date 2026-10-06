@@ -769,6 +769,9 @@ test("Sites snapshot fits the 256 MiB limit by dropping only never-requested dup
   assert.match(script, /readFileSync\(sibling\)\.equals\(readFileSync\(path\)\)/);
   assert.match(script, /bundleBytes > SITES_MAX_BYTES/);
   assert.match(script, /bytes: bundleBytes/);
+  // Detail-route page segments go only when the sibling index.txt that navigation uses exists.
+  assert.ok(script.includes(String.raw`\$d\$id\.__PAGE__\.txt$/`));
+  assert.match(script, /has no sibling index\.txt; refusing to drop it/);
 });
 
 

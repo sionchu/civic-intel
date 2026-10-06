@@ -38,6 +38,7 @@ from packages.rendering.alio_organization_content import (
     ALIO_EXECUTIVE_PREDICATE,
     ALIO_EXECUTIVE_SCOPE,
 )
+from packages.rendering.gukgam_witness_claim import GUKGAM_WITNESS_PREDICATE
 from packages.verification.alio_person_materialization import (
     AlioPersonMaterializationError,
     validate_alio_person_source_context,
@@ -47,12 +48,24 @@ from packages.verification.cross_lane_identity import (
     CrossLaneIdentityEvidence,
     resolve_cross_lane_identity,
 )
+from packages.verification.gukgam_witness_import import GUKGAM_WITNESS_FEEDER
 from packages.verification.identity import IdentityCandidate
 from packages.verification.nec_person_materialization import (
     NEC_CANDIDACY_PREDICATE,
     NEC_CANDIDATE_FEEDER,
     NecPersonMaterializationError,
     validate_nec_candidate_source_context,
+)
+from packages.verification.person_record_links import (
+    LINKED_WITNESS_PREDICATE,
+    OPENDART_EXECUTIVE_FEEDER,
+    OPENDART_EXECUTIVE_SEMANTIC_SCOPE,
+    OPENDART_ROLE_PREDICATE,
+    birth_year_month_conflict,
+    build_linked_witness_claim,
+    build_opendart_role_claim,
+    listed_name,
+    witness_institution_anchors,
 )
 from packages.verification.policy import PolicyAction, require_policy
 
@@ -552,17 +565,245 @@ def _bridge(plan: Plan, left: IdentityCandidate, target: Any, from_role: str) ->
     return rows
 
 
-def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> None:
-    observation, fields, organization, source = _alio_person_record(plan, identifier)
+def _require_unlinked(plan: Plan, observation_id: str) -> None:
     linked = plan.query(
         db.PersonObservationLinkRow,
-        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.observation_id == observation_id,
         db.PersonObservationLinkRow.superseded_at.is_(None),
     )
     if linked:
         raise AdminError(
             "ALREADY_LINKED", "이 수집 기록은 이미 인물에 연결되었습니다. 중복 등록하지 않습니다."
         )
+
+
+def _link_target(
+    plan: Plan, listed: str, from_role: str, *, disclosed_birth_year_month: str | None = None
+) -> tuple[Any, list[Any], list[Any]]:
+    """Revalidate a reviewed link to an existing RESOLVED Person for a record with no Person ID.
+
+    Bridge Evidence must belong to the target's own current Claims, so the reviewer compares the
+    source row with records already attributed to that Person, never with free-floating text.
+    """
+
+    target = _current_person(plan, plan.command.target_person_id)
+    if target.identity_status != "RESOLVED":
+        raise AdminError("TARGET_NOT_RESOLVED", "연결 대상 인물이 아직 확인되지 않았습니다.")
+    if birth_year_month_conflict(target.birth_date, disclosed_birth_year_month):
+        raise AdminError(
+            "BIRTH_YEAR_MONTH_CONFLICT",
+            "공시된 출생 연월이 대상 인물의 생년월일과 다릅니다. 연결하지 않습니다.",
+        )
+    bridge_rows = _bridge(plan, IdentityCandidate(canonical_name=listed), target, from_role)
+    bridge_claims = [plan.get(db.ClaimRow, row.claim_id) for row in bridge_rows]
+    if any(
+        claim.person_id != target.id or claim.superseded_at is not None for claim in bridge_claims
+    ):
+        raise AdminError(
+            "BRIDGE_NOT_TARGET_RECORD",
+            "연결 근거는 대상 인물에게 이미 귀속된 현재 기록의 공식 근거여야 합니다.",
+        )
+    return target, bridge_rows, bridge_claims
+
+
+def _create_link_and_claim(
+    plan: Plan,
+    observation: Any,
+    person_id: str,
+    identity_action: str,
+    decision_class: str,
+    review_id: str,
+    claim: Claim,
+    source_id: str,
+    bridge_rows: list[Any],
+) -> None:
+    plan.create(
+        db.PersonObservationLinkRow,
+        id=plan.uid(f"link:{observation.id}"),
+        person_id=person_id,
+        observation_id=observation.id,
+        action=identity_action,
+        decision_class=decision_class,
+        linked_at=plan.review_time,
+        superseded_at=None,
+        review_item_id=review_id,
+    )
+    claim_values = claim.model_dump(mode="python")
+    claim_values.update(id=str(claim.id), person_id=person_id, organization_id=None)
+    plan.create(db.ClaimRow, **claim_values)
+    plan.create(
+        db.ClaimEvidenceRow,
+        id=plan.uid(f"role-evidence:{observation.id}"),
+        claim_id=str(claim.id),
+        source_id=source_id,
+        snapshot_id=observation.snapshot_id,
+        feeder_observation_id=observation.id,
+        stance="SUPPORT",
+        excerpt=None,
+    )
+    for item in bridge_rows:
+        plan.create(
+            db.ClaimEvidenceRow,
+            id=plan.uid(f"bridge:{observation.id}:{item.id}"),
+            claim_id=str(claim.id),
+            source_id=item.source_id,
+            snapshot_id=item.snapshot_id,
+            feeder_observation_id=item.feeder_observation_id,
+            stance="NEUTRAL",
+            excerpt=None,
+        )
+    plan.outcomes.append(
+        {
+            "observation_id": observation.id,
+            "person_id": person_id,
+            "name": claim.subject,
+            "disposition": "REGISTERED",
+            "claim_id": str(claim.id),
+            "predicate": claim.predicate,
+            "publication_status": "DRAFT",
+            "identity_action": identity_action,
+        }
+    )
+
+
+def _observation_source_id(plan: Plan, observation: Any) -> str:
+    snapshot = plan.get(db.SourceSnapshotRow, observation.snapshot_id)
+    return str(snapshot.source_id)
+
+
+def _current_witness_claim(plan: Plan, observation: Any) -> Any:
+    evidence_rows = plan.query(
+        db.ClaimEvidenceRow, db.ClaimEvidenceRow.feeder_observation_id == observation.id
+    )
+    claims = [
+        claim
+        for claim in (plan.get(db.ClaimRow, row.claim_id) for row in evidence_rows)
+        if claim.predicate == GUKGAM_WITNESS_PREDICATE
+        and claim.organization_id is not None
+        and claim.superseded_at is None
+        and claim.publication_status == PublicationStatus.PUBLISHED.value
+        and claim.qualifiers.get("immutable_observation_hash") == observation.content_hash
+    ]
+    if len(claims) != 1:
+        raise AdminError(
+            "WITNESS_CLAIM_REQUIRED",
+            "공개된 현재 증인 명단 Claim이 정확히 하나 있어야 인물에 연결할 수 있습니다.",
+        )
+    return claims[0]
+
+
+def _link_witness(plan: Plan, observation: Any) -> None:
+    _require_unlinked(plan, observation.id)
+    witness_claim = _current_witness_claim(plan, observation)
+    normalized_row = observation.normalized_json
+    name = listed_name(str(normalized_row.get("name") or ""))
+    target, bridge_rows, bridge_claims = _link_target(
+        plan,
+        name,
+        f"{normalized_row.get('committee_name')} {normalized_row.get('category')}: "
+        f"{normalized_row.get('affiliation_title') or ''}",
+    )
+    organization_names = [
+        plan.get(db.OrganizationRow, claim.qualifiers["organization_id"]).name
+        for claim in bridge_claims
+        if claim.qualifiers.get("organization_id")
+    ]
+    anchors = witness_institution_anchors(normalized_row, organization_names)
+    if not anchors:
+        raise AdminError(
+            "WITNESS_INSTITUTION_ANCHOR_REQUIRED",
+            "증인 명단의 소속·직위가 대상 인물의 근거 기관과 일치하지 않습니다. 연결하지 않습니다.",
+        )
+    review_id = _save_review(plan, observation.id, "RESOLVED", "REGISTERED", target.id)
+    claim = build_linked_witness_claim(
+        claim_id=UUID(plan.uid(f"person-role:{observation.id}")),
+        person_id=UUID(target.id),
+        person_name=target.canonical_name,
+        witness_claim=Claim.model_validate(witness_claim, from_attributes=True),
+        observation_id=observation.id,
+        observation_hash=observation.content_hash,
+        review_id=review_id,
+        recorded_at=plan.review_time,
+    )
+    _create_link_and_claim(
+        plan,
+        observation,
+        target.id,
+        "REVIEWED_LINK",
+        "REVIEWED_BRIDGE",
+        review_id,
+        claim,
+        _observation_source_id(plan, observation),
+        bridge_rows,
+    )
+    plan.outcomes[-1]["institution_anchors"] = list(anchors)
+
+
+def _link_opendart(plan: Plan, observation: Any) -> None:
+    if observation.semantic_scope != OPENDART_EXECUTIVE_SEMANTIC_SCOPE:
+        raise AdminError("SOURCE_RECORD_UNSUPPORTED", "OpenDART 임원 현황 기록이 아닙니다.")
+    _require_unlinked(plan, observation.id)
+    versions = plan.query(
+        db.FeederObservationRow,
+        db.FeederObservationRow.feeder == observation.feeder,
+        db.FeederObservationRow.scope_key == observation.scope_key,
+        db.FeederObservationRow.provider_record_key == observation.provider_record_key,
+        limit=20,
+    )
+    if any(row.recorded_at > observation.recorded_at for row in versions):
+        raise AdminError(
+            "OBSERVATION_SUPERSEDED", "같은 공시 행의 더 새로운 수집 버전이 있습니다."
+        )
+    normalized_row = observation.normalized_json
+    name = str(normalized_row.get("canonical_name") or "").strip()
+    target, bridge_rows, _ = _link_target(
+        plan,
+        name,
+        f"{normalized_row.get('corp_name')} / {normalized_row.get('position')}",
+        disclosed_birth_year_month=normalized_row.get("birth_year_month"),
+    )
+    review_id = _save_review(plan, observation.id, "RESOLVED", "REGISTERED", target.id)
+    claim = build_opendart_role_claim(
+        claim_id=UUID(plan.uid(f"person-role:{observation.id}")),
+        person_id=UUID(target.id),
+        person_name=target.canonical_name,
+        normalized=normalized_row,
+        observation_id=observation.id,
+        observation_hash=observation.content_hash,
+        provider_observed_at=observation.provider_observed_at,
+        review_id=review_id,
+        recorded_at=plan.review_time,
+    )
+    _create_link_and_claim(
+        plan,
+        observation,
+        target.id,
+        "REVIEWED_LINK",
+        "REVIEWED_BRIDGE",
+        review_id,
+        claim,
+        _observation_source_id(plan, observation),
+        bridge_rows,
+    )
+
+
+def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> None:
+    row = plan.get(db.FeederObservationRow, identifier)
+    if row.feeder != ALIO_EXECUTIVE_FEEDER:
+        if plan.command.action != AdminAction.LINK_PERSON:
+            raise AdminError(
+                "SOURCE_RECORD_LINK_ONLY",
+                "Person ID가 없는 이 기록은 기존 확인 인물에 대한 검토 연결만 지원합니다.",
+            )
+        if row.feeder == GUKGAM_WITNESS_FEEDER:
+            _link_witness(plan, row)
+        elif row.feeder == OPENDART_EXECUTIVE_FEEDER:
+            _link_opendart(plan, row)
+        else:
+            raise AdminError("SOURCE_RECORD_UNSUPPORTED", "이 수집 기록 유형은 인물 연결을 지원하지 않습니다.")
+        return
+    observation, fields, organization, source = _alio_person_record(plan, identifier)
+    _require_unlinked(plan, observation.id)
     name = fields["canonical_name"]
     if plan.command.action == AdminAction.REGISTER_PERSON:
         alias_rows = plan.query(
@@ -605,20 +846,8 @@ def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> 
             fields["institution_name"] + " / " + fields["position_text"],
         )
         person_id = target.id
-        person = Person.model_validate(target, from_attributes=True)
         action, decision = "REVIEWED_LINK", "REVIEWED_BRIDGE"
     review_id = _save_review(plan, observation.id, "RESOLVED", "REGISTERED", person_id)
-    plan.create(
-        db.PersonObservationLinkRow,
-        id=plan.uid(f"link:{observation.id}"),
-        person_id=person_id,
-        observation_id=observation.id,
-        action=action,
-        decision_class=decision,
-        linked_at=plan.review_time,
-        superseded_at=None,
-        review_item_id=review_id,
-    )
     claim_id = plan.uid(f"person-role:{observation.id}")
     claim = Claim(
         id=UUID(claim_id),
@@ -644,40 +873,8 @@ def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> 
         valid_from=observation.provider_observed_at or observation.recorded_at,
         recorded_at=plan.review_time,
     )
-    claim_values = claim.model_dump(mode="python")
-    claim_values.update(id=claim_id, person_id=person_id, organization_id=None)
-    plan.create(db.ClaimRow, **claim_values)
-    plan.create(
-        db.ClaimEvidenceRow,
-        id=plan.uid(f"role-evidence:{observation.id}"),
-        claim_id=claim_id,
-        source_id=source.id,
-        snapshot_id=observation.snapshot_id,
-        feeder_observation_id=observation.id,
-        stance="SUPPORT",
-        excerpt=None,
-    )
-    for item in bridge_rows:
-        plan.create(
-            db.ClaimEvidenceRow,
-            id=plan.uid(f"bridge:{observation.id}:{item.id}"),
-            claim_id=claim_id,
-            source_id=item.source_id,
-            snapshot_id=item.snapshot_id,
-            feeder_observation_id=item.feeder_observation_id,
-            stance="NEUTRAL",
-            excerpt=None,
-        )
-    plan.outcomes.append(
-        {
-            "observation_id": observation.id,
-            "person_id": person_id,
-            "name": name,
-            "disposition": "REGISTERED",
-            "claim_id": claim_id,
-            "publication_status": "DRAFT",
-            "identity_action": action,
-        }
+    _create_link_and_claim(
+        plan, observation, person_id, action, decision, review_id, claim, source.id, bridge_rows
     )
 
 
@@ -767,6 +964,8 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
                 raise AdminError(
                     "ROLE_BINDING_CONFLICT", "인물·기관·수집 기록의 검토 연결이 일치하지 않습니다."
                 )
+        if row.predicate in {LINKED_WITNESS_PREDICATE, OPENDART_ROLE_PREDICATE}:
+            _revalidate_reviewed_record_link(plan, row)
         values = row_data(row)
         values["publication_status"] = "PUBLISHED"
         _publication_gate(plan, Claim.model_validate(values), evidence_rows)
@@ -784,14 +983,46 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
                 raise AdminError("CORRECTION_CONFLICT", "정정 원본이 변경되었거나 대상이 다릅니다.")
             plan.update(original, publication_status="WITHHELD", superseded_at=plan.review_time)
     plan.update(row, publication_status=new_status)
-    plan.outcomes.append(
-        {
-            "record_id": row.id,
-            "before": row.publication_status,
-            "after": new_status,
-            "epistemic_status_unchanged": row.epistemic_status,
-        }
+    outcome: dict[str, Any] = {
+        "record_id": row.id,
+        "before": row.publication_status,
+        "after": new_status,
+        "epistemic_status_unchanged": row.epistemic_status,
+    }
+    if action == AdminAction.WITHDRAW and row.predicate == GUKGAM_WITNESS_PREDICATE:
+        # A Person witness Claim restates this exact list row; it cannot outlive its source.
+        dependents = plan.query(
+            db.ClaimRow,
+            db.ClaimRow.predicate == LINKED_WITNESS_PREDICATE,
+            db.ClaimRow.superseded_at.is_(None),
+            db.ClaimRow.publication_status.in_(["PUBLISHED", "REVIEW"]),
+            db.ClaimRow.qualifiers["source_claim_id"].as_string() == row.id,
+        )
+        withheld = [item for item in dependents if item.qualifiers.get("source_claim_id") == row.id]
+        for item in withheld:
+            plan.update(item, publication_status="WITHHELD")
+        outcome["dependent_person_claims_withheld"] = [item.id for item in withheld]
+    plan.outcomes.append(outcome)
+
+
+def _revalidate_reviewed_record_link(plan: Plan, row: Any) -> None:
+    observation = plan.get(db.FeederObservationRow, row.qualifiers.get("source_observation_id"))
+    active = plan.query(
+        db.PersonObservationLinkRow,
+        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.person_id == row.person_id,
+        db.PersonObservationLinkRow.superseded_at.is_(None),
     )
+    if len(active) != 1 or row.qualifiers.get("immutable_observation_hash") != observation.content_hash:
+        raise AdminError(
+            "RECORD_LINK_CONFLICT", "인물과 수집 기록의 검토 연결이 현재 기록과 일치하지 않습니다."
+        )
+    if row.predicate == LINKED_WITNESS_PREDICATE:
+        source_claim = _current_witness_claim(plan, observation)
+        if source_claim.id != row.qualifiers.get("source_claim_id"):
+            raise AdminError(
+                "WITNESS_CLAIM_CONFLICT", "연결의 근거가 된 증인 명단 Claim이 바뀌었습니다."
+            )
 
 
 def _protect_indirect_dependencies(plan: Plan, person_id: str, claims: list[Any]) -> None:

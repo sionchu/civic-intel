@@ -251,3 +251,35 @@ SUCCESS candidate checkpoint and the exact DRAFT NEC_LOCAL_ELECTION_CANDIDACY Cl
 It changes only the Person identity status. The candidacy Claim still requires a separate PUBLISH
 action, and the public Person surface remains closed until that exact deterministic NEC source-
 context Claim is published. An unrelated published Claim cannot open the Person surface.
+
+### Reviewed links for no-Person-ID source rows (Gukgam witness, OpenDART)
+
+Committee witness-list rows and OpenDART `exctvSttus` rows carry no provider Person ID. They never
+create, auto-link or merge a Person, and there is no REGISTER path for them. The only route to a
+Person is the admin `LINK_PERSON` transaction onto one existing RESOLVED Person
+(`packages/verification/person_record_links.py`, `packages/persistence/admin_workflow.py`):
+
+- human review attestation, a named official continuity basis and bridge Evidence are required as
+  for ALIO; the bridge Evidence must belong to the target Person's own current Claims;
+- the existing cross-lane resolver still requires name overlap and rejects hard conflicts;
+- witness: the listed name without its Hanja parenthetical must match, the row must back one
+  current PUBLISHED committee witness Claim with the same observation hash, and the row's
+  `affiliation_title` or `target_institution` must state the Organization of a bridge role Claim
+  (`WITNESS_INSTITUTION_ANCHOR_REQUIRED` otherwise);
+- OpenDART: a disclosed birth year/month that contradicts a known birth date is a hard conflict
+  (`BIRTH_YEAR_MONTH_CONFLICT`); a newer version of the same disclosure row blocks the link.
+
+The link writes one `REVIEWED_LINK / REVIEWED_BRIDGE` observation link, an IdentityReviewItem and
+one DRAFT `CLAIM` with SUPPORT Evidence on the exact row plus NEUTRAL bridge Evidence:
+`LISTED_AS_GUKGAM_WITNESS` ("the list names this Person as 증인/참고인") or
+`OPENDART_DISCLOSED_EXECUTIVE_ROLE` ("the company disclosed this Person in this role"). Neither is
+an independent career FACT; DART `reported_main_career` stays company-disclosed text. A separate
+PUBLISH revalidates the link, the observation hash and, for witnesses, the current published list
+Claim. Withdrawing a committee witness Claim withholds the dependent Person Claims in the same
+transaction.
+
+`civic-preflight-person-link-candidates` is the read-only review packet. Exact name overlap only
+nominates a pair; a pair is listed as a candidate only with a second deterministic anchor (witness:
+an institution of the Person's role record; OpenDART: agreeing birth year/month or the company in
+the Person's source-reported career). It writes nothing and never scores.
+
