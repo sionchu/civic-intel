@@ -19,6 +19,7 @@ from packages.domain.enums import (
     PublicationStatus,
     SourceRunStatus,
 )
+from packages.verification.assembly_member_claims import AssemblyMemberClaimLane
 from packages.verification.claims import validate_claim_publication
 from packages.verification.policy import PolicyAction, require_policy
 
@@ -35,6 +36,27 @@ _ASSEMBLY_LEGISLATIVE_CLAIM_NAMESPACE = UUID("f269f4db-6504-4a38-a0f5-bb36e7b4c1
 
 class AssemblyLegislativeActivityError(ValueError):
     pass
+
+
+def _bill_claim_matches_observation(claim: Claim, observation: FeederObservation) -> bool:
+    return (
+        claim.qualifiers.get("bill_id") == observation.provider_record_key
+        and claim.qualifiers.get("participation_role")
+        in {"REPRESENTATIVE_PROPOSER", "CO_PROPOSER"}
+        and claim.object_text == observation.normalized.get("bill_name")
+    )
+
+
+ASSEMBLY_BILL_PARTICIPATION_LANE = AssemblyMemberClaimLane(
+    feeder=ASSEMBLY_LEGISLATIVE_FEEDER,
+    semantic_scope=ASSEMBLY_LEGISLATIVE_SEMANTIC_SCOPE,
+    predicate=ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
+    source_contract=ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
+    logical_key_qualifiers=("bill_id", "participation_role"),
+    claim_matches_observation=_bill_claim_matches_observation,
+    error=AssemblyLegislativeActivityError,
+    label="Assembly legislative activity",
+)
 
 
 @dataclass(frozen=True)
@@ -372,7 +394,9 @@ class AssemblyLegislativeActivityPublisher:
                 current_only=True,
             )
         }
-        stored = self.repository.import_assembly_legislative_claims_batch(pending)
+        stored = self.repository.import_assembly_member_claims_batch(
+            pending, ASSEMBLY_BILL_PARTICIPATION_LANE
+        )
         # The repository returns stored Claims for both new and idempotent operations. The
         # deterministic IDs plus the pre-write set make the receipt counts meaningful.
         requested_ids = {claim.id for _, _, claims, _ in pending for claim in claims}

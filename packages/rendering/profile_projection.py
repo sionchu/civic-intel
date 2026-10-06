@@ -26,6 +26,7 @@ from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_committee_roles import ASSEMBLY_COMMITTEE_ROLE_PREDICATE
 from packages.verification.assembly_legislative_activity import (
     ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
     ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
@@ -893,6 +894,9 @@ def build_profile_projection(
     assembly_role_entries = _assembly_role_entries(claims, evidence_by_claim)
     assembly_career_entries = _assembly_dated_career_entries(claims, evidence_by_claim)
     assembly_activity_entries = _assembly_activity_entries(claims, evidence_by_claim)
+    committee_office_entries = _claim_entries_for(
+        claims, evidence_by_claim, frozenset({ASSEMBLY_COMMITTEE_ROLE_PREDICATE})
+    )
     is_assembly_member = bool(
         assembly_base_profile_entries or assembly_role_entries or assembly_activity_entries
     )
@@ -911,7 +915,11 @@ def build_profile_projection(
         overview_fields = {
             item.get("details", {}).get("field_name") for item in overview_entries
         }
-        current_role_entries = [*assembly_role_entries, *committee_entries]
+        current_role_entries = [
+            *assembly_role_entries,
+            *committee_entries,
+            *committee_office_entries,
+        ]
         current_role_fields: set[str] = set()
         if assembly_role_entries:
             current_role_fields.add("role")
@@ -948,7 +956,8 @@ def build_profile_projection(
                     else "UNKNOWN"
                 ),
                 note=(
-                    "현재 역할과 위원회 소속만 published Claim에서 표시하며, 정책 성향이나 영향력은 해석하지 않습니다."
+                    "현재 역할, 위원회 소속과 위원회 명단에 기재된 위원장·간사 직책만 published "
+                    "Claim에서 표시하며, 정책 성향이나 영향력은 해석하지 않습니다."
                     if current_role_entries
                     else "현재 역할·위원회 published Claim이 없습니다."
                 ),

@@ -19,6 +19,8 @@ A section label in the UI is not evidence that a collection pipeline exists.
 People with any published Assembly roster or bill Claim take the separate Assembly profile
 (`overview`, `current_role`, `career_timeline`, `legislative_activity`, `recent_changes`,
 `limitations`), fed by the Assembly roster, historical and bill-participation feeders.
+`current_role` also shows committee offices (`ASSEMBLY_COMMITTEE_ROLE`, 위원장·간사) from the
+committee member-list lane ([feeder](ASSEMBLY_COMMITTEE_ROSTER_FEEDER.md)), once that lane is run.
 
 | Section | Renderer input | Current producer | Lane | State | Missing step |
 |---|---|---|---|---|---|

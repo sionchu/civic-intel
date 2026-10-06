@@ -23,6 +23,7 @@ const FACT_PREDICATES: [string, string][] = [
   ["ASSEMBLY_PARTY", "정당"],
   ["ASSEMBLY_DISTRICT", "지역구"],
   ["ASSEMBLY_COMMITTEES", "소속 위원회"],
+  ["ASSEMBLY_COMMITTEE_ROLE", "위원회 직책"],
   ["ASSEMBLY_REELECTION", "선수"],
 ];
 
