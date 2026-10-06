@@ -2,14 +2,24 @@
 
 ## Current state — 2026-10-06 (person profile section producers)
 
-Branch `feat/profile-section-producers` (base `dec4a53`) audits every Person profile section's
-upstream producer ([inventory](docs/architecture/PERSON_PROFILE_SECTION_PRODUCERS.md)). Empty
-sections now carry a projection-only `reason` (`SOURCE_NOT_COLLECTED`, `INSUFFICIENT_EVIDENCE`,
-`DERIVATION_NOT_AVAILABLE`, `NOT_APPLICABLE`) and the person page groups them instead of one
-"아직 수집되지 않은 기록" line. 현재 권한과 과업 shows the company-filed OpenDART 담당업무 of
-published reviewed executive links as an attributed CLAIM. No schema, DB write, publication or
-deploy. Next P1: an event lane (roll-call votes → Claims → DecisionEpisode), typed relationship
-producer, attributed controversy/appointment-rationale sources.
+Merged #200, #201 and #202 (master `0143c23`). Every Person profile section's upstream producer is
+inventoried in [PERSON_PROFILE_SECTION_PRODUCERS](docs/architecture/PERSON_PROFILE_SECTION_PRODUCERS.md).
+Empty sections carry a projection-only `reason` and the person page groups them. Assembly members
+show committee offices (`ASSEMBLY_COMMITTEE_ROLE`) and the 10 most recent plenary votes
+(`ASSEMBLY_PLENARY_VOTE`) with whole-record counts.
+
+Canonical apply (owner-approved 2026-10-06, Mac PostgreSQL, rev `0008`, no schema change):
+- backup first: `civic-intel-serve/backups/pre-section-producers-20261006-201238.dump` (95.6 MB);
+- committee member list 477 observations → 62 office Claims, 0 unresolved `MONA_CD`;
+- existing complete 22nd-term vote run (1,911 bills / 568,649 observations, 1 tally exception) →
+  542,361 vote Claims for 299 members; Claims 16,378 → 558,801, DB 2.6 GB;
+- log: `civic-intel-serve/logs/section-producers-apply-20261006.log`.
+
+Mac API/web deployed at `0143c23`; the Sites bundle
+`civic-intel-deploy/dist/moduigukgam-site-0143c23` built clean (504 people, 235 MiB, no captured
+read failure, sha256 `079816c2…`). Next: save and deploy that bundle in ChatGPT Sites (owner/Codex).
+Next P1: a non-Assembly decision-event lane, typed relationship producer, attributed controversy and
+appointment-rationale sources.
 
 ## Current state — 2026-10-06 (person profile linkage)
 
