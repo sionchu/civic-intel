@@ -11,6 +11,8 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [System overview: purpose, architecture, source gates and current state](architecture/CIVIC_INTEL_SYSTEM_OVERVIEW.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
 - [Governance ontology projection](architecture/GOVERNANCE_ONTOLOGY.md)
+- [Evidence Graph: affiliations, derived relations and path search](architecture/EVIDENCE_GRAPH.md)
+- [Evidence Graph prior art and literature](research/EVIDENCE_GRAPH_PRIOR_ART.md)
 - [Gukgam 2026 source contract](architecture/GUKGAM_2026_SOURCE_CONTRACT.md)
 - [Career facets](architecture/CAREER_FACETS.md)
 - [Person profile section producers and empty-section reasons](architecture/PERSON_PROFILE_SECTION_PRODUCERS.md)

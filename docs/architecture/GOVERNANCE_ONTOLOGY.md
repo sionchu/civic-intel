@@ -136,6 +136,11 @@ search is deliberately deferred: two Claim-scoped nodes with the same label must
 string equality. Path search becomes eligible only after the corresponding shared institution or
 event has an exact canonical/source-scoped binding contract.
 
+That contract now exists for committee codes, roster party values, canonical ALIO institutions,
+OpenDART `corp_code`, bills and the exact committee-name crosswalk; cross-Person relations and
+shortest evidence paths are served by the separate [Evidence Graph](EVIDENCE_GRAPH.md)
+projection (`/relationships/*`). The `/ontology/*` routes keep their Claim-scoped nodes unchanged.
+
 ## Storage and query boundary
 
 V0 uses the existing SQLAlchemy repository and FastAPI read path. Do not add Neo4j, Apache AGE,
