@@ -319,6 +319,12 @@ main { flex: 1; }
 .section-heading h2 { margin: 0; overflow-wrap: anywhere; font-family: "Noto Serif KR", Georgia, serif; font-size: 22px; letter-spacing: -.05em; line-height: 1.15; }
 .section-note { min-height: 42px; margin: 14px 0; color: var(--color-ink-muted); font-size: 12px; }
 .claim { margin-top: 12px; padding: 18px; border: 1px solid var(--color-line); border-radius: var(--radius-sm); background: var(--color-surface); box-shadow: var(--shadow-card); }
+.vote-rows { display: grid; gap: 0; margin: 12px 0 0; padding: 0; list-style: none; }
+.vote-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--color-line); font-size: 14px; }
+.vote-row .vote-date { color: var(--color-ink-muted); font-size: 13px; }
+.vote-row .vote-bill { overflow-wrap: anywhere; }
+.vote-row .vote-trace { grid-column: 2 / -1; }
+@media (max-width: 560px) { .vote-row { grid-template-columns: minmax(0, 1fr) auto; } .vote-row .vote-date { grid-column: 1 / -1; } .vote-row .vote-trace { grid-column: 1 / -1; } }
 .change-card { border-color: var(--color-accent); background: linear-gradient(145deg, var(--color-accent-soft), var(--color-surface)); }
 .change-card .claim-kind { color: var(--color-accent); }
 .change-sequence { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 12px; margin-top: 18px; }

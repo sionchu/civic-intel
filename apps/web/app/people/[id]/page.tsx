@@ -157,6 +157,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       .map((section) => section.label),
   })).filter((group) => group.lanes.length > 0);
 
+  const isPlenaryVote = (entry: ProfileEntry) =>
+    entry.kind === "DECISION_EPISODE" && entry.details.action === "PLENARY_ROLL_CALL_VOTE";
+
   const renderEntry = (entry: ProfileEntry) => {
     const claim: Claim | undefined = entry.claim_id ? claimById.get(entry.claim_id) : undefined;
     const changeDetails = entry.kind === "CHANGE" ? entry.details as {
@@ -211,6 +214,34 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </details>
           {entry.evidence && <EvidenceTraceList traces={entry.evidence} sourceById={sourceById} />}
         </article>
+      );
+    }
+
+    // Plenary votes are many short official rows: one compact row each, with the recorded vote,
+    // the official bill link and the Claim/Evidence/Source trace one disclosure away.
+    if (isPlenaryVote(entry)) {
+      const trace = entry.evidence?.[0];
+      const source = trace ? sourceById.get(trace.source_id) : undefined;
+      return (
+        <li className="vote-row" key={entry.id} id={`claim-${entry.claim_id}`}>
+          <span className="vote-date">{entry.date ?? "날짜 미기재"}</span>
+          <span className="vote-bill">
+            {typeof entry.details.detail_url === "string"
+              ? <a href={entry.details.detail_url} target="_blank" rel="noreferrer">{String(entry.details.target)}</a>
+              : String(entry.details.target)}
+          </span>
+          <span className="status AVAILABLE vote-value">{String(entry.details.outcome)}</span>
+          <details className="audit-details vote-trace">
+            <summary>근거</summary>
+            <small>
+              {source ? <a href={`#source-${source.id}`}>{source.title}</a> : "출처"} · {entry.epistemic_status}<br />
+              Claim {entry.claim_id}<br />
+              Evidence {trace?.id ?? "없음"}<br />
+              SourceSnapshot {trace?.snapshot_id ?? "없음"}<br />
+              FeederObservation {trace?.feeder_observation_id ?? "없음"}
+            </small>
+          </details>
+        </li>
       );
     }
 
@@ -439,7 +470,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                         <span className={`status ${section.status}`}>{section.status}</span>
                       </div>
                       {section.note && <p className="section-note">{section.note}</p>}
-                      {section.entries.map(renderEntry)}
+                      {section.entries.some(isPlenaryVote)
+                        ? <ol className="vote-rows">{section.entries.map(renderEntry)}</ol>
+                        : section.entries.map(renderEntry)}
                     </section>
                   ))}
                 </div>
