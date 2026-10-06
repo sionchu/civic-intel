@@ -316,13 +316,15 @@ def create_app(
     @app.get("/people/{person_id}")
     def person(person_id: UUID) -> dict:
         item = person_or_404(person_id, public=True)
-        published_claims = target.claims(person_id, True, current_only=True)
+        # Two bounded reads instead of one Evidence query per Claim: Assembly members carry
+        # thousands of vote Claims.
+        claims_context, evidence_context = target.published_person_claim_contexts(
+            [person_id]
+        ).get(person_id, ((), {}))
+        published_claims = list(claims_context)
         evidence_by_claim = {
-            claim.id: target.evidence_for(claim.id) for claim in published_claims
+            claim.id: list(evidence_context.get(claim.id, ())) for claim in published_claims
         }
-        person_claims = [
-            claim_payload(claim, evidence_by_claim[claim.id]) for claim in published_claims
-        ]
         source_ids = {
             item.source_id
             for claim_evidence in evidence_by_claim.values()
@@ -350,8 +352,8 @@ def create_app(
             if entry.get("claim_id")
         }
         person_claims = [
-            payload
-            for claim, payload in zip(published_claims, person_claims, strict=True)
+            claim_payload(claim, evidence_by_claim[claim.id])
+            for claim in published_claims
             if claim.predicate != ASSEMBLY_PLENARY_VOTE_PREDICATE
             or str(claim.id) in rendered_claim_ids
         ]
