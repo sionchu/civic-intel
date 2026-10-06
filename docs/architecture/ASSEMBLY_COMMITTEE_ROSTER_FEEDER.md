@@ -153,3 +153,31 @@ Evidence:
 
 L3 is blocked by the missing operational API key and unresolved full-universe current-scope
 reconciliation described above.
+
+## Full member-list enumeration and committee-office Claims (code ready, not yet run)
+
+`civic-stage-assembly-committees --enumerate-members --database-url …` persists every row of the
+committee-member list as an immutable observation:
+
+```text
+feeder: assembly_committee_memberships
+scope_key: assembly_committee_member_list:current
+provider_record_key: {DEPT_CD}:{MONA_CD}
+semantic_scope: legislative_committee_membership_role
+normalized: committee_code, committee_name, member_code, role_published (JOB_RES_NM verbatim)
+```
+
+Name, Hanja, party and district are dropped as well as the contact fields. Coverage fails closed on
+a changing `list_total_count`, an incomplete page, or a duplicate/conflicting `DEPT_CD:MONA_CD`.
+The checkpoint stores the full provider-hash manifest.
+
+`--publish-roles [--dry-run]` reconciles the step 2 rule above at materialization: only rows whose
+`MONA_CD` has an exact current-roster Person link are used, and unmatched codes are reported, never
+name-matched. Only `위원장` and `간사` rows become `ASSEMBLY_COMMITTEE_ROLE` FACT Claims (role text
+verbatim; plain `위원` membership is already the roster `ASSEMBLY_COMMITTEES` Claim). The list has
+no start/end date, so the Claim is valid from collection time. A later list that drops a Person's
+office is reported as `stale_claim_ids`; a changed role for the same committee fails closed. Both
+need a reviewed supersession, not a silent overwrite. The import shares the exact-`MONA_CD`
+contract of the bill-participation lane (`AssemblyMemberClaimLane`).
+
+Running either command against the canonical database is an operator action that needs approval.

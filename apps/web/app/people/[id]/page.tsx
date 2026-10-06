@@ -13,7 +13,7 @@ import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
 import { getReviewedPortrait } from "../../portrait";
 import { buildPageMetadata } from "../../site-metadata";
-import type { Claim, ProfileEntry } from "../../types";
+import type { Claim, ProfileEntry, ProfileSectionReason } from "../../types";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +23,12 @@ const FACT_PREDICATES: [string, string][] = [
   ["ASSEMBLY_PARTY", "정당"],
   ["ASSEMBLY_DISTRICT", "지역구"],
   ["ASSEMBLY_COMMITTEES", "소속 위원회"],
+  ["ASSEMBLY_COMMITTEE_ROLE", "위원회 직책"],
   ["ASSEMBLY_REELECTION", "선수"],
 ];
+
+// Per-bill activity records are listed in their own record sections, not as key facts.
+const ACTIVITY_RECORD_PREDICATES = new Set(["ASSEMBLY_BILL_PARTICIPATION", "ASSEMBLY_PLENARY_VOTE"]);
 
 // Person Claims linked to one exact source row after human identity review.
 const LINKED_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS";
@@ -33,6 +37,29 @@ const SOURCE_RECORD_LABELS: Record<string, string> = {
   ALIO_REVIEWED_PERSON_ROLE: "공공기관 임원 (ALIO 공시)",
   OPENDART_DISCLOSED_EXECUTIVE_ROLE: "기업 임원 (OpenDART 공시)",
 };
+
+const EMPTY_LANE_REASONS: { reason: ProfileSectionReason; title: string; detail: string }[] = [
+  {
+    reason: "SOURCE_NOT_COLLECTED",
+    title: "공식 근거 출처 미연결",
+    detail: "기록이 없다는 뜻이 아니라 이 항목을 뒷받침할 공식 출처가 아직 이 인물에게 연결되지 않았다는 뜻입니다.",
+  },
+  {
+    reason: "INSUFFICIENT_EVIDENCE",
+    title: "비교·분석할 근거 부족",
+    detail: "공개된 근거가 비교나 분석의 최소 조건에 못 미쳐 결과를 만들지 않았습니다.",
+  },
+  {
+    reason: "DERIVATION_NOT_AVAILABLE",
+    title: "검토된 분석 결과 없음",
+    detail: "근거에서 만든 질문·패턴·시나리오는 검토를 거친 경우에만 표시합니다.",
+  },
+  {
+    reason: "NOT_APPLICABLE",
+    title: "해당 없음",
+    detail: "공개된 기록상 이 인물에게 적용되지 않는 항목입니다.",
+  },
+];
 
 export async function generateMetadata({
   params,
@@ -103,7 +130,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       })),
     ),
     ...publishedClaims
-      .filter((claim) => !knownPredicates.has(claim.predicate) && claim.predicate !== "ASSEMBLY_BILL_PARTICIPATION")
+      .filter((claim) => !knownPredicates.has(claim.predicate) && !ACTIVITY_RECORD_PREDICATES.has(claim.predicate))
       .map((claim) => ({
         key: claim.id,
         label: SOURCE_RECORD_LABELS[claim.predicate] ?? claim.predicate,
@@ -121,7 +148,14 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
   const witnessListings = publishedClaims.filter((claim) => claim.predicate === LINKED_WITNESS_PREDICATE);
   const hasGukgam = memberCommittees.length > 0 || witnessListings.length > 0;
-  const emptyLanes = profile ? profile.sections.filter((section) => section.entries.length === 0).map((section) => section.label) : [];
+  // Empty sections grouped by the projection's reason, so a missing source, too little evidence for
+  // a comparison, an unreviewed analysis and a lane that does not apply are not read as one gap.
+  const emptyLaneGroups = EMPTY_LANE_REASONS.map((group) => ({
+    ...group,
+    lanes: (profile?.sections ?? [])
+      .filter((section) => section.entries.length === 0 && (section.reason ?? "SOURCE_NOT_COLLECTED") === group.reason)
+      .map((section) => section.label),
+  })).filter((group) => group.lanes.length > 0);
 
   const renderEntry = (entry: ProfileEntry) => {
     const claim: Claim | undefined = entry.claim_id ? claimById.get(entry.claim_id) : undefined;
@@ -394,7 +428,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </div>
             {profile ? (
               <>
-                <PendingLanes lanes={emptyLanes} />
+                {emptyLaneGroups.map((group) => (
+                  <PendingLanes key={group.reason} title={group.title} lanes={group.lanes} detail={group.detail} />
+                ))}
                 <div className="profile-sections">
                   {profile.sections.map((section) => section.entries.length === 0 ? null : (
                     <section className="profile-section" key={section.id} id={`section-${section.id}`} aria-labelledby={`heading-${section.id}`}>

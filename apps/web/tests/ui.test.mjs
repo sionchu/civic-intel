@@ -622,6 +622,11 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   assert.match(person, /section\.entries\.length === 0 \? null/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
   assert.match(lanes, /소스 레인 미개통/);
+  // Empty profile sections are grouped by the projection reason instead of one "not collected" line.
+  for (const reason of ["SOURCE_NOT_COLLECTED", "INSUFFICIENT_EVIDENCE", "DERIVATION_NOT_AVAILABLE", "NOT_APPLICABLE"]) {
+    assert.match(person, new RegExp(`reason: "${reason}"`));
+  }
+  assert.match(person, /<PendingLanes key=\{group\.reason\} title=\{group\.title\}/);
   assert.match(org, /pendingLanes/);
   assert.doesNotMatch(org + person, /현재 임원 이름 공개 기록이 없습니다|검토된 항목이 없습니다/);
 });

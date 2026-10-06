@@ -1,5 +1,11 @@
 export type Status = "FACT" | "CLAIM" | "INFERENCE" | "HYPOTHESIS" | "UNKNOWN" | "ENTITY_UNRESOLVED";
-export type ProfileSectionStatus = "AVAILABLE" | "PARTIAL" | "UNKNOWN";
+export type ProfileSectionStatus = "AVAILABLE" | "PARTIAL" | "UNKNOWN" | "NOT_APPLICABLE";
+// Projection-only reason an empty section has no entry; never a negative fact.
+export type ProfileSectionReason =
+  | "SOURCE_NOT_COLLECTED"
+  | "INSUFFICIENT_EVIDENCE"
+  | "DERIVATION_NOT_AVAILABLE"
+  | "NOT_APPLICABLE";
 
 export type ApiErrorCode =
   | "PUBLIC_RECORD_NOT_FOUND"
@@ -275,6 +281,7 @@ export type ProfileSection = {
   label: string;
   status: ProfileSectionStatus;
   note: string | null;
+  reason?: ProfileSectionReason | null;
   entries: ProfileEntry[];
 };
 
@@ -282,7 +289,7 @@ export type ProfileProjection = {
   profile_kind?: "ASSEMBLY_MEMBER" | "LEGACY_PERSON";
   section_order: string[];
   sections: ProfileSection[];
-  coverage: { available: number; partial: number; unknown: number };
+  coverage: { available: number; partial: number; unknown: number; not_applicable?: number };
   semantics: "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE";
 };
 

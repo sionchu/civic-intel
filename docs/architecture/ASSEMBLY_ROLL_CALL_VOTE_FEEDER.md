@@ -200,6 +200,22 @@ AUTO_CREATE or link Persons, match by name, or publish Claims. A later publicati
 need its own approved plan, an accepted `MONA_CD` crosswalk and the normal
 Claim/ClaimEvidence/Source/SourcePolicy gate.
 
+## Vote Claims (separate publication step)
+
+`civic-stage-assembly-votes --age 22 --publish-claims [--dry-run]` is the reviewed publication step
+for this lane. It requires the latest term run to be SUCCESS with the checkpoint at the last bill,
+uses only the exact current-roster `MONA_CD` Person link (members no longer on the roster are left
+out, never name-matched), and excludes every bill listed in `tally_exceptions`. For each remaining
+row it publishes one `ASSEMBLY_PLENARY_VOTE` FACT Claim restating the published vote text
+(찬성/반대/기권/불참) with exact snapshot/observation evidence, keyed per Person and `BILL_ID`. It
+shares the exact-`MONA_CD` import contract with bill participation and committee roles. A changed
+vote for the same bill fails closed for review.
+
+The Assembly profile shows the 20 most recent votes as decision episodes (action: plenary vote,
+target: the bill, outcome: the member's recorded vote) and the whole-record counts per vote value.
+The person API embeds only the rendered vote Claims. The out-of-scope list above still applies:
+no attendance, alignment, party-line or ideology value is derived from these Claims.
+
 ## Maturity
 
 **L3 FULL_ENUMERATION** for the 22nd Assembly.
