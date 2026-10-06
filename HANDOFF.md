@@ -1,5 +1,16 @@
 # HANDOFF
 
+## Current state — 2026-10-06 (person profile section producers)
+
+Branch `feat/profile-section-producers` (base `dec4a53`) audits every Person profile section's
+upstream producer ([inventory](docs/architecture/PERSON_PROFILE_SECTION_PRODUCERS.md)). Empty
+sections now carry a projection-only `reason` (`SOURCE_NOT_COLLECTED`, `INSUFFICIENT_EVIDENCE`,
+`DERIVATION_NOT_AVAILABLE`, `NOT_APPLICABLE`) and the person page groups them instead of one
+"아직 수집되지 않은 기록" line. 현재 권한과 과업 shows the company-filed OpenDART 담당업무 of
+published reviewed executive links as an attributed CLAIM. No schema, DB write, publication or
+deploy. Next P1: an event lane (roll-call votes → Claims → DecisionEpisode), typed relationship
+producer, attributed controversy/appointment-rationale sources.
+
 ## Current state — 2026-10-06 (person profile linkage)
 
 Branch `feat/person-profile-linkage` (base `0a448eb`) adds human-reviewed links from Gukgam
