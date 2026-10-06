@@ -154,9 +154,33 @@ for (const path of walk(out)) {
   if (!existsSync(flattened)) cpSync(path, flattened);
 }
 
+// Sites caps an uncompressed deployment at 256 MiB. The exported client navigates with
+// `<route>/index.txt` and prefetches the flattened segment files only, so the nested segment folders
+// and `__next._full.txt` (byte-identical to the sibling index.txt) are never requested. Drop them;
+// no page content or data is removed.
+const SITES_MAX_BYTES = 256 * 1024 * 1024;
+for (const path of walk(out)) {
+  const parts = relative(out, path).split(/[\\/]/);
+  if (parts[0] === "_next" || parts[0] === ".openai") continue;
+  const nested = parts.findIndex((part) => part.startsWith("__next.") && part !== parts.at(-1));
+  if (nested >= 0) {
+    rmSync(join(out, ...parts.slice(0, nested + 1)), { recursive: true, force: true });
+  } else if (parts.at(-1) === "__next._full.txt") {
+    const sibling = join(out, ...parts.slice(0, -1), "index.txt");
+    if (!existsSync(sibling) || !readFileSync(sibling).equals(readFileSync(path))) {
+      fail(`${parts.join("/")} differs from its index.txt; refusing to drop it`);
+    }
+    rmSync(path);
+  }
+}
+
 // 5. Fail closed on missing routes, operator surface or anything that is not public projection.
 const files = walk(out).filter((path) => !relative(out, path).startsWith(".openai"));
 const rel = (path) => relative(out, path).split("\\").join("/");
+const bundleBytes = files.reduce((total, path) => total + statSync(path).size, 0);
+if (bundleBytes > SITES_MAX_BYTES) {
+  fail(`bundle is ${(bundleBytes / 2 ** 20).toFixed(2)} MiB; Sites allows ${SITES_MAX_BYTES / 2 ** 20} MiB uncompressed`);
+}
 for (const required of [
   "index.html", "people/index.html", "organizations/index.html", "gukgam/2026/index.html",
   "404.html", "robots.txt", "sitemap.xml",
@@ -199,6 +223,7 @@ const manifest = {
     gukgam_targets: targets.target_count ?? null,
     gukgam_committees: committees.committee_count ?? null,
     files: files.length,
+    bytes: bundleBytes,
   },
   bundle_sha256: createHash("sha256").update(digests.join("\n")).digest("hex"),
 };

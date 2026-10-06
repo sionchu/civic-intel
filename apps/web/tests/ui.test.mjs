@@ -762,3 +762,12 @@ test("Witness rows carry the owner source tag and mark supplied copies as not ye
   assert.match(roster, /아직 공식 발표 아님/);
 });
 
+test("Sites snapshot fits the 256 MiB limit by dropping only never-requested duplicates", async () => {
+  const script = await readFile(new URL("../scripts/build-sites-snapshot.mjs", import.meta.url), "utf8");
+  assert.match(script, /SITES_MAX_BYTES = 256 \* 1024 \* 1024/);
+  assert.match(script, /"__next\._full\.txt"/);
+  assert.match(script, /readFileSync\(sibling\)\.equals\(readFileSync\(path\)\)/);
+  assert.match(script, /bundleBytes > SITES_MAX_BYTES/);
+  assert.match(script, /bytes: bundleBytes/);
+});
+
