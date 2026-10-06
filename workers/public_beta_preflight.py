@@ -124,7 +124,7 @@ def run_public_beta_preflight(
     ) as client:
         check, home = _get(client, path="/", name="home")
         checks.append(check)
-        _require_text(home, ("Civic Intel", "국감 2026"), label="home")
+        _require_text(home, ("모두의국감", "국감 일정"), label="home")
         _reject_tokens(home, forbidden_tokens, label="home")
 
         check, gukgam = _get(client, path="/gukgam/2026", name="gukgam_2026")
@@ -223,7 +223,7 @@ def run_public_beta_preflight(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run read-only Civic Intel public-beta HTTP acceptance checks."
+        description="Run read-only 모두의국감 (Civic Intel) public-beta HTTP acceptance checks."
     )
     parser.add_argument("--web-base-url", required=True)
     parser.add_argument(

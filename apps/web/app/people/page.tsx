@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-
 import RosterGrid from "../components/roster-grid";
 import ReadState from "../components/read-state";
 import { getPeople } from "../data";
@@ -8,21 +6,27 @@ import { buildPageMetadata } from "../site-metadata";
 export const dynamic = "force-dynamic";
 
 export const metadata = buildPageMetadata({
-  title: "People",
-  description: "현재 공개된 resolved Person을 Claim, Evidence와 함께 탐색합니다.",
+  title: "인물 찾기",
+  description: "공개 기준을 통과한 인물 기록을 이름으로 찾고, 역할·이력의 근거와 출처를 확인합니다.",
   path: "/people",
 });
 
-export default async function PeoplePage() {
+export default async function PeoplePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const initialQuery = typeof params.q === "string" ? params.q.slice(0, 80) : "";
   const peopleResult = await getPeople();
 
   return (
     <div className="site-page people-page">
       <header className="people-header">
         <div>
-          <div className="eyebrow">Public discovery / People</div>
-          <h1>People</h1>
-          <p className="profile-lede">현재 공개된 사람 기록을 이름과 확인 가능한 국회 기본 프로필로 탐색합니다. 각 행은 근거를 확인하는 상세 기록으로 이어집니다.</p>
+          <div className="eyebrow">모두의국감 / 인물 찾기</div>
+          <h1>인물 찾기</h1>
+          <p className="profile-lede">공개 기준을 통과한 인물 기록을 이름과 국회 기본 프로필로 찾습니다. 각 행은 근거와 출처를 확인하는 상세 기록으로 이어집니다.</p>
         </div>
       </header>
 
@@ -31,17 +35,17 @@ export default async function PeoplePage() {
           <section className="directory-section" aria-labelledby="people-list-title">
             <div className="section-intro">
               <div>
-                <span className="eyebrow">Current public directory</span>
+                <span className="eyebrow">현재 공개 인물</span>
                 <h2 id="people-list-title">{peopleResult.data.length}명의 공개 기록</h2>
               </div>
-              <p>사람을 선택하면 공개 Claim과 Evidence, 출처의 범위를 함께 확인할 수 있습니다.</p>
+              <p>사람을 선택하면 공개된 근거(Claim·Evidence)와 출처의 범위를 함께 확인할 수 있습니다. 같은 이름의 기록은 합치지 않고 따로 표시합니다.</p>
             </div>
-            <RosterGrid people={peopleResult.data} />
+            <RosterGrid people={peopleResult.data} initialQuery={initialQuery} />
           </section>
         ) : (
           <p className="empty-state" role="status">
             <span className="empty-state-mark" aria-hidden="true">∅</span>
-            <span><strong>현재 공개 People이 없습니다.</strong><small>대상이 없다는 의미가 아니라 현재 공개 조건의 결과가 비어 있다는 뜻입니다.</small></span>
+            <span><strong>현재 공개 인물 기록이 없습니다.</strong><small>대상이 없다는 의미가 아니라 현재 공개 조건의 결과가 비어 있다는 뜻입니다.</small></span>
           </p>
         )
       ) : (

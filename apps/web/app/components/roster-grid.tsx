@@ -18,8 +18,8 @@ function facetValue(discovery: PeopleDiscovery | undefined, key: FilterKey): str
   return discovery?.facets[key]?.value ?? null;
 }
 
-export default function RosterGrid({ people }: { people: Person[] }) {
-  const [query, setQuery] = useState("");
+export default function RosterGrid({ people, initialQuery = "" }: { people: Person[]; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<Partial<Record<FilterKey, string>>>({});
   const searchTerm = query.trim().toLocaleLowerCase();
   const facetOptions = useMemo(
@@ -69,7 +69,7 @@ export default function RosterGrid({ people }: { people: Person[] }) {
     <>
       <div className="roster-toolbar">
         <div>
-          <span className="micro-label">People directory</span>
+          <span className="micro-label">인물 목록</span>
           <p className="toolbar-count">
             <strong>{visiblePeople.length}명</strong>
             <span>표시 중 / 전체 {people.length}명</span>

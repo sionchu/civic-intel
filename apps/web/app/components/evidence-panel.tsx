@@ -173,7 +173,7 @@ export default function EvidencePanel({
             <dt>기록 시각</dt>
             <dd>
               {formatDateTime(claim.recorded_at) ?? "미기재"}
-              <small>Civic Intel이 이 기록을 저장한 시각이며 현실 세계의 사건 시각이 아닙니다.</small>
+              <small>이 서비스가 기록을 저장한 시각이며 현실 세계의 사건 시각이 아닙니다.</small>
             </dd>
           </div>
           <div>

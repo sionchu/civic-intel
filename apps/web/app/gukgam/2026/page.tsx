@@ -30,7 +30,7 @@ function searchFacets(facets: FacetSource): GukgamSearchFacets {
 
 export const metadata = buildPageMetadata({
   title: "국감 2026",
-  description: "2026 국정감사를 인물·기관·공식 기록과 Evidence를 통해 탐색하는 Civic Intel 이벤트 화면",
+  description: "2026 국정감사 일정·피감기관·감사 위원을 공식 기록과 근거로 확인하는 모두의국감 화면",
   path: "/gukgam/2026",
 });
 
@@ -70,7 +70,7 @@ export default async function Gukgam2026Page({
     <div className="site-page gukgam-page">
       <header className="gukgam-hero">
         <div className="gukgam-hero-copy">
-          <p className="eyebrow">Civic Intel / Event surface</p>
+          <p className="eyebrow">모두의국감 / 2026 국정감사</p>
           <h1>국감 <em>2026</em></h1>
           <p className="lede">
             국정감사에서 등장하는 인물과 기관을 기존 공개 기록과 공식 Evidence에 연결해 살펴봅니다.
@@ -80,8 +80,8 @@ export default async function Gukgam2026Page({
             <a className="primary-action" href={nextDate ? `#audit-${nextDate}` : "#gukgam-published-targets-title"}>
               {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"} <span aria-hidden="true">↓</span>
             </a>
-            <Link className="inline-action" href="/people">인물 탐색 <span aria-hidden="true">↗</span></Link>
-            <Link className="inline-action" href="/organizations">기관 탐색 <span aria-hidden="true">↗</span></Link>
+            <Link className="inline-action" href="/people">인물 찾기 <span aria-hidden="true">↗</span></Link>
+            <Link className="inline-action" href="/organizations">기관 보기 <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
         <aside className="gukgam-method" aria-label="국감 화면의 공개 원칙">
@@ -287,14 +287,14 @@ export default async function Gukgam2026Page({
         )}
       </section>
 
-      <section className="gukgam-coverage-strip" aria-label="현재 Civic Intel 공개 범위">
+      <section className="gukgam-coverage-strip" aria-label="현재 공개 범위">
         <div>
-          <span className="micro-label">People</span>
+          <span className="micro-label">인물</span>
           <strong>{peopleCount ?? "—"}</strong>
           <small>현재 공개 Person 기록</small>
         </div>
         <div>
-          <span className="micro-label">Organizations</span>
+          <span className="micro-label">기관</span>
           <strong>{organizationCount ?? "—"}</strong>
           <small>현재 공개 기관 기록</small>
         </div>
@@ -337,19 +337,19 @@ export default async function Gukgam2026Page({
             <span className="entry-index">01</span>
             <strong>인물에서 시작</strong>
             <p>현재 공개된 Person을 선택하고 경력·공직 기록과 Evidence를 읽습니다.</p>
-            <span className="entry-action">People <span aria-hidden="true">↗</span></span>
+            <span className="entry-action">인물 찾기 <span aria-hidden="true">↗</span></span>
           </Link>
           <Link className="gukgam-entry" href="/organizations">
             <span className="entry-index">02</span>
             <strong>기관에서 시작</strong>
             <p>피감기관으로 이어질 수 있는 공공기관·기관 임원 기록과 공개 Claim을 확인합니다.</p>
-            <span className="entry-action">Organizations <span aria-hidden="true">↗</span></span>
+            <span className="entry-action">기관 <span aria-hidden="true">↗</span></span>
           </Link>
           <Link className="gukgam-entry" href="/people">
             <span className="entry-index">03</span>
             <strong>공식 연결 보기</strong>
             <p>Person 상세의 local graph에서 현재 Evidence Core가 지원하는 공식 연결을 확인합니다.</p>
-            <span className="entry-action">Connections <span aria-hidden="true">↗</span></span>
+            <span className="entry-action">공식 연결 <span aria-hidden="true">↗</span></span>
           </Link>
         </div>
       </section>

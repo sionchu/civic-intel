@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
-const DEFAULT_TITLE = "Civic Intel — Evidence Directory";
-const DEFAULT_DESCRIPTION = "공개 기록과 근거를 따라가는 Civic Intel Evidence Directory";
+// Public product name. Internal code, packages and env vars keep the Civic Intel name.
+export const SITE_NAME = "모두의국감";
+const DEFAULT_TITLE = `${SITE_NAME} — 국감 참여 인물 이력 검색`;
+const DEFAULT_DESCRIPTION =
+  "국정감사 참여 인물의 공개 이력과 근거를 검색합니다. 공개 기준을 통과한 기록만 출처와 함께 보여줍니다.";
 
 export function publicSiteBaseUrl(): URL | null {
   const raw = process.env.CIVIC_PUBLIC_BASE_URL?.trim();
@@ -36,7 +39,7 @@ export function buildRootMetadata(): Metadata {
   return {
     title: {
       default: DEFAULT_TITLE,
-      template: "%s — Civic Intel",
+      template: `%s — ${SITE_NAME}`,
     },
     description: DEFAULT_DESCRIPTION,
     icons: {
@@ -57,7 +60,7 @@ export function buildRootMetadata(): Metadata {
     openGraph: {
       type: "website",
       locale: "ko_KR",
-      siteName: "Civic Intel",
+      siteName: SITE_NAME,
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
       ...(canonical ? { url: canonical } : {}),
@@ -87,7 +90,7 @@ export function buildPageMetadata({
     openGraph: {
       type: "website",
       locale: "ko_KR",
-      siteName: "Civic Intel",
+      siteName: SITE_NAME,
       title,
       description,
       ...(canonical ? { url: canonical } : {}),

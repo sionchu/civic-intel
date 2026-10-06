@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { buildRootMetadata } from "./site-metadata";
+import { buildRootMetadata, SITE_NAME } from "./site-metadata";
 import "./styles.css";
 
 export function generateMetadata(): Metadata {
@@ -16,33 +16,33 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <div className="app-shell">
           <header className="site-header">
             <div className="header-inner">
-              <Link className="brand" href="/" aria-label="Civic Intel 홈">
-                <span className="brand-mark" aria-hidden="true">CI</span>
+              <Link className="brand" href="/" aria-label={`${SITE_NAME} 홈`}>
+                <span className="brand-mark" aria-hidden="true">국감</span>
                 <span className="brand-copy">
-                  <strong>Civic Intel</strong>
-                  <small>Evidence Directory</small>
+                  <strong>{SITE_NAME}</strong>
+                  <small>국감 인물 이력·근거 검색</small>
                 </span>
               </Link>
               <nav className="global-nav" aria-label="주요 메뉴">
-                <Link className="nav-link" href="/people">People</Link>
-                <Link className="nav-link" href="/organizations">Organizations</Link>
-                <Link className="nav-link nav-event-link" href="/gukgam/2026">국감 2026</Link>
-                <span className="nav-status">읽기 전용 공개 기록</span>
+                <Link className="nav-link" href="/people">인물 찾기</Link>
+                <Link className="nav-link nav-event-link" href="/gukgam/2026">국감 일정</Link>
+                <Link className="nav-link" href="/organizations">기관</Link>
+                <Link className="nav-link" href="/#coverage">자료 범위</Link>
               </nav>
             </div>
           </header>
           <main id="main-content">{children}</main>
           <footer className="site-footer">
             <div className="footer-brand">
-              <span className="brand-mark small" aria-hidden="true">CI</span>
+              <span className="brand-mark small" aria-hidden="true">국감</span>
               <div>
-                <strong>Civic Intel</strong>
-                <p>공개 기록과 근거를 함께 보여줍니다.</p>
+                <strong>{SITE_NAME}</strong>
+                <p>공개 기준을 통과한 기록만 근거·출처와 함께 보여줍니다.</p>
               </div>
             </div>
             <div className="footer-note">
-              <span className="micro-label">PUBLIC / READ-ONLY</span>
-              <span>Evidence Directory v0</span>
+              <span className="micro-label">읽기 전용 공개 기록</span>
+              <span>평가·순위·점수를 만들지 않습니다.</span>
             </div>
           </footer>
         </div>

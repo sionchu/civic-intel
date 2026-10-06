@@ -1,42 +1,90 @@
 import Link from "next/link";
 
 import ReadState from "./components/read-state";
-import { getPeople } from "./data";
+import { getGukgamTargets, getPeople } from "./data";
+import { focusDate, formatAuditDate, groupByDateAndCommittee, seoulDate } from "./gukgam/2026/schedule";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const peopleResult = await getPeople();
+  const [peopleResult, targetsResult] = await Promise.all([getPeople(), getGukgamTargets()]);
   const peopleCount = peopleResult.state === "success" ? peopleResult.data.length : null;
+  // Latest source as-of date among public discovery records; a display of existing values only.
+  const latestAsOf = peopleResult.state === "success"
+    ? peopleResult.data
+        .map((person) => person.discovery?.as_of)
+        .filter((value): value is string => Boolean(value))
+        .sort()
+        .at(-1) ?? null
+    : null;
+
+  const today = seoulDate(new Date());
+  const scheduleGroups = targetsResult.state === "success"
+    ? groupByDateAndCommittee(targetsResult.data.items, today)
+    : [];
+  const todayGroup = scheduleGroups.find((group) => group.relation === "today") ?? null;
+  const nextDate = focusDate(scheduleGroups);
 
   return (
     <div className="site-page home-page">
-      <section className="home-intro" aria-labelledby="hero-title">
+      <section className="home-intro home-search" aria-labelledby="hero-title">
         <div className="home-intro-copy">
-          <p className="eyebrow">Civic Intel / 공개 기록 디렉터리</p>
-          <h1 id="hero-title">공개 기록을<br /><em>직접 확인하세요.</em></h1>
-          <p className="lede">공개된 사람 기록을 읽고, 어떤 내용이 어디에서 확인되는지 따라갈 수 있습니다. 이곳은 결론을 대신 내리는 곳이 아니라 기록을 살펴보는 읽기 화면입니다.</p>
-          <div className="hero-actions">
-            <Link className="primary-action" href="/people">사람 기록 탐색 <span aria-hidden="true">↗</span></Link>
-          </div>
+          <p className="eyebrow">모두의국감 · 2026 국정감사</p>
+          <h1 id="hero-title">국감 참여 인물의<br /><em>이력과 근거</em>를 확인하세요</h1>
+          <p className="lede">
+            국회의원 등 공개 근거로 확인된 인물을 이름으로 찾고, 역할·이력과 2026 국정감사 관련
+            맥락을 출처와 함께 확인할 수 있습니다.
+          </p>
+          <form className="home-search-form" action="/people" method="get" role="search">
+            <label className="gukgam-search-field">
+              <span className="sr-only">인물 이름으로 검색</span>
+              <span className="search-icon" aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                name="q"
+                placeholder="인물 이름으로 검색 (예: 안철수)"
+                autoComplete="off"
+                maxLength={80}
+                required
+              />
+            </label>
+            <button className="primary-action" type="submit">검색 <span aria-hidden="true">↗</span></button>
+          </form>
+          <p className="home-trust-note">
+            확인 가능한 공개 기록만 보여줍니다. 동명이인과 미확인 관계는 자동으로 합치지 않습니다.
+            {" "}<Link href="/people">전체 인물 목록 보기</Link>
+          </p>
         </div>
-        <aside className="home-coverage" aria-label="현재 공개 범위">
+        <aside className="home-coverage" aria-label="오늘의 국감 일정과 공개 범위">
           <div className="home-coverage-heading">
-            <span className="micro-label">현재 공개 범위</span>
-            <span className="coverage-index">READ-ONLY</span>
+            <span className="micro-label">오늘 (KST)</span>
+            <span className="coverage-index">{formatAuditDate(today)}</span>
           </div>
-          {peopleResult.state === "success" ? (
+          {targetsResult.state === "error" ? (
+            <p className="coverage-caption">국감 일정을 불러오지 못했습니다.</p>
+          ) : todayGroup ? (
             <>
-              <p className="coverage-value"><strong>{peopleCount}</strong><span>명</span></p>
-              <p className="coverage-caption">현재 공개된 사람 기록</p>
-              {peopleCount === 0 && <p className="coverage-note">현재 공개 조건에서 표시할 사람이 없습니다.</p>}
+              <p className="coverage-value"><strong>{todayGroup.count}</strong><span>건</span></p>
+              <p className="coverage-caption">
+                오늘 공개 기준을 통과한 감사 일정 · {todayGroup.committees.length}개 위원회
+              </p>
+              <Link className="inline-action" href={`/gukgam/2026#audit-${today}`}>오늘 일정 보기 <span aria-hidden="true">↗</span></Link>
             </>
           ) : (
             <>
-              <p className="coverage-value coverage-unavailable">—</p>
-              <p className="coverage-caption">공개 범위를 불러오지 못했습니다.</p>
+              <p className="coverage-caption">현재 공개 기준에서 오늘 표시할 일정이 없습니다.</p>
+              {nextDate && (
+                <Link className="inline-action" href={`/gukgam/2026#audit-${nextDate}`}>
+                  다음 공개 일정 {formatAuditDate(nextDate)} <span aria-hidden="true">↗</span>
+                </Link>
+              )}
             </>
           )}
+          <p className="coverage-note">
+            {peopleCount === null
+              ? "공개 인물 기록 수를 불러오지 못했습니다."
+              : `현재 공개 인물 기록 ${peopleCount}명${latestAsOf ? ` · 최신 출처 기준일 ${latestAsOf}` : ""}`}
+          </p>
         </aside>
       </section>
 
@@ -44,36 +92,31 @@ export default async function HomePage() {
 
       <section className="event-invite" aria-labelledby="gukgam-invite-title">
         <div className="event-invite-copy">
-          <span className="eyebrow">Event surface / 2026</span>
-          <h2 id="gukgam-invite-title">국감 2026</h2>
-          <p>국정감사에서 만나는 인물과 기관을 기존 공개 기록, 공식 연결, Evidence와 함께 살펴보는 Civic Intel의 첫 이벤트 탐색 화면입니다.</p>
+          <span className="eyebrow">2026 국정감사</span>
+          <h2 id="gukgam-invite-title">국감 일정과 감사 위원</h2>
+          <p>위원회 공식 계획서에서 확인된 감사일·피감기관과, 국회 명부에 기재된 위원회별 위원을 근거와 함께 봅니다.</p>
         </div>
         <div className="event-invite-meta">
-          <span className="micro-label">Evidence first</span>
-          <p>위원회 계획·피감기관·증인·참고인 자료는 출처 정책을 통과한 공식 기록만 순차 반영합니다.</p>
-          <Link className="inline-action" href="/gukgam/2026">국감 2026 탐색 <span aria-hidden="true">↗</span></Link>
+          <span className="micro-label">공식 기록 기준</span>
+          <p>계획서·피감기관·증인·참고인 자료는 출처 정책과 검토를 통과한 공식 기록만 순차 반영합니다.</p>
+          <Link className="inline-action" href="/gukgam/2026">국감 일정 보기 <span aria-hidden="true">↗</span></Link>
         </div>
       </section>
 
-      <section className="directory-invite" aria-labelledby="directory-invite-title">
-        <div>
-          <p className="eyebrow">People / current public directory</p>
-          <h2 id="directory-invite-title">사람 탐색</h2>
-          <p>이름과 공개 기록에서 확인되는 정당·지역구·위원회·초선/재선 정보로 사람을 찾아보세요.</p>
-        </div>
-        <Link className="inline-action" href="/people">current public directory <span aria-hidden="true">↗</span></Link>
-      </section>
-
-      <section className="principles" id="principles" aria-labelledby="principles-title">
+      <section className="principles" id="coverage" aria-labelledby="principles-title">
         <div className="principles-heading">
-          <span className="eyebrow">Reading method</span>
-          <h2 id="principles-title">Civic Intel이<br /><em>기록을 읽는 방식</em></h2>
-          <p>사람에서 출처까지, 공개된 근거의 연결을 한 단계씩 확인합니다.</p>
+          <span className="eyebrow">자료 범위</span>
+          <h2 id="principles-title">확인 가능한 범위만<br /><em>근거와 함께</em></h2>
+          <p>
+            모든 국감 참여자나 전체 증인 명단이 아닙니다. 공개 기준을 통과한 기록만 표시하며, 표시되지 않은
+            사람·관계는 없다는 뜻이 아니라 아직 확인되지 않았다는 뜻입니다.
+          </p>
         </div>
         <ol className="principles-list">
-          <li className="principle"><span>01</span><div><strong>Identity</strong><p>먼저 공개 기록이 가리키는 사람을 구분합니다. 같은 이름의 기록도 서로 섞지 않습니다.</p></div></li>
-          <li className="principle"><span>02</span><div><strong>Evidence</strong><p>표시된 내용 옆에서 Claim과 Evidence를 확인하고, 비어 있거나 열린 상태도 그대로 둡니다.</p></div></li>
-          <li className="principle"><span>03</span><div><strong>Source</strong><p>근거가 연결된 출처와 기준일을 따라가며 원문과 기록의 범위를 확인합니다.</p></div></li>
+          <li className="principle"><span>01</span><div><strong>인물 구분</strong><p>공개 기록이 가리키는 사람을 먼저 구분합니다. 이름이 같다는 이유만으로 기록을 합치지 않습니다.</p></div></li>
+          <li className="principle"><span>02</span><div><strong>근거</strong><p>표시된 내용마다 근거(Claim·Evidence)를 열어 볼 수 있고, 확인되지 않은 값은 비워 둡니다.</p></div></li>
+          <li className="principle"><span>03</span><div><strong>출처와 기준일</strong><p>근거가 연결된 공식 출처와 기준일을 따라 원문과 기록의 범위를 확인합니다.</p></div></li>
+          <li className="principle"><span>04</span><div><strong>평가하지 않음</strong><p>정치 성향, 점수, 순위, 평가를 만들지 않습니다. 증인·참고인 명단의 이름은 인물 기록에 자동 연결하지 않습니다.</p></div></li>
         </ol>
       </section>
     </div>
