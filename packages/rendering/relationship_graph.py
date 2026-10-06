@@ -7,6 +7,8 @@ source-run capture keys) and returns Affiliations plus Organization links for pa
 
 from __future__ import annotations
 
+import time
+import weakref
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -84,9 +86,29 @@ MOIS_PUBLIC_INSTITUTION_TYPES = frozenset({"산하기관", "정부투자기관 �
 MOIS_UNIVERSITY_TYPES = frozenset({"고등교육기관"})
 
 
-def build_registry(repository: SqlAlchemyRepository) -> OrganizationRegistry:
-    """Canonical ALIO institutions (0) > OpenDART listed companies (1) > MOIS codes (2)."""
+REGISTRY_CACHE_SECONDS = 600
+_registry_cache: weakref.WeakKeyDictionary[SqlAlchemyRepository, tuple[float, OrganizationRegistry]] = (
+    weakref.WeakKeyDictionary()
+)
 
+
+def build_registry(repository: SqlAlchemyRepository) -> OrganizationRegistry:
+    """Canonical ALIO institutions (0) > OpenDART listed companies (1) > MOIS codes (2/3).
+
+    The registry is read-only reference data (about 135k names); it is cached per repository
+    for ``REGISTRY_CACHE_SECONDS`` so a relationship request does not rebuild it.
+    """
+
+    cached = _registry_cache.get(repository)
+    now = time.monotonic()
+    if cached is not None and now - cached[0] < REGISTRY_CACHE_SECONDS:
+        return cached[1]
+    registry = _build_registry(repository)
+    _registry_cache[repository] = (now, registry)
+    return registry
+
+
+def _build_registry(repository: SqlAlchemyRepository) -> OrganizationRegistry:
     entries: list[tuple[str, RegistryEntity, int]] = []
     for name, kind, key, organization_id in repository.organization_registry_rows():
         if kind == "ALIO_INSTITUTION":

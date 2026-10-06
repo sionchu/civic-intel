@@ -39,12 +39,35 @@ A via entity joins two People only by one of these exact bindings
 | `PROVIDER_CODE` | `assembly_committee:{DEPT_CD}`, `opendart_corp:{corp_code}`, `assembly_bill:{BILL_ID}` | official provider codes |
 | `SOURCE_SCOPED_EXACT_VALUE` | `assembly_roster_party:{POLY_NM}` | exact categorical value within the current-roster contract only |
 | `EXACT_OFFICIAL_COMMITTEE_NAME_CROSSWALK` | `organization:{uuid}` + `committee_code` | committee `DEPT_CD` name equals exactly one current Organization `국회 {name}` |
-| `SOURCE_TEXT_UNBOUND` | `school_text:서울대학교`, `career_text:CAMPAIGN:…` | member-maintained biography text; **not bindable** → CANDIDATE |
+| `EXACT_REGISTRY_NAME` | `organization:{uuid}`, `opendart_corp:{code}`, `mois_org:{code}` | a biography span equals exactly one registry entry (see below) |
+| `EXACT_UNIVERSITY_NAME` | `university:{정식명}` | full domestic university name not in the MOIS registry |
+| `ELECTION_PARTY_CAMPAIGN` | `campaign:{sgId}:{정당}`, `transition:{sgId}` | reviewed NEC election + exact party (or reviewed presidential nominee); presidential transition body |
+| `SOURCE_TEXT_UNBOUND` | `school_text:…`, `career_text:…` | anything else (high schools, foreign schools, law firms, unmatched names) → CANDIDATE |
 
 This satisfies the [Governance Ontology](GOVERNANCE_ONTOLOGY.md) precondition for cross-Person
 path search: Claim-scoped labels are never merged by string equality; only the bindings above are.
-A school, campaign or employer named in free text becomes bindable only after an official
-registry binding exists (for schools, e.g. a 대학알리미/학교알리미 institution code).
+
+### Registry binding of biography text (`relationship_bindings.py`)
+
+Registries already held, in precedence order (a lower tier wins for one name; two different
+entities at the winning tier are ambiguous and never bind):
+
+0. canonical current Organizations with an ALIO classification Claim → `PUBLIC_INSTITUTION`;
+1. OpenDART listed-company master names (`corp_code`) → `COMPANY` (same node as disclosed executives);
+2. MOIS standard organization codes, representative institutions (`org_code`): government types →
+   `GOVERNMENT_BODY`, 산하기관/정부투자기관 → `PUBLIC_INSTITUTION`, 고등교육기관 → `UNIVERSITY`;
+3. MOIS subordinate government units by their own name (courts, prosecutors' offices, regional
+   agencies), names of 5+ characters only.
+
+A biography line binds through its longest word span (legal-form markers such as `(주)` and
+brackets split words; a trailing role word such as `장관`/`대표이사` is stripped from one-word
+spans) that names exactly one entry. Reviewed aliases: `청와대`, `대통령실` → 대통령비서실.
+Universities bind on the MOIS 고등교육기관 name (or a reviewed short form such as 서울대 → 서울대학교);
+high schools never bind (same names in many regions). Campaigns bind on a reviewed election table
+(대선 15–21대, 총선 18–22대, 지방선거 5–9회) plus an exact party name, or a reviewed presidential
+nominee name for that election; regional transition committees never bind, presidential ones bind
+on the ordinal, the president-elect's name, or 국정기획자문위원회(2017)/국정기획위원회(2025).
+Binding identifies the named entity; the biography line remains an attributed, non-asserted CLAIM.
 
 ## Affiliation extractors (exact source contracts; anything else fails closed)
 
@@ -86,16 +109,19 @@ conditions, outputs, `false_positive_conditions`, overlap variant and `path_defa
 | shared_company_board | SAME_COMPANY_BOARD (BOARD_INTERLOCK) | DERIVED | yes |
 | committee_witness_request | COMMITTEE_WITNESS_REQUEST (member ↔ witness of that committee) | DERIVED | yes |
 | bill_cosponsorship | BILL_COSPONSORSHIP / REPEATED_COSPONSORSHIP (≥10 bills) | DERIVED | no (event) |
-| shared_school_candidate | SAME_SCHOOL / SAME_DEPARTMENT (EDUCATION_TIME_OVERLAP) | CANDIDATE | no |
-| shared_career_org_candidate | SAME_CAMPAIGN / SAME_TRANSITION_COMMITTEE / SAME_GOVERNMENT_COMMITTEE / SAME_EMPLOYER (`*_OVERLAP`) | CANDIDATE | no |
+| shared_school (1.1) | SAME_UNIVERSITY / SAME_GRADUATE_SCHOOL / SAME_DEPARTMENT / SAME_HIGH_SCHOOL (EDUCATION_TIME_OVERLAP) | DERIVED when bound, else CANDIDATE | no |
+| shared_government_body | SAME_GOVERNMENT_BODY (GOVERNMENT_OVERLAP) | DERIVED when bound | yes |
+| shared_career_org (1.1) | SAME_CAMPAIGN / SAME_TRANSITION_COMMITTEE / SAME_GOVERNMENT_COMMITTEE / SAME_EMPLOYER (`*_OVERLAP`, EMPLOYMENT_OVERLAP) | DERIVED when bound, else CANDIDATE | yes when bound |
+| revolving_door | GOVERNMENT_TO_BUSINESS / BUSINESS_TO_GOVERNMENT / PUBLIC_INSTITUTION_TO_PRIVATE / PRIVATE_TO_PUBLIC (per Person, stated periods strictly ordered by month) | DERIVED when both ends bound | — |
 
 Explicitly **not** relations: witness ↔ witness co-listing, news/photo co-occurrence, same
 apartment complex, inferred religion, vote similarity, same birth region/hometown. Pair
 generation starts from shared via entities (`index_by_via`), never an N² Person scan.
 
-Not yet executable (no producing source in this slice): REVOLVING_DOOR transitions,
-GOVERNMENT_OVERLAP, FAMILY (explicit public records only), ASSOCIATION/FOUNDATION membership,
-OWNERSHIP/MAJOR_SHAREHOLDER, DECLARED_PROPERTY. Each needs its own source contract first.
+Not yet executable (no producing source): FAMILY (explicit public records only),
+ASSOCIATION/FOUNDATION membership with registry binding, OWNERSHIP/MAJOR_SHAREHOLDER (OpenDART
+`elestock`/major-holder lanes need `DART_API_KEY` on the collector), DECLARED_PROPERTY (국회공보
+route blocked; human-assisted packets only). Each needs its own source contract first.
 
 ## Biography lane (member-profile `MEM_TITLE`)
 
@@ -111,10 +137,11 @@ categories by fixed keyword order. Institution names are copied exactly; `instit
 comparison key, not an identity. A later biography change fails closed (new observation version)
 like the other `AssemblyMemberClaimLane` lanes and needs a reviewed supersession.
 
-**Owner decision before canonical apply:** the Assembly member API SourcePolicy has
-`can_show_excerpt=false` as a data-minimization choice. The biography Claims quote one line in the
-proposition and keep `excerpt=None`; the license is unrestricted (data.go.kr 15126133), but
-publishing verbatim biography lines is a presentation choice the owner should confirm.
+**Owner decision (2026-10-07):** verbatim biography lines may be shown publicly. The Assembly
+member API license is unrestricted (data.go.kr 15126133); the SourcePolicy keeps
+`can_show_excerpt=false` for raw responses, and the biography Claims quote one line in the
+proposition with `excerpt=None`. Applied to canonical on 2026-10-07 after backup
+`pre-evidence-graph-20261007-080654.dump`.
 
 ## API
 

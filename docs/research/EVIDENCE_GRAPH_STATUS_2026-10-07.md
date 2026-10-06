@@ -1,5 +1,32 @@
 # Evidence Graph status — 2026-10-07
 
+## Canonical (applied 2026-10-07, owner-approved; with registry bindings)
+
+Backup `pre-evidence-graph-20261007-080654.dump`; Claims 558,801 → 804,621. Audit on canonical
+`civic_intel` with ruleset 1.1 bindings (MOIS codes, ALIO, OpenDART, NEC election table):
+
+| Relation (unique pairs) | Status | Pairs |
+|---|---|---|
+| SAME_PARTY | DERIVED | 18,869 |
+| SAME_UNIVERSITY / SAME_GRADUATE_SCHOOL / SAME_DEPARTMENT | DERIVED | 4,751 / 764 / 134 |
+| SAME_GOVERNMENT_BODY (+ GOVERNMENT_OVERLAP) | DERIVED | 4,319 (+21) |
+| COMMITTEE_WITNESS_REQUEST | DERIVED | 3,976 |
+| SAME_PARLIAMENTARY_COMMITTEE / SAME_SPECIAL_COMMITTEE | DERIVED | 3,714 / 1,799 |
+| SAME_CAMPAIGN / SAME_TRANSITION_COMMITTEE / SAME_GOVERNMENT_COMMITTEE | DERIVED | 193 / 92 / 8 |
+| PUBLIC_INSTITUTION_OVERLAP / SAME_PUBLIC_INSTITUTION | DERIVED | 200 / 19 |
+| SAME_EMPLOYER (registry-bound company/university) | DERIVED | 66 |
+| BOARD_INTERLOCK | DERIVED | 12 |
+| BILL_COSPONSORSHIP (≥10: REPEATED) | DERIVED | 38,168 (21,070) |
+| SAME_HIGH_SCHOOL / SAME_EMPLOYER text / other | CANDIDATE | 21 / 77 / 4 |
+
+Assembly-member layer coverage (share of 299 with ≥1 bound affiliation): political 100%,
+legislative 99.7%, education 69.6%, government body 52.5%, campaign 15.7%, university/other
+employer 17.1%, public institution 9.4%, business 2.0%. The business share is bounded by what the
+members' own biographies state (about 70 business lines in 299 biographies) and by the registries
+held (OpenDART listed companies only; unlisted companies need the DART corp master).
+
+## Rehearsal (before registry bindings)
+
 Measured with `workers/relationship_coverage.py` (read-only) and the rehearsal API. BEFORE = canonical
 `civic_intel` (Mac, rev 0008, 558,801 Claims, read-only). AFTER = disposable copy
 `civic_intel_graph_rehearsal` restored from a fresh `pg_dump` of canonical, then:
