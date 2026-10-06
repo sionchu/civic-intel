@@ -5,10 +5,11 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { sizeReport } from "../scripts/bundle-size-report.mjs";
 
-const exporter = new URL("../scripts/export-public-projection.mjs", import.meta.url).pathname;
+const exporter = fileURLToPath(new URL("../scripts/export-public-projection.mjs", import.meta.url));
 const PERSON_A = "11111111-1111-4111-8111-111111111111";
 const PERSON_B = "22222222-2222-4222-8222-222222222222";
 const ORG = "33333333-3333-4333-8333-333333333333";

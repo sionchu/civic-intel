@@ -162,10 +162,25 @@ The API ran master `0143c23`; its Python code is identical to this branch.
 | R2 | – | 0 (deferred) |
 | Growth per added Person | about 184 KB of artifact | 0 B of artifact; about 6–7 KB gzip in D1 |
 
-Browser QA (390 px and 1440 px) is **BLOCKED**. The Worker preview binds to Mac loopback, and
-exposing it to the PC browser was refused as a local-service exposure. Client-side navigation
-(RSC fetches) is therefore **NOT_RUN**; server-rendered HTML and asset loading were verified with
-HTTP requests only.
+Browser QA (2026-10-07, PC Windows, Aside). The Worker was built on the PC from this branch and
+served by `wrangler dev --local` on PC loopback. Its local D1 held a fresh export of the Mac public
+API at `0143c23` (2,603 paths, tarball sha256 `0bfa213e…`), copied over Tailscale.
+
+- **Server-rendered pages PASS** at 1440 px and 390 px: `/`, `/people`, `/gukgam/2026`,
+  `/organizations`, an Organization page and two Person pages, one of them an Assembly member with
+  10 vote rows. No horizontal page overflow, no read-failure page, and the vote evidence disclosure
+  opens. The 390 px check used a same-origin 390 px iframe, because Aside cannot resize its viewport.
+- **Client-side navigation FAIL (cutover blocker).** Clicking any `next/link` throws
+  `TypeError: e is not a function` and the URL never changes. The Vinext `link` shim lazily imports
+  the navigation module and destructures `navigateClientSide`. The Rolldown chunk it receives
+  (`index-*.js`) only exports minified names, so the call is undefined. This is in the starter's
+  pinned `vinext 1.0.0-beta.5`, not app code. `vinext 1.0.1` exists but needs
+  `@vitejs/plugin-rsc ^0.5.34` against the starter's `0.5.35` pin, so it was not tried. The static
+  production path is a Next export and is not affected.
+- On Windows, `build-sites-worker.mjs` now spawns `npm` through a shell, but `npm run install:ci`
+  still rejects the lockfile that `--package-lock-only` regenerates there (missing `@emnapi/*`
+  WASM entries). The PC build above used `npm install` in the stage by hand. Build release
+  artifacts on the Mac.
 
 ## Ownership and conflicts
 
@@ -192,13 +207,15 @@ HTTP requests only.
 3. **Search.** `/people` still sends all 504 directory rows (about 0.66 MB JSON) and filters in the
    browser, as the static site does. A bounded server-side search needs a `roster-grid.tsx` change
    (owned by #197/#175); it is deferred.
-4. **Browser QA** at 390 px and 1440 px, including client navigation, on a private Sites preview.
+4. **Client navigation.** Fix the Vinext Link chunk bug above (a newer starter from the Sites plugin,
+   or a fixed `vinext` pin the starter accepts), then repeat the browser QA, including client
+   navigation, on a private Sites preview.
 5. **Indexing.** The Worker build runs with indexing off (no `CIVIC_PUBLIC_BASE_URL`). An indexed
    Worker build needs those env values set as Site settings, not baked per snapshot.
 
 ## Production cutover plan (needs owner approval at each marked step)
 
-1. Close gaps 1 and 2 in code. Run the full verification.
+1. Close gaps 1, 2 and 4 in code. Run the full verification.
 2. **[owner]** Add a D1 binding to the existing Site `moduigukgam` (never a new Site), with the
    Worker source from `build-sites-worker.mjs --out <linked folder>` keeping its `project_id`.
 3. **[owner]** Save a version (owner-private) so Sites applies the migration. Load and activate a

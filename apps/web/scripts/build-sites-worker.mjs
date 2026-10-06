@@ -30,7 +30,9 @@ function fail(message) {
 }
 
 function run(command, args, options = {}) {
-  const result = spawnSync(command, args, { cwd: stage, stdio: "inherit", ...options });
+  // npm is a .cmd shim on Windows, which Node only spawns through a shell.
+  const shell = process.platform === "win32" && command === "npm";
+  const result = spawnSync(command, args, { cwd: stage, stdio: "inherit", shell, ...options });
   if (result.status !== 0) fail(`${command} ${args.join(" ")} exited ${result.status}`);
   return result;
 }
