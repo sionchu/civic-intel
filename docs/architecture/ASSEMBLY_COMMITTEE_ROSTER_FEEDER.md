@@ -180,4 +180,11 @@ office is reported as `stale_claim_ids`; a changed role for the same committee f
 need a reviewed supersession, not a silent overwrite. The import shares the exact-`MONA_CD`
 contract of the bill-participation lane (`AssemblyMemberClaimLane`).
 
+`--publish-memberships [--dry-run]` reads the same manifest and publishes one
+`ASSEMBLY_COMMITTEE_MEMBERSHIP` FACT Claim per row (`위원장`/`간사`/`위원`), keyed by the official
+`DEPT_CD` (`committee_code`) with the role text verbatim. This is the code-keyed membership fact
+that the [relationship projection](EVIDENCE_GRAPH.md) binds on; the roster's comma-separated
+`ASSEMBLY_COMMITTEES` text remains a display Claim and is never joined across People by name.
+The same stale/changed-role fail-closed rules apply.
+
 Running either command against the canonical database is an operator action that needs approval.

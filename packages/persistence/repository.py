@@ -1994,7 +1994,7 @@ class SqlAlchemyRepository:
         current_rows = list(
             session.scalars(
                 select(ClaimRow).where(
-                    ClaimRow.person_id.in_([str(person.id) for person, *_ in prepared]),
+                    ClaimRow.person_id.in_(sorted({str(person.id) for person, *_ in prepared})),
                     ClaimRow.superseded_at.is_(None),
                 )
             )
