@@ -30,7 +30,8 @@ names, issue FACTs, publish automatically or resolve all cross-source duplicates
 
 Supported actions:
 - HOLD / EXCLUDE / REOPEN on named ALIO source records;
-- REGISTER_PERSON / LINK_PERSON;
+- REGISTER_PERSON / LINK_PERSON for ALIO rows; LINK_PERSON only for Gukgam witness and OpenDART
+  executive-status rows, which have no Person ID (see Identity Resolution);
 - SUBMIT_REVIEW / PUBLISH / WITHDRAW for canonical Claims;
 - CORRECT_CLAIM as a new attributable draft with its own selected Evidence;
 - RENAME_PERSON with previous name retained as an alias;
@@ -61,6 +62,8 @@ is exposed; explicit reopen/withdraw/deactivate/correction operations retain his
 ## Publication and graph
 
 Approval reuses `validate_claim_publication`; it never changes epistemic status into FACT.
+Reviewed witness/OpenDART Person Claims recheck the active link and observation hash before
+publication; withdrawing a committee witness Claim also withholds the Person Claims that restate it.
 Reviewed ALIO role publication rechecks source version and exact Person/Organization/observation
 binding. Only published, source-backed, active exact bindings enter `DISCLOSED_ROLE_AT` edges.
 Both Person and Organization graph reads retain canonical IDs and Evidence/Source references.

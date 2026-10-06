@@ -165,6 +165,7 @@ export type GukgamWitnessProjectionItem = {
   source_ids: string[];
   snapshot_ids: string[];
   observation_ids: string[];
+  linked_person?: { id: string; name: string };
 };
 
 export type GukgamWitnessProjection = {

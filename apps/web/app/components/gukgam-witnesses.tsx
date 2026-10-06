@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { getGukgamWitnesses } from "../data";
 import type { GukgamWitnessProjectionItem } from "../types";
 import ReadState from "./read-state";
@@ -25,7 +27,8 @@ function locatorLabel(item: GukgamWitnessProjectionItem): string {
   return `${place}, ${item.row_number}번`;
 }
 
-// Server component. Names are source-listed text: no Person link is rendered.
+// Server component. Names are source-listed text. A Person link appears only when a reviewed,
+// separately published Person Claim restates this exact row.
 export default async function GukgamWitnesses() {
   const result = await getGukgamWitnesses();
   if (result.state === "error") return <ReadState error={result.error} />;
@@ -57,7 +60,11 @@ export default async function GukgamWitnesses() {
                   <ul>
                     {rows.map((item) => (
                       <li key={item.claim_id} id={`witness-${item.claim_id}`}>
-                        <strong>{item.name}</strong>
+                        <strong>
+                          {item.linked_person ? (
+                            <Link href={`/people/${item.linked_person.id}`}>{item.name}</Link>
+                          ) : item.name}
+                        </strong>
                         <span className="gukgam-witnesses-tag">
                           {item.source_tag}
                           {item.acquisition_channel === "OWNER_SUPPLIED_COPY" ? " · 아직 공식 발표 아님" : ""}
@@ -93,7 +100,7 @@ export default async function GukgamWitnesses() {
       <ul className="gukgam-witnesses-limitations">
         <li>검토를 마친 공식 명단 가운데 공개 기준을 통과한 행만 표시합니다. 전체 증인 명단이 아닙니다.</li>
         <li>명단은 의결·추가·종합감사 변경에 따라 바뀔 수 있고, 이후 버전이 앞선 행을 대체할 수 있습니다.</li>
-        <li>여기에 없다는 것이 출석 요구가 없었다는 뜻은 아닙니다. 이름은 인물 기록과 자동으로 연결하지 않습니다.</li>
+        <li>여기에 없다는 것이 출석 요구가 없었다는 뜻은 아닙니다. 이름은 인물 기록과 자동으로 연결하지 않고, 사람이 검토해 공개한 행만 인물 기록으로 이어집니다.</li>
       </ul>
     </section>
   );
