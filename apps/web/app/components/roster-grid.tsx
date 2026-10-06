@@ -15,6 +15,8 @@ export type WitnessListing = {
   committeeName: string;
   category: string;
   attendanceDateText: string | null;
+  sourceTag: string;
+  officiallyPublished: boolean;
 };
 
 const FACETS = [
@@ -200,7 +202,7 @@ export default function RosterGrid({
                 <a href={`/gukgam/2026#witness-${row.claimId}`}>
                   <strong>{row.name}</strong>
                   <span>{row.affiliationTitle ?? "소속·직위 미기재"}</span>
-                  <small>{row.committeeName} · {row.category}{row.attendanceDateText ? ` · 출석 ${row.attendanceDateText}` : ""}</small>
+                  <small>{row.committeeName} · {row.category}{row.attendanceDateText ? ` · 출석 ${row.attendanceDateText}` : ""} · {row.sourceTag}{row.officiallyPublished ? "" : " · 아직 공식 발표 아님"}</small>
                 </a>
               </li>
             ))}

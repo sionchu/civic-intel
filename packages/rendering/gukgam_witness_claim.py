@@ -11,6 +11,7 @@ from packages.connectors.gukgam_witness_packet import (
     CHANNEL_OWNER_SUPPLIED_COPY,
     OWNER_COPY_LABEL,
     WITNESS_CATEGORIES,
+    witness_source_tag,
 )
 from packages.domain.contracts import (
     Claim,
@@ -154,6 +155,7 @@ def build_gukgam_witness_claim(
         "list_version": list_version,
         "list_year": str(list_year),
         "acquisition_channel": channel,
+        "source_tag": witness_source_tag(channel, _obs_text(observation, "artifact_format")),
         "category": category,
         "witness_name": name,
         "row_number": str(row_number),
@@ -265,6 +267,7 @@ class GukgamWitnessProjectionItem:
     organization_id: UUID
     organization_name: str
     acquisition_channel: str
+    source_tag: str
     provenance_label: str | None
     source_url: str | None
     claim_id: UUID
@@ -291,6 +294,7 @@ class GukgamWitnessProjectionItem:
             "table_index": self.table_index,
             "table_row": self.table_row,
             "acquisition_channel": self.acquisition_channel,
+            "source_tag": self.source_tag,
             "provenance_label": self.provenance_label,
             "subject_scope": self.subject_scope,
             "organization": {"id": str(self.organization_id), "name": self.organization_name},
@@ -452,6 +456,8 @@ def build_gukgam_witness_projection(
                     organization_id=organization.id,
                     organization_name=organization.name,
                     acquisition_channel=channel,
+                    source_tag=claim.qualifiers.get("source_tag")
+                    or witness_source_tag(channel, None),
                     provenance_label=(
                         OWNER_COPY_LABEL if channel == CHANNEL_OWNER_SUPPLIED_COPY else None
                     ),

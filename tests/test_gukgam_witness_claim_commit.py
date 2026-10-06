@@ -115,3 +115,43 @@ def test_unreviewed_or_unimported_packets_are_refused(tmp_path: Path) -> None:
     with pytest.raises(SystemExit):
         claim_main(["--packet", str(packet2), "--database-url", fresh_url,
                     "--create-committee-organizations"])
+
+
+def test_source_tags_and_image_copies_follow_the_owner_rule() -> None:
+    from packages.connectors.gukgam_witness_packet import (
+        OWNER_COPY_LABEL,
+        GukgamWitnessPacketError,
+        parse_reviewed_gukgam_witness_packet,
+        witness_source_tag,
+    )
+    from tests.test_gukgam_witness import owner_payload, payload
+
+    assert "아직 공식 발표 아님" in OWNER_COPY_LABEL
+    assert witness_source_tag("OFFICIAL_SITE", "PDF") == "#공식게시"
+    assert witness_source_tag("OFFICIAL_MINUTES", "PDF") == "#공식회의록"
+    assert witness_source_tag("OWNER_SUPPLIED_COPY", "HWP") == "#제공사본_HWP"
+    assert witness_source_tag("OWNER_SUPPLIED_COPY", "JPG") == "#제공사본_비HWP"
+
+    image_copy = owner_payload()
+    image_copy["source"]["artifact_format"] = "JPG"
+    for row in image_copy["rows"]:
+        row["locator"]["page_number"] = None
+    assert parse_reviewed_gukgam_witness_packet(image_copy).source.artifact_format == "JPG"
+
+    official_image = payload()
+    official_image["source"]["artifact_format"] = "JPG"
+    with pytest.raises(GukgamWitnessPacketError, match="image artifacts"):
+        parse_reviewed_gukgam_witness_packet(official_image)
+
+
+def test_projection_exposes_the_source_tag(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repository, database_url, packet = imported(tmp_path)
+    capsys.readouterr()
+    base = ["--packet", str(packet), "--database-url", database_url, "--create-committee-organizations"]
+    plan = run(capsys, *base)["plan_sha256"]
+    run(capsys, *base, "--commit", "--expected-plan-sha256", plan)
+    with TestClient(create_app(repository)) as client:
+        body = client.get("/gukgam/2026/witnesses").json()
+    assert {item["source_tag"] for item in body["items"]} == {"#공식게시"}

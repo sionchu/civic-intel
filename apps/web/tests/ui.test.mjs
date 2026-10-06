@@ -746,3 +746,19 @@ test("Official 국감 witness lists are shown and searchable as source text, nev
   const section = roster.slice(roster.indexOf("witness-matches"));
   assert.doesNotMatch(section, /\/people\/|person\.id|person_id/);
 });
+
+test("Witness rows carry the owner source tag and mark supplied copies as not yet official", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [witnesses, roster, people, types] = await Promise.all([
+    read("../app/components/gukgam-witnesses.tsx"),
+    read("../app/components/roster-grid.tsx"),
+    read("../app/people/page.tsx"),
+    read("../app/types.ts"),
+  ]);
+  assert.match(types, /source_tag: "#공식게시" \| "#공식회의록" \| "#제공사본_HWP" \| "#제공사본_비HWP"/);
+  assert.match(witnesses, /\{item\.source_tag\}/);
+  assert.match(witnesses, /OWNER_SUPPLIED_COPY" \? " · 아직 공식 발표 아님"/);
+  assert.match(people, /officiallyPublished: item\.acquisition_channel !== "OWNER_SUPPLIED_COPY"/);
+  assert.match(roster, /아직 공식 발표 아님/);
+});
+

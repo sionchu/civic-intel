@@ -17,9 +17,12 @@ HUMAN_REVIEWED = "HUMAN_REVIEWED"
 WITNESS_REVIEW_STATUSES = frozenset({REVIEW_REQUIRED, HUMAN_REVIEWED})
 WITNESS_AUTOMATION_GATE = "AUTOMATED_COMMITTEE_HTML_BLOCKED"
 WITNESS_CATEGORIES = ("증인", "참고인")
-ARTIFACT_FORMATS = frozenset({"PDF", "HWP", "HWPX", "XLSX"})
+# Images (photos/screenshots of a list) are accepted only as owner-supplied copies.
+IMAGE_ARTIFACT_FORMATS = frozenset({"JPG", "PNG"})
+ARTIFACT_FORMATS = frozenset({"PDF", "HWP", "HWPX", "XLSX"}) | IMAGE_ARTIFACT_FORMATS
 # XLSX has no pages either: table_index is the sheet number and table_row the sheet row.
-PAGELESS_ARTIFACT_FORMATS = frozenset({"HWP", "HWPX", "XLSX"})
+# An image is one page: table_index 1 and table_row the printed row order.
+PAGELESS_ARTIFACT_FORMATS = frozenset({"HWP", "HWPX", "XLSX"}) | IMAGE_ARTIFACT_FORMATS
 CHANNEL_OFFICIAL_SITE = "OFFICIAL_SITE"
 CHANNEL_OWNER_SUPPLIED_COPY = "OWNER_SUPPLIED_COPY"
 # The committee adopted the list in a full-committee meeting and the official minutes
@@ -28,7 +31,24 @@ CHANNEL_OFFICIAL_MINUTES = "OFFICIAL_MINUTES"
 ACQUISITION_CHANNELS = frozenset(
     {CHANNEL_OFFICIAL_SITE, CHANNEL_OWNER_SUPPLIED_COPY, CHANNEL_OFFICIAL_MINUTES}
 )
-OWNER_COPY_LABEL = "제공받은 사본 — 공식 게시 위치 확인 전"
+# Owner rule (2026-10-06): every owner-supplied copy, HWP or not, is "아직 공식 발표 아님".
+OWNER_COPY_LABEL = "아직 공식 발표 아님 — 제공받은 사본"
+SOURCE_TAG_OFFICIAL_SITE = "#공식게시"
+SOURCE_TAG_OFFICIAL_MINUTES = "#공식회의록"
+SOURCE_TAG_OWNER_DOCUMENT = "#제공사본_HWP"
+SOURCE_TAG_OWNER_NON_DOCUMENT = "#제공사본_비HWP"
+
+
+def witness_source_tag(channel: str, artifact_format: str | None) -> str:
+    """Owner-defined source tag: two official tags and two not-yet-official copy tags."""
+
+    if channel == CHANNEL_OFFICIAL_SITE:
+        return SOURCE_TAG_OFFICIAL_SITE
+    if channel == CHANNEL_OFFICIAL_MINUTES:
+        return SOURCE_TAG_OFFICIAL_MINUTES
+    if artifact_format in IMAGE_ARTIFACT_FORMATS:
+        return SOURCE_TAG_OWNER_NON_DOCUMENT
+    return SOURCE_TAG_OWNER_DOCUMENT
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _LIST_VERSION = re.compile(r"^[0-9A-Za-z가-힣._-]{1,64}$")
@@ -216,6 +236,10 @@ class WitnessSource:
         artifact_format = _required_text(raw.get("artifact_format"), "source.artifact_format")
         if artifact_format not in ARTIFACT_FORMATS:
             raise GukgamWitnessPacketError("witness packet artifact_format is unsupported")
+        if artifact_format in IMAGE_ARTIFACT_FORMATS and channel != CHANNEL_OWNER_SUPPLIED_COPY:
+            raise GukgamWitnessPacketError(
+                "witness packet image artifacts are accepted only as OWNER_SUPPLIED_COPY"
+            )
         sha256 = _required_text(raw.get("artifact_sha256"), "source.artifact_sha256")
         if not _SHA256.fullmatch(sha256):
             raise GukgamWitnessPacketError("witness packet artifact_sha256 is invalid")

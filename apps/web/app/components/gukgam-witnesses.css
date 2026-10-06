@@ -21,3 +21,4 @@
 }
 .gukgam-witnesses-date { grid-column: 1 / -1; color: var(--color-ink-muted); font-size: 12px; }
 .gukgam-witnesses-provenance { font-weight: 600; }
+.gukgam-witnesses-tag { color: var(--color-ink-muted); font-size: 12px; font-weight: 700; }
