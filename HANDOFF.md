@@ -1,5 +1,13 @@
 # HANDOFF
 
+## Current state — 2026-10-06 (person profile linkage)
+
+Branch `feat/person-profile-linkage` (base `0a448eb`) adds human-reviewed links from Gukgam
+witness and OpenDART executive rows to existing People, profile sections and the witness-row
+person link. Plan and evidence: `docs/exec-plans/active/person-profile-linkage-v0.md`
+(`CODE_COMPLETE_CANONICAL_APPLY_NOT_APPROVED`). The canonical DB is unchanged; applying the 234
+reviewed candidates and redeploying the snapshot each need owner approval.
+
 ## Current state — 2026-10-06 (모두의국감 public launch)
 
 Public brand 모두의국감 (public surface only; internals stay Civic Intel) is prepared on
