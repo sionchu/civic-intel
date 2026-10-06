@@ -1,6 +1,6 @@
 # 모두의국감 public launch v0
 
-**Status: `READY_FOR_CODEX_DEPLOY`.** Code and the Sites snapshot build are prepared and verified
+**Status: `DEPLOYED_PUBLIC` (2026-10-06, https://moduigukgam.leeje92.chatgpt.site).** Previously `READY_FOR_CODEX_DEPLOY`. Code and the Sites snapshot build are prepared and verified
 locally. What remains is the Codex/owner deploy: build on the Mac from the canonical DB, then preview
 and publish on ChatGPT Sites.
 
@@ -227,18 +227,19 @@ only (not an attestation):
 - To roll back data, rebuild from the DB. Never edit the bundle.
 - To roll back code, revert the PR #193 merge. It has no schema or data change.
 
-## Receipt (Codex fills after publish)
+## Receipt (public launch, 2026-10-06)
 
 | Field | Value |
 |---|---|
-| Deployed commit | |
-| Bundle SHA-256 / manifest time (KST) | |
-| Manifest counts | |
-| Site name / URL | 모두의국감 / |
-| Timestamp (KST) | |
-| Audience | |
-| Preview QA | |
-| Public smoke | |
-| Indexing | |
-| Known coverage limits | witness lists not Person-linked; targets cover only published Claims; committee roster L2; static snapshot as of manifest time |
-| Rollback path | |
+| Deployed commit | `0a448ebc50f6001bbba56e6e430313173554df75` (master after #193, #194, #195); `git_worktree_dirty: false` |
+| Bundle SHA-256 / manifest time (KST) | `4b2e8fd74e178ba98983c281bd89e938a99346401ea94cf83ab7408f6be452b0` / 2026-10-06 14:15 KST |
+| Manifest counts | public People 299, public Organizations 387 (incl. 13 `국회 <위원회>`), Gukgam targets 151, committees 17, files 2,790, bytes 261,206,504 (249.1 MiB, Sites limit 256 MiB) |
+| Witness data | 25 packets HUMAN_REVIEWED on the owner's instruction "B 전부" (2026-10-06T02:55Z); duplicates excluded on "중복만 빼줘" (교육위 supplied copy, 산자위 09-22); 1,965 observations imported; 1,731 committee-scope Claims committed (plan `f1db97d4967ab4fa30d132e5bc076162d24098693a1af2e45291c7b2f129ae6d`); tags #공식게시 1,553 · #공식회의록 163 · #제공사본_비HWP 15 ("아직 공식 발표 아님"); canonical DB backed up first (`pre-witness-2026-10-06.dump`) |
+| Site name / URL | 모두의국감 / https://moduigukgam.leeje92.chatgpt.site (Site `appgprj_6ac46916b4d08191872983ffd6d52aba`, version 2, deployment `appgdep_6ac486cb50a08191aff58954ed4e8110`) |
+| Timestamp (KST) | 2026-10-06 ~14:37 KST (public switch) |
+| Audience | Anyone on the internet (`access_mode: public`); no custom domain, no server code, D1/R2, env vars or secrets |
+| Preview QA | owner sign-in (Aside): search 안철수 → detail (facts, evidence, sources, portrait, 국감 section); `/gukgam/2026/` today 10/6 7건, 16 days, 1,731 witness rows with tags; witness name search; 404 and `/admin/review/` 404; robots `Disallow: /`; no leak strings. Version 1 showed blank source tags (built against the stale Mac API at d167730) → rebuilt against the 0a448eb API as version 2 and re-verified |
+| Public smoke | logged out: home 375 px (no overflow, 자료 기준 14:15 KST, noindex); `public_beta_preflight --expect-indexing disabled` with a real Person and Organization: PASS; `/admin/review/` 404, unknown Person 404; leak scan of home, 인물 찾기, 국감, Person, 기관 pages: 0 hits. Note: the 1.4 MB 인물 찾기 page hydrates slowly, so `?q=` restore and filtering take several seconds on first load |
+| Indexing | DISABLED (noindex + `Disallow: /`); enabling needs a rebuild with `--base-url https://moduigukgam.leeje92.chatgpt.site --index` and a new version |
+| Known coverage limits | witness lists not Person-linked; 행안·재경 lists not acquired and 기후노동 10.13–10.27 only as supplied images; witness lists change on 10.6–10.7 (과방·행안·법사·복지) after the source minutes; targets cover only published Claims; committee roster L2; static snapshot as of 2026-10-06 14:15 KST |
+| Rollback path | set the Site audience back to owner-only, or redeploy version 1; data: restore `pre-witness-2026-10-06.dump` on a disposable copy first; code: revert #193–#195 |
