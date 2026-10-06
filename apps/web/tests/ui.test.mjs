@@ -779,3 +779,10 @@ test("Sites snapshot fits the 256 MiB limit by dropping only never-requested dup
   assert.match(script, /has no sibling index\.txt; refusing to drop it/);
 });
 
+
+test("Sites snapshot fails instead of freezing a temporary read failure into a page", async () => {
+  const script = await readFile(new URL("../scripts/build-sites-snapshot.mjs", import.meta.url), "utf8");
+  assert.match(script, /read-state SERVICE_UNAVAILABLE/);
+  assert.match(script, /captured a service failure/);
+  assert.match(script, /experimental: \{ cpus: 2 \}/);
+});
