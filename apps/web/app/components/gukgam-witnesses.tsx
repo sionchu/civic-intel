@@ -89,7 +89,7 @@ export default async function GukgamWitnesses() {
           </div>
         ))
       )}
-      <p className="gukgam-witnesses-limitations">전체 명단이 아니며, 의결에 따라 바뀔 수 있습니다. 이름은 인물 기록과 연결하지 않습니다.</p>
+      <p className="gukgam-witnesses-limitations">전체 명단이 아니며, 의결에 따라 바뀔 수 있습니다.</p>
     </section>
   );
 }
