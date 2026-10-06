@@ -108,3 +108,14 @@ def test_profile_shows_recent_vote_episodes_and_counts_without_embedding_all_vot
     }
     assert embedded_votes == rendered
     assert people and all("discovery" in item for item in people)
+
+
+def test_quoted_bill_titles_with_periods_stay_atomic() -> None:
+    from packages.verification.claims import is_atomic
+
+    for title in (
+        "12.3. 윤석열 비상계엄을 해제한 대한민국 국민께 드리는 감사문",
+        "찰스 랭글(Charles B. Rangel) 전 미 하원의원 추모 결의안",
+    ):
+        assert is_atomic(f"가회원의 본회의 표결은 국회 표결 기록에서 「{title}」에 찬성으로 기록되어 있다.")
+    assert not is_atomic("가회원은 찬성했다. 그리고 반대했다.")
