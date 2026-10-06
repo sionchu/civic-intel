@@ -4,6 +4,8 @@ Status: `PREPARED_NOT_APPLIED`. No Site and no `.openai/hosting.json` exist yet.
 production service, domain or indexing variable has been created.
 
 - Governing plan: `docs/exec-plans/active/moduigukgam-public-launch-v0.md`.
+- The D1-backed Worker candidate (not production; cutover needs owner approval) is in
+  `docs/exec-plans/active/sites-storage-split-v0.md`. This static runbook stays the production path.
 - Owner decision (2026-10-06, in thread): generate the site **from the Mac canonical DB** and ship it
   **through ChatGPT Sites**.
 

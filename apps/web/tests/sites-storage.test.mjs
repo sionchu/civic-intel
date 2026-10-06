@@ -12,6 +12,7 @@ const exporter = new URL("../scripts/export-public-projection.mjs", import.meta.
 const PERSON_A = "11111111-1111-4111-8111-111111111111";
 const PERSON_B = "22222222-2222-4222-8222-222222222222";
 const ORG = "33333333-3333-4333-8333-333333333333";
+const SOURCE = "44444444-4444-4444-8444-444444444444";
 
 function vote(index) {
   return { id: `v${index}`, details: { action: "PLENARY_ROLL_CALL_VOTE" } };
@@ -19,7 +20,7 @@ function vote(index) {
 
 function fakeApi(overrides = {}) {
   const person = (id, name, entries = [vote(1)]) => ({
-    id, canonical_name: name, identity_status: "RESOLVED", claims: [],
+    id, canonical_name: name, identity_status: "RESOLVED", claims: [{ source_ids: [SOURCE] }],
     profile: { sections: [{ key: "decision_episodes", entries }] },
   });
   const routes = {
@@ -38,6 +39,7 @@ function fakeApi(overrides = {}) {
     [`/ontology/people/${PERSON_B}`]: { nodes: [] },
     [`/organizations/${ORG}`]: { id: ORG },
     [`/ontology/organizations/${ORG}`]: { nodes: [] },
+    [`/sources/${SOURCE}`]: { id: SOURCE, title: "출처" },
     ...overrides,
   };
   return createServer((request, response) => {
@@ -82,6 +84,9 @@ test("projection export is deterministic and keeps public 4xx answers", async ()
   assert.deepEqual(a.paths, b.paths);
   assert.equal(a.semantics, "REPLACEABLE_PUBLIC_READ_SNAPSHOT_NOT_SSOT");
   assert.equal(a.counts.public_people, 2);
+  // Source records cited by exported Claims are exported once each.
+  assert.equal(a.counts.sources, 1);
+  assert.ok(a.paths.some((row) => row.path === `/sources/${SOURCE}` && row.status === 200));
   // The org money comparison answers 422 in this fixture; it is stored as that answer.
   assert.equal(a.counts.client_error_paths, 1);
   const loadSql = (out) => readFileSync(join(out, "load.sql"), "utf8").split("\n").slice(2).join("\n");
@@ -90,6 +95,7 @@ test("projection export is deterministic and keeps public 4xx answers", async ()
   const activate = readFileSync(join(first.out, "activate.sql"), "utf8");
   assert.match(activate, /status = 'STAGED'/);
   assert.match(activate, new RegExp(`= ${a.counts.parts} AND`));
+  assert.match(readFileSync(join(first.out, "rollback.sql"), "utf8"), /WHEN 'ACTIVE' THEN 'PREVIOUS' ELSE 'ACTIVE'/);
 });
 
 test("projection export fails closed on the public boundary", async () => {

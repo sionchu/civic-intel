@@ -35,6 +35,7 @@ export const SCOPES = [
   `^/organizations/${UUID}$`,
   `^/ontology/organizations/${UUID}$`,
   `^/organizations/${UUID}/money\\?${MONEY_QUERY.replace(/[?&]/g, "\\$&")}$`,
+  `^/sources/${UUID}$`,
 ];
 
 const appRoot = resolve(import.meta.dirname, "..");
@@ -99,13 +100,32 @@ async function main() {
       `/organizations/${id}`, `/ontology/organizations/${id}`, `/organizations/${id}/money?${MONEY_QUERY}`,
     ]),
   ];
-  const queue = [...detailPaths];
-  await Promise.all(Array.from({ length: Number(values.concurrency) }, async () => {
-    while (queue.length > 0) {
-      const path = queue.shift();
-      add(path, await read(path, { allowClientError: !path.startsWith("/people/") }));
+  async function readAll(paths) {
+    const queue = [...paths];
+    await Promise.all(Array.from({ length: Number(values.concurrency) }, async () => {
+      while (queue.length > 0) {
+        const path = queue.shift();
+        add(path, await read(path, { allowClientError: !path.startsWith("/people/") }));
+      }
+    }));
+  }
+  await readAll(detailPaths);
+  // Detail pages render a source card for every source their Claims, Evidence, ontology edges and
+  // money comparisons cite; export those Source records too (a superset of what each page reads).
+  const sourceIds = new Set();
+  const collectSources = (value) => {
+    if (Array.isArray(value)) value.forEach(collectSources);
+    else if (value && typeof value === "object") {
+      for (const [key, item] of Object.entries(value)) {
+        if (key === "source_ids" && Array.isArray(item)) item.forEach((id) => sourceIds.add(id));
+        else if (key === "source_id" && typeof item === "string") sourceIds.add(item);
+        else collectSources(item);
+      }
     }
-  }));
+  };
+  for (const path of detailPaths) collectSources(entries.get(path).body);
+  if ([...sourceIds].some((id) => !new RegExp(`^${UUID}$`).test(id))) fail("non-UUID source id");
+  await readAll([...sourceIds].sort().map((id) => `/sources/${id}`));
 
   // Bounded Person payloads: the rendered recent votes only, never the vote universe.
   for (const { id } of people) {
@@ -168,6 +188,11 @@ async function main() {
     "DELETE FROM public_read WHERE snapshot_id IN (SELECT snapshot_id FROM snapshot_meta WHERE status = 'RETIRED');",
     "DELETE FROM snapshot_meta WHERE status = 'RETIRED';",
   ].join("\n")}\n`);
+  // Rollback swaps ACTIVE and PREVIOUS, and only when exactly one of each exists.
+  writeFileSync(join(out, "rollback.sql"), `${[
+    "-- Serve the PREVIOUS snapshot again; the current ACTIVE becomes PREVIOUS.",
+    "UPDATE snapshot_meta SET status = CASE status WHEN 'ACTIVE' THEN 'PREVIOUS' ELSE 'ACTIVE' END WHERE status IN ('ACTIVE', 'PREVIOUS') AND (SELECT COUNT(*) FROM snapshot_meta WHERE status = 'PREVIOUS') = 1 AND (SELECT COUNT(*) FROM snapshot_meta WHERE status = 'ACTIVE') = 1;",
+  ].join("\n")}\n`);
 
   const manifest = {
     ...semantic,
@@ -180,6 +205,7 @@ async function main() {
     counts: {
       public_people: people.length,
       public_organizations: organizations.length,
+      sources: sourceIds.size,
       paths: rows.length,
       parts: partCount,
       client_error_paths: rows.filter((row) => row.status >= 400).length,
