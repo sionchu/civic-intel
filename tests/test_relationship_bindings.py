@@ -122,3 +122,13 @@ def test_candidate_name_and_president_elect_bind_without_party_or_ordinal() -> N
     assert transition_key("김대중 대통령직 인수위원회")[0] == "transition:19971218"
     assert transition_key("문재인정부 국정기획자문위원회(인수위)")[0] == "transition:20170509"
     assert transition_key("이재명 경기도지사 인수위 기획재정분과") is None
+
+
+def test_legal_form_markers_role_tails_and_reviewed_aliases() -> None:
+    registry = registry_from_rows([
+        ("CJ제일제당", RegistryEntity("opendart_corp:1", "COMPANY", "CJ제일제당", "EXACT_REGISTRY_NAME"), 1),
+        ("대통령비서실", RegistryEntity("mois_org:1015000", "GOVERNMENT_BODY", "대통령비서실", "EXACT_REGISTRY_NAME"), 2),
+    ])
+    assert registry.bind("CJ제일제당(주)대표이사").key == "opendart_corp:1"
+    assert registry.bind("청와대 민정수석실").key == "mois_org:1015000"
+    assert registry.bind("대통령실 경제수석실").key == "mois_org:1015000"

@@ -26,6 +26,21 @@ ORGANIZATION_NAME_SPAN_MAX_WORDS = 4
 MIN_REGISTRY_NAME_LENGTH = 3
 
 
+# Reviewed same-entity names: 청와대 and 대통령실 are names of the 대통령비서실 (MOIS 1015000).
+GOVERNMENT_ALIASES = {"청와대": "대통령비서실", "대통령실": "대통령비서실"}
+_LEGAL_FORM = re.compile(r"\((?:주|株|사|재)\)|（주）|㈜|주식회사|재단법인|사단법인")
+_ROLE_TAIL = re.compile(
+    r"(대표이사|부사장|사장|회장|부회장|이사장|이사|감사|원장|부원장|청장|차장|처장|국장|과장|"
+    r"장관|차관|위원장|위원|본부장|센터장|실장|팀장|소장|총장|사무총장|고문|비서관|행정관|수석)$"
+)
+
+
+def name_words(text: str) -> list[str]:
+    """Words of a biography line for exact span lookup: legal-form markers and brackets split."""
+
+    return [item for item in re.split(r"[\s,/()\[\]·]+", _LEGAL_FORM.sub(" ", text)) if item]
+
+
 def registry_key(value: str) -> str:
     text = re.sub(r"\((?:주|株)\)|（주）|㈜|주식회사|\(재\)|재단법인|사단법인|\(사\)", "", value)
     return re.sub(r"[\s·・ㆍ]+", "", text)
@@ -71,11 +86,16 @@ class OrganizationRegistry:
     def bind(self, text: str, kinds: frozenset[str] | None = None) -> RegistryEntity | None:
         """Longest word span of ``text`` that names exactly one registry entity."""
 
-        words = text.split()
+        words = name_words(text)
         for length in range(min(ORGANIZATION_NAME_SPAN_MAX_WORDS, len(words)), 0, -1):
             found: set[RegistryEntity] = set()
             for start in range(len(words) - length + 1):
-                found |= self._candidates(registry_key(" ".join(words[start : start + length])), kinds)
+                span = words[start : start + length]
+                keys = {registry_key(" ".join(span))}
+                if length == 1:
+                    keys.add(registry_key(_ROLE_TAIL.sub("", span[0])))
+                for key in keys:
+                    found |= self._candidates(GOVERNMENT_ALIASES.get(key, key), kinds)
             if len(found) == 1:
                 return next(iter(found))
             if len(found) > 1:

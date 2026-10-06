@@ -3854,20 +3854,27 @@ class SqlAlchemyRepository:
             ):
                 if corp_code and corp_name:
                     rows.append((str(corp_name), "OPENDART_CORP", str(corp_code), None))
-            for org_code, full_name, type_big in session.execute(
+            for org_code, full_name, lowest_name, type_big, representative in session.execute(
                 select(
                     normalized["org_code"].as_string(),
                     normalized["full_name"].as_string(),
+                    normalized["lowest_name"].as_string(),
                     normalized["type_big"].as_string(),
+                    normalized["representative_org_code"].as_string(),
                 ).where(
                     FeederObservationRow.feeder == "mois_standard_organization_codes",
-                    normalized["org_code"].as_string()
-                    == normalized["representative_org_code"].as_string(),
                     normalized["stop_selector"].as_string() == "0",
                 )
             ):
-                if org_code and full_name:
+                if not org_code or not full_name:
+                    continue
+                if org_code == representative:
                     rows.append((str(full_name), f"MOIS:{type_big or ''}", str(org_code), None))
+                elif lowest_name:
+                    # A subordinate unit (court, prosecutors' office, regional agency) by its own name.
+                    rows.append(
+                        (str(lowest_name), f"MOIS_UNIT:{type_big or ''}", str(org_code), None)
+                    )
         return rows
 
     def current_claims_by_ids(self, claim_ids: Iterable[UUID]) -> dict[UUID, Claim]:

@@ -96,8 +96,11 @@ def build_registry(repository: SqlAlchemyRepository) -> OrganizationRegistry:
         elif kind == "OPENDART_CORP":
             entries.append((name, RegistryEntity(
                 f"opendart_corp:{key}", "COMPANY", name, "EXACT_REGISTRY_NAME"), 1))
-        elif kind.startswith("MOIS:"):
-            type_big = kind[len("MOIS:"):]
+        elif kind.startswith(("MOIS:", "MOIS_UNIT:")):
+            unit = kind.startswith("MOIS_UNIT:")
+            type_big = kind.split(":", 1)[1]
+            if unit and (type_big not in MOIS_GOVERNMENT_TYPES or len(name) < 5):
+                continue
             mapped = (
                 "GOVERNMENT_BODY" if type_big in MOIS_GOVERNMENT_TYPES
                 else "PUBLIC_INSTITUTION" if type_big in MOIS_PUBLIC_INSTITUTION_TYPES
@@ -106,7 +109,7 @@ def build_registry(repository: SqlAlchemyRepository) -> OrganizationRegistry:
             )
             if mapped is not None:
                 entries.append((name, RegistryEntity(
-                    f"mois_org:{key}", mapped, name, "EXACT_REGISTRY_NAME"), 2))
+                    f"mois_org:{key}", mapped, name, "EXACT_REGISTRY_NAME"), 3 if unit else 2))
     return registry_from_rows(entries)
 
 
