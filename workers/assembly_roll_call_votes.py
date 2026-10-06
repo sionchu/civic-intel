@@ -2,7 +2,8 @@
 
 Universe for one run: every bill listed by 의안별 표결현황 (``ncocpgfiaoituanbr``) for one
 Assembly term x every member row that 국회의원 본회의 표결정보 (``nojepdqqaweusdfbi``)
-publishes for that bill. This module never creates Persons and never publishes Claims.
+publishes for that bill. Enumeration never creates Persons or publishes Claims; the separate
+``--publish-claims`` step materializes vote Claims only for exact current-roster ``MONA_CD`` links.
 """
 
 from __future__ import annotations
@@ -27,6 +28,10 @@ from packages.connectors.open_assembly_votes import (
 from packages.domain.contracts import FeederObservation, SourcePolicy, SourceRun
 from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
+from packages.verification.assembly_plenary_votes import (
+    AssemblyPlenaryVoteError,
+    AssemblyPlenaryVotePublisher,
+)
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 from workers.ingest import IngestionPipeline
 from workers.legislative_activity import _safe_detail_url
@@ -500,6 +505,16 @@ def build_parser() -> argparse.ArgumentParser:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--enumerate", action="store_true", help="Start a fresh term enumeration.")
     mode.add_argument("--resume", action="store_true", help="Resume from the last committed bill.")
+    mode.add_argument(
+        "--publish-claims",
+        action="store_true",
+        help="Publish vote Claims for exact current-roster MONA_CD links from the complete run.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="With --publish-claims: build and validate every Claim without writing.",
+    )
     parser.add_argument(
         "--max-bills",
         type=int,
@@ -514,6 +529,32 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.dry_run and not args.publish_claims:
+        parser.error("--dry-run applies only to --publish-claims")
+    if args.publish_claims:
+        try:
+            published = AssemblyPlenaryVotePublisher(
+                SqlAlchemyRepository(args.database_url), assembly_age=args.age
+            ).publish_latest_successful(dry_run=args.dry_run)
+        except (AssemblyPlenaryVoteError, PolicyDenied, ValueError) as exc:
+            parser.error(str(exc))
+        print(
+            json.dumps(
+                {
+                    "dry_run": args.dry_run,
+                    "run_id": str(published.run_id),
+                    "members_published": published.members_published,
+                    "vote_rows_considered": published.vote_rows_considered,
+                    "published_claims": published.published_claims,
+                    "unchanged_claims": published.unchanged_claims,
+                    "excluded_unreconciled_bills": list(published.excluded_unreconciled_bills),
+                },
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
     try:
         connector = OpenAssemblyBillVoteSummaryConnector(
             assembly_age=args.age, page_size=args.page_size

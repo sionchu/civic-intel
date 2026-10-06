@@ -31,6 +31,10 @@ from packages.verification.assembly_legislative_activity import (
     ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
     ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_plenary_votes import (
+    ASSEMBLY_PLENARY_VOTE_PREDICATE,
+    VOTE_VALUE_LABELS,
+)
 from packages.verification.claims import validate_pattern
 from packages.verification.person_record_links import (
     LINKED_WITNESS_COPIED_QUALIFIERS,
@@ -126,7 +130,18 @@ SOURCE_RECORD_SECTIONS: tuple[tuple[str, str, str, str], ...] = (
         "회사가 OpenDART 임원 현황 공시에 이 인물을 해당 직위로 기재했다는 기록입니다. 공시된 주요경력은 회사 제출 내용이며 독립 검증된 경력이 아닙니다.",
     ),
 )
+PLENARY_VOTE_DETAIL_KEYS = (
+    "bill_id",
+    "bill_no",
+    "vote_value",
+    "vote_value_published",
+    "vote_datetime",
+    "committee",
+    "detail_url",
+)
+RECENT_PLENARY_VOTE_LIMIT = 20
 SOURCE_RECORD_DETAIL_KEYS: dict[str, tuple[str, ...]] = {
+    ASSEMBLY_PLENARY_VOTE_PREDICATE: PLENARY_VOTE_DETAIL_KEYS,
     LINKED_WITNESS_PREDICATE: LINKED_WITNESS_COPIED_QUALIFIERS,
     PERSON_ROLE_PREDICATE: ("position_text", "as_of"),
     OPENDART_ROLE_PREDICATE: (*OPENDART_COPIED_FIELDS, "reported_main_career_semantics"),
@@ -305,6 +320,12 @@ def _discovery_facet_entry(
         "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
         "as_of": claim.valid_from.date().isoformat(),
     }
+
+
+# The only Claim predicates the roster discovery projection reads; list reads load nothing else.
+PEOPLE_DISCOVERY_PREDICATES = frozenset(
+    {"HELD_ROLE", *(item.predicate for item in ASSEMBLY_BASE_PROFILE_FIELDS)}
+)
 
 
 def build_people_discovery_projection(
@@ -618,6 +639,43 @@ def _assembly_activity_entries(
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
 
 
+def _plenary_vote_episodes(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Recent official plenary vote rows as dated decision episodes plus whole-record counts.
+
+    Each episode is one published vote Claim with its exact evidence: the action is the plenary
+    vote, the target is the bill and the outcome is the member's recorded choice. No reason for
+    불참, alignment, party-line or ideology value is derived.
+    """
+
+    votes = [
+        claim
+        for claim in claims
+        if claim.predicate == ASSEMBLY_PLENARY_VOTE_PREDICATE
+        and claim.publication_status == PublicationStatus.PUBLISHED
+        and claim.superseded_at is None
+        and evidence_by_claim.get(claim.id)
+    ]
+    counts = {
+        value: sum(1 for claim in votes if claim.qualifiers.get("vote_value") == value)
+        for value in VOTE_VALUE_LABELS
+    }
+    votes.sort(key=lambda item: (item.qualifiers.get("vote_datetime", ""), str(item.id)), reverse=True)
+    entries = []
+    for claim in votes[:RECENT_PLENARY_VOTE_LIMIT]:
+        entry = _claim_entry(claim, evidence_by_claim)
+        entry["kind"] = "DECISION_EPISODE"
+        entry["details"] |= {
+            "action": "PLENARY_ROLL_CALL_VOTE",
+            "target": claim.object_text,
+            "outcome": claim.qualifiers.get("vote_value_published"),
+        }
+        entries.append(entry)
+    return entries, counts
+
+
 def _assembly_limitation(
     limitation_id: str,
     title: str,
@@ -897,6 +955,7 @@ def build_profile_projection(
     committee_office_entries = _claim_entries_for(
         claims, evidence_by_claim, frozenset({ASSEMBLY_COMMITTEE_ROLE_PREDICATE})
     )
+    vote_episode_entries, vote_counts = _plenary_vote_episodes(claims, evidence_by_claim)
     is_assembly_member = bool(
         assembly_base_profile_entries or assembly_role_entries or assembly_activity_entries
     )
@@ -989,6 +1048,26 @@ def build_profile_projection(
                 reason=SOURCE_NOT_COLLECTED,
             ),
         ]
+        if vote_episode_entries:
+            vote_total = sum(vote_counts.values())
+            assembly_sections.append(
+                _section(
+                    "decision_episodes",
+                    "의사결정 에피소드: 본회의 표결",
+                    vote_episode_entries,
+                    status="AVAILABLE",
+                    note=(
+                        f"국회 본회의 표결 기록 {vote_total:,}건("
+                        + " · ".join(
+                            f"{label} {vote_counts[value]:,}"
+                            for value, label in VOTE_VALUE_LABELS.items()
+                        )
+                        + f") 가운데 최근 {len(vote_episode_entries)}건입니다. 의원의 표결 기록만 "
+                        "옮기며 불참 사유, 당론 일치 여부나 성향은 추정하지 않습니다. 집계가 공개 "
+                        "건수와 맞지 않는 의안은 제외했습니다."
+                    ),
+                )
+            )
         if recent_changes:
             assembly_sections.append(
                 _section(

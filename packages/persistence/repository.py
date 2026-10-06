@@ -608,6 +608,8 @@ class SqlAlchemyRepository:
         feeder: str,
         scope_key: str,
         provider_record_key: str | None = None,
+        *,
+        key_suffix: str | None = None,
     ) -> list[FeederObservation]:
         statement = select(FeederObservationRow).where(
             FeederObservationRow.feeder == feeder,
@@ -616,6 +618,11 @@ class SqlAlchemyRepository:
         if provider_record_key is not None:
             statement = statement.where(
                 FeederObservationRow.provider_record_key == provider_record_key
+            )
+        if key_suffix is not None:
+            # Composite provider keys such as {BILL_ID}:{MONA_CD}; the suffix is literal.
+            statement = statement.where(
+                FeederObservationRow.provider_record_key.endswith(key_suffix, autoescape=True)
             )
         with self.sessions() as session:
             rows = session.scalars(statement.order_by(FeederObservationRow.recorded_at))

@@ -21,6 +21,11 @@ People with any published Assembly roster or bill Claim take the separate Assemb
 `limitations`), fed by the Assembly roster, historical and bill-participation feeders.
 `current_role` also shows committee offices (`ASSEMBLY_COMMITTEE_ROLE`, 위원장·간사) from the
 committee member-list lane ([feeder](ASSEMBLY_COMMITTEE_ROSTER_FEEDER.md)), once that lane is run.
+`decision_episodes` (의사결정 에피소드: 본회의 표결) shows the 20 most recent published
+`ASSEMBLY_PLENARY_VOTE` Claims with whole-record counts
+([feeder](ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md#vote-claims-separate-publication-step)); the section is
+emitted only when such Claims exist. Repeated patterns stay eligibility-only: vote Claims are not
+turned into alignment or party-line patterns.
 
 | Section | Renderer input | Current producer | Lane | State | Missing step |
 |---|---|---|---|---|---|
@@ -31,7 +36,7 @@ committee member-list lane ([feeder](ASSEMBLY_COMMITTEE_ROSTER_FEEDER.md)), once
 | recent_changes | dated historical `HELD_ROLE`/`APPOINTED_AS` with `change_input_scope` | Assembly historical reviewed packet + `SOURCE_NEUTRAL_DERIVED_CHANGE_TRACE_V1` | derived | PARTIAL | a second Person lane with two comparable dated Claims of the same dimension |
 | current_power_tasks | `HAS_AUTHORITY`…`SUPERVISES`; OpenDART `responsibility` | reviewed fixtures; **OpenDART reviewed executive link (this change)** | source | PARTIAL | statute/organization-chart sources for public officials (BLOCKED_SOURCE) |
 | appointment_logic | `APPOINTMENT_RATIONALE`, … | Golden supplement only | source (attributed text) | NO_PRODUCER | a reviewed official personnel-announcement lane quoting the stated rationale |
-| decision_episodes | `DecisionEpisode` + published Claim + exact ClaimEvidence | Golden seed only (`seed_golden`) | source | NO_PRODUCER | an event lane (e.g. roll-call votes) materialized to Claims first; roll-call observations have no Claim path yet |
+| decision_episodes | `DecisionEpisode` + published Claim + exact ClaimEvidence | Golden seed only for this path; Assembly members get plenary-vote episodes from `ASSEMBLY_PLENARY_VOTE` Claims | source | NO_PRODUCER here / PARTIAL for Assembly | a non-Assembly event lane (official appointment/governance decisions) |
 | repeated_patterns | ≥2 eligible episodes with independent origins | eligibility only (`validate_pattern`) | derived | DERIVATION_ONLY | decision episodes, then a reviewed pattern artifact |
 | stakeholders | typed `Relationship` with ClaimEvidence refs, never `CO_MENTION` | Golden seed only | source | NO_PRODUCER | a typed relation producer; the ontology graph already shows Claim-backed role edges |
 | controversies | controversy predicates or SUPPORT+REFUTE evidence | `ReviewedPersonBundle` (김현지) only | source | NO_PRODUCER | an official-finding / attributed-response source policy |
