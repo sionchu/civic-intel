@@ -1907,8 +1907,8 @@ class SqlAlchemyRepository:
                 or claim.organization_id is not None
                 or claim.predicate != lane.predicate
                 or claim.publication_status != PublicationStatus.PUBLISHED
-                or claim.epistemic_status != EpistemicStatus.FACT
-                or not claim.asserted_as_true
+                or claim.epistemic_status != lane.epistemic_status
+                or claim.asserted_as_true != (lane.epistemic_status == EpistemicStatus.FACT)
                 or claim.qualifiers.get("source_contract") != lane.source_contract
                 or claim.qualifiers.get("source_scope") != observation.scope_key
                 or claim.qualifiers.get("semantic_scope") != observation.semantic_scope
@@ -3795,6 +3795,85 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             items = [self._policy(row) for row in session.scalars(statement)]
             return {item.id: item for item in items}
+
+    def evidence_run_ids(self, evidence: Iterable[ClaimEvidence]) -> dict[UUID, UUID]:
+        """Map ClaimEvidence id → SourceRun id of its exact FeederObservation (if any)."""
+
+        by_observation: dict[str, list[UUID]] = {}
+        for item in evidence:
+            if item.feeder_observation_id is not None:
+                by_observation.setdefault(str(item.feeder_observation_id), []).append(item.id)
+        result: dict[UUID, UUID] = {}
+        keys = sorted(by_observation)
+        with self.sessions() as session:
+            for start in range(0, len(keys), 1000):
+                rows = session.execute(
+                    select(FeederObservationRow.id, FeederObservationRow.run_id).where(
+                        FeederObservationRow.id.in_(keys[start : start + 1000])
+                    )
+                )
+                for observation_id, run_id in rows:
+                    for evidence_id in by_observation[observation_id]:
+                        result[evidence_id] = UUID(run_id)
+        return result
+
+    def current_claims_by_ids(self, claim_ids: Iterable[UUID]) -> dict[UUID, Claim]:
+        keys = sorted({str(item) for item in claim_ids})
+        result: dict[UUID, Claim] = {}
+        with self.sessions() as session:
+            for start in range(0, len(keys), 1000):
+                for row in session.scalars(
+                    select(ClaimRow).where(
+                        ClaimRow.id.in_(keys[start : start + 1000]),
+                        ClaimRow.superseded_at.is_(None),
+                    )
+                ):
+                    result[UUID(row.id)] = self._claim(row)
+        return result
+
+    def published_bill_participants(
+        self, person_id: UUID, predicate: str, source_contract: str
+    ) -> dict[str, list[tuple[UUID, UUID]]]:
+        """BILL_ID → [(Person id, Claim id)] for every published current participation Claim
+        sharing a bill with ``person_id``. Only Claims with SUPPORT evidence are returned."""
+
+        bill_id = ClaimRow.qualifiers["bill_id"].as_string()
+        supported = (
+            select(ClaimEvidenceRow.id)
+            .where(
+                ClaimEvidenceRow.claim_id == ClaimRow.id,
+                ClaimEvidenceRow.stance == EvidenceStance.SUPPORT.value,
+            )
+            .exists()
+        )
+        conditions = (
+            ClaimRow.predicate == predicate,
+            ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+            ClaimRow.superseded_at.is_(None),
+            ClaimRow.qualifiers["source_contract"].as_string() == source_contract,
+            supported,
+        )
+        with self.sessions() as session:
+            own_rows: list[object] = list(
+                session.execute(
+                    select(bill_id).where(ClaimRow.person_id == str(person_id), *conditions)
+                ).scalars()
+            )
+            own = sorted({str(value) for value in own_rows if value})
+            result: dict[str, list[tuple[UUID, UUID]]] = {}
+            for start in range(0, len(own), 1000):
+                rows = session.execute(
+                    select(bill_id, ClaimRow.person_id, ClaimRow.id).where(
+                        bill_id.in_(own[start : start + 1000]),
+                        ClaimRow.person_id.is_not(None),
+                        *conditions,
+                    )
+                )
+                for bill, other_person, claim_id in rows:
+                    result.setdefault(str(bill), []).append(
+                        (UUID(str(other_person)), UUID(str(claim_id)))
+                    )
+        return result
 
     def relationships(self, person_id: UUID) -> list[dict]:
         with self.sessions() as session:

@@ -1,9 +1,11 @@
 """Shared contract for Person Claims keyed to one exact current-roster ``MONA_CD``.
 
-Two Open Assembly lanes publish such Claims: bill participation and committee roles. Both build
-one FACT Claim plus one SUPPORT ClaimEvidence from one immutable observation, require an exact
-current-roster identity link and are idempotent per logical key. Only those shared invariants live
-here; each lane keeps its own source-specific checks.
+Several Open Assembly lanes publish such Claims: bill participation, committee roles and
+memberships, and member-profile biography entries. Each builds one Claim plus one SUPPORT
+ClaimEvidence from one immutable observation, requires an exact current-roster identity link and
+is idempotent per logical key. Record lanes publish an asserted FACT; the biography lane publishes
+a non-asserted, source-attributed CLAIM. Only those shared invariants live here; each lane keeps
+its own source-specific checks.
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from packages.domain.contracts import Claim, FeederObservation
+from packages.domain.enums import EpistemicStatus
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,8 @@ class AssemblyMemberClaimLane:
     claim_matches_observation: Callable[[Claim, FeederObservation], bool]
     error: type[ValueError]
     label: str
+    # FACT asserts the provider record; CLAIM attributes member-maintained text (never asserted).
+    epistemic_status: EpistemicStatus = EpistemicStatus.FACT
 
     def logical_key(self, person_id: str, qualifiers: dict[str, str]) -> tuple[str, ...] | None:
         values = [qualifiers.get(name) for name in self.logical_key_qualifiers]
