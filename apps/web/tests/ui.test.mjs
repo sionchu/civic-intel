@@ -786,3 +786,11 @@ test("Sites snapshot fails instead of freezing a temporary read failure into a p
   assert.match(script, /captured a service failure/);
   assert.match(script, /experimental: \{ cpus: 2 \}/);
 });
+
+test("Plenary votes render as compact rows with the evidence trace one disclosure away", async () => {
+  const person = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  assert.match(person, /entry\.details\.action === "PLENARY_ROLL_CALL_VOTE"/);
+  assert.match(person, /<ol className="vote-rows">/);
+  assert.match(person, /<details className="audit-details vote-trace">/);
+  assert.match(person, /FeederObservation \{trace\?\.feeder_observation_id/);
+});
