@@ -109,6 +109,10 @@ Do not show:
 - name-matched or inferred links
 - the operator console, tokens, `DATABASE_URL`, provider keys, private API origins or
   `*.railway.internal`
+- anything taken directly from the owner-supplied 「2026년도 국정감사수첩」(10/01 기준). It is a
+  discovery-only schedule inventory (`DISCOVERY_SCHEDULE_INVENTORY_NOT_CLAIMS`), not a Claim
+  source. Its 연락처 sections (의원실·위원회 공무원·전문위원·기관 국회담당자) must never be published
+  or bundled into a Site.
 
 ## 9. Staging and production state
 
