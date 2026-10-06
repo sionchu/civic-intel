@@ -1,210 +1,210 @@
 # 모두의국감 — ChatGPT Sites deployment runbook
 
-Status: `PREPARED_NOT_APPLIED`. No Site, `.openai/hosting.json`, Railway production service, domain
-or indexing variable has been created by this document. Governing plan:
-`docs/exec-plans/active/moduigukgam-public-launch-v0.md`.
+Status: `PREPARED_NOT_APPLIED`. No Site and no `.openai/hosting.json` exist yet. No Railway
+production service, domain or indexing variable has been created.
+
+- Governing plan: `docs/exec-plans/active/moduigukgam-public-launch-v0.md`.
+- Owner decision (2026-10-06, in thread): generate the site **from the Mac canonical DB** and ship it
+  **through ChatGPT Sites**.
 
 모두의국감 is the public name of the existing Civic Intel public-read surface. It is not a second
-product, a second data store or a new API. Everything in `EVIDENCE_PREVIEW_DEPLOYMENT.md` (private
-FastAPI, private PostgreSQL, runtime never migrates/seeds, Mac mini canonical write DB, hosted DB is a
-replaceable read snapshot) stays in force.
+product, data store or API. Everything in `EVIDENCE_PREVIEW_DEPLOYMENT.md` stays in force: private
+FastAPI, private PostgreSQL, the runtime never migrates or seeds, and the Mac mini holds the canonical
+write DB.
 
 ## 1. ChatGPT Sites constraints (official docs read 2026-10-06; re-read before acting)
 
-Sources: help.openai.com/en/articles/20001339-creating-and-using-chatgpt-sites (ko-kr is a machine
-translation of the same article) and the Sites developer guide at learn.chatgpt.com/docs/sites
-(developers.openai.com/codex/sites redirects there), plus learn.chatgpt.com/docs/enterprise/sites.md.
+Sources:
+- help.openai.com/en/articles/20001339-creating-and-using-chatgpt-sites (the ko-kr page is a machine
+  translation of the same article)
+- learn.chatgpt.com/docs/sites (developers.openai.com/codex/sites redirects here)
+- learn.chatgpt.com/docs/enterprise/sites.md
 
-- Public beta for Plus, Pro, Business, Enterprise and Edu. Not on Free/Go. The rollout is gradual.
-  On Enterprise, both Sites and public publishing are off by default.
-- You create a Site in Work (web) or in Work/Codex (desktop app) with `@Sites`. Saving, deploying and
-  managing happen in ChatGPT web or the desktop app. The Codex CLI and IDE only edit and test the
-  local project. The project link is stored in `.openai/hosting.json`.
-- "Every deployment URL is a production URL." The safe sequence is: save a version → review the
-  private preview → deploy that exact version. The deploy reports the production URL (the default
-  host is `<slug>.openai.chatgpt.site`).
-- A new Site is visible only to its owner and workspace admins. Audience options:
-  - selected users or groups
-  - invited external viewers
-  - the workspace
-  - "Anyone on the internet", only when public publishing is enabled
+What they say:
+- **Availability.** Public beta for Plus, Pro, Business, Enterprise and Edu; not Free or Go. The
+  rollout is gradual. On Enterprise, both Sites and public publishing are off by default.
+- **Where it runs.** Sites are created in Work (web) or Work/Codex (desktop app) with `@Sites`.
+  Saving, deploying and managing happen only in ChatGPT web or desktop. The project link lives in
+  `.openai/hosting.json`.
+- **Deploys are production.** "Every deployment URL is a production URL." Save a version, review the
+  private preview, then deploy that exact version. The default host is
+  `<slug>.openai.chatgpt.site`.
+- **Audience.** A new Site is limited to its owner and workspace admins. "Anyone on the internet" is
+  available only when public publishing is enabled. Visitors never get editing rights.
+- **Runtime.** Some frameworks, private networks, databases, background services and hosting
+  patterns are not supported. HTTP/HTTPS/WebSockets work; raw TCP does not. Storage is D1 and R2.
+- **Settings.** Hosted env and secrets are owner-only Site settings. Custom domains are only
+  owner-owned domains connected through DNS.
+- **Unpublish.** Restrict the audience. Deleting a Site is permanent. Saved versions can be listed
+  and redeployed.
+- **Not documented.** Robots, SEO and canonical handling: Codex verifies these on the real runtime.
+  There is no data residency at launch, and beta usage limits apply.
 
-  A public Site needs no ChatGPT workspace access. Visitor access never grants editing.
-- Runtime: "Some frameworks, private networks, databases, background services, and hosting patterns
-  aren't supported." The docs name no framework. Storage is D1 (relational, 10 GB) and R2 (object).
-  HTTP/HTTPS/WebSockets work; raw TCP does not. A Site therefore cannot open a PostgreSQL wire
-  connection.
-- Outbound HTTPS is allowed, subject to the workspace Sites network-access policy where one exists.
-- Hosted environment variables and secrets live in Site settings and are owner-only. They never go in
-  prompts, files, Site content or `.openai/hosting.json`.
-- Custom domain: only a domain the owner already owns, connected through DNS. Sites does not register
-  domains. Custom domains are not available on Enterprise at launch.
-- To unpublish, restrict the audience. Deletion is permanent. You can list saved versions and
-  redeploy one. No explicit rollback procedure is documented.
-- Robots, SEO and canonical handling are **not documented**. Codex must check them on the real
-  runtime.
-- There is no data residency at launch, and beta usage limits apply.
-- A search snippet claimed "not available in EEA/CH/UK". That was not found on the pages read, so
-  treat it as UNVERIFIED.
+## 2. Chosen shape: static public-read snapshot built from the Mac canonical DB
 
-## 2. Topology fit
+```text
+Mac canonical PostgreSQL ──(DATABASE_URL, Mac only)──▶ private FastAPI on 127.0.0.1
+        ▶ `npm --prefix apps/web run build:sites -- --api http://127.0.0.1:8000`
+        ▶ dist/moduigukgam-site/  (static HTML/JS + snapshot-manifest.json)
+        ▶ ChatGPT Sites (static assets only) ▶ public visitors
+```
 
-The repo runs as three processes: Next standalone server (Web), FastAPI (private) and PostgreSQL
-(private, DB access only through `DATABASE_URL`). A Sites runtime cannot run FastAPI as a separate
-process and cannot reach PostgreSQL over TCP. Hosting the API and DB on Sites would also mean a
-second data store. **Option A, the whole topology on Sites, is therefore not available.** The repo
-reached the same conclusion earlier in `EVIDENCE_PREVIEW_DEPLOYMENT.md` § ChatGPT/OpenAI Sites.
+- The bundle is this repository's own Next app rendered with `output: "export"`. Pages, evidence
+  panels, same-name warnings and empty or UNKNOWN states are identical to the server build.
+- **Nothing private leaves the Mac.**
+  - The API and DB are contacted only at build time, on loopback.
+  - The bundle holds no API origin, credentials, operator surface or write path. `/admin` is not
+    built.
+  - Sites needs **no env vars and no secrets**.
+- **It is a replaceable read snapshot, not an SSOT.**
+  - `snapshot-manifest.json` records `REPLACEABLE_PUBLIC_READ_SNAPSHOT_NOT_SSOT`, the commit, KST
+    time, counts and the bundle SHA-256.
+  - The footer shows "자료 기준 … (공개 기록 스냅샷)".
+  - Never edit the bundle. Rebuild it from the DB.
+- **It reads at least as tightly as the live site.** It contains exactly what the public API returns
+  (`/people`, `/people/{id}`, ontology, `/sources/{id}`, `/organizations*`, `/gukgam/2026/*`):
+  published Claim/Evidence for public canonical Persons and Organizations only.
+- **"Today" stays correct.** 오늘/다음/지난 schedule labels are computed in the reader's browser
+  (KST), so they stay right between rebuilds. `?q=` search is restored in the browser.
+- **Rebuilding.** New data is a rebuild followed by a Sites save-and-deploy. Between rebuilds the
+  site shows the snapshot as of its build time.
 
-Data origin as checked on 2026-10-06:
+The build fails closed when any of these is true:
+- `/ready` is not ready
+- `/people` is empty
+- any required route or public Person page is missing
+- an `admin/` path is present
+- the bundle contains `TEL_NO`, `E_MAIL`, `normalized_payload`, `raw_payload`, `railway.internal`,
+  the operator token header, a `postgresql://` URL or the API origin
+- an HTML or RSC payload contains email-like text
 
-| Surface | State |
-|---|---|
-| Railway staging Web `web-staging-efe2.up.railway.app` | HTTP 200, title still `Civic Intel — Evidence Directory`, `noindex`. `/gukgam/2026` renders `SERVICE_UNAVAILABLE` (staging API/DB older than the Gukgam projections). Staging is not production truth. |
-| Railway `production` environment | Exists with 0 services (`PREPARED_NOT_APPLIED`). |
-| Mac mini canonical DB / serve host | UNKNOWN from this session. It was last reported offline on 2026-10-04 (`HANDOFF.md`). A public beta at `d167730` was mentioned but is NOT VERIFIED. |
-| Private FastAPI | No public URL, by design. |
+Shapes that were not chosen:
+- **Next/FastAPI/Postgres on Sites:** impossible, because Sites has no TCP to PostgreSQL and cannot
+  run a separate API process.
+- **Sites proxy to a Railway production Web:** needs paid production services.
+- **Exposing the API to Sites:** forbidden.
+- **Railway staging as the public origin:** staging is stale and is not production truth.
 
-So no approved, current, public-read origin exists today. Every working Sites shape needs one owner
-decision first.
+## 3. Build host prerequisites (the Mac mini)
 
-## 3. Chosen shape and alternatives
+1. The Mac is online and the canonical PostgreSQL is reachable locally. Its state is UNKNOWN in this
+   session. It was last reported offline on 2026-10-04.
+2. Make a clean checkout of the **merged master** that contains PR #193. Record `git rev-parse HEAD`.
+   The manifest records `git_worktree_dirty`; it must be `false`.
+3. Install with `python -m pip install .` and `npm --prefix apps/web ci`.
+4. Start the API against the canonical DB, bound to loopback only. Prefer a read-only DB role if one
+   exists.
 
-**Recommended: B — Sites edge over an approved public Web origin ("B-proxy").**
+   ```sh
+   CIVIC_BOOTSTRAP_MODE=runtime DATABASE_URL=<canonical, from the Mac env file> \
+     python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
+   ```
 
-- Sites hosts a minimal Workers-compatible server whose only job is to forward GET/HEAD requests
-  server-side to one fixed upstream: the 모두의국감 Next Web service at the prepared commit.
-- That Web service runs in Railway `production` with private API → private PostgreSQL (the existing
-  `.railway/railway.ts` contract).
-- The browser sees only the Sites URL. API and DB stay private. The proxy carries no secrets, does no
-  writes and stores no data.
-- Proxy rules:
-  - The upstream origin is a hosted env var (`MODUIGUKGAM_UPSTREAM_ORIGIN`, the https origin of the
-    production Web). It is not a secret.
-  - Allow `GET`/`HEAD` only. Anything else returns 405.
-  - `/admin` and `/admin/*` return 404 at the edge.
-  - Forward the path and query only. Strip cookies and `Authorization` in both directions. Never
-    forward `oai-authenticated-*` headers.
-  - Pass status codes through (404 stays 404, 503 stays 503).
-  - Pass through `<meta name="robots">`, `robots.txt` and `sitemap.xml` from the upstream. Indexing
-    is decided once, by the Web env (§5).
-- **Owner approvals required first:**
-  1. Apply Railway `production`: 3 creates, 0 staging changes, 0 destroys, and no public API/DB
-     domain. This has usage cost.
-  2. Populate the production read snapshot from the canonical Mac DB with
-     `deploy/refresh-staging-db.sh` (target = production). This needs the Mac online.
-  3. Expose only the production Web through a Railway generated domain. That domain is the proxy
-     upstream.
+   `curl -s http://127.0.0.1:8000/ready` must return `{"status":"ready"}`.
+5. Build: `npm --prefix apps/web run build:sites -- --api http://127.0.0.1:8000`. It must end with
+   `"status": "PASS"`. The output goes to `dist/moduigukgam-site/`, or to the path given with
+   `--out`.
+6. Stop the API.
+7. Smoke-test locally:
 
-Alternatives, in case the owner declines B or Codex finds B unsupported:
+   ```sh
+   python -m http.server 8090 --bind 127.0.0.1 --directory dist/moduigukgam-site
+   python -m workers.public_beta_preflight --web-base-url http://127.0.0.1:8090 \
+     --expect-indexing disabled --person-id <real> --organization-id <real>
+   ```
 
-- **C1 — release-time public-projection snapshot on Sites.**
-  - A Workers-compatible read-only frontend renders data exported, at one verified commit, from
-    exactly the public API responses (`/people`, `/people/{id}`, `/ontology/people/{id}`,
-    `/sources/{id}`, `/gukgam/2026/*`, `/organizations*`).
-  - The export goes into versioned Site assets or D1, carries a manifest (commit, export time, source
-    revision, counts, SHA-256) and is replaced whole on every release.
-  - No cost and no network exposure. The downsides:
-    - It needs a new frontend adapter.
-    - It is a new hosted copy without data residency.
-    - The owner must explicitly accept it as a replaceable read snapshot, never a truth store.
-  - Not ready today.
-- **C2 — Railway production Web as canonical, Sites as a launch page linking to it.** This has the
-  same Railway approvals as B and the smallest Sites content. The canonical URL is the Railway or
-  custom domain, not Sites.
-- **Not allowed:**
-  - a public FastAPI/PostgreSQL endpoint, including a token-protected public API
-  - staging as the public origin
-  - D1 as a canonical DB
-  - copying `DATABASE_URL`, operator tokens or provider keys into Sites
+   It must PASS.
 
-## 4. Secrets and environment (names only)
+Check that the manifest counts match what you expect from the canonical DB. As of 2026-10-04 the
+DB had 151 public Gukgam targets across 7 committees and 444 Organizations. The public People count
+must be re-measured.
 
-| Where | Name | Note |
-|---|---|---|
-| Railway production `api` | `DATABASE_URL`, `CIVIC_BOOTSTRAP_MODE=runtime`, `PORT=8000` | From IaC. Never in Sites. |
-| Railway production `web` | `CIVIC_API_URL` (private domain), `PORT=3000` | From IaC. |
-| Railway production `web` (later step only) | `CIVIC_PUBLIC_BASE_URL`, `CIVIC_INDEXING_ENABLED` | Set only after the canonical URL is fixed and public smoke passes (§5). |
-| Sites hosted env (B only) | `MODUIGUKGAM_UPSTREAM_ORIGIN` | Public https origin of the production Web. Not a secret. |
-| Never on Web or Sites | provider keys (`ASSEMBLY_API_KEY`, `NEC_API_KEY`, `NKIS_API_KEY`, `DART_API_KEY`, `MOIS_ORG_CODE_API_KEY`), `CIVIC_OPERATOR_TOKEN`, `DATABASE_URL` | |
+## 4. Sites sequence
+
+1. In ChatGPT (desktop Codex/Work, or Work on the web), ask `@Sites` to create a Site named
+   **모두의국감** from the folder `dist/moduigukgam-site` as a **static site**. Confirm the project
+   produces compatible deployment artifacts.
+   - Do not add a server, D1, R2, env vars or secrets.
+   - Request the URL slug `moduigukgam` if it is free; otherwise use any lowercase slug.
+2. **Save a version** and keep the audience owner-only. Run the private preview QA in §6.
+3. **Deploy that saved version.** Set the audience to **Anyone on the internet**. Record the URL.
+4. Run the public smoke in §6 as a logged-out visitor, plus preflight against the Site URL.
+5. To update later:
+   - rebuild into the **same folder**; the build keeps `.openai/`
+   - save a version, preview it, then deploy it
+   - every deploy is production
 
 ## 5. Canonical URL, robots, sitemap and indexing
 
-- Launch default is **noindex**. Leave `CIVIC_INDEXING_ENABLED` unset, and the Web emits
-  `noindex,nofollow`, `Disallow: /` and an empty sitemap.
-- Indexing comes only after: the public Sites URL exists → the B-proxy public smoke passes → set
-  `CIVIC_PUBLIC_BASE_URL=https://<site-host>` and `CIVIC_INDEXING_ENABLED=true` on the
-  **production** Web only → redeploy → run
-  `python -m workers.public_beta_preflight --web-base-url https://<site-host> --expect-indexing enabled`.
-- Canonical, OG URL and the sitemap host then point at the Sites host. The Railway generated domain
-  serves the same pages with `rel=canonical` → Sites. Railway staging stays noindex. Do not set
-  indexing variables on staging.
-- Under C2 the canonical URL is the Railway or custom domain, and Sites must not claim to be
-  canonical.
+- Launch with **noindex**. The default build emits `noindex,nofollow`, `Disallow: /` and an empty
+  sitemap.
+- Turn indexing on only after the public smoke passes, and only if the Sites URL is the canonical
+  public surface:
+  1. Rebuild with
+     `-- --api http://127.0.0.1:8000 --base-url https://<site-host> --index`. This emits
+     `index,follow`, `rel=canonical`, `og:url`, robots `Allow: /` plus the sitemap line, and sitemap
+     URLs with trailing slashes. These were verified locally.
+  2. Save a version, preview it, deploy it.
+  3. Run preflight with `--expect-indexing enabled`.
+- Sites-native robots handling is undocumented. If Sites overrides `robots.txt` or the meta tags,
+  stay noindex and report it.
+- Railway staging stays noindex. Do not set indexing variables on any Railway service for this
+  launch.
 
-## 6. Sequence (B)
+## 6. Smoke and QA (390 px mobile and desktop, logged out)
 
-1. Revalidate:
-   - `origin/master` contains the prepared commit
-   - CI is green
-   - Sites is available and public publishing is enabled
-   - the network-access policy allows the upstream host
-2. With owner approval: plan, then apply Railway production. Run the DB refresh with its
-   count/revision equality check. Verify `/ready` is 200, then give only the Web a generated domain.
-3. Run `python -m workers.public_beta_preflight --web-base-url https://<railway-web> --expect-indexing disabled --person-id <id> --organization-id <id>`.
-4. Create the Site "모두의국감" with the proxy. Save a version and review the private preview at
-   owner-only audience (QA §7).
-5. Deploy the reviewed version and set the audience to Anyone on the internet. Record the URL.
-6. Run the public smoke as an unauthenticated visitor (§7), then preflight against the Sites URL
-   (`--expect-indexing disabled`).
-7. Optional same day: enable indexing per §5.
-8. Write the release receipt (`docs/exec-plans/active/moduigukgam-public-launch-v0.md` § Receipt).
+- **`/`:**
+  - 모두의국감 appears in the header and the `<title>`
+  - the search box is in the first viewport
+  - the 오늘 (KST) date matches the real date
+  - the schedule line and the 자료 범위 section are present
+  - the footer shows 자료 기준 with the build time
+- **Search:**
+  - searching a real current member's name lands on `/people/?q=…` with that person listed
+  - the detail page shows 핵심 기록 and 근거 열기, and the source card shows policy and date
+  - client navigation between pages works
+  - a nonsense query shows "검색 결과가 없습니다"
+- **`/gukgam/2026/`:**
+  - the date index and `#audit-YYYY-MM-DD` links resolve
+  - today's KST date is labelled 오늘 if it is in the plan
+- **404 and admin:**
+  - `/people/<random-uuid>/` returns the Korean 404, or the host's 404 if Sites ignores `404.html`.
+    Record which one.
+  - `/admin/review/` returns 404
+- **Leaks:**
+  - no emails, phone numbers, `TEL_NO`, tokens, `127.0.0.1` or internal hosts in HTML or network
+    responses
+  - no forms other than the GET search
+- **Indexing:** `robots.txt`, the meta robots tag and `/snapshot-manifest.json` match the intended
+  indexing state.
 
-## 7. Smoke and QA
+## 7. Rollback and unpublish
 
-Run at 390 px mobile and desktop, in a logged-out browser:
+- **Unpublish:** set the audience back to owner-only. Never delete; deletion is permanent.
+- **Bad version:** redeploy the previous saved version.
+- **Bad data:** rebuild from the DB, then save, preview and deploy. Never hand-edit the bundle.
+- **Indexing mistake:** rebuild without `--index`, then save, preview and deploy.
+- **Code:** revert the merge of PR #193. It has no schema or data change.
 
-- `/`: 모두의국감 in the header and `<title>`, the search box is in the first viewport, and the
-  today (KST) schedule line plus the coverage section are shown.
-- Search a real public name (for example, a current member's name) → `/people?q=…` lists that person
-  → the detail page shows 핵심 기록 → open 근거 → the source card shows the policy and date.
-- Search a nonsense string → "검색 결과가 없습니다."
-- `/gukgam/2026`: dates/committees/targets or the source-gated empty state. Never assert "no audit".
-- `/people/<random-uuid>` → 404 "기록을 찾을 수 없습니다". `/admin/review` → 404 with title
-  "모두의국감" only.
-- No `TEL_NO`, `E_MAIL`, email addresses, phone numbers, staff or family data, tokens, API origins
-  or `railway.internal` in HTML or network responses. No write controls.
-- `robots.txt` and the robots meta match the intended indexing state.
+## 8. Authority
 
-## 8. Rollback and unpublish
-
-- Unpublish: set the Site audience back to owner-only. The URL stops being public immediately.
-  Never delete the Site; deletion is irreversible.
-- Bad Site version: redeploy the previous saved version.
-- Bad Web build: redeploy the previous Railway image (compatible schema). Downgrade only on a
-  restored disposable copy.
-- Indexing mistake: unset `CIVIC_INDEXING_ENABLED` on the production Web and redeploy. robots
-  returns `Disallow: /`.
-
-## 9. Codex authority
-
-Codex may do these without asking:
-
-- read docs and repo
+**Codex may do these without asking:**
+- read docs and the repo
 - run local checks
+- run the snapshot build on the Mac against the loopback API
 - create the Site
 - save versions and use the private preview
 - deploy a reviewed version and set the audience to public
-- set the non-secret `MODUIGUKGAM_UPSTREAM_ORIGIN`
 - run read-only smoke and preflight
+- enable indexing per §5 after a passing public smoke
 - write the receipt
 - unpublish on a failed smoke
 
-Codex must get explicit owner approval before any of these:
-
-- creating Railway production services or any paid resource or plan upgrade
-- loading or copying DB data
-- giving any API/DB a public domain or relaxing auth
+**These need explicit owner approval:**
+- any paid resource or plan upgrade, including Railway production
+- any public API or DB endpoint, tunnel or proxy, or any relaxed auth
+- copying `DATABASE_URL`, operator tokens or provider keys anywhere except the Mac API process
 - buying or connecting a domain
-- adopting C1 (a hosted data snapshot)
-- changing data residency or compliance scope
-- turning on indexing anywhere other than the production Web after a passing public smoke
+- adding Sites D1/R2, server code or secrets
+- changing data residency or compliance scope beyond this static public snapshot
+- writing to the canonical DB
