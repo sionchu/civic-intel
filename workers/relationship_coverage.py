@@ -104,12 +104,45 @@ DIMENSIONS: dict[str, Matcher] = {
     "tax_disclosure": _pred("DECLARED_TAX_PAID"),
     "executive_compensation": _pred("DISCLOSED_EXECUTIVE_COMPENSATION"),
     "military_service": _q(CAREER, "career_category", "MILITARY"),
-    "bill_sponsorship": _q("ASSEMBLY_BILL_PARTICIPATION", "participation_role", "REPRESENTATIVE_PROPOSER"),
-    "cosponsorship": _q("ASSEMBLY_BILL_PARTICIPATION", "participation_role", "CO_PROPOSER"),
 }
+# Counted in SQL (too many Claims to load): bill_sponsorship, cosponsorship.
 # Dimensions computed outside Claims.
 STRUCTURAL = ("identity", "aliases", "birth", "birthplace", "vote", "source_provenance", "external_identifiers")
 EXTERNAL_ID_KEYS = ("provider_person_key", "candidate_id", "corp_code", "identity_review_id")
+
+
+def _predicates(repository: SqlAlchemyRepository, ids: list[str]) -> list[tuple[str]]:
+    with repository.sessions() as session:
+        return [
+            (str(predicate),)
+            for predicate in session.scalars(
+                select(ClaimRow.predicate)
+                .where(
+                    ClaimRow.person_id.in_(ids),
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                )
+                .distinct()
+            )
+        ]
+
+
+def _bill_roles(repository: SqlAlchemyRepository, ids: list[str]) -> dict[str, set[UUID]]:
+    role = ClaimRow.qualifiers["participation_role"].as_string()
+    result: dict[str, set[UUID]] = defaultdict(set)
+    with repository.sessions() as session:
+        for person, value in session.execute(
+            select(ClaimRow.person_id, role)
+            .where(
+                ClaimRow.person_id.in_(ids),
+                ClaimRow.predicate == "ASSEMBLY_BILL_PARTICIPATION",
+                ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                ClaimRow.superseded_at.is_(None),
+            )
+            .distinct()
+        ):
+            result[str(value)].add(UUID(str(person)))
+    return result
 
 
 def audit(repository: SqlAlchemyRepository) -> dict[str, object]:
@@ -145,7 +178,13 @@ def audit(repository: SqlAlchemyRepository) -> dict[str, object]:
                 )
             )
         }
-    contexts = repository.published_person_claim_contexts(people)
+    # Votes and bill participation are counted in SQL; every other dimension reads its Claims.
+    claim_predicates = {
+        row[0]
+        for row in _predicates(repository, ids)
+        if row[0] not in {"ASSEMBLY_PLENARY_VOTE", "ASSEMBLY_BILL_PARTICIPATION"}
+    }
+    contexts = repository.published_person_claim_contexts(people, predicates=claim_predicates)
     status: dict[str, dict[UUID, str]] = defaultdict(dict)
     provenance: set[UUID] = set()
     external: set[UUID] = set()
@@ -191,8 +230,14 @@ def audit(repository: SqlAlchemyRepository) -> dict[str, object]:
         "source_provenance": {pid: "AVAILABLE" for pid in provenance},
         "external_identifiers": {pid: "AVAILABLE" for pid in external},
     }
+    bills = _bill_roles(repository, ids)
+    status["bill_sponsorship"] = {pid: "AVAILABLE" for pid in bills.get("REPRESENTATIVE_PROPOSER", set())}
+    status["cosponsorship"] = {pid: "AVAILABLE" for pid in bills.get("CO_PROPOSER", set())}
     matrix = [row(name, structural[name]) for name in STRUCTURAL]
-    matrix += [row(name, status.get(name, {})) for name in DIMENSIONS]
+    matrix += [
+        row(name, status.get(name, {}))
+        for name in (*DIMENSIONS, "bill_sponsorship", "cosponsorship")
+    ]
 
     graph = load_relationship_graph(repository)
     populations = {

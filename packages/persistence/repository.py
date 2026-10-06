@@ -3561,10 +3561,12 @@ class SqlAlchemyRepository:
             evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {
                 claim_id: [] for claim_id in claims_by_id
             }
-            if claims_by_id:
+            claim_keys = [str(item) for item in claims_by_id]
+            # Chunked: PostgreSQL caps one statement at 65,535 bind parameters.
+            for start in range(0, len(claim_keys), 10000):
                 evidence_rows = session.scalars(
                     select(ClaimEvidenceRow)
-                    .where(ClaimEvidenceRow.claim_id.in_([str(item) for item in claims_by_id]))
+                    .where(ClaimEvidenceRow.claim_id.in_(claim_keys[start : start + 10000]))
                     .order_by(ClaimEvidenceRow.claim_id, ClaimEvidenceRow.id)
                 )
                 for evidence_row in evidence_rows:
@@ -3628,10 +3630,12 @@ class SqlAlchemyRepository:
             evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {
                 claim_id: [] for claim_id in claims_by_id
             }
-            if claims_by_id:
+            claim_keys = [str(item) for item in claims_by_id]
+            # Chunked: PostgreSQL caps one statement at 65,535 bind parameters.
+            for start in range(0, len(claim_keys), 10000):
                 evidence_rows = session.scalars(
                     select(ClaimEvidenceRow)
-                    .where(ClaimEvidenceRow.claim_id.in_([str(item) for item in claims_by_id]))
+                    .where(ClaimEvidenceRow.claim_id.in_(claim_keys[start : start + 10000]))
                     .order_by(ClaimEvidenceRow.claim_id, ClaimEvidenceRow.id)
                 )
                 for evidence_row in evidence_rows:
