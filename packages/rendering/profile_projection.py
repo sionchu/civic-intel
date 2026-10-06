@@ -26,10 +26,16 @@ from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_committee_roles import ASSEMBLY_COMMITTEE_ROLE_PREDICATE
 from packages.verification.assembly_legislative_activity import (
     ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
     ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
 )
+from packages.verification.assembly_plenary_votes import (
+    ASSEMBLY_PLENARY_VOTE_PREDICATE,
+    VOTE_VALUE_LABELS,
+)
+from packages.verification.claims import validate_pattern
 from packages.verification.person_record_links import (
     LINKED_WITNESS_COPIED_QUALIFIERS,
     LINKED_WITNESS_PREDICATE,
@@ -124,11 +130,37 @@ SOURCE_RECORD_SECTIONS: tuple[tuple[str, str, str, str], ...] = (
         "회사가 OpenDART 임원 현황 공시에 이 인물을 해당 직위로 기재했다는 기록입니다. 공시된 주요경력은 회사 제출 내용이며 독립 검증된 경력이 아닙니다.",
     ),
 )
+PLENARY_VOTE_DETAIL_KEYS = (
+    "bill_id",
+    "bill_no",
+    "vote_value",
+    "vote_value_published",
+    "vote_datetime",
+    "committee",
+    "detail_url",
+)
+RECENT_PLENARY_VOTE_LIMIT = 10
 SOURCE_RECORD_DETAIL_KEYS: dict[str, tuple[str, ...]] = {
+    ASSEMBLY_PLENARY_VOTE_PREDICATE: PLENARY_VOTE_DETAIL_KEYS,
     LINKED_WITNESS_PREDICATE: LINKED_WITNESS_COPIED_QUALIFIERS,
     PERSON_ROLE_PREDICATE: ("position_text", "as_of"),
     OPENDART_ROLE_PREDICATE: (*OPENDART_COPIED_FIELDS, "reported_main_career_semantics"),
 }
+
+# Why a section has no entry, computed only from the inputs the projection already receives. These
+# are read-model reasons, not persisted states: none of them asserts that a record does not exist.
+SOURCE_NOT_COLLECTED = "SOURCE_NOT_COLLECTED"
+INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
+DERIVATION_NOT_AVAILABLE = "DERIVATION_NOT_AVAILABLE"
+NOT_APPLICABLE = "NOT_APPLICABLE"
+EMPTY_SECTION_REASON_LABELS: dict[str, str] = {
+    SOURCE_NOT_COLLECTED: "공식 근거 출처 미연결",
+    INSUFFICIENT_EVIDENCE: "비교·분석할 근거 부족",
+    DERIVATION_NOT_AVAILABLE: "검토된 분석 결과 없음",
+    NOT_APPLICABLE: "해당 없음",
+}
+HEARING_APPLICABLE_PREDICATES = frozenset({"NOMINATED_AS", "DESIGNATED_AS"})
+DISCLOSED_RESPONSIBILITY_SEMANTICS = "company_disclosed_responsibility_not_authority"
 
 CONTROVERSY_PREDICATES = frozenset(
     {
@@ -218,6 +250,7 @@ def _section(
     *,
     status: str | None = None,
     note: str | None = None,
+    reason: str | None = None,
 ) -> dict[str, Any]:
     selected_status = status or _claim_section_status(entries)
     return {
@@ -225,6 +258,7 @@ def _section(
         "label": label,
         "status": selected_status,
         "note": note,
+        "reason": None if entries else reason,
         "entries": list(entries),
     }
 
@@ -286,6 +320,12 @@ def _discovery_facet_entry(
         "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
         "as_of": claim.valid_from.date().isoformat(),
     }
+
+
+# The only Claim predicates the roster discovery projection reads; list reads load nothing else.
+PEOPLE_DISCOVERY_PREDICATES = frozenset(
+    {"HELD_ROLE", *(item.predicate for item in ASSEMBLY_BASE_PROFILE_FIELDS)}
+)
 
 
 def build_people_discovery_projection(
@@ -400,6 +440,36 @@ def _controversy_entries(
         if claim.predicate in CONTROVERSY_PREDICATES or stances >= {"SUPPORT", "REFUTE"}:
             selected.append(claim)
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _disclosed_responsibility_entries(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    """Project the OpenDART '담당업무' a company itself filed for a reviewed executive link.
+
+    The value is copied verbatim from the published role Claim; no authority is inferred from the
+    title, and a blank or '-' filing yields no entry.
+    """
+
+    entries: list[dict[str, Any]] = []
+    for claim in claims:
+        responsibility = (claim.qualifiers.get("responsibility") or "").strip()
+        if (
+            claim.predicate != OPENDART_ROLE_PREDICATE
+            or claim.superseded_at is not None
+            or claim.publication_status != PublicationStatus.PUBLISHED
+            or responsibility in {"", "-"}
+            or not evidence_by_claim.get(claim.id)
+        ):
+            continue
+        entry = _claim_entry(claim, evidence_by_claim)
+        corp_name = claim.qualifiers.get("corp_name") or "회사"
+        entry["title"] = f"{corp_name} 공시 담당업무: {responsibility}"
+        entry["details"] |= {"responsibility_semantics": DISCLOSED_RESPONSIBILITY_SEMANTICS}
+        entries.append(entry)
+    entries.sort(key=lambda item: (str(item["details"].get("business_year", "")), item["id"]))
+    return entries
 
 
 def _decision_episode_entries(
@@ -567,6 +637,43 @@ def _assembly_activity_entries(
         )
     )
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
+def _plenary_vote_episodes(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Recent official plenary vote rows as dated decision episodes plus whole-record counts.
+
+    Each episode is one published vote Claim with its exact evidence: the action is the plenary
+    vote, the target is the bill and the outcome is the member's recorded choice. No reason for
+    불참, alignment, party-line or ideology value is derived.
+    """
+
+    votes = [
+        claim
+        for claim in claims
+        if claim.predicate == ASSEMBLY_PLENARY_VOTE_PREDICATE
+        and claim.publication_status == PublicationStatus.PUBLISHED
+        and claim.superseded_at is None
+        and evidence_by_claim.get(claim.id)
+    ]
+    counts = {
+        value: sum(1 for claim in votes if claim.qualifiers.get("vote_value") == value)
+        for value in VOTE_VALUE_LABELS
+    }
+    votes.sort(key=lambda item: (item.qualifiers.get("vote_datetime", ""), str(item.id)), reverse=True)
+    entries = []
+    for claim in votes[:RECENT_PLENARY_VOTE_LIMIT]:
+        entry = _claim_entry(claim, evidence_by_claim)
+        entry["kind"] = "DECISION_EPISODE"
+        entry["details"] |= {
+            "action": "PLENARY_ROLL_CALL_VOTE",
+            "target": claim.object_text,
+            "outcome": claim.qualifiers.get("vote_value_published"),
+        }
+        entries.append(entry)
+    return entries, counts
 
 
 def _assembly_limitation(
@@ -824,10 +931,20 @@ def build_profile_projection(
         person, claims, evidence_by_claim, sources, policies
     )
     power_entries = _claim_entries_for(claims, evidence_by_claim, POWER_TASK_PREDICATES)
+    disclosed_responsibility_entries = _disclosed_responsibility_entries(
+        claims, evidence_by_claim
+    )
     appointment_logic_entries = _claim_entries_for(
         claims, evidence_by_claim, APPOINTMENT_LOGIC_PREDICATES
     )
     episode_entries = _decision_episode_entries(decision_episodes, claims, evidence_by_claim)
+    # Eligibility only: even an eligible pair never produces a pattern without a reviewed artifact.
+    pattern_inputs_eligible = validate_pattern(
+        [set(item["details"]["independent_origin_ids"]) for item in episode_entries]
+    ).publishable
+    hearing_applicable = any(
+        claim.predicate in HEARING_APPLICABLE_PREDICATES for claim in claims
+    )
     stakeholder_entries = _relationship_entries(relationships, evidence_by_claim)
     controversy_entries = _controversy_entries(claims, evidence_by_claim)
 
@@ -835,6 +952,10 @@ def build_profile_projection(
     assembly_role_entries = _assembly_role_entries(claims, evidence_by_claim)
     assembly_career_entries = _assembly_dated_career_entries(claims, evidence_by_claim)
     assembly_activity_entries = _assembly_activity_entries(claims, evidence_by_claim)
+    committee_office_entries = _claim_entries_for(
+        claims, evidence_by_claim, frozenset({ASSEMBLY_COMMITTEE_ROLE_PREDICATE})
+    )
+    vote_episode_entries, vote_counts = _plenary_vote_episodes(claims, evidence_by_claim)
     is_assembly_member = bool(
         assembly_base_profile_entries or assembly_role_entries or assembly_activity_entries
     )
@@ -853,7 +974,11 @@ def build_profile_projection(
         overview_fields = {
             item.get("details", {}).get("field_name") for item in overview_entries
         }
-        current_role_entries = [*assembly_role_entries, *committee_entries]
+        current_role_entries = [
+            *assembly_role_entries,
+            *committee_entries,
+            *committee_office_entries,
+        ]
         current_role_fields: set[str] = set()
         if assembly_role_entries:
             current_role_fields.add("role")
@@ -876,6 +1001,7 @@ def build_profile_projection(
                     if overview_entries
                     else "현재 published Assembly Base Profile 개요 Claim이 없습니다."
                 ),
+                reason=SOURCE_NOT_COLLECTED,
             ),
             _section(
                 "current_role",
@@ -889,10 +1015,12 @@ def build_profile_projection(
                     else "UNKNOWN"
                 ),
                 note=(
-                    "현재 역할과 위원회 소속만 published Claim에서 표시하며, 정책 성향이나 영향력은 해석하지 않습니다."
+                    "현재 역할, 위원회 소속과 위원회 명단에 기재된 위원장·간사 직책만 published "
+                    "Claim에서 표시하며, 정책 성향이나 영향력은 해석하지 않습니다."
                     if current_role_entries
                     else "현재 역할·위원회 published Claim이 없습니다."
                 ),
+                reason=SOURCE_NOT_COLLECTED,
             ),
             *source_record_sections,
             _section(
@@ -905,6 +1033,7 @@ def build_profile_projection(
                     if assembly_career_entries
                     else "현재 roster는 현직 상태만 나타내며, 과거 경력 전체를 의미하지 않습니다."
                 ),
+                reason=SOURCE_NOT_COLLECTED,
             ),
             _section(
                 "legislative_activity",
@@ -916,8 +1045,29 @@ def build_profile_projection(
                     if assembly_activity_entries
                     else "현재 published 법안 참여 Claim이 없습니다."
                 ),
+                reason=SOURCE_NOT_COLLECTED,
             ),
         ]
+        if vote_episode_entries:
+            vote_total = sum(vote_counts.values())
+            assembly_sections.append(
+                _section(
+                    "decision_episodes",
+                    "의사결정 에피소드: 본회의 표결",
+                    vote_episode_entries,
+                    status="AVAILABLE",
+                    note=(
+                        f"국회 본회의 표결 기록 {vote_total:,}건("
+                        + " · ".join(
+                            f"{label} {vote_counts[value]:,}"
+                            for value, label in VOTE_VALUE_LABELS.items()
+                        )
+                        + f") 가운데 최근 {len(vote_episode_entries)}건입니다. 의원의 표결 기록만 "
+                        "옮기며 불참 사유, 당론 일치 여부나 성향은 추정하지 않습니다. 집계가 공개 "
+                        "건수와 맞지 않는 의안은 제외했습니다."
+                    ),
+                )
+            )
         if recent_changes:
             assembly_sections.append(
                 _section(
@@ -1006,27 +1156,15 @@ def build_profile_projection(
     sections: list[dict[str, Any]] = [
         _section("identity", "신원", identity_entries, status="AVAILABLE", note=identity_note),
         *source_record_sections,
+        # A person with any published Assembly roster or bill Claim takes the Assembly profile
+        # above, so this lane is reached only when no such Claim exists for this Person.
         _section(
             "assembly_base_profile",
             "국회 기본 프로필",
-            assembly_base_profile_entries,
-            status=(
-                "AVAILABLE"
-                if len(
-                    {
-                        item.get("details", {}).get("field_name")
-                        for item in assembly_base_profile_entries
-                    }
-                ) == len(ASSEMBLY_BASE_PROFILE_FIELDS)
-                else "PARTIAL"
-                if assembly_base_profile_entries
-                else "UNKNOWN"
-            ),
-            note=(
-                "현재 국회 명부에서 제공된 기본 필드만 표시하며, 빠진 값은 추론하지 않습니다."
-                if assembly_base_profile_entries
-                else "현재 국회 명부 기본 프로필 Claim이 없습니다."
-            ),
+            [],
+            status=NOT_APPLICABLE,
+            note="공개된 국회의원 명부·의안 Claim이 없는 인물이라 국회 기본 프로필은 적용되지 않습니다.",
+            reason=NOT_APPLICABLE,
         ),
         _section(
             "summary",
@@ -1037,6 +1175,7 @@ def build_profile_projection(
                 if summary_entries
                 else "검토된 요약용 공직 상태 근거가 없습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "career_timeline",
@@ -1047,6 +1186,7 @@ def build_profile_projection(
                 if timeline_entries
                 else "검토된 경력 타임라인 근거가 없습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "recent_changes",
@@ -1069,16 +1209,20 @@ def build_profile_projection(
                     else "검토된 Assembly historical packet의 CHANGE 입력 근거가 없습니다."
                 )
             ),
+            reason=INSUFFICIENT_EVIDENCE,
         ),
         _section(
             "current_power_tasks",
             "현재 권한과 과업",
-            power_entries,
+            [*power_entries, *disclosed_responsibility_entries],
             note=(
-                "지명·내정만으로 현재 권한을 생성하지 않습니다."
-                if not power_entries
-                else "명시적으로 검증된 현재 권한·책임만 표시합니다."
+                "명시적으로 검증된 권한·책임과, 회사가 OpenDART 임원 현황 공시에 직접 기재한 "
+                "담당업무만 표시합니다. 직함이나 소속에서 권한을 추론하지 않습니다."
+                if power_entries or disclosed_responsibility_entries
+                else "권한·책임을 직접 기재한 공식 출처가 이 인물에게 아직 연결되지 않았습니다. "
+                "직함이나 지명·내정만으로 권한을 만들지 않습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "appointment_logic",
@@ -1087,15 +1231,21 @@ def build_profile_projection(
             note=(
                 "출처가 귀속된 임명 논리·평판 주장만 표시합니다."
                 if appointment_logic_entries
-                else "검토된 임명 논리 근거가 없습니다."
+                else "임명 이유를 직접 밝힌 공식 인사 발표가 아직 연결되지 않았습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "decision_episodes",
             "의사결정 에피소드",
             episode_entries,
             status="AVAILABLE" if episode_entries else "UNKNOWN",
-            note=None if episode_entries else "검토된 의사결정 에피소드가 없습니다.",
+            note=(
+                None
+                if episode_entries
+                else "published Claim과 정확한 Evidence를 참조하는 의사결정 기록이 없습니다."
+            ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "repeated_patterns",
@@ -1103,9 +1253,12 @@ def build_profile_projection(
             [],
             status="UNKNOWN",
             note=(
-                "반복 패턴은 별도 검토된 패턴 근거가 필요하며, 최소 2개의 독립 "
-                "의사결정 에피소드만으로도 자동 생성하지 않습니다."
+                "독립 출처의 의사결정 에피소드는 최소 조건을 넘지만, 검토된 패턴 결과가 없어 "
+                "자동으로 패턴을 만들지 않습니다."
+                if pattern_inputs_eligible
+                else "패턴 분석에는 서로 다른 출처의 의사결정 에피소드가 2건 이상 필요합니다."
             ),
+            reason=DERIVATION_NOT_AVAILABLE if pattern_inputs_eligible else INSUFFICIENT_EVIDENCE,
         ),
         _section(
             "stakeholders",
@@ -1117,6 +1270,7 @@ def build_profile_projection(
                 if stakeholder_entries
                 else "CO_MENTION을 제외한 검토된 typed relationship이 없습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "controversies",
@@ -1128,13 +1282,19 @@ def build_profile_projection(
                 if controversy_entries
                 else "검토된 논란·반론 근거가 없습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
             "hearing_questions",
             "인사청문·검증 질문",
             [],
-            status="UNKNOWN",
-            note="검토된 질문 artifact가 아직 없습니다.",
+            status="UNKNOWN" if hearing_applicable else NOT_APPLICABLE,
+            note=(
+                "검토된 질문 artifact가 아직 없습니다."
+                if hearing_applicable
+                else "공개된 지명·내정 Claim이 없어 인사청문 질문은 적용되지 않습니다."
+            ),
+            reason=DERIVATION_NOT_AVAILABLE if hearing_applicable else NOT_APPLICABLE,
         ),
         _section(
             "forecast",
@@ -1142,23 +1302,25 @@ def build_profile_projection(
             [],
             status="UNKNOWN",
             note="검토된 가설·시나리오 artifact가 아직 없습니다.",
+            reason=DERIVATION_NOT_AVAILABLE,
         ),
     ]
 
     limitations_entries: list[dict[str, Any]] = []
     for section in sections:
-        if section["status"] == "UNKNOWN":
+        reason = section["reason"]
+        if reason is not None and reason != NOT_APPLICABLE:
             limitations_entries.append(
                 {
                     "id": f"limitation:section:{section['id']}",
                     "kind": "LIMITATION",
-                    "title": f"{section['label']}: 검토된 근거 부족",
+                    "title": f"{section['label']}: {EMPTY_SECTION_REASON_LABELS[reason]}",
                     "epistemic_status": EpistemicStatus.UNKNOWN.value,
                     "claim_id": None,
                     "evidence_ids": [],
                     "source_ids": [],
                     "date": None,
-                    "details": {"section_id": section["id"]},
+                    "details": {"section_id": section["id"], "reason": reason},
                 }
             )
     if person.identity_status != IdentityStatus.RESOLVED:
@@ -1207,6 +1369,7 @@ def build_profile_projection(
             "available": statuses.count("AVAILABLE"),
             "partial": statuses.count("PARTIAL"),
             "unknown": statuses.count("UNKNOWN"),
+            "not_applicable": statuses.count(NOT_APPLICABLE),
         },
         "semantics": "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE",
     }

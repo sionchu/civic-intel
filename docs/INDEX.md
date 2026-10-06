@@ -13,6 +13,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Governance ontology projection](architecture/GOVERNANCE_ONTOLOGY.md)
 - [Gukgam 2026 source contract](architecture/GUKGAM_2026_SOURCE_CONTRACT.md)
 - [Career facets](architecture/CAREER_FACETS.md)
+- [Person profile section producers and empty-section reasons](architecture/PERSON_PROFILE_SECTION_PRODUCERS.md)
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)

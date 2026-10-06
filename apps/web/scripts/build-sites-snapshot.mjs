@@ -114,6 +114,9 @@ const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
   images: { unoptimized: true },
+  // Every page reads the private API; a few workers keep its file descriptors and DB pool
+  // from being exhausted (seen as 503s baked into pages with the default worker count).
+  experimental: { cpus: 2 },
 };
 
 export default nextConfig;
@@ -199,6 +202,14 @@ for (const required of [
 if (files.some((path) => rel(path).startsWith("admin/"))) fail("operator surface present in bundle");
 const missingPeople = people.filter((person) => !existsSync(join(out, "people", person.id, "index.html")));
 if (missingPeople.length > 0) fail(`${missingPeople.length} public Person pages missing`);
+// A read failure at build time would be frozen into the snapshot as a "temporarily unavailable"
+// page. A replaceable snapshot must contain only successful reads, so any such page fails the build.
+const failedReads = files.filter(
+  (path) => path.endsWith(".html") && readFileSync(path, "utf8").includes("read-state SERVICE_UNAVAILABLE"),
+);
+if (failedReads.length > 0) {
+  fail(`${failedReads.length} pages captured a service failure, e.g. ${rel(failedReads[0])}; rebuild when the API is healthy`);
+}
 
 const FORBIDDEN_TOKENS = [
   apiOrigin, "TEL_NO", "E_MAIL", "normalized_payload", "raw_payload", "railway.internal",

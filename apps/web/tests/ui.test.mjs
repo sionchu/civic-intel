@@ -611,6 +611,11 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   assert.match(person, /section\.entries\.length === 0/);
   assert.match(person, /section\.entries\.length === 0 \? null/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
+  // Empty profile sections are grouped by the projection reason instead of one "not collected" line.
+  for (const reason of ["SOURCE_NOT_COLLECTED", "INSUFFICIENT_EVIDENCE", "DERIVATION_NOT_AVAILABLE", "NOT_APPLICABLE"]) {
+    assert.match(person, new RegExp(`reason: "${reason}"`));
+  }
+  assert.match(person, /<PendingLanes key=\{group\.reason\} title=\{group\.title\}/);
   assert.match(org, /pendingLanes/);
   assert.doesNotMatch(org + person, /현재 임원 이름 공개 기록이 없습니다|검토된 항목이 없습니다/);
 });
@@ -790,4 +795,19 @@ test("public design floor: readable sizes, 48px controls, Korean labels, status 
   assert.doesNotMatch(css, /Serif|Georgia|Batang/);
   assert.match(css, /--shadow-card: none/);
   assert.doesNotMatch(css, /linear-gradient\(145deg/);
+});
+
+test("Sites snapshot fails instead of freezing a temporary read failure into a page", async () => {
+  const script = await readFile(new URL("../scripts/build-sites-snapshot.mjs", import.meta.url), "utf8");
+  assert.match(script, /read-state SERVICE_UNAVAILABLE/);
+  assert.match(script, /captured a service failure/);
+  assert.match(script, /experimental: \{ cpus: 2 \}/);
+});
+
+test("Plenary votes render as compact rows with the evidence trace one disclosure away", async () => {
+  const person = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  assert.match(person, /entry\.details\.action === "PLENARY_ROLL_CALL_VOTE"/);
+  assert.match(person, /<ol className="vote-rows">/);
+  assert.match(person, /<details className="audit-details vote-trace">/);
+  assert.match(person, /FeederObservation \{trace\?\.feeder_observation_id/);
 });

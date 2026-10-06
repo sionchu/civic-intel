@@ -7,6 +7,8 @@ const PREDICATE_LABELS: Record<string, string> = {
   ASSEMBLY_COMMITTEES: "소속 위원회",
   ASSEMBLY_REELECTION: "선수",
   ASSEMBLY_BILL_PARTICIPATION: "법안 발의",
+  ASSEMBLY_COMMITTEE_ROLE: "위원회 직책",
+  ASSEMBLY_PLENARY_VOTE: "본회의 표결",
   NOMINATED_AS: "지명",
   DESIGNATED_AS: "지정",
   APPOINTED_AS: "임명",
