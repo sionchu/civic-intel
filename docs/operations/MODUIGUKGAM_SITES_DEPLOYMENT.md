@@ -119,6 +119,48 @@ Check that the manifest counts match what you expect from the canonical DB. As o
 DB had 151 public Gukgam targets across 7 committees and 444 Organizations. The public People count
 must be re-measured.
 
+### 3a. Witness lists (증인·참고인) — before the snapshot build
+
+Witness rows are published as committee-scope Claims on `국회 <위원회>` Organizations. Names stay
+source-listed text and are never linked to a Person. Each canonical-DB write below needs two owner
+actions: review of the packets and approval of the exact plan SHA.
+
+1. Copy `C:\Users\getch\civic-intel-acquisition\gukgam-2026` to the Mac, for example to
+   `/Users/lee/Developer/civic-intel-acquisition/gukgam-2026`. Re-verify the artifact SHA-256 values.
+2. The owner reviews each packet with `WITNESS_REVIEW_2026-10-06.md` in that folder and sets
+   `"review_status": "HUMAN_REVIEWED"` on every accepted packet. This step is owner-only. For 산자위,
+   approve one version only.
+3. Import each reviewed packet as observations only. Run it without `--commit` first:
+
+   ```sh
+   python -m workers.gukgam_witness_import --packet <packet.json> --artifact <original file> \
+     --confirm-exact-attachment-rights --database-url "$DATABASE_URL" [--commit]
+   ```
+
+   `--confirm-exact-attachment-rights` is the owner's confirmation that the attachment's rights
+   were reviewed.
+4. Dry-run Claims for all imported packets together:
+
+   ```sh
+   python -m workers.gukgam_witness_claim_commit --database-url "$DATABASE_URL" \
+     --create-committee-organizations --packet <p1> --packet <p2> ...
+   ```
+
+   The owner approves the printed `plan_sha256` and the committee Organizations to create. Then
+   rerun the same command with `--commit --expected-plan-sha256 <sha>`. Reruns are idempotent and
+   reuse existing Claims.
+5. Continue with the snapshot build.
+   - `/gukgam/2026/` shows the 공식 증인·참고인 명단.
+   - `/people/?q=<이름>` lists matching witness rows below the Person results, with the note
+     "인물 기록과 자동 연결하지 않음".
+
+**Rehearsal.** Run on a disposable SQLite copy, with packets marked reviewed in scratch only (this
+is not an attestation):
+- 16 packets were imported, producing 1,850 Claims and 12 committee Organizations.
+- The snapshot build passed.
+- The bundle was 87 MB, mostly committee Organization pages, each up to about 5 MB of HTML for
+  roughly 300 Claims. Codex checks this against the Sites asset limits.
+
 ## 4. Sites sequence
 
 1. In ChatGPT (desktop Codex/Work, or Work on the web), ask `@Sites` to create a Site named
@@ -207,4 +249,5 @@ must be re-measured.
 - buying or connecting a domain
 - adding Sites D1/R2, server code or secrets
 - changing data residency or compliance scope beyond this static public snapshot
-- writing to the canonical DB
+- writing to the canonical DB (the witness import and Claim commit in §3a run only after the
+  owner has reviewed the packets and approved the exact plan SHA)

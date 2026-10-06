@@ -14,7 +14,7 @@ ChatGPT Sites.**
 |---|---|
 | Baseline `origin/master` | `c82423a2a9a8344e63fa57f890d5c3e18eb9b65c` |
 | Prepared branch | `feat/moduigukgam-public-launch` |
-| Code commits | `3dc51ca` (brand and search-first Home), `a40f2c9` (Sites snapshot build) |
+| Code commits | `3dc51ca` (brand and search-first Home), `a40f2c9` (Sites snapshot build), `47b2e03` (witness lists) |
 | Docs | the plan, the runbook and this handoff, on the same branch |
 | PR | https://github.com/sionchu/civic-intel/pull/193 (draft) |
 
@@ -154,11 +154,17 @@ None of these may go into Sites, prompts, `.openai/hosting.json`, the bundle, lo
    1. clean checkout of the merged master
    2. `pip install .`
    3. `npm --prefix apps/web ci`
-   4. start the loopback API and confirm `/ready`
-   5. `npm --prefix apps/web run build:sites -- --api http://127.0.0.1:8000` and expect PASS
-   6. confirm `git_worktree_dirty: false` and plausible counts
-   7. stop the API
-   8. serve the bundle locally and run preflight with `--expect-indexing disabled` plus a real
+   4. witness lists (runbook §3a):
+      1. the owner marks the reviewed packets `HUMAN_REVIEWED`
+      2. for each packet, run `gukgam_witness_import` as a dry run, then with `--commit`
+      3. dry-run `gukgam_witness_claim_commit --create-committee-organizations`
+      4. **STOP: show the owner `plan_sha256` and the committee Organizations to create**
+      5. commit with `--expected-plan-sha256`
+   5. start the loopback API and confirm `/ready`
+   6. `npm --prefix apps/web run build:sites -- --api http://127.0.0.1:8000` and expect PASS
+   7. confirm `git_worktree_dirty: false` and plausible counts
+   8. stop the API
+   9. serve the bundle locally and run preflight with `--expect-indexing disabled` plus a real
       `--person-id` and `--organization-id`; expect PASS
 2. In ChatGPT (desktop Codex/Work), ask `@Sites` to create **모두의국감** as a **static site** from
    `dist/moduigukgam-site`. Use the slug `moduigukgam` if it is free.
@@ -274,6 +280,17 @@ Step 2. Build the snapshot on the Mac. Do not guess at framework or network supp
 - Serve dist/moduigukgam-site locally and run
   `python -m workers.public_beta_preflight --web-base-url http://127.0.0.1:8090 --expect-indexing disabled --person-id <real> --organization-id <real>`.
   It must PASS.
+- Witness lists come first (runbook section 3a). The owner reviews the packets with
+  C:\Users\getch\civic-intel-acquisition\gukgam-2026\WITNESS_REVIEW_2026-10-06.md and sets
+  "HUMAN_REVIEWED" on each one. Then:
+  1. For each reviewed packet, run `python -m workers.gukgam_witness_import`: first as a dry
+     run, then with --commit and --confirm-exact-attachment-rights.
+  2. Run `python -m workers.gukgam_witness_claim_commit --create-committee-organizations`
+     with every reviewed packet.
+  3. STOP and show the owner plan_sha256 and the committee Organizations to be created.
+     Wait for explicit approval.
+  4. Rerun with --commit --expected-plan-sha256 <sha>.
+  Never mark a packet reviewed yourself.
 - Never expose, tunnel or proxy the API or PostgreSQL. Never copy DATABASE_URL, operator tokens or
   provider keys anywhere else. Never edit the bundle by hand. Never treat it as a truth store.
 
@@ -288,7 +305,9 @@ Step 4. Private preview first. Every Sites deployment URL is production.
 - Save a version. Keep the audience owner-only. Review the private preview.
 - Run handoff section 13 QA at 390px and on desktop:
   - search, and a real person's detail page with evidence and sources
-  - /gukgam/2026/ with the real KST "오늘" label
+  - /gukgam/2026/ with the real KST "오늘" label and the 공식 증인·참고인 명단 section
+  - a witness name search on /people/?q=, which lists matching witness rows; these are not
+    linked to any Person
   - the no-results state, 404, and /admin returning 404
   - footer 자료 기준
   - a scan for leaked contacts, secrets or private endpoints

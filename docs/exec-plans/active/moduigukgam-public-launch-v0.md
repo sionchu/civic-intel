@@ -9,7 +9,7 @@ and publish on ChatGPT Sites.
 | Baseline `origin/master` | `c82423a2a9a8344e63fa57f890d5c3e18eb9b65c` (fetched 2026-10-06 KST) |
 | Branch | `feat/moduigukgam-public-launch` |
 | PR | #193 |
-| Code commits | `3dc51ca` (brand and search-first Home), `a40f2c9` (Sites snapshot build) |
+| Code commits | `3dc51ca` (brand and search-first Home), `a40f2c9` (Sites snapshot build), `47b2e03` (witness lists) |
 | Runbook | `docs/operations/MODUIGUKGAM_SITES_DEPLOYMENT.md` |
 | Codex handoff | `docs/operations/CODEX_MODUIGUKGAM_SITES_DEPLOY_HANDOFF.md` |
 
@@ -43,6 +43,15 @@ What ships in this slice (P0):
   - `?q=` is restored in the browser.
   - The footer shows the snapshot time.
 - **Preflight.** `workers/public_beta_preflight.py` checks for the 모두의국감 home copy.
+- **Witness lists (owner request, 2026-10-06).**
+  - `workers/gukgam_witness_claim_commit.py` publishes HUMAN_REVIEWED, already-imported
+    witness rows as committee-scope Claims.
+    - It creates `국회 <위원회>` Organizations only when given the flag.
+    - It runs as a dry run by default and commits only when the plan SHA matches.
+  - `/gukgam/2026` renders the existing `GukgamWitnesses` list.
+  - `/people` shows matching witness rows as source text that is not linked to any Person.
+  - The review sheet `WITNESS_REVIEW_2026-10-06.md` lives in the acquisition folder, outside
+    git.
 
 Not in this slice:
 
@@ -138,11 +147,21 @@ shapes were rejected:
 **Environment:** Windows; disposable SQLite at Alembic 0008 with the Golden Set (10 People,
 0 Organizations, 0 Gukgam targets, 17 committees); API in runtime mode.
 
+**Witness rehearsal.** Run on a disposable SQLite DB, with packets marked reviewed in scratch
+only (not an attestation):
+- 16 packets were imported, giving 1,850 committee-scope Claims and 12 committee
+  Organizations.
+- The snapshot build passed. The bundle was 87 MB, mostly committee Organization pages.
+- `/people/?q=이부환` returned 0 People and 1 witness row. That row's link opens the anchored
+  row on `/gukgam/2026/`, which carries the owner-copy label.
+- The new worker tests passed, 4 of 4.
+
 **Python:**
 - Ruff PASS. mypy PASS on 133 files.
 - pytest exit 0 with 1001 tests collected, run `-x` on `3dc51ca`; Python code is unchanged since then.
 - The deployment-contract and preflight tests pass on `a40f2c9`.
 - Golden quality: `passed: true`.
+- After the witness worker was added: full pytest exit 0, Ruff PASS, mypy PASS (134 files).
 
 **Web:**
 - lint and typecheck PASS. Tests 44/44.
@@ -196,6 +215,9 @@ shapes were rejected:
 ## Blockers
 
 - The Mac canonical host is UNKNOWN from this session. The build cannot run until it is online.
+- Witness lists need the owner to review the packets (`HUMAN_REVIEWED`) and to approve the
+  exact plan SHA before any DB write.
+- The official 기후노동위 list file has not been acquired. Only 2 rows from the minutes exist.
 - Sites static-hosting details (404 page, trailing slashes, robots overrides) are undocumented and
   must be verified on the real runtime.
 
