@@ -1,6 +1,6 @@
 # Person profile linkage v0 (witness / OpenDART → existing Person)
 
-**Status: `CODE_COMPLETE_CANONICAL_APPLY_NOT_APPROVED`.** Code, tests and documents are on branch
+**Status: `CANONICAL_LINKS_APPLIED_DEPLOY_PENDING`.** Code, tests and documents are on branch
 `feat/person-profile-linkage` (base `origin/master` `0a448eb`). The canonical Mac DB, the public
 API and the Sites snapshot are unchanged. Applying any link to the canonical DB needs the owner's
 explicit approval (see "STOP boundary").
@@ -85,9 +85,28 @@ source-context People and Claims never left DRAFT/REVIEW).
   People); all blocked by `PERSON_NOT_RESOLVED`. 7,313 name pairs refused by birth conflict;
   3,152 name-only pairs are not candidates; 26,641 rows have no same-name Person.
 
+## Canonical apply receipt (2026-10-06, owner approval "어 반영해")
+
+- Backup first: `/Users/lee/Developer/civic-intel-serve/backups/pre-person-link-20261006-155704.dump`
+  (95 MB); the rehearsal DB was restored from the same dump.
+- Candidate report sha256 `12dafd72…` was identical on the rehearsal copy and on canonical; the
+  runner refuses any other sha.
+- Applied 209 candidates: all 173 witness candidates and the 36 OpenDART candidates anchored by
+  the company in the Person's ALIO source-reported career. The 25 candidates anchored only by an
+  agreeing birth year/month with NEC People were not applied (their bridge would be an NEC
+  candidacy Claim, which would also open those NEC People publicly).
+- Admin receipts: 828 (`RESOLVE_PERSON` 205, `PUBLISH` 414 = 205 ALIO roles + 209 linked Claims,
+  `LINK_PERSON` 209), 0 failures. The receipt reason records that this is the owner's bulk
+  approval of deterministic anchors, not a row-by-row reading.
+- After: RESOLVED People 299 → 504, People 9,120 (no new Person), links 9,120 → 9,329, Claims
+  16,169 → 16,378. Branch API against canonical: 504 public People, every page 200; sections
+  gukgam 171, public institution 205, corporate 35; witness rows with `linked_person` 173 of 1,731.
+- The public Sites snapshot is unchanged until it is rebuilt and published.
+
 ## STOP boundary (owner approval required)
 
-1. Canonical writes, per reviewed candidate: `RESOLVE_PERSON` (source-context Person) → `PUBLISH`
+1. Done for 209 candidates (receipt above). Remaining 25 NEC-anchored OpenDART candidates need
+   their own decision. Per candidate: `RESOLVE_PERSON` (source-context Person) → `PUBLISH`
    the ALIO role Claim → `LINK_PERSON` with the packet's bridge Evidence → `PUBLISH` the linked
    Claim. Each is an audited admin command; take a fresh logical backup first.
 2. Deploy: restart the Mac private API from merged master (not the stale always-on process),

@@ -5,8 +5,9 @@
 Branch `feat/person-profile-linkage` (base `0a448eb`) adds human-reviewed links from Gukgam
 witness and OpenDART executive rows to existing People, profile sections and the witness-row
 person link. Plan and evidence: `docs/exec-plans/active/person-profile-linkage-v0.md`
-(`CODE_COMPLETE_CANONICAL_APPLY_NOT_APPROVED`). The canonical DB is unchanged; applying the 234
-reviewed candidates and redeploying the snapshot each need owner approval.
+(`CANONICAL_LINKS_APPLIED_DEPLOY_PENDING`). With owner approval, 209 links were applied to the
+canonical DB on 2026-10-06 (828 admin receipts, backup taken first); public People 299 → 504 in the
+API. Next: merge, restart the Mac API from master, rebuild and publish the Sites snapshot.
 
 ## Current state — 2026-10-06 (모두의국감 public launch)
 
