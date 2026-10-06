@@ -108,7 +108,17 @@ DIMENSIONS: dict[str, Matcher] = {
 # Counted in SQL (too many Claims to load): bill_sponsorship, cosponsorship.
 # Dimensions computed outside Claims.
 STRUCTURAL = ("identity", "aliases", "birth", "birthplace", "vote", "source_provenance", "external_identifiers")
-EXTERNAL_ID_KEYS = ("provider_person_key", "candidate_id", "corp_code", "identity_review_id")
+
+
+def _person_external_id(claim: Claim) -> bool:
+    """A provider Person identifier (Assembly MONA_CD, NEC candidate id) — not an Organization code."""
+
+    q = claim.qualifiers
+    return bool(
+        q.get("provider_person_key")
+        or q.get("candidate_id")
+        or (q.get("source_contract") == "assembly_member_roster" and q.get("provider_record_key"))
+    )
 
 
 def _predicates(repository: SqlAlchemyRepository, ids: list[str]) -> list[tuple[str]]:
@@ -194,7 +204,7 @@ def audit(repository: SqlAlchemyRepository) -> dict[str, object]:
                 continue
             if evidence.get(claim.id):
                 provenance.add(person_id)
-            if any(claim.qualifiers.get(key) for key in EXTERNAL_ID_KEYS):
+            if _person_external_id(claim):
                 external.add(person_id)
             for name, matcher in DIMENSIONS.items():
                 if not matcher(claim):
