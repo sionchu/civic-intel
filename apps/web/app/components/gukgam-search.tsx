@@ -127,14 +127,8 @@ export default function GukgamSearch({
   return (
     <section className="gukgam-search" aria-labelledby="gukgam-search-title">
       <div className="gukgam-search-heading">
-        <div>
-          <span className="eyebrow">현재 공개 기록 검색</span>
-          <h2 id="gukgam-search-title">인물과 기관에서 시작</h2>
-        </div>
-        <p>
-          이름, 공개된 역할·정당·지역구·위원회 또는 기관명으로 현재 공개 기록을
-          좁혀보세요. 검색은 표시 대상을 필터링할 뿐 새로운 identity 연결을 만들지 않습니다.
-        </p>
+        <h2 id="gukgam-search-title">인물·기관 검색</h2>
+        <p>이름, 역할, 정당, 지역구, 위원회 또는 기관명으로 찾습니다.</p>
       </div>
 
       <label className="gukgam-search-field">
@@ -180,8 +174,7 @@ export default function GukgamSearch({
         </div>
       ) : resultCount === 0 ? (
         <div className="gukgam-search-idle" role="status">
-          <strong>현재 공개 기록에서 일치 항목이 없습니다.</strong>
-          <span>기록이 없다는 뜻이 아니라 현재 공개·검색 가능한 범위의 결과가 비어 있습니다.</span>
+          <strong>일치하는 기록이 없습니다.</strong>
         </div>
       ) : (
         <div className="gukgam-search-results" aria-live="polite">
@@ -200,9 +193,6 @@ export default function GukgamSearch({
                       href={"/people/" + person.id}
                       key={person.id}
                     >
-                      <span className="gukgam-search-avatar" aria-hidden="true">
-                        {person.canonical_name.trim().slice(0, 1)}
-                      </span>
                       <span className="gukgam-search-row-main">
                         <span className="gukgam-search-name-line">
                           <strong>{person.canonical_name}</strong>
@@ -218,7 +208,6 @@ export default function GukgamSearch({
                       <span className="gukgam-search-context">
                         {facets?.district?.value ?? facets?.committees?.value ?? "추가 공개 정보 없음"}
                       </span>
-                      <span className="row-arrow" aria-hidden="true">↗</span>
                     </Link>
                   );
                 })}
@@ -252,17 +241,13 @@ export default function GukgamSearch({
                     href={"/organizations/" + organization.id}
                     key={organization.id}
                   >
-                    <span className="gukgam-search-avatar organization" aria-hidden="true">
-                      {organization.name.trim().slice(0, 1)}
-                    </span>
                     <span className="gukgam-search-row-main">
                       <strong>{organization.name}</strong>
                       <span>{organization.classification ?? "분류 공개 정보 없음"}</span>
                     </span>
                     <span className="gukgam-search-context">
-                      임원 {organization.executive_count}건 · Evidence {organization.evidence_count}개
+                      임원 {organization.executive_count}건 · 근거 {organization.evidence_count}개
                     </span>
-                    <span className="row-arrow" aria-hidden="true">↗</span>
                   </Link>
                 ))}
               </div>

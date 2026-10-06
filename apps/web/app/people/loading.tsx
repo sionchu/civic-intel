@@ -3,7 +3,6 @@ export default function PeopleLoading() {
     <div className="site-page people-page people-loading" aria-busy="true" aria-live="polite">
       <header className="people-header">
         <div>
-          <div className="eyebrow">모두의국감 / 인물 찾기</div>
           <h1>인물 찾기</h1>
           <p className="profile-lede">공개 인물 기록을 불러오는 중입니다.</p>
         </div>

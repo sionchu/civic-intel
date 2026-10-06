@@ -11,7 +11,7 @@ test("Gukgam witnesses component is a server component with source-listed flat r
   assert.match(component, /item\.source_url/);
   assert.match(component, /item\.affiliation_title/);
   assert.match(component, /위법 판단이 아닙니다/);
-  assert.match(component, /증인이 없다는 뜻은 아닙니다/);
+  assert.match(component, /아직 공개된 명단이 없습니다/);
 });
 
 test("Gukgam witness names link to a Person only through a reviewed published link", async () => {

@@ -38,12 +38,11 @@ export default async function GukgamWitnesses() {
     <section className="gukgam-witnesses" aria-labelledby="gukgam-witnesses-title">
       <h2 id="gukgam-witnesses-title">위원회 공식 증인·참고인 명단</h2>
       <p className="gukgam-witnesses-note">
-        위원회가 의결한 「증인 등 출석요구의 건」 목록에 기재된 내용을 출처 그대로 보여줍니다.
-        증인·참고인 기재는 출석 요구일 뿐 위법 판단이 아닙니다.
+        위원회가 의결한 출석요구 명단입니다. 출석 요구일 뿐 위법 판단이 아닙니다.
       </p>
       {projection.items.length === 0 ? (
         <p className="gukgam-witnesses-empty">
-          공개 검토를 마친 공식 명단이 아직 없습니다. 명단이 없다는 것이 증인이 없다는 뜻은 아닙니다.
+          아직 공개된 명단이 없습니다.
         </p>
       ) : (
         groupByCommittee(projection.items).map(([committee, committeeItems]) => (
@@ -97,11 +96,7 @@ export default async function GukgamWitnesses() {
           </div>
         ))
       )}
-      <ul className="gukgam-witnesses-limitations">
-        <li>검토를 마친 공식 명단 가운데 공개 기준을 통과한 행만 표시합니다. 전체 증인 명단이 아닙니다.</li>
-        <li>명단은 의결·추가·종합감사 변경에 따라 바뀔 수 있고, 이후 버전이 앞선 행을 대체할 수 있습니다.</li>
-        <li>여기에 없다는 것이 출석 요구가 없었다는 뜻은 아닙니다. 이름은 인물 기록과 자동으로 연결하지 않고, 사람이 검토해 공개한 행만 인물 기록으로 이어집니다.</li>
-      </ul>
+      <p className="gukgam-witnesses-limitations">전체 명단이 아니며, 의결에 따라 바뀔 수 있습니다. 사람이 검토해 공개한 행만 인물 기록과 연결합니다.</p>
     </section>
   );
 }

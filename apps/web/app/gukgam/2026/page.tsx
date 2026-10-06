@@ -77,48 +77,30 @@ export default async function Gukgam2026Page({
     <div className="site-page gukgam-page">
       <header className="gukgam-hero">
         <div className="gukgam-hero-copy">
-          <p className="eyebrow">모두의국감 / 2026 국정감사</p>
           <h1>국감 2026</h1>
           <p className="lede">
-            국정감사에서 등장하는 인물과 기관을 기존 공개 기록과 공식 Evidence에 연결해 살펴봅니다.
-            일정·피감기관·증인·참고인 정보는 출처 정책과 검증을 통과한 범위만 순차 반영합니다.
+            2026 국정감사 일정, 피감기관, 위원회 위원, 증인·참고인 명단입니다.
           </p>
           <div className="hero-actions">
             <NextAuditAction serverToday={today} dates={scheduleDates} />
-            <a className="inline-action" href="#gukgam-witnesses-title">증인·참고인 명단 <span aria-hidden="true">↓</span></a>
-            <Link className="inline-action" href="/people">인물 찾기 <span aria-hidden="true">↗</span></Link>
-            <Link className="inline-action" href="/organizations">기관 보기 <span aria-hidden="true">↗</span></Link>
+            <a className="inline-action" href="#gukgam-witnesses-title">증인·참고인 명단</a>
+            <Link className="inline-action" href="/people">인물 찾기</Link>
+            <Link className="inline-action" href="/organizations">기관 보기</Link>
           </div>
         </div>
-        <aside className="gukgam-method" aria-label="국감 화면의 공개 원칙">
-          <span className="micro-label">공개 원칙</span>
-          <strong>공식 기록상 연결만</strong>
-          <p>같은 이름, 같은 학교명 또는 단순한 동시 등장만으로 관계를 만들지 않습니다. 각 연결은 Claim과 Evidence를 따라 원문까지 확인할 수 있어야 합니다.</p>
-        </aside>
       </header>
 
       <section className="gukgam-entry-section" aria-labelledby="gukgam-published-targets-title">
         <div className="section-intro">
-          <div>
-            <span className="eyebrow">감사 일정 · 근거가 공개된 항목만</span>
-            <h2 id="gukgam-published-targets-title">감사일별 공개된 피감대상</h2>
-          </div>
-          <p>
-            위원회 공식 계획서의 피감대상 가운데 기관 기록에 검토 연결되고 Claim과 Evidence까지
-            갖춘 일정만 날짜 → 위원회 → 기관 순으로 보여줍니다. 기관을 누르면 공개 기록과 근거로 이어집니다.
-          </p>
+          <h2 id="gukgam-published-targets-title">감사일별 공개된 피감대상</h2>
         </div>
 
         {targetsResult.state === "error" ? (
           <ReadState error={targetsResult.error} />
         ) : targetsResult.data.items.length === 0 ? (
           <div className="empty-state" role="status">
-            <span className="empty-state-mark" aria-hidden="true">∅</span>
             <div>
-              <strong>현재 공개된 피감대상 Claim이 없습니다.</strong>
-              <p>
-                감사대상이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 아직 없다는 뜻입니다.
-              </p>
+              <strong>아직 공개된 피감대상이 없습니다.</strong>
             </div>
           </div>
         ) : (
@@ -142,9 +124,7 @@ export default async function Gukgam2026Page({
               </div>
             </dl>
             <p className="gukgam-scope-note">
-              전체 감사대상 목록이 아닙니다. 위에 없는 위원회·기관은 아직 공개 기준을 통과하지 않았을 뿐이며,
-              감사가 없다는 뜻이 아닙니다. 각 항목은 공식 계획서상 일정(계획 사실)이며 감사가 실제로
-              열렸거나 어떤 결과가 나왔다는 기록이 아닙니다. 일정은 위원회 의결로 바뀔 수 있습니다.
+              전체 감사대상 목록이 아닙니다. 위원회 계획서상 일정이며 바뀔 수 있습니다.
             </p>
 
             <AuditDateIndex serverToday={today} days={scheduleDays} />
@@ -182,7 +162,7 @@ export default async function Gukgam2026Page({
                                 className="inline-action"
                                 href={`/organizations/${item.organization.id}#claim-${item.claim_id}`}
                               >
-                                이 일정의 Claim / Evidence 보기 <span aria-hidden="true">↗</span>
+                                이 일정의 근거 보기
                               </Link>
                               <details className="audit-details">
                                 <summary>Claim·Evidence 확인 경로</summary>
@@ -214,32 +194,20 @@ export default async function Gukgam2026Page({
 
       <section className="gukgam-entry-section" id="gukgam-committees" aria-labelledby="gukgam-committees-title">
         <div className="section-intro">
-          <div>
-            <span className="eyebrow">감사 위원 · 근거가 공개된 항목만</span>
-            <h2 id="gukgam-committees-title">위원회별 감사 위원</h2>
-          </div>
-          <p>
-            2026 국정감사 대상 위원회마다, 국회 명부 Claim에 그 위원회가 기재된 현재 공개 의원을
-            보여줍니다. 공개된 피감대상 Claim이 아직 없는 위원회는 위원 명단만 표시합니다.
-            위원 이름은 인물 기록으로, 근거는 해당 Claim으로 이어집니다.
-          </p>
+          <h2 id="gukgam-committees-title">위원회별 감사 위원</h2>
         </div>
         {committeesResult.state === "error" ? (
           <ReadState error={committeesResult.error} />
         ) : committees.length === 0 ? (
           <div className="empty-state" role="status">
-            <span className="empty-state-mark" aria-hidden="true">∅</span>
             <div>
-              <strong>공개된 위원회 구성 Claim이 없습니다.</strong>
-              <p>위원이 없다는 뜻이 아니라, 현재 공개 기준을 통과한 Claim이 없다는 뜻입니다.</p>
+              <strong>아직 공개된 위원회 구성 기록이 없습니다.</strong>
             </div>
           </div>
         ) : (
           <>
             <p className="gukgam-scope-note">
-              국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 위원이라는 사실이 그 의원이 특정
-              피감기관을 질의했다는 뜻도 아닙니다. 위원회 이름은 공식 표기와 정확히 일치할 때만 연결하며,
-              이전·변경된 위원회 이름은 합치지 않아 일부 의원이 빠질 수 있습니다.
+              국회 명부 기준 위원입니다.
             </p>
             <ul className="committee-index">
               {committees.map((committee) => (
@@ -268,23 +236,9 @@ export default async function Gukgam2026Page({
 
       <GukgamWitnesses />
 
-      <section className="gukgam-coverage-strip" aria-label="현재 공개 범위">
-        <div>
-          <span className="micro-label">인물</span>
-          <strong>{peopleCount ?? "—"}</strong>
-          <small>현재 공개 Person 기록</small>
-        </div>
-        <div>
-          <span className="micro-label">기관</span>
-          <strong>{organizationCount ?? "—"}</strong>
-          <small>현재 공개 기관 기록</small>
-        </div>
-        <div>
-          <span className="micro-label">근거 경로</span>
-          <strong>Claim → Evidence → Source</strong>
-          <small>공개 연결은 Evidence trace를 유지</small>
-        </div>
-      </section>
+      <p className="gukgam-coverage-line">
+        현재 공개 기록: 인물 {peopleCount === null ? "—" : `${peopleCount}명`} · 기관 {organizationCount === null ? "—" : `${organizationCount}곳`}
+      </p>
 
       {peopleResult.state === "error" && <ReadState error={peopleResult.error} />}
       {organizationsResult.state === "error" && <ReadState error={organizationsResult.error} />}
@@ -304,49 +258,6 @@ export default async function Gukgam2026Page({
           organizationsResult.state === "success" ? organizationsResult.data : []
         }
       />
-
-      <section className="gukgam-entry-section" aria-labelledby="gukgam-entry-title">
-        <div className="section-intro">
-          <div>
-            <span className="eyebrow">둘러보기</span>
-            <h2 id="gukgam-entry-title">어디서 시작할까요?</h2>
-          </div>
-          <p>그래프 전체를 한 번에 펼치지 않고, 인물이나 기관에서 시작해 필요한 관계만 좁혀 봅니다.</p>
-        </div>
-        <div className="gukgam-entry-grid">
-          <Link className="gukgam-entry" href="/people">
-            <span className="entry-index">01</span>
-            <strong>인물에서 시작</strong>
-            <p>현재 공개된 Person을 선택하고 경력·공직 기록과 Evidence를 읽습니다.</p>
-            <span className="entry-action">인물 찾기 <span aria-hidden="true">↗</span></span>
-          </Link>
-          <Link className="gukgam-entry" href="/organizations">
-            <span className="entry-index">02</span>
-            <strong>기관에서 시작</strong>
-            <p>피감기관으로 이어질 수 있는 공공기관·기관 임원 기록과 공개 Claim을 확인합니다.</p>
-            <span className="entry-action">기관 <span aria-hidden="true">↗</span></span>
-          </Link>
-          <Link className="gukgam-entry" href="/people">
-            <span className="entry-index">03</span>
-            <strong>공식 연결 보기</strong>
-            <p>Person 상세의 local graph에서 현재 Evidence Core가 지원하는 공식 연결을 확인합니다.</p>
-            <span className="entry-action">공식 연결 <span aria-hidden="true">↗</span></span>
-          </Link>
-        </div>
-      </section>
-
-      <section className="gukgam-status-section" aria-labelledby="gukgam-status-title">
-        <div>
-          <span className="eyebrow">공개 범위 · 출처 확인 기준</span>
-          <h2 id="gukgam-status-title">국감 전용 자료는<br />검증된 만큼만</h2>
-          <p>위원회별 계획, 피감기관, 증인·참고인 자료는 공개돼 있다는 이유만으로 바로 수집하지 않습니다. 출처 이용 조건, 버전과 식별자를 확인한 뒤 기존 Evidence Core에 연결합니다.</p>
-        </div>
-        <ol className="gukgam-status-list">
-          <li><div><strong>위원회 계획</strong><p>공식 계획서의 일정·대상기관 구조를 검토한 뒤 반영합니다.</p></div></li>
-          <li><div><strong>피감기관</strong><p>기존 canonical Organization과 정확히 연결되는 경우에만 기관 관계를 확장합니다.</p></div></li>
-          <li><div><strong>증인·참고인</strong><p>공식 명단의 이름만으로 Person을 만들거나 합치지 않습니다.</p></div></li>
-        </ol>
-      </section>
     </div>
   );
 }
