@@ -126,20 +126,20 @@ function MoneyCard({
       </p>
       <div className="money-values" aria-label="Annual disclosed values">
         <div className="money-value">
-          <span className="micro-label">EARLIER · {earlier.fiscal_year}</span>
+          <span className="micro-label">이전 · {earlier.fiscal_year}</span>
           <strong>{formatThousandKrw(earlier.amount_thousand_krw)}</strong>
           <small>{formatKrw(earlier.amount_krw)} · {earlier.report_period}</small>
         </div>
         <span className="change-arrow" aria-hidden="true">→</span>
         <div className="money-value later">
-          <span className="micro-label">LATER · {later.fiscal_year}</span>
+          <span className="micro-label">이후 · {later.fiscal_year}</span>
           <strong>{formatThousandKrw(later.amount_thousand_krw)}</strong>
           <small>{formatKrw(later.amount_krw)} · {later.report_period}</small>
         </div>
       </div>
       <div className="money-delta-row">
-        <div><span>Absolute delta</span><strong>{delta > 0 ? "+" : ""}{formatKrw(delta)}</strong></div>
-        <div><span>Percentage</span><strong>{percent === null ? "계산 없음" : `${percent}%`}</strong></div>
+        <div><span>증감액</span><strong>{delta > 0 ? "+" : ""}{formatKrw(delta)}</strong></div>
+        <div><span>증감률</span><strong>{percent === null ? "계산 없음" : `${percent}%`}</strong></div>
       </div>
       <p className="money-note">
         이 카드는 두 개의 published organization Claim을 산술 비교한 파생 읽기 결과입니다.
@@ -147,7 +147,7 @@ function MoneyCard({
       </p>
       <EvidenceTraceList traces={money.evidence} sourceById={sourceById} claimLabel="연결된 연간 입력 참조" />
       <details className="audit-details">
-        <summary>Methodology & coverage</summary>
+        <summary>계산 방법과 범위</summary>
         <small>
           Method {money.method_version}<br />
           Scope {money.details.input_scope.source_contract}<br />
@@ -266,7 +266,7 @@ export default async function OrganizationPage({
       <Link href="/organizations" className="back-link"><span aria-hidden="true">←</span> 기관 목록</Link>
       <header className="profile-header organization-header">
         <div>
-          <div className="eyebrow"><span className="eyebrow-mark" aria-hidden="true">✦</span> Organization record / Published evidence</div>
+          <div className="eyebrow">기관 기록 · 공개 근거</div>
           <div className="profile-title-row">
             <h1>{organization.name}</h1>
             <span className="status AVAILABLE">AVAILABLE</span>
@@ -274,9 +274,9 @@ export default async function OrganizationPage({
           <p className="profile-lede">현재 canonical organization에 연결된 published Claim과 근거 경로를 읽기 전용으로 표시합니다.</p>
         </div>
         <div className="profile-stamp" aria-hidden="true">
-          <span className="micro-label">PUBLIC RECORD</span>
+          <span className="micro-label">공개 기록</span>
           <strong>ORG</strong>
-          <span>evidence / read-only</span>
+          <span>근거 · 읽기 전용</span>
         </div>
       </header>
 
@@ -298,7 +298,7 @@ export default async function OrganizationPage({
         <div className="profile-content">
           <section className="organization-section" id="key-facts" aria-labelledby="organization-overview-title">
             <div className="section-intro">
-              <div><span className="eyebrow">Published claims</span><h2 id="organization-overview-title">핵심 기록</h2></div>
+              <div><span className="eyebrow">공개된 기록</span><h2 id="organization-overview-title">핵심 기록</h2></div>
               <p>기관 분류와 국정감사 일정은 published organization Claim에서만 가져오며, 임원 공시 건수는 그 Claim을 센 집계입니다.</p>
             </div>
             {factRows.length > 0 ? <FactBox rows={factRows} /> : (
@@ -309,7 +309,7 @@ export default async function OrganizationPage({
           {hasGukgam && (
             <section className="organization-section" id="gukgam-2026" aria-labelledby="organization-gukgam-title">
               <div className="section-intro">
-                <div><span className="eyebrow">Gukgam 2026 / Claim-backed</span><h2 id="organization-gukgam-title">2026 국정감사</h2></div>
+                <div><span className="eyebrow">2026 국정감사 · 근거가 공개된 항목만</span><h2 id="organization-gukgam-title">2026 국정감사</h2></div>
                 <p>공식 위원회 계획서에 피감대상으로 기재된 일정과, 그 위원회에 기재된 국회 명부상 위원을 보여줍니다.</p>
               </div>
               {gukgamReadError ? (
@@ -358,7 +358,7 @@ export default async function OrganizationPage({
 
           <section className="organization-section" id="records" aria-labelledby="organization-records-title">
             <div className="section-intro">
-              <div><span className="eyebrow">Published claims</span><h2 id="organization-records-title">기록</h2></div>
+              <div><span className="eyebrow">공개된 기록</span><h2 id="organization-records-title">기록</h2></div>
               <p>기관에 대해 현재 공개 가능한 Claim만 표시하며, 각 항목에서 근거와 출처 정책을 펼쳐 볼 수 있습니다.</p>
             </div>
             <PendingLanes lanes={pendingLanes} />
@@ -396,7 +396,7 @@ export default async function OrganizationPage({
           {showConnections && (
             <section className="organization-section ontology-section" id="official-connections" aria-labelledby="organization-ontology-title">
               <div className="section-intro">
-                <div><span className="eyebrow">Governance ontology / local view</span><h2 id="organization-ontology-title">공식 기록상 연결</h2></div>
+                <div><span className="eyebrow">공식 기록 기준</span><h2 id="organization-ontology-title">공식 기록상 연결</h2></div>
                 <p>ALIO published Claim이 명시한 임원 기록만 기관 중심 local graph로 보여줍니다. 이름은 source-listed record이며 canonical Person으로 자동 연결하지 않습니다.</p>
               </div>
               {ontologyResult.state === "error" ? (
@@ -409,12 +409,12 @@ export default async function OrganizationPage({
 
           <section className="source-library organization-source-library" id="sources" aria-labelledby="organization-sources-title">
             <div className="section-intro">
-              <div><span className="eyebrow">Evidence & audit</span><h2 id="organization-sources-title">이 기록의 출처</h2></div>
+              <div><span className="eyebrow">근거와 출처 확인</span><h2 id="organization-sources-title">이 기록의 출처</h2></div>
               <p>출처의 공개일, 확인 시각과 policy 요약은 바로 확인하고, 식별자는 감사 ID에서 확인합니다.</p>
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 ? (
-              !sourceError && <p className="empty">No source cards available.</p>
+              !sourceError && <p className="empty">표시할 출처가 없습니다.</p>
             ) : (
               <div className="source-grid">{sources.map((source) => <SourceCard key={source.id} source={source} />)}</div>
             )}

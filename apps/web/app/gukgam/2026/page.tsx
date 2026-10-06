@@ -78,7 +78,7 @@ export default async function Gukgam2026Page({
       <header className="gukgam-hero">
         <div className="gukgam-hero-copy">
           <p className="eyebrow">모두의국감 / 2026 국정감사</p>
-          <h1>국감 <em>2026</em></h1>
+          <h1>국감 2026</h1>
           <p className="lede">
             국정감사에서 등장하는 인물과 기관을 기존 공개 기록과 공식 Evidence에 연결해 살펴봅니다.
             일정·피감기관·증인·참고인 정보는 출처 정책과 검증을 통과한 범위만 순차 반영합니다.
@@ -91,7 +91,7 @@ export default async function Gukgam2026Page({
           </div>
         </div>
         <aside className="gukgam-method" aria-label="국감 화면의 공개 원칙">
-          <span className="micro-label">Launch principle</span>
+          <span className="micro-label">공개 원칙</span>
           <strong>공식 기록상 연결만</strong>
           <p>같은 이름, 같은 학교명 또는 단순한 동시 등장만으로 관계를 만들지 않습니다. 각 연결은 Claim과 Evidence를 따라 원문까지 확인할 수 있어야 합니다.</p>
         </aside>
@@ -100,7 +100,7 @@ export default async function Gukgam2026Page({
       <section className="gukgam-entry-section" aria-labelledby="gukgam-published-targets-title">
         <div className="section-intro">
           <div>
-            <span className="eyebrow">Audit schedule / Claim-backed</span>
+            <span className="eyebrow">감사 일정 · 근거가 공개된 항목만</span>
             <h2 id="gukgam-published-targets-title">감사일별 공개된 피감대상</h2>
           </div>
           <p>
@@ -185,7 +185,7 @@ export default async function Gukgam2026Page({
                                 이 일정의 Claim / Evidence 보기 <span aria-hidden="true">↗</span>
                               </Link>
                               <details className="audit-details">
-                                <summary>Claim / Evidence audit trace</summary>
+                                <summary>Claim·Evidence 확인 경로</summary>
                                 <small>
                                   Claim {item.claim_id}<br />
                                   Evidence {item.evidence_ids.join(", ")}<br />
@@ -215,7 +215,7 @@ export default async function Gukgam2026Page({
       <section className="gukgam-entry-section" id="gukgam-committees" aria-labelledby="gukgam-committees-title">
         <div className="section-intro">
           <div>
-            <span className="eyebrow">Committee members / Claim-backed</span>
+            <span className="eyebrow">감사 위원 · 근거가 공개된 항목만</span>
             <h2 id="gukgam-committees-title">위원회별 감사 위원</h2>
           </div>
           <p>
@@ -280,7 +280,7 @@ export default async function Gukgam2026Page({
           <small>현재 공개 기관 기록</small>
         </div>
         <div>
-          <span className="micro-label">Evidence path</span>
+          <span className="micro-label">근거 경로</span>
           <strong>Claim → Evidence → Source</strong>
           <small>공개 연결은 Evidence trace를 유지</small>
         </div>
@@ -308,7 +308,7 @@ export default async function Gukgam2026Page({
       <section className="gukgam-entry-section" aria-labelledby="gukgam-entry-title">
         <div className="section-intro">
           <div>
-            <span className="eyebrow">Explore</span>
+            <span className="eyebrow">둘러보기</span>
             <h2 id="gukgam-entry-title">어디서 시작할까요?</h2>
           </div>
           <p>그래프 전체를 한 번에 펼치지 않고, 인물이나 기관에서 시작해 필요한 관계만 좁혀 봅니다.</p>
@@ -337,14 +337,14 @@ export default async function Gukgam2026Page({
 
       <section className="gukgam-status-section" aria-labelledby="gukgam-status-title">
         <div>
-          <span className="eyebrow">Coverage / source-gated</span>
-          <h2 id="gukgam-status-title">국감 전용 자료는<br /><em>검증된 만큼만</em></h2>
+          <span className="eyebrow">공개 범위 · 출처 확인 기준</span>
+          <h2 id="gukgam-status-title">국감 전용 자료는<br />검증된 만큼만</h2>
           <p>위원회별 계획, 피감기관, 증인·참고인 자료는 공개돼 있다는 이유만으로 바로 수집하지 않습니다. 출처 이용 조건, 버전과 식별자를 확인한 뒤 기존 Evidence Core에 연결합니다.</p>
         </div>
         <ol className="gukgam-status-list">
-          <li><span>01</span><div><strong>위원회 계획</strong><p>공식 계획서의 일정·대상기관 구조를 검토한 뒤 반영합니다.</p></div></li>
-          <li><span>02</span><div><strong>피감기관</strong><p>기존 canonical Organization과 정확히 연결되는 경우에만 기관 관계를 확장합니다.</p></div></li>
-          <li><span>03</span><div><strong>증인·참고인</strong><p>공식 명단의 이름만으로 Person을 만들거나 합치지 않습니다.</p></div></li>
+          <li><div><strong>위원회 계획</strong><p>공식 계획서의 일정·대상기관 구조를 검토한 뒤 반영합니다.</p></div></li>
+          <li><div><strong>피감기관</strong><p>기존 canonical Organization과 정확히 연결되는 경우에만 기관 관계를 확장합니다.</p></div></li>
+          <li><div><strong>증인·참고인</strong><p>공식 명단의 이름만으로 Person을 만들거나 합치지 않습니다.</p></div></li>
         </ol>
       </section>
     </div>

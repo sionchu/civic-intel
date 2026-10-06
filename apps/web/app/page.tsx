@@ -34,7 +34,7 @@ export default async function HomePage() {
       <section className="home-intro home-search" aria-labelledby="hero-title">
         <div className="home-intro-copy">
           <p className="eyebrow">모두의국감 · 2026 국정감사</p>
-          <h1 id="hero-title">국감 참여 인물의<br /><em>이력과 근거</em>를 확인하세요</h1>
+          <h1 id="hero-title">국감 참여 인물의<br />이력과 근거를 확인하세요</h1>
           <p className="lede">
             국회의원 등 공개 근거로 확인된 인물을 이름으로 찾고, 역할·이력과 2026 국정감사 관련
             맥락을 출처와 함께 확인할 수 있습니다.
@@ -95,17 +95,17 @@ export default async function HomePage() {
       <section className="principles" id="coverage" aria-labelledby="principles-title">
         <div className="principles-heading">
           <span className="eyebrow">자료 범위</span>
-          <h2 id="principles-title">확인 가능한 범위만<br /><em>근거와 함께</em></h2>
+          <h2 id="principles-title">확인 가능한 범위만<br />근거와 함께</h2>
           <p>
             모든 국감 참여자나 전체 증인 명단이 아닙니다. 공개 기준을 통과한 기록만 표시하며, 표시되지 않은
             사람·관계는 없다는 뜻이 아니라 아직 확인되지 않았다는 뜻입니다.
           </p>
         </div>
         <ol className="principles-list">
-          <li className="principle"><span>01</span><div><strong>인물 구분</strong><p>공개 기록이 가리키는 사람을 먼저 구분합니다. 이름이 같다는 이유만으로 기록을 합치지 않습니다.</p></div></li>
-          <li className="principle"><span>02</span><div><strong>근거</strong><p>표시된 내용마다 근거(Claim·Evidence)를 열어 볼 수 있고, 확인되지 않은 값은 비워 둡니다.</p></div></li>
-          <li className="principle"><span>03</span><div><strong>출처와 기준일</strong><p>근거가 연결된 공식 출처와 기준일을 따라 원문과 기록의 범위를 확인합니다.</p></div></li>
-          <li className="principle"><span>04</span><div><strong>평가하지 않음</strong><p>정치 성향, 점수, 순위, 평가를 만들지 않습니다. 증인·참고인 명단의 이름은 인물 기록에 자동 연결하지 않습니다.</p></div></li>
+          <li className="principle"><div><strong>인물 구분</strong><p>공개 기록이 가리키는 사람을 먼저 구분합니다. 이름이 같다는 이유만으로 기록을 합치지 않습니다.</p></div></li>
+          <li className="principle"><div><strong>근거</strong><p>표시된 내용마다 근거(Claim·Evidence)를 열어 볼 수 있고, 확인되지 않은 값은 비워 둡니다.</p></div></li>
+          <li className="principle"><div><strong>출처와 기준일</strong><p>근거가 연결된 공식 출처와 기준일을 따라 원문과 기록의 범위를 확인합니다.</p></div></li>
+          <li className="principle"><div><strong>평가하지 않음</strong><p>정치 성향, 점수, 순위, 평가를 만들지 않습니다. 증인·참고인 명단의 이름은 인물 기록에 자동 연결하지 않습니다.</p></div></li>
         </ol>
       </section>
     </div>

@@ -15,7 +15,7 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /method_version/);
   assert.match(page, /correction_semantics/);
   assert.match(page, /UNKNOWN/);
-  assert.match(page, /Evidence & audit/);
+  assert.match(page, /근거와 출처 확인/);
 });
 
 test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", async () => {
@@ -138,7 +138,7 @@ test("organization page consumes the existing direct-ID evidence contract", asyn
   const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
   assert.match(page, /getOrganization\(id\)/);
   assert.match(page, /getOrganizationMoney\(id\)/);
-  assert.match(page, /Published claims/);
+  assert.match(page, /공개된 기록/);
   assert.match(page, /DERIVED · MONEY/);
   assert.match(page, /moneyResult\.error/);
   assert.match(page, /ReadState/);
@@ -358,7 +358,7 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(page, /공개된 피감대상/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
   assert.match(page, /이 일정의 Claim \/ Evidence 보기/);
-  assert.match(page, /Claim \/ Evidence audit trace/);
+  assert.match(page, /Claim·Evidence 확인 경로/);
   assert.match(page, /organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}/);
   assert.match(data, /getJson\("\/gukgam\/2026\/targets"\)/);
   assert.match(types, /PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1/);
@@ -638,7 +638,7 @@ test("evidence panel and fact box keep status chips readable and avoid unsupport
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
   const panel = await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
   const factBox = await readFile(new URL("../app/components/fact-box.tsx", import.meta.url), "utf8");
-  assert.match(styles, /\.evidence-panel \.status, \.fact-table \.status[^{]*\{ font-size: 11px; \}/);
+  assert.match(styles, /\.evidence-panel \.status, \.fact-table \.status[^{]*\{ font-size: 13px; \}/);
   assert.match(styles, /\.evidence-panel:target/);
   assert.doesNotMatch(panel + factBox, /confidence|faction|influence|probability|score|rank/i);
 });
@@ -771,3 +771,25 @@ test("Sites snapshot fits the 256 MiB limit by dropping only never-requested dup
   assert.match(script, /bytes: bundleBytes/);
 });
 
+
+test("public design floor: readable sizes, 48px controls, Korean labels, status not by color alone", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const css = (await read("../app/styles.css")) + (await read("../app/components/gukgam-witnesses.css"));
+  for (const match of css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)) {
+    assert.ok(Number(match[1]) >= 13, `font-size ${match[1]}px is below the 13px floor`);
+  }
+  assert.doesNotMatch(css, /text-transform:\s*uppercase/);
+  assert.match(css, /body \{[^}]*font: 17px\/1\.65/);
+  assert.match(css, /body \{[^}]*font-variant-numeric: tabular-nums/);
+  assert.match(css, /--color-ink-muted: #5c6862/);
+  assert.match(css, /\.status:is\([^)]*\.FACT[^)]*\)::before \{ content: "✓"/);
+  assert.match(css, /\.status:is\([^)]*\.UNKNOWN[^)]*\)::before \{ content: "\?"/);
+  assert.doesNotMatch(css, /eyebrow-mark|row-index/);
+  const pages = await Promise.all([
+    "../app/page.tsx", "../app/gukgam/2026/page.tsx", "../app/people/[id]/page.tsx",
+    "../app/organizations/[id]/page.tsx", "../app/organizations/page.tsx", "../app/components/roster-grid.tsx",
+  ].map(read));
+  for (const page of pages) {
+    assert.doesNotMatch(page, /<em>|eyebrow-mark|row-index|Evidence & audit|Published claims|Methodology & coverage/);
+  }
+});
