@@ -58,6 +58,10 @@ export default async function GukgamWitnesses() {
                     {rows.map((item) => (
                       <li key={item.claim_id} id={`witness-${item.claim_id}`}>
                         <strong>{item.name}</strong>
+                        <span className="gukgam-witnesses-tag">
+                          {item.source_tag}
+                          {item.acquisition_channel === "OWNER_SUPPLIED_COPY" ? " · 아직 공식 발표 아님" : ""}
+                        </span>
                         <span>{item.affiliation_title ?? "소속·직위 미기재"}</span>
                         {item.attendance_date_text ? (
                           <span className="gukgam-witnesses-date">

@@ -28,6 +28,8 @@ export default async function PeoplePage({
         committeeName: item.committee_name,
         category: item.category,
         attendanceDateText: item.attendance_date_text,
+        sourceTag: item.source_tag,
+        officiallyPublished: item.acquisition_channel !== "OWNER_SUPPLIED_COPY",
       }))
     : [];
 

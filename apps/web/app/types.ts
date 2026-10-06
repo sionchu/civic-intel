@@ -156,7 +156,8 @@ export type GukgamWitnessProjectionItem = {
     id: string;
     name: string;
   };
-  acquisition_channel: "OFFICIAL_SITE" | "OWNER_SUPPLIED_COPY";
+  acquisition_channel: "OFFICIAL_SITE" | "OWNER_SUPPLIED_COPY" | "OFFICIAL_MINUTES";
+  source_tag: "#공식게시" | "#공식회의록" | "#제공사본_HWP" | "#제공사본_비HWP";
   provenance_label: string | null;
   source_url: string | null;
   claim_id: string;
