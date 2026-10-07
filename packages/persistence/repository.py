@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -4024,6 +4025,133 @@ class SqlAlchemyRepository:
             except Exception:
                 session.rollback()
                 raise
+
+    def dart_link_people(self) -> list[Any]:
+        """People an OpenDART row may be compared with, each with its known birth date.
+
+        MEMBER: current roster (Person birth date). FORMER: former members whose NEC candidacy was
+        matched exactly (birth date from that NEC observation). ALIO: published ALIO role People
+        with their institution names (no birth date).
+        """
+
+        from packages.verification.opendart_constellation_links import KnownPerson
+
+        known: list[Any] = [
+            KnownPerson(person=person, birth_date=person.birth_date, kind="MEMBER")
+            for person in self.current_roster_people()
+        ]
+        with self.sessions() as session:
+            births: dict[str, set[str]] = defaultdict(set)
+            former_rows: dict[str, PersonRow] = {}
+            for item in session.execute(
+                select(PersonRow, FeederObservationRow.normalized_json["birth_date"].as_string())
+                .join(ClaimRow, ClaimRow.person_id == PersonRow.id)
+                .join(ClaimEvidenceRow, ClaimEvidenceRow.claim_id == ClaimRow.id)
+                .join(
+                    FeederObservationRow,
+                    FeederObservationRow.id == ClaimEvidenceRow.feeder_observation_id,
+                )
+                .where(
+                    ClaimRow.predicate.in_(["NEC_CANDIDATE_EDUCATION", "NEC_CANDIDATE_CAREER"]),
+                    ClaimRow.qualifiers["identity_basis"].as_string()
+                    == "EXACT_NAME_PARTY_AND_ELECTION_OF_TERM",
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                    PersonRow.superseded_at.is_(None),
+                )
+            ):
+                person_row: PersonRow = item[0]
+                birth = item[1]
+                former_rows[person_row.id] = person_row
+                if birth:
+                    births[person_row.id].add(str(birth))
+            for person_id, row in former_rows.items():
+                values = births.get(person_id, set())
+                if len(values) == 1:  # conflicting NEC birth dates: no birth anchor
+                    known.append(
+                        KnownPerson(
+                            person=self._person(row),
+                            birth_date=date.fromisoformat(next(iter(values))),
+                            kind="FORMER",
+                        )
+                    )
+            institutions: dict[str, set[str]] = defaultdict(set)
+            alio_rows: dict[str, PersonRow] = {}
+            for person_row, organization_name in session.execute(
+                select(PersonRow, OrganizationRow.name)
+                .join(ClaimRow, ClaimRow.person_id == PersonRow.id)
+                .join(
+                    OrganizationRow,
+                    OrganizationRow.id == ClaimRow.qualifiers["organization_id"].as_string(),
+                )
+                .where(
+                    ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                    PersonRow.superseded_at.is_(None),
+                    PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                )
+            ):
+                alio_rows[person_row.id] = person_row
+                institutions[person_row.id].add(str(organization_name))
+            for person_id, row in alio_rows.items():
+                known.append(
+                    KnownPerson(
+                        person=self._person(row),
+                        birth_date=row.birth_date,
+                        kind="ALIO",
+                        institutions=tuple(sorted(institutions[person_id])),
+                    )
+                )
+        return known
+
+    def opendart_linked_observation_ids(self) -> set[str]:
+        with self.sessions() as session:
+            values: list[object] = list(
+                session.execute(
+                    select(ClaimRow.qualifiers["source_observation_id"].as_string()).where(
+                        ClaimRow.predicate == "OPENDART_DISCLOSED_EXECUTIVE_ROLE",
+                        ClaimRow.superseded_at.is_(None),
+                    )
+                ).scalars()
+            )
+        return {str(value) for value in values if value}
+
+    def feeder_observations_by_feeder(self, feeder: str) -> list[FeederObservation]:
+        with self.sessions() as session:
+            return [
+                self._observation(row)
+                for row in session.scalars(
+                    select(FeederObservationRow)
+                    .where(FeederObservationRow.feeder == feeder)
+                    .order_by(FeederObservationRow.id)
+                )
+            ]
+
+    def insert_identity_review_items(self, items: Sequence[IdentityReviewItem]) -> int:
+        inserted = 0
+        with self.sessions() as session:
+            for review in items:
+                if session.get(IdentityReviewItemRow, str(review.id)) is not None:
+                    continue
+                session.add(
+                    IdentityReviewItemRow(
+                        id=str(review.id),
+                        observation_id=str(review.observation_id),
+                        candidate_person_id=(
+                            str(review.candidate_person_id) if review.candidate_person_id else None
+                        ),
+                        reason_code=review.reason_code,
+                        details_json=review.details,
+                        status=review.status.value,
+                        created_at=review.created_at,
+                        resolved_at=None,
+                        resolution_note=None,
+                    )
+                )
+                inserted += 1
+            session.commit()
+        return inserted
 
     def current_roster_people(self) -> list[Person]:
         """Current RESOLVED People linked to a current Assembly-roster observation."""
