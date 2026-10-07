@@ -1,5 +1,27 @@
 # HANDOFF
 
+## Current state — 2026-10-07 (Evidence Graph relationship layer)
+
+Branch `feat/evidence-graph-relations` (base `f91f19b`) adds the read-time relationship projection
+([EVIDENCE_GRAPH](docs/architecture/EVIDENCE_GRAPH.md)): code-keyed `ASSEMBLY_COMMITTEE_MEMBERSHIP`
+Claims, the member-profile biography lane (`ASSEMBLY_BIOGRAPHY_EDUCATION/CAREER`, attributed CLAIM),
+exact registry bindings (MOIS codes, ALIO, OpenDART, reviewed NEC election table), versioned
+derivation rules incl. revolving-door transitions, `/relationships/{people/{id},compare,path,rules}`
+and the read-only `workers/relationship_coverage.py` audit. No schema change (rev `0008`).
+
+Canonical apply (owner-approved 2026-10-07, Mac PostgreSQL): backup
+`civic-intel-serve/backups/pre-evidence-graph-20261007-080654.dump`; 477 membership, 240,490
+bill-participation and 561 + 4,292 biography Claims; Claims 558,801 → 804,621; log
+`civic-intel-serve/logs/evidence-graph-apply-20261007-080654/`. Owner approved public display of
+verbatim biography lines. Measured result:
+[EVIDENCE_GRAPH_STATUS_2026-10-07](docs/research/EVIDENCE_GRAPH_STATUS_2026-10-07.md).
+
+Not yet done: the Mac API still serves master (`/relationships/*` needs this branch merged and
+deployed); Sites snapshot unchanged (owned by the Sites thread). Blocked on collector credentials
+the owner must add to `civic-intel-serve/acquisition.env`: `DART_API_KEY` (unlisted-company master,
+ownership `elestock`, compensation) and `NEC_API_KEY` (National Assembly candidate careers). Former
+members (historical member API) and MPM officials need a Person-creation decision before any lane.
+
 ## Current state — 2026-10-06 (person profile section producers)
 
 Merged #200, #201 and #202 (master `0143c23`). Every Person profile section's upstream producer is

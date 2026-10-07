@@ -38,6 +38,14 @@ class AssemblyMemberRecord:
     committees: str | None = None
 
 
+@dataclass(frozen=True)
+class AssemblyMemberBiographyRecord:
+    """The member-profile biography text (``MEM_TITLE``) keyed by ``MONA_CD``; nothing else."""
+
+    member_code: str
+    biography: str | None
+
+
 POLICY_ID = UUID("11000000-0000-0000-0000-000000000001")
 
 
@@ -276,3 +284,28 @@ class OpenAssemblyMemberConnector(Connector):
                 )
             )
         return members
+
+    @classmethod
+    def parse_biographies(cls, document: ConnectorDocument) -> list[AssemblyMemberBiographyRecord]:
+        """Return only ``MONA_CD`` and ``MEM_TITLE``; contact and staff fields are never read."""
+
+        try:
+            payload = json.loads(document.body)
+        except json.JSONDecodeError:
+            raise AssemblyApiError("National Assembly member document is not valid JSON") from None
+        if not isinstance(payload, dict):
+            raise AssemblyApiError("National Assembly member document is malformed")
+        rows, _ = cls._response_parts(payload)
+        records: list[AssemblyMemberBiographyRecord] = []
+        for row in rows:
+            member_code = cls._optional(row, "MONA_CD")
+            if not member_code:
+                raise AssemblyApiError("National Assembly member row lacks MONA_CD")
+            raw = row.get("MEM_TITLE")
+            records.append(
+                AssemblyMemberBiographyRecord(
+                    member_code=member_code,
+                    biography=str(raw) if raw is not None else None,
+                )
+            )
+        return records
