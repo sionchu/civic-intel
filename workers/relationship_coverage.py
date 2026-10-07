@@ -30,18 +30,25 @@ from packages.rendering.relationship_projection import (
 Matcher = Callable[[Claim], bool]
 
 
+_ALIASES = {"ASSEMBLY_BIOGRAPHY_EDUCATION": "NEC_CANDIDATE_EDUCATION",
+            "ASSEMBLY_BIOGRAPHY_CAREER": "NEC_CANDIDATE_CAREER"}
+
+
+def _same(predicate: str, wanted: str) -> bool:
+    return predicate == wanted or _ALIASES.get(wanted) == predicate
+
+
 def _pred(*names: str) -> Matcher:
-    wanted = set(names)
-    return lambda claim: claim.predicate in wanted
+    return lambda claim: any(_same(claim.predicate, name) for name in names)
 
 
 def _q(predicate: str, key: str, *values: str) -> Matcher:
     wanted = set(values)
-    return lambda claim: claim.predicate == predicate and claim.qualifiers.get(key) in wanted
+    return lambda claim: _same(claim.predicate, predicate) and claim.qualifiers.get(key) in wanted
 
 
 def _text(predicate: str, key: str, *needles: str) -> Matcher:
-    return lambda claim: claim.predicate == predicate and any(
+    return lambda claim: _same(claim.predicate, predicate) and any(
         needle in str(claim.qualifiers.get(key, "")) for needle in needles
     )
 
@@ -52,6 +59,8 @@ def _any(*matchers: Matcher) -> Matcher:
 
 EDU = "ASSEMBLY_BIOGRAPHY_EDUCATION"
 CAREER = "ASSEMBLY_BIOGRAPHY_CAREER"
+NEC_EDU = "NEC_CANDIDATE_EDUCATION"
+NEC_CAREER = "NEC_CANDIDATE_CAREER"
 DART = "OPENDART_DISCLOSED_EXECUTIVE_ROLE"
 ALIO = "ALIO_REVIEWED_PERSON_ROLE"
 COMMITTEE = ("ASSEMBLY_COMMITTEES", "ASSEMBLY_COMMITTEE_MEMBERSHIP", "ASSEMBLY_COMMITTEE_ROLE")
@@ -61,8 +70,8 @@ DIMENSIONS: dict[str, Matcher] = {
     "high_school": _q(EDU, "institution_level", "HIGH_SCHOOL"),
     "university": _q(EDU, "institution_level", "UNIVERSITY"),
     "graduate_school": _q(EDU, "institution_level", "GRADUATE_SCHOOL"),
-    "department": lambda c: c.predicate == EDU and bool(c.qualifiers.get("department_text")),
-    "education_dates": lambda c: c.predicate == EDU
+    "department": lambda c: _same(c.predicate, EDU) and bool(c.qualifiers.get("department_text")),
+    "education_dates": lambda c: _same(c.predicate, EDU)
     and bool(c.qualifiers.get("period_start") or c.qualifiers.get("period_end") or c.qualifiers.get("period_point")),
     "career": _any(_pred(CAREER, DART, ALIO), _q("HELD_ROLE", "source_scope", "current_member_roster")),
     "employment": _any(_pred(DART, ALIO), _q(CAREER, "career_category", "BUSINESS", "ACADEMIA", "LEGAL_PRACTICE", "CIVIC")),
@@ -74,7 +83,7 @@ DIMENSIONS: dict[str, Matcher] = {
     "committee": _pred(*COMMITTEE),
     "special_committee": lambda c: c.predicate in COMMITTEE and "특별위원회" in c.object_text,
     "campaign": _q(CAREER, "career_category", "CAMPAIGN"),
-    "campaign_role": lambda c: c.predicate == CAREER and c.qualifiers.get("career_category") == "CAMPAIGN"
+    "campaign_role": lambda c: _same(c.predicate, CAREER) and c.qualifiers.get("career_category") == "CAMPAIGN"
     and bool(c.qualifiers.get("role_text")),
     "transition_committee": _q(CAREER, "career_category", "TRANSITION_COMMITTEE"),
     "government_role": _q(CAREER, "career_category", "PUBLIC_SERVICE", "PRESIDENTIAL_OFFICE", "GOVERNMENT_COMMITTEE"),

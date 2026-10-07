@@ -1,5 +1,24 @@
 # HANDOFF
 
+## Current state — 2026-10-07 evening (official careers: former members, NEC, OpenDART master)
+
+PR #205 merged (`1ecb06b`) and deployed on the Mac API (`/relationships/*` live). Branch
+`feat/evidence-graph-official-careers` adds three owner-approved lanes, applied to canonical after
+backups (`pre-former-members-20261007-175354.dump`, `pre-official-careers-20261007-193413.dump`):
+
+- former members (역대 의원이력 17–22대): 1,348 term rows → 638 AUTO_CREATE People by `MONA_CD`
+  (219 same-name collisions sent to identity review, never merged), 993 `ASSEMBLY_HISTORICAL_TERM`
+  FACTs; public People 504 → 1,142;
+- NEC Assembly candidates 2004–2024 (12 scopes, 7,275 unique `huboid`; provider `totalCount`
+  counts repeated rows): education/career/occupation CLAIMs for 287 current members (exact name +
+  birth date) and 934 former-member terms (exact name + party + election); 3,992 Claims;
+- OpenDART corporation master: 119,558 filers as a company-name registry (no Organization/Claim).
+
+Claims 804,621 → 809,603. Current members with a registry-bound affiliation: education 96.3%,
+government body 53.8%, campaign 16.4%, public institution 9.0%, business 6.7%. Collector keys now
+live in the Mac `acquisition.env` (an unrelated OpenAI key pasted with them was exposed in a
+session log; owner asked to rotate it).
+
 ## Current state — 2026-10-07 (Evidence Graph relationship layer)
 
 Branch `feat/evidence-graph-relations` (base `f91f19b`) adds the read-time relationship projection

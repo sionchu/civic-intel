@@ -58,6 +58,12 @@ BILL_CONTRACT = "assembly_term_bill_participation"
 BIOGRAPHY_EDUCATION_PREDICATE = "ASSEMBLY_BIOGRAPHY_EDUCATION"
 BIOGRAPHY_CAREER_PREDICATE = "ASSEMBLY_BIOGRAPHY_CAREER"
 BIOGRAPHY_CONTRACT = "assembly_member_profile_biography"
+NEC_EDUCATION_PREDICATE = "NEC_CANDIDATE_EDUCATION"
+NEC_CAREER_PREDICATE = "NEC_CANDIDATE_CAREER"
+NEC_CONTRACT = "nec_assembly_candidate_submission"
+# Self-reported text lanes sharing one parser and the same registry bindings.
+EDUCATION_TEXT_LANES = {(BIOGRAPHY_EDUCATION_PREDICATE, BIOGRAPHY_CONTRACT), (NEC_EDUCATION_PREDICATE, NEC_CONTRACT)}
+CAREER_TEXT_LANES = {(BIOGRAPHY_CAREER_PREDICATE, BIOGRAPHY_CONTRACT), (NEC_CAREER_PREDICATE, NEC_CONTRACT)}
 AUDIT_TARGET_PREDICATE = "LISTED_AS_GUKGAM_AUDIT_TARGET"
 HISTORICAL_TERM_PREDICATE = "ASSEMBLY_HISTORICAL_TERM"
 HISTORICAL_TERM_CONTRACT = "assembly_historical_member_term"
@@ -72,6 +78,8 @@ PERSON_AFFILIATION_PREDICATES = frozenset(
         BIOGRAPHY_EDUCATION_PREDICATE,
         BIOGRAPHY_CAREER_PREDICATE,
         HISTORICAL_TERM_PREDICATE,
+        NEC_EDUCATION_PREDICATE,
+        NEC_CAREER_PREDICATE,
     }
 )
 REPEATED_COSPONSORSHIP_MIN_BILLS = 10
@@ -625,7 +633,7 @@ def extract_affiliation(
             period=Period(as_of=_parse_date(q.get("adoption_date")), precision="DAY"),
             **common,
         )
-    if claim.predicate == BIOGRAPHY_EDUCATION_PREDICATE and contract == BIOGRAPHY_CONTRACT:
+    if (claim.predicate, contract) in EDUCATION_TEXT_LANES:
         institution = q.get("institution_name")
         if not institution:
             return None
@@ -655,7 +663,7 @@ def extract_affiliation(
             period=Period(start=start, end=end, precision=precision),
             **common,
         )
-    if claim.predicate == BIOGRAPHY_CAREER_PREDICATE and contract == BIOGRAPHY_CONTRACT:
+    if (claim.predicate, contract) in CAREER_TEXT_LANES:
         organization_text = q.get("organization_text")
         category = q.get("career_category", "OTHER")
         # Legislature/party lines duplicate official roster facts; OTHER is unclassified text.

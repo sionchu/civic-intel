@@ -33,6 +33,12 @@ LOCAL_ELECTION_TYPES: dict[int, str] = {
     11: "교육감",
 }
 
+# National Assembly elections, read by the separate NEC Assembly-candidate lane only.
+NATIONAL_ASSEMBLY_ELECTION_TYPES: dict[int, str] = {
+    2: "국회의원",
+    7: "비례대표국회의원",
+}
+
 POLICY_ID = DATA_GO_KR_POLICY_ID
 
 def nec_local_election_policy() -> SourcePolicy:
@@ -97,6 +103,7 @@ class _NecApiConnector(Connector):
     )
     PATH: str
     TITLE: str
+    ELECTION_TYPES: ClassVar[dict[int, str]] = LOCAL_ELECTION_TYPES
 
     def __init__(
         self,
@@ -111,7 +118,7 @@ class _NecApiConnector(Connector):
         party: str | None = None,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
-        if election_type not in LOCAL_ELECTION_TYPES:
+        if election_type not in type(self).ELECTION_TYPES:
             raise ValueError("unsupported local election type")
         if page_no < 1:
             raise ValueError("page_no must be >= 1")
@@ -351,7 +358,7 @@ class NecCandidateConnector(_NecApiConnector):
                 election_type = int(election_type_text)
             except ValueError:
                 raise NecApiError("NEC candidate row has invalid election type") from None
-            if election_type not in LOCAL_ELECTION_TYPES:
+            if election_type not in cls.ELECTION_TYPES:
                 raise NecApiError("NEC candidate row is outside local-election scope")
             records.append(
                 NecCandidateRecord(
@@ -456,3 +463,9 @@ class NecWinnerConnector(_NecApiConnector):
                 )
             )
         return winners
+
+
+class NecAssemblyCandidateConnector(NecCandidateConnector):
+    """National Assembly (지역구 2, 비례대표 7) candidates; same reviewed NEC candidate service."""
+
+    ELECTION_TYPES: ClassVar[dict[int, str]] = NATIONAL_ASSEMBLY_ELECTION_TYPES
