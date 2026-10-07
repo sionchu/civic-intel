@@ -143,6 +143,22 @@ member API license is unrestricted (data.go.kr 15126133); the SourcePolicy keeps
 proposition with `excerpt=None`. Applied to canonical on 2026-10-07 after backup
 `pre-evidence-graph-20261007-080654.dump`.
 
+## Former members and NEC candidate submissions
+
+- `workers/assembly_former_members.py`: 역대 국회의원 의원이력 (`nfzegpkvaclgtscxt`) for 제17–22대.
+  Owner-approved AUTO_CREATE of one RESOLVED Person per `MONA_CD`; an existing Person with the same
+  name blocks creation and opens an identity review item (never a merge). Each term row is an
+  `ASSEMBLY_HISTORICAL_TERM` FACT with exact dates, party and district; it yields
+  `SAME_LEGISLATIVE_TERM` (path-excluded hub) and per-term `SAME_PARTY` affiliations.
+- `workers/nec_assembly_candidates.py`: NEC 후보자 정보 for general elections 2004–2024 (지역구 2,
+  비례대표 7). Education, two careers and occupation become attributed CLAIMs
+  (`NEC_CANDIDATE_EDUCATION/CAREER`, same parser and registry bindings as the biography lane) only
+  for an exact identity: current member = name + roster birth date in the 22nd election; former
+  member = name + party + the election of a published term. The provider `totalCount` counts
+  repeated identical rows, so completeness is the full page sweep plus the huboid union.
+- `workers/opendart_corp_master.py`: the OpenDART corporation-code master (listed and unlisted,
+  about 120k filers) joins the registry at the OpenDART tier.
+
 ## API
 
 | Route | Returns |
