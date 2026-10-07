@@ -39,6 +39,7 @@ from packages.domain.db import (
     FeederObservationRow,
     IdentityReviewItemRow,
     OrganizationRow,
+    PersonAliasRow,
     PersonObservationLinkRow,
     PersonRow,
     RelationshipRow,
@@ -3876,6 +3877,145 @@ class SqlAlchemyRepository:
                         (str(lowest_name), f"MOIS_UNIT:{type_big or ''}", str(org_code), None)
                     )
         return rows
+
+    def person_ids_linked_to_feeder(self, feeder: str) -> set[UUID]:
+        statement = (
+            select(PersonObservationLinkRow.person_id)
+            .join(
+                FeederObservationRow,
+                FeederObservationRow.id == PersonObservationLinkRow.observation_id,
+            )
+            .where(
+                FeederObservationRow.feeder == feeder,
+                PersonObservationLinkRow.superseded_at.is_(None),
+            )
+            .distinct()
+        )
+        with self.sessions() as session:
+            return {UUID(str(item)) for item in session.scalars(statement)}
+
+    def current_person_ids_by_name(self, names: Iterable[str]) -> dict[str, list[UUID]]:
+        keys = sorted(set(names))
+        result: dict[str, list[UUID]] = {}
+        with self.sessions() as session:
+            for start in range(0, len(keys), 1000):
+                for person_id, name in session.execute(
+                    select(PersonRow.id, PersonRow.canonical_name).where(
+                        PersonRow.canonical_name.in_(keys[start : start + 1000]),
+                        PersonRow.superseded_at.is_(None),
+                    )
+                ):
+                    result.setdefault(str(name), []).append(UUID(str(person_id)))
+        return result
+
+    def apply_former_member_plans(self, plans: Sequence[Any]) -> None:
+        """Atomically create/link former-member People, term Claims and review items (idempotent).
+
+        Each plan comes from ``AssemblyFormerMemberPublisher.plan``; ids are deterministic, so a
+        re-run adds nothing. Existing rows are never modified.
+        """
+
+        from packages.verification.assembly_former_members import link_for
+
+        self.assert_ready()
+        with self.sessions() as session:
+            try:
+                for plan in plans:
+                    if plan.review is not None:
+                        if session.get(IdentityReviewItemRow, str(plan.review.id)) is None:
+                            review = plan.review
+                            session.add(
+                                IdentityReviewItemRow(
+                                    id=str(review.id),
+                                    observation_id=str(review.observation_id),
+                                    candidate_person_id=(
+                                        str(review.candidate_person_id)
+                                        if review.candidate_person_id
+                                        else None
+                                    ),
+                                    reason_code=review.reason_code,
+                                    details_json=review.details,
+                                    status=review.status.value,
+                                    created_at=review.created_at,
+                                    resolved_at=None,
+                                    resolution_note=None,
+                                )
+                            )
+                        continue
+                    person = plan.person
+                    if session.get(PersonRow, str(person.id)) is None:
+                        if plan.action != MaterializationAction.AUTO_CREATE:
+                            raise MaterializationError("former-member AUTO_LINK target is missing")
+                        session.add(
+                            PersonRow(
+                                id=str(person.id),
+                                canonical_name=person.canonical_name,
+                                birth_date=person.birth_date,
+                                identity_status=person.identity_status.value,
+                                **self._temporal(person),
+                            )
+                        )
+                        session.flush()
+                    if plan.alias is not None and session.get(PersonAliasRow, str(plan.alias.id)) is None:
+                        session.add(
+                            PersonAliasRow(
+                                id=str(plan.alias.id),
+                                person_id=str(plan.alias.person_id),
+                                name=plan.alias.name,
+                                **self._temporal(plan.alias),
+                            )
+                        )
+                    for observation in plan.observations:
+                        link = link_for(plan, observation)
+                        if session.get(PersonObservationLinkRow, str(link.id)) is None:
+                            session.add(
+                                PersonObservationLinkRow(
+                                    id=str(link.id),
+                                    person_id=str(link.person_id),
+                                    observation_id=str(link.observation_id),
+                                    action=link.action.value,
+                                    decision_class=link.decision_class.value,
+                                    linked_at=link.linked_at,
+                                    superseded_at=None,
+                                    review_item_id=None,
+                                )
+                            )
+                    for claim, evidence in plan.claims:
+                        if session.get(ClaimRow, str(claim.id)) is not None:
+                            continue
+                        session.add(
+                            ClaimRow(
+                                id=str(claim.id),
+                                person_id=str(claim.person_id),
+                                organization_id=None,
+                                proposition=claim.proposition,
+                                subject=claim.subject,
+                                predicate=claim.predicate,
+                                object_text=claim.object_text,
+                                qualifiers=claim.qualifiers,
+                                epistemic_status=claim.epistemic_status.value,
+                                publication_status=claim.publication_status.value,
+                                asserted_as_true=claim.asserted_as_true,
+                                resolution_note=claim.resolution_note,
+                                **self._temporal(claim),
+                            )
+                        )
+                        session.flush()
+                        session.add(
+                            ClaimEvidenceRow(
+                                id=str(evidence.id),
+                                claim_id=str(evidence.claim_id),
+                                source_id=str(evidence.source_id),
+                                snapshot_id=str(evidence.snapshot_id),
+                                feeder_observation_id=str(evidence.feeder_observation_id),
+                                stance=evidence.stance.value,
+                                excerpt=evidence.excerpt,
+                            )
+                        )
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
 
     def current_claims_by_ids(self, claim_ids: Iterable[UUID]) -> dict[UUID, Claim]:
         keys = sorted({str(item) for item in claim_ids})

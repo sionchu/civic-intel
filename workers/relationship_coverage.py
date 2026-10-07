@@ -253,6 +253,9 @@ def audit(repository: SqlAlchemyRepository) -> dict[str, object]:
     populations = {
         "assembly_member": {a.person_id for a in graph.affiliations if a.via.kind == "PARTY"},
         "public_institution_executive": {a.person_id for a in graph.affiliations if a.predicate == "ALIO_REVIEWED_PERSON_ROLE"},
+        "former_assembly_member": {
+            a.person_id for a in graph.affiliations if a.predicate == "ASSEMBLY_HISTORICAL_TERM"
+        },
         "company_executive": {a.person_id for a in graph.affiliations if a.predicate == "OPENDART_DISCLOSED_EXECUTIVE_ROLE"},
         "audit_witness": {a.person_id for a in graph.affiliations if a.affiliation_type == "AUDIT_WITNESS_LISTED"},
     }

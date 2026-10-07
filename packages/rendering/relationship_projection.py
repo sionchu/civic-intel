@@ -59,6 +59,8 @@ BIOGRAPHY_EDUCATION_PREDICATE = "ASSEMBLY_BIOGRAPHY_EDUCATION"
 BIOGRAPHY_CAREER_PREDICATE = "ASSEMBLY_BIOGRAPHY_CAREER"
 BIOGRAPHY_CONTRACT = "assembly_member_profile_biography"
 AUDIT_TARGET_PREDICATE = "LISTED_AS_GUKGAM_AUDIT_TARGET"
+HISTORICAL_TERM_PREDICATE = "ASSEMBLY_HISTORICAL_TERM"
+HISTORICAL_TERM_CONTRACT = "assembly_historical_member_term"
 
 PERSON_AFFILIATION_PREDICATES = frozenset(
     {
@@ -69,6 +71,7 @@ PERSON_AFFILIATION_PREDICATES = frozenset(
         WITNESS_PREDICATE,
         BIOGRAPHY_EDUCATION_PREDICATE,
         BIOGRAPHY_CAREER_PREDICATE,
+        HISTORICAL_TERM_PREDICATE,
     }
 )
 REPEATED_COSPONSORSHIP_MIN_BILLS = 10
@@ -260,6 +263,14 @@ RULES: tuple[DerivationRule, ...] = (
         path_default=False,
     ),
     DerivationRule(
+        "shared_legislative_term", "1.0", "SAME_LEGISLATIVE_TERM", Layer.LEGISLATIVE,
+        ("LEGISLATIVE_TERM",), (HISTORICAL_TERM_PREDICATE,),
+        "두 전직 의원의 역대 의원 이력이 같은 대수(PROFILE_UNIT_CD)이고 임기 기간이 실제로 겹친다",
+        "SAME_LEGISLATIVE_TERM(A,B,via=제N대, 임기 overlap)",
+        ("같은 대수 의원은 동료 관계를 뜻하지 않는다", "현직 의원의 과거 대수는 제공되지 않아 포함하지 않는다"),
+        path_default=False,
+    ),
+    DerivationRule(
         "shared_public_institution", "1.0", "SAME_PUBLIC_INSTITUTION", Layer.PUBLIC_INSTITUTION,
         ("PUBLIC_INSTITUTION",), (ALIO_ROLE_PREDICATE,),
         _SHARED + "; ALIO 공시 기관 canonical Organization id가 같다",
@@ -340,7 +351,7 @@ CAREER_RELATION_TYPES = {
     "CAREER_ORGANIZATION": "SAME_EMPLOYER",
     "UNIVERSITY_EMPLOYER": "SAME_EMPLOYER",
 }
-NON_PATH_KINDS = frozenset({"PARTY", "BILL"})
+NON_PATH_KINDS = frozenset({"PARTY", "BILL", "LEGISLATIVE_TERM"})
 NON_RELATION_CAREER_CATEGORIES = frozenset({"LEGISLATURE", "PARTY", "OTHER"})
 
 
@@ -668,6 +679,58 @@ def extract_affiliation(
 
 # --------------------------------------------------------------------------------------------
 # Temporal comparison
+
+
+def extract_affiliations(
+    claim: Claim, evidence: Sequence[ClaimEvidence], context: AffiliationContext
+) -> list[Affiliation]:
+    """All affiliations of one Claim: a historical term yields the term and its party."""
+
+    single = extract_affiliation(claim, evidence, context)
+    if single is not None:
+        return [single]
+    q = claim.qualifiers
+    if (
+        claim.person_id is None
+        or claim.predicate != HISTORICAL_TERM_PREDICATE
+        or q.get("source_contract") != HISTORICAL_TERM_CONTRACT
+        or not eligible_relation_claim(claim, evidence)
+    ):
+        return []
+    unit, label = q.get("profile_unit_code"), q.get("profile_unit_name")
+    start, end = _parse_date(q.get("term_start")), _parse_date(q.get("term_end"))
+    if not unit or not label or start is None or end is None:
+        return []
+    supports = [item for item in evidence if item.stance == EvidenceStance.SUPPORT]
+    common: dict[str, Any] = {
+        "person_id": claim.person_id,
+        "claim_id": claim.id,
+        "evidence_ids": tuple(item.id for item in evidence),
+        "source_ids": tuple(dict.fromkeys(item.source_id for item in supports)),
+        "predicate": claim.predicate,
+        "epistemic_status": claim.epistemic_status.value,
+        "source_conflict": any(item.stance == EvidenceStance.REFUTE for item in evidence),
+    }
+    period = Period(start=start, end=end, precision="DAY")
+    found = [
+        Affiliation(
+            via=ViaEntity(f"assembly_term:{unit}", "LEGISLATIVE_TERM", f"{label} 국회",
+                          Binding.PROVIDER_CODE),
+            layer=Layer.LEGISLATIVE, affiliation_type="FORMER_MEMBER_TERM",
+            role=q.get("district"), period=period, **common,
+        )
+    ]
+    party = q.get("party")
+    if party:
+        found.append(
+            Affiliation(
+                via=ViaEntity(f"assembly_term_party:{unit}:{party}", "PARTY", f"{label} {party}",
+                              Binding.SOURCE_SCOPED_EXACT_VALUE),
+                layer=Layer.POLITICAL, affiliation_type="PARTY_LISTED", role=None,
+                period=period, **common,
+            )
+        )
+    return found
 
 
 def _interval(period: Period) -> tuple[date, date] | None:

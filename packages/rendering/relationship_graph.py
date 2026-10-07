@@ -38,7 +38,7 @@ from packages.rendering.relationship_projection import (
     career_transitions,
     derive_pair,
     eligible_relation_claim,
-    extract_affiliation,
+    extract_affiliations,
     index_by_via,
     relations_for_person,
     shortest_evidence_path,
@@ -198,7 +198,7 @@ def load_relationship_graph(repository: SqlAlchemyRepository) -> RelationshipGra
     affiliations = tuple(
         affiliation
         for claim, evidence in eligible
-        if (affiliation := extract_affiliation(claim, evidence, context)) is not None
+        for affiliation in extract_affiliations(claim, evidence, context)
     )
 
     public_org_ids = [item.id for item in repository.public_organizations()]

@@ -11,7 +11,7 @@ from uuid import UUID
 
 from packages.domain.contracts import FeederObservation, now_utc
 
-from .base import ConnectorDocument
+from .base import Connector, ConnectorDocument
 
 HISTORICAL_API_CODE = "nfzegpkvaclgtscxt"
 HISTORICAL_FEEDER = "assembly_historical_career_review"
@@ -189,3 +189,59 @@ def validate_reviewed_packet(
             )
         seen.add(record.provider_record_key)
     return records
+
+
+class OpenAssemblyHistoricalMemberConnector(Connector):
+    """Live fetch of one ``PROFILE_UNIT_CD`` page of the 역대 국회의원 의원이력 API.
+
+    Reuses the reviewed member-API credential handling, URL validation and key redaction; the key
+    is injected only into the outbound request.
+    """
+
+    def __init__(
+        self,
+        profile_unit_code: str,
+        *,
+        api_key: str | None = None,
+        page_index: int = 1,
+        page_size: int = 1000,
+        transport=None,
+    ) -> None:
+        from packages.connectors.open_assembly import OpenAssemblyMemberConnector
+
+        class _Historical(OpenAssemblyMemberConnector):
+            API_CODE = HISTORICAL_API_CODE
+            BASE_URL = f"https://open.assembly.go.kr/portal/openapi/{HISTORICAL_API_CODE}"
+            PATH = f"/portal/openapi/{HISTORICAL_API_CODE}"
+            ALLOWED_QUERY = frozenset({"Type", "pIndex", "pSize", "PROFILE_UNIT_CD"})
+
+        if not re.fullmatch(r"1000\d\d", profile_unit_code):
+            raise AssemblyHistoricalCareerError("PROFILE_UNIT_CD must be a 1000NN unit code")
+        self.profile_unit_code = profile_unit_code
+        self.page_index = page_index
+        self.page_size = page_size
+        self._inner = _Historical(
+            api_key=api_key, page_index=page_index, page_size=page_size, transport=transport
+        )
+        self.HOST = self._inner.HOST
+
+    def discover(self) -> list[str]:
+        from urllib.parse import urlencode
+
+        params = {
+            "Type": "json",
+            "pIndex": str(self.page_index),
+            "pSize": str(self.page_size),
+            "PROFILE_UNIT_CD": self.profile_unit_code,
+        }
+        return [f"{self._inner.BASE_URL}?{urlencode(params)}"]
+
+    def fetch(self, url: str) -> ConnectorDocument:
+        from dataclasses import replace
+
+        document = self._inner.fetch(url)
+        return replace(
+            document,
+            title="국회 국회사무처_역대 국회의원 의원이력 API",
+            metadata={**document.metadata, "PROFILE_UNIT_CD": self.profile_unit_code},
+        )
