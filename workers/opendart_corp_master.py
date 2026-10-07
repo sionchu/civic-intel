@@ -58,11 +58,13 @@ def enumerate_master(repository: SqlAlchemyRepository, *, api_key: str | None = 
                 run_id=run.id, semantic_scope=CORP_MASTER_SEMANTIC_SCOPE, identity_hints={},
                 normalized=normalized, content_hash=content_hash,
             ))
-        repository.commit_source_page(
-            run_id=run.id, policy=policy, source=ingestion.source, snapshot=ingestion.snapshot,
-            observations=observations, cursor="1",
-            checkpoint_metadata={"source_contract": CORP_MASTER_CONTRACT, "record_count": len(seen)},
-        )
+        # Chunked commits: one statement stays under PostgreSQL's bind-parameter limit.
+        for index, start in enumerate(range(0, len(observations), 5000), start=1):
+            repository.commit_source_page(
+                run_id=run.id, policy=policy, source=ingestion.source, snapshot=ingestion.snapshot,
+                observations=observations[start : start + 5000], cursor=str(index),
+                checkpoint_metadata={"source_contract": CORP_MASTER_CONTRACT, "record_count": len(seen)},
+            )
         return repository.finish_source_run(run.id, SourceRunStatus.SUCCESS), len(seen)
     except Exception as exc:
         repository.finish_source_run(run.id, SourceRunStatus.FAILED, error_code=type(exc).__name__[:120],

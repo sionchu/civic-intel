@@ -121,14 +121,15 @@ def main(argv: list[str] | None = None) -> int:
     repository = SqlAlchemyRepository(args.database_url)
     try:
         if args.enumerate:
-            payload: dict[str, object] = {
-                scope: rows
-                for scope, rows in (
-                    enumerate_scope(repository, election, kind)
-                    for election in ELECTION_TERMS
-                    for kind in ELECTION_TYPES
-                )
-            }
+            payload: dict[str, object] = {}
+            for election in ELECTION_TERMS:
+                for kind in ELECTION_TYPES:
+                    # One failed scope (e.g. unstable provider paging) must not block the others.
+                    try:
+                        scope, rows = enumerate_scope(repository, election, kind)
+                        payload[scope] = rows
+                    except NecApiError as exc:
+                        payload[f"{election}:{kind}"] = f"FAILED: {exc}"
         else:
             payload = {"dry_run": args.dry_run,
                        **NecAssemblyCandidatePublisher(repository).publish(dry_run=args.dry_run).__dict__}
