@@ -3855,6 +3855,14 @@ class SqlAlchemyRepository:
             ):
                 if corp_code and corp_name:
                     rows.append((str(corp_name), "OPENDART_CORP", str(corp_code), None))
+            # Full corporation-code master (listed and unlisted filers), when collected.
+            for corp_code, corp_name in session.execute(
+                select(
+                    normalized["corp_code"].as_string(), normalized["corp_name"].as_string()
+                ).where(FeederObservationRow.feeder == "opendart_corp_master")
+            ):
+                if corp_code and corp_name:
+                    rows.append((str(corp_name), "OPENDART_CORP", str(corp_code), None))
             for org_code, full_name, lowest_name, type_big, representative in session.execute(
                 select(
                     normalized["org_code"].as_string(),
@@ -4016,6 +4024,95 @@ class SqlAlchemyRepository:
             except Exception:
                 session.rollback()
                 raise
+
+    def current_roster_people(self) -> list[Person]:
+        """Current RESOLVED People linked to a current Assembly-roster observation."""
+
+        statement = (
+            select(PersonRow)
+            .join(PersonObservationLinkRow, PersonObservationLinkRow.person_id == PersonRow.id)
+            .join(
+                FeederObservationRow,
+                FeederObservationRow.id == PersonObservationLinkRow.observation_id,
+            )
+            .where(
+                FeederObservationRow.feeder == ASSEMBLY_BASE_PROFILE_FEEDER,
+                FeederObservationRow.scope_key == ASSEMBLY_BASE_PROFILE_SCOPE,
+                PersonObservationLinkRow.superseded_at.is_(None),
+                PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                PersonRow.superseded_at.is_(None),
+            )
+            .distinct()
+        )
+        with self.sessions() as session:
+            return [self._person(row) for row in session.scalars(statement)]
+
+    def published_historical_terms(self) -> list[tuple[Person, Claim]]:
+        statement = (
+            select(PersonRow, ClaimRow)
+            .join(ClaimRow, ClaimRow.person_id == PersonRow.id)
+            .where(
+                ClaimRow.predicate == "ASSEMBLY_HISTORICAL_TERM",
+                ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                ClaimRow.superseded_at.is_(None),
+                PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                PersonRow.superseded_at.is_(None),
+            )
+        )
+        with self.sessions() as session:
+            return [(self._person(p), self._claim(c)) for p, c in session.execute(statement)]
+
+    def insert_attributed_person_claims(
+        self, items: Sequence[tuple[Claim, ClaimEvidence]]
+    ) -> int:
+        """Insert gate-checked Person Claims and their Evidence; existing ids are left untouched."""
+
+        self.assert_ready()
+        inserted = 0
+        with self.sessions() as session:
+            try:
+                for claim, evidence in items:
+                    if claim.person_id is None or session.get(ClaimRow, str(claim.id)) is not None:
+                        continue
+                    session.add(
+                        ClaimRow(
+                            id=str(claim.id),
+                            person_id=str(claim.person_id),
+                            organization_id=None,
+                            proposition=claim.proposition,
+                            subject=claim.subject,
+                            predicate=claim.predicate,
+                            object_text=claim.object_text,
+                            qualifiers=claim.qualifiers,
+                            epistemic_status=claim.epistemic_status.value,
+                            publication_status=claim.publication_status.value,
+                            asserted_as_true=claim.asserted_as_true,
+                            resolution_note=claim.resolution_note,
+                            **self._temporal(claim),
+                        )
+                    )
+                    session.flush()
+                    session.add(
+                        ClaimEvidenceRow(
+                            id=str(evidence.id),
+                            claim_id=str(evidence.claim_id),
+                            source_id=str(evidence.source_id),
+                            snapshot_id=str(evidence.snapshot_id) if evidence.snapshot_id else None,
+                            feeder_observation_id=(
+                                str(evidence.feeder_observation_id)
+                                if evidence.feeder_observation_id
+                                else None
+                            ),
+                            stance=evidence.stance.value,
+                            excerpt=evidence.excerpt,
+                        )
+                    )
+                    inserted += 1
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
+        return inserted
 
     def current_claims_by_ids(self, claim_ids: Iterable[UUID]) -> dict[UUID, Claim]:
         keys = sorted({str(item) for item in claim_ids})

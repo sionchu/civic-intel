@@ -74,9 +74,10 @@ class OrganizationRegistry:
     def _candidates(self, key: str, kinds: frozenset[str] | None) -> set[RegistryEntity]:
         tiers = self.by_name.get(key, {})
         for priority in sorted(tiers):
-            found = {item for item in tiers[priority] if kinds is None or item.kind in kinds}
-            if found:
-                return found
+            matching = [item for item in tiers[priority] if kinds is None or item.kind in kinds]
+            if matching:
+                # One entity per via key: the same code listed under two name spellings is one.
+                return set({item.key: item for item in sorted(matching, key=lambda e: e.label)}.values())
         return set()
 
     def lookup(self, name: str, kinds: frozenset[str] | None = None) -> RegistryEntity | None:
@@ -96,9 +97,10 @@ class OrganizationRegistry:
                     keys.add(registry_key(_ROLE_TAIL.sub("", span[0])))
                 for key in keys:
                     found |= self._candidates(GOVERNMENT_ALIASES.get(key, key), kinds)
-            if len(found) == 1:
-                return next(iter(found))
-            if len(found) > 1:
+            unique = {item.key: item for item in found}
+            if len(unique) == 1:
+                return next(iter(unique.values()))
+            if len(unique) > 1:
                 return None  # two different entities at the same span length: ambiguous
         return None
 
