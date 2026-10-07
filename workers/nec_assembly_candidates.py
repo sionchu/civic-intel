@@ -97,8 +97,11 @@ def enumerate_scope(repository: SqlAlchemyRepository, election_id: str, election
             if page >= ceil(total / PAGE_SIZE):
                 break
             page += 1
-        if len(seen) != total:
-            raise NecApiError(f"{scope} unique candidates {len(seen)} != total {total}")
+        # The provider's totalCount counts repeated rows (one huboid can appear several times with
+        # identical content). Every page was fetched in full, identical repeats were collapsed and
+        # differing repeats failed above, so the huboid union is the complete scope.
+        if not seen or len(seen) > total:
+            raise NecApiError(f"{scope} unique candidates {len(seen)} exceed total {total}")
         repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
         return scope, len(seen)
     except Exception as exc:
