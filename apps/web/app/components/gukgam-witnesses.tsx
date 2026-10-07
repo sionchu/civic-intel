@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { getGukgamWitnesses } from "../data";
 import type { GukgamWitnessProjectionItem } from "../types";
+import HashDisclosure from "./hash-disclosure";
 import ReadState from "./read-state";
 import "./gukgam-witnesses.css";
 
@@ -27,6 +28,21 @@ function locatorLabel(item: GukgamWitnessProjectionItem): string {
   return `${place}, ${item.row_number}번`;
 }
 
+// Collapsed-row summary: category counts and source state, so a closed list still says what it holds.
+function committeeSummary(items: GukgamWitnessProjectionItem[]): string {
+  const counts = CATEGORIES
+    .map((category) => [category, items.filter((item) => item.category === category).length] as const)
+    .filter(([, count]) => count > 0)
+    .map(([category, count]) => `${category} ${count}명`);
+  const supplied = items.filter((item) => item.acquisition_channel === "OWNER_SUPPLIED_COPY").length;
+  const official = items.length - supplied;
+  return [
+    ...counts,
+    official > 0 ? `공식 출처 ${official}명` : null,
+    supplied > 0 ? `아직 공식 발표 아님 ${supplied}명` : null,
+  ].filter(Boolean).join(" · ");
+}
+
 // Server component. Names are source-listed text. A Person link appears only when a reviewed,
 // separately published Person Claim restates this exact row.
 export default async function GukgamWitnesses() {
@@ -46,8 +62,11 @@ export default async function GukgamWitnesses() {
         </p>
       ) : (
         groupByCommittee(projection.items).map(([committee, committeeItems]) => (
-          <div className="gukgam-witnesses-committee" key={committee}>
-            <h3>{committee}</h3>
+          <details className="gukgam-witnesses-committee" key={committee}>
+            <summary>
+              <h3>{committee}</h3>
+              <span>{committeeSummary(committeeItems)}</span>
+            </summary>
             {CATEGORIES.map((category) => {
               const rows = committeeItems.filter((item) => item.category === category);
               if (rows.length === 0) return null;
@@ -93,9 +112,10 @@ export default async function GukgamWitnesses() {
                 </div>
               );
             })}
-          </div>
+          </details>
         ))
       )}
+      <HashDisclosure prefix="witness-" />
       <p className="gukgam-witnesses-limitations">전체 명단이 아니며, 의결에 따라 바뀔 수 있습니다. 사람이 검토해 공개한 행만 인물 기록과 연결합니다.</p>
     </section>
   );

@@ -10,7 +10,7 @@ import ReadState from "../../components/read-state";
 import { getGukgamCommittees, getGukgamTargets, getOrganizations, getPeople } from "../../data";
 import { buildPageMetadata } from "../../site-metadata";
 import { committeeAnchor } from "./committees";
-import { groupByDateAndCommittee, seoulDate } from "./schedule";
+import { groupByDateAndCommittee, renderedKstToday, seoulDate } from "./schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -56,9 +56,10 @@ export default async function Gukgam2026Page({
 
   const committees = committeesResult.state === "success" ? committeesResult.data.committees : [];
   const committeeByName = new Map(committees.map((committee) => [committee.committee_name, committee]));
-  const today = seoulDate(new Date());
+  const now = new Date();
+  const today = renderedKstToday(now);
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
-  const scheduleGroups = groupByDateAndCommittee(targetItems, today);
+  const scheduleGroups = groupByDateAndCommittee(targetItems, seoulDate(now));
   const scheduleDays = scheduleGroups.map((group) => ({
     date: group.date,
     count: group.count,
@@ -111,10 +112,6 @@ export default async function Gukgam2026Page({
                 <dd>{targetsResult.data.target_count}건 · {coveredCommittees.length}개 위원회</dd>
               </div>
               <div>
-                <dt>포함 위원회</dt>
-                <dd>{coveredCommittees.join(" · ")}</dd>
-              </div>
-              <div>
                 <dt>근거 계획서 공개일</dt>
                 <dd>{planDateRange ?? "—"}</dd>
               </div>
@@ -123,6 +120,10 @@ export default async function Gukgam2026Page({
                 <dd><KstToday serverToday={today} /></dd>
               </div>
             </dl>
+            <details className="gukgam-scope-committees">
+              <summary>포함 위원회 {coveredCommittees.length}곳</summary>
+              <p>{coveredCommittees.join(" · ")}</p>
+            </details>
             <p className="gukgam-scope-note">
               전체 감사대상 목록이 아닙니다. 위원회 계획서상 일정이며 바뀔 수 있습니다.
             </p>
@@ -154,14 +155,13 @@ export default async function Gukgam2026Page({
                               </p>
                             </div>
                             <div className="gukgam-target-evidence">
-                              <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
-                              <small>
-                                공식 계획서 {item.source_published_date} 공개 · {item.section} · p.{item.page_number}
-                              </small>
-                              <Link
-                                className="inline-action"
-                                href={`/organizations/${item.organization.id}#claim-${item.claim_id}`}
-                              >
+                              <p>
+                                <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
+                                <small>
+                                  공식 계획서 · {item.source_published_date} 공개 · {item.section} · p.{item.page_number}
+                                </small>
+                              </p>
+                              <Link href={`/organizations/${item.organization.id}#claim-${item.claim_id}`}>
                                 이 일정의 근거 보기
                               </Link>
                               <details className="audit-details">

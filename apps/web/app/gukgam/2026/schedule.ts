@@ -29,6 +29,12 @@ export function seoulDate(now: Date): string {
   }).format(now);
 }
 
+// The KST date a server render may present as 오늘. A Sites snapshot is rendered at build time,
+// so its build date is not the reader's date: it renders no relative day until hydration.
+export function renderedKstToday(now: Date): string | null {
+  return process.env.CIVIC_SITES_EXPORT === "1" ? null : seoulDate(now);
+}
+
 export function formatAuditDate(isoDate: string): string {
   const [year, month, day] = isoDate.split("-").map(Number);
   if (!year || !month || !day) return isoDate;

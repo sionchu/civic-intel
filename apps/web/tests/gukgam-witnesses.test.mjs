@@ -41,3 +41,38 @@ test("Gukgam witness component labels owner-supplied copies and HWP table locato
   assert.match(types, /source_url: string \| null/);
   assert.match(types, /"OWNER_SUPPLIED_COPY"/);
 });
+
+test("Gukgam witness lists start collapsed per committee and stay reachable by deep link", async () => {
+  const [component, opener, css] = await Promise.all([
+    read("../app/components/gukgam-witnesses.tsx"),
+    read("../app/components/hash-disclosure.tsx"),
+    read("../app/components/gukgam-witnesses.css"),
+  ]);
+  // Every row is still rendered (no pagination or ranking); each committee is a native disclosure.
+  assert.match(component, /<details className="gukgam-witnesses-committee" key=\{committee\}>/);
+  assert.match(component, /<summary>\s*<h3>\{committee\}<\/h3>\s*<span>\{committeeSummary\(committeeItems\)\}<\/span>/);
+  assert.doesNotMatch(component, /<details[^>]*\bopen\b/);
+  assert.doesNotMatch(component, /\.slice\(|page=|sort\(\(a, b\) => b\./);
+  // The closed summary still states counts and source state.
+  assert.match(component, /`\$\{category\} \$\{count\}명`/);
+  assert.match(component, /`아직 공식 발표 아님 \$\{supplied\}명`/);
+  // #witness-{claim_id} opens its closed ancestors; the opener is the only client code involved.
+  assert.match(component, /<HashDisclosure prefix="witness-" \/>/);
+  assert.match(opener, /^"use client";/);
+  assert.match(opener, /node instanceof HTMLDetailsElement\) node\.open = true/);
+  assert.match(opener, /addEventListener\("hashchange", reveal\)/);
+  assert.match(opener, /return null;/);
+  assert.match(css, /\.gukgam-witnesses-category li:target/);
+  assert.match(css, /summary:focus-visible/);
+});
+
+test("Gukgam schedule rows keep evidence one interaction away with audit IDs behind a disclosure", async () => {
+  const page = await read("../app/gukgam/2026/page.tsx");
+  assert.match(page, /이 일정의 근거 보기/);
+  assert.match(page, /href=\{`\/organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}`\}/);
+  assert.match(page, /<details className="audit-details">\s*<summary>Claim·Evidence 확인 경로<\/summary>/);
+  assert.match(page, /공식 계획서 · \{item\.source_published_date\} 공개 · \{item\.section\} · p\.\{item\.page_number\}/);
+  // The long committee list moves into a disclosure; it is not dropped.
+  assert.match(page, /<summary>포함 위원회 \{coveredCommittees\.length\}곳<\/summary>/);
+  assert.match(page, /coveredCommittees\.join\(" · "\)/);
+});

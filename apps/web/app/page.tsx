@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import ReadState from "./components/read-state";
 import { getGukgamTargets, getPeople } from "./data";
-import { KstToday, TodayAuditLine } from "./components/kst-schedule";
-import { groupByDateAndCommittee, seoulDate } from "./gukgam/2026/schedule";
+import { AuditBrief, KstToday } from "./components/kst-schedule";
+import { groupByDateAndCommittee, renderedKstToday, seoulDate } from "./gukgam/2026/schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -19,17 +19,26 @@ export default async function HomePage() {
         .at(-1) ?? null
     : null;
 
-  const today = seoulDate(new Date());
+  const now = new Date();
+  const today = renderedKstToday(now);
   const scheduleGroups = targetsResult.state === "success"
-    ? groupByDateAndCommittee(targetsResult.data.items, today)
+    ? groupByDateAndCommittee(targetsResult.data.items, seoulDate(now))
     : [];
+  // Each day keeps the canonical schedule order (committee, time, institution); the brief shows
+  // the first rows of that order and a count, never a selection.
   const scheduleDays = scheduleGroups.map((group) => ({
     date: group.date,
     count: group.count,
     committeeCount: group.committees.length,
+    rows: group.committees
+      .flatMap((committee) => committee.items.map((item) => ({
+        claimId: item.claim_id,
+        committee: committee.committee,
+        organization: item.organization.name,
+        time: item.time_text,
+      })))
+      .slice(0, 3),
   }));
-
-  const featuredPeople = peopleResult.state === "success" ? peopleResult.data.slice(0, 8) : [];
 
   return (
     <div className="site-page home-page">
@@ -57,14 +66,14 @@ export default async function HomePage() {
 
       <div className="home-columns">
         <section className="home-block" aria-labelledby="home-today-title">
-          <h2 id="home-today-title">오늘 국감 일정</h2>
-          <p className="home-block-meta"><KstToday serverToday={today} /></p>
+          <h2 id="home-today-title">국감 일정</h2>
+          <p className="home-block-meta">오늘(KST) <KstToday serverToday={today} /></p>
           {targetsResult.state === "error" ? (
             <p className="coverage-caption">국감 일정을 불러오지 못했습니다.</p>
           ) : (
-            <TodayAuditLine serverToday={today} days={scheduleDays} />
+            <AuditBrief serverToday={today} days={scheduleDays} />
           )}
-          <p><Link href="/gukgam/2026">전체 감사 일정과 위원회 보기</Link></p>
+          <p><Link href="/gukgam/2026">전체 일정 보기</Link></p>
         </section>
 
         <section className="home-block" aria-labelledby="home-people-title">
@@ -74,21 +83,7 @@ export default async function HomePage() {
               ? "인물 기록 수를 불러오지 못했습니다."
               : `공개 ${peopleCount}명${latestAsOf ? ` · 최신 출처 기준일 ${latestAsOf}` : ""}`}
           </p>
-          {featuredPeople.length > 0 && (
-            <ul className="home-people-list">
-              {featuredPeople.map((person) => {
-                const facets = person.discovery?.facets;
-                const detail = [facets?.role?.value, facets?.party?.value].filter(Boolean).join(" · ");
-                return (
-                  <li key={person.id}>
-                    <Link href={`/people/${person.id}`}>{person.canonical_name}</Link>
-                    {detail && <span>{detail}</span>}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          <p><Link href="/people">전체 인물 목록 보기</Link></p>
+          <p><Link href="/people">인물 찾기</Link></p>
         </section>
       </div>
 

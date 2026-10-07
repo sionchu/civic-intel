@@ -451,7 +451,7 @@ test("Gukgam schedule groups published targets by date and committee without add
 test("Gukgam schedule keeps scope limits and evidence links visible", async () => {
   const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
   const schedule = await readFile(new URL("../app/gukgam/2026/schedule.ts", import.meta.url), "utf8");
-  assert.match(page, /groupByDateAndCommittee\(targetItems, today\)/);
+  assert.match(page, /groupByDateAndCommittee\(targetItems, seoulDate\(now\)\)/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
   assert.match(page, /계획서상 일정/);
   assert.match(page, /오늘 \(KST\)/);
@@ -699,7 +699,7 @@ test("Sites snapshot export keeps reader-time dates and ?q= correct without a se
   ]);
   // "Today" is computed in the reader's browser (KST) after hydration, never frozen at build time.
   assert.match(kst, /useSyncExternalStore\(subscribe, \(\) => seoulDate\(new Date\(\)\), \(\) => serverToday\)/);
-  assert.match(home, /<TodayAuditLine serverToday=\{today\} days=\{scheduleDays\} \/>/);
+  assert.match(home, /<AuditBrief serverToday=\{today\} days=\{scheduleDays\} \/>/);
   assert.match(query, /useSyncExternalStore\(subscribe, readQueryParam, \(\) => initialQuery\)/);
   assert.match(query, /\.slice\(0, 80\)/);
   // Server builds keep per-request detail pages; only the staged snapshot copy prerenders them.
@@ -715,6 +715,54 @@ test("Sites snapshot export keeps reader-time dates and ?q= correct without a se
   assert.match(script, /snapshot-manifest\.json/);
   assert.doesNotMatch(script, /process\.env\.(DATABASE_URL|CIVIC_OPERATOR_TOKEN|[A-Z_]+_API_KEY)/);
   assert.match(eslint, /\.sites-build/);
+});
+
+test("A static snapshot never paints its build date as the reader's 오늘", async () => {
+  const { renderedKstToday } = await import("../app/gukgam/2026/schedule.ts");
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [kst, home, gukgam] = await Promise.all([
+    read("../app/components/kst-schedule.tsx"),
+    read("../app/page.tsx"),
+    read("../app/gukgam/2026/page.tsx"),
+  ]);
+  const buildTime = new Date("2026-10-06T16:00:00Z"); // 2026-10-07 KST, a day before the reader's date
+  const previous = process.env.CIVIC_SITES_EXPORT;
+  try {
+    delete process.env.CIVIC_SITES_EXPORT;
+    assert.equal(renderedKstToday(buildTime), "2026-10-07"); // request-time server render keeps its date
+    process.env.CIVIC_SITES_EXPORT = "1";
+    assert.equal(renderedKstToday(buildTime), null); // the snapshot carries no 오늘 at all
+  } finally {
+    if (previous === undefined) delete process.env.CIVIC_SITES_EXPORT;
+    else process.env.CIVIC_SITES_EXPORT = previous;
+  }
+  for (const page of [home, gukgam]) {
+    assert.match(page, /const today = renderedKstToday\(now\);/);
+    assert.doesNotMatch(page, /serverToday=\{seoulDate/);
+  }
+  // Without a known reader date every relative label falls back to a neutral form.
+  assert.match(kst, /useKstToday\(serverToday: string \| null\): string \| null/);
+  assert.match(kst, /today \? formatAuditDate\(today\) : "—"/);
+  assert.match(kst, /relation === null\s*\? "계획 기준"/);
+  assert.match(kst, /const relation = today \? relationOf\(day\.date, today\) : undefined;/);
+  assert.match(kst, /const nextDate = today \? nextDateOf\(dates, today\) : null;/);
+});
+
+test("Home shows a deterministic audit-day brief and a people count, not a sample of people", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [home, kst] = await Promise.all([read("../app/page.tsx"), read("../app/components/kst-schedule.tsx")]);
+  // Search stays a plain GET name search on /people.
+  assert.match(home, /<form className="home-search-form" action="\/people" method="get" role="search">/);
+  assert.match(home, /name="q"/);
+  assert.doesNotMatch(home, /semantic|embedding|recommend|featured|slice\(0, 8\)|home-people-list/i);
+  // The brief keeps groupByDateAndCommittee order and shows its first rows plus a count.
+  assert.match(home, /groupByDateAndCommittee\(targetsResult\.data\.items, seoulDate\(now\)\)/);
+  assert.match(home, /\.slice\(0, 3\)/);
+  assert.match(kst, /const BRIEF_ROWS = 3;/);
+  assert.match(kst, /외 \{day\.count - BRIEF_ROWS\}건/);
+  assert.match(kst, /오늘은 공개된 감사 일정이 없습니다/);
+  assert.match(home, /공개 \$\{peopleCount\}명\$\{latestAsOf \? ` · 최신 출처 기준일 \$\{latestAsOf\}` : ""\}/);
+  assert.match(home, /<Link href="\/people">인물 찾기<\/Link>/);
 });
 
 test("Official 국감 witness lists are shown and searchable as source text, never as People", async () => {
