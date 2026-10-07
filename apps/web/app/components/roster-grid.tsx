@@ -45,15 +45,32 @@ export default function RosterGrid({
   const [filters, setFilters] = useState<Partial<Record<FilterKey, string>>>({});
   const searchTerm = query.trim().toLocaleLowerCase();
   const facetOptions = useMemo(
-    () => FACETS.map(([key, label]) => ({
-      key,
-      label,
-      options: Array.from(new Set(
-        people
-          .map((person) => facetValue(person.discovery, key))
-          .filter((value): value is string => Boolean(value)),
-      )).sort((left, right) => left.localeCompare(right, "ko")),
-    })).filter((facet) => facet.options.length > 0),
+    () => FACETS.map(([key, label]) => {
+      if (key === "committees") {
+        const namesByCode = new Map<string, string>();
+        for (const person of people) {
+          for (const membership of person.discovery?.committee_memberships ?? []) {
+            namesByCode.set(membership.committee_code, membership.committee_name);
+          }
+        }
+        return {
+          key,
+          label,
+          options: Array.from(namesByCode, ([value, name]) => ({ value, label: name }))
+            .sort((left, right) => left.label.localeCompare(right.label, "ko")),
+        };
+      }
+      return {
+        key,
+        label,
+        options: Array.from(new Set(
+          people
+            .map((person) => facetValue(person.discovery, key))
+            .filter((value): value is string => Boolean(value)),
+        )).sort((left, right) => left.localeCompare(right, "ko"))
+          .map((value) => ({ value, label: value })),
+      };
+    }).filter((facet) => facet.options.length > 0),
     [people],
   );
   const visiblePeople = useMemo(
@@ -62,7 +79,12 @@ export default function RosterGrid({
         || person.canonical_name.toLocaleLowerCase().includes(searchTerm);
       const facetsMatch = FACETS.every(([key]) => {
         const selected = filters[key];
-        return !selected || facetValue(person.discovery, key) === selected;
+        if (!selected) return true;
+        if (key === "committees") {
+          return (person.discovery?.committee_memberships ?? [])
+            .some((membership) => membership.committee_code === selected);
+        }
+        return facetValue(person.discovery, key) === selected;
       });
       return nameMatches && facetsMatch;
     }),
@@ -126,7 +148,9 @@ export default function RosterGrid({
                 onChange={(event) => updateFilter(key, event.target.value)}
               >
                 <option value="">전체 {label}</option>
-                {options.map((option) => <option key={option} value={option}>{option}</option>)}
+                {options.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </label>
           ))}

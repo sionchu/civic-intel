@@ -233,6 +233,14 @@ test("Gukgam search filters existing public records without creating identity ma
   assert.doesNotMatch(search, /fetch\(|axios|confidence|probability|score|rank/i);
 });
 
+test("People committee filter uses published membership codes", async () => {
+  const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
+  assert.match(roster, /person\.discovery\?\.committee_memberships/);
+  assert.match(roster, /membership\.committee_code === selected/);
+  assert.match(roster, /namesByCode\.set\(membership\.committee_code, membership\.committee_name\)/);
+  assert.doesNotMatch(roster, /facetValue\(person\.discovery, "committees"\) === selected/);
+});
+
 
 test("Organization detail renders source-listed executive ontology without Person promotion", async () => {
   const page = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");

@@ -302,6 +302,12 @@ export type DiscoveryFacet = {
 };
 
 export type PeopleDiscovery = {
+  committee_memberships: {
+    committee_code: string;
+    committee_name: string;
+    claim_id: string;
+    evidence_ids: string[];
+  }[];
   facets: {
     role: DiscoveryFacet | null;
     party: DiscoveryFacet | null;

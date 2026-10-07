@@ -338,6 +338,7 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
         "assembly_base_profile",
         "summary",
         "career_timeline",
+        "background_records",
         "recent_changes",
         "current_power_tasks",
         "appointment_logic",
@@ -357,6 +358,8 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
     assert nomination["source_ids"] == [SOURCE_ID]
 
     assert sections["career_timeline"]["status"] == "AVAILABLE"
+    assert sections["background_records"]["status"] == "UNKNOWN"
+    assert sections["background_records"]["reason"] == "SOURCE_NOT_COLLECTED"
     timeline_predicates = [entry["details"]["predicate"] for entry in sections["career_timeline"]["entries"]]
     assert timeline_predicates == ["HELD_ROLE", "NOMINATED_AS"]
     held_role = sections["career_timeline"]["entries"][0]

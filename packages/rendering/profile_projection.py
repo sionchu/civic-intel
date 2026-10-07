@@ -20,13 +20,23 @@ from packages.domain.enums import (
     PublicationStatus,
 )
 from packages.rendering.change_projection import build_source_neutral_change_trace
+from packages.rendering.relationship_projection import (
+    BIOGRAPHY_CAREER_PREDICATE,
+    BIOGRAPHY_EDUCATION_PREDICATE,
+    HISTORICAL_TERM_PREDICATE,
+    NEC_CAREER_PREDICATE,
+    NEC_EDUCATION_PREDICATE,
+)
 from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_FIELDS,
     ASSEMBLY_BASE_PROFILE_SCOPE,
     ASSEMBLY_BASE_PROFILE_SEMANTIC_SCOPE,
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
-from packages.verification.assembly_committee_roles import ASSEMBLY_COMMITTEE_ROLE_PREDICATE
+from packages.verification.assembly_committee_roles import (
+    ASSEMBLY_COMMITTEE_MEMBERSHIP_PREDICATE,
+    ASSEMBLY_COMMITTEE_ROLE_PREDICATE,
+)
 from packages.verification.assembly_legislative_activity import (
     ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
     ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
@@ -50,6 +60,7 @@ SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("assembly_base_profile", "국회 기본 프로필"),
     ("summary", "한눈에 보는 요약"),
     ("career_timeline", "경력 타임라인"),
+    ("background_records", "학력·경력 기재 사항"),
     ("recent_changes", "최근 변화"),
     ("current_power_tasks", "현재 권한과 과업"),
     ("appointment_logic", "임명 논리"),
@@ -66,6 +77,7 @@ ASSEMBLY_MEMBER_SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("overview", "개요"),
     ("current_role", "현재 역할"),
     ("career_timeline", "경력 타임라인"),
+    ("background_records", "학력·경력 기재 사항"),
     ("legislative_activity", "입법 활동"),
     ("recent_changes", "최근 변화"),
     ("limitations", "근거 범위와 한계"),
@@ -218,7 +230,11 @@ def _claim_entry(
         "source_ids": _ordered_unique([str(item.source_id) for item in evidence]),
         "evidence": [_evidence_trace(item) for item in evidence],
         "source_conflict": {"SUPPORT", "REFUTE"} <= stances,
-        "date": claim.qualifiers.get("date") or claim.qualifiers.get("proposed_date"),
+        "date": (
+            claim.qualifiers.get("term_start")
+            if claim.predicate == HISTORICAL_TERM_PREDICATE
+            else claim.qualifiers.get("date") or claim.qualifiers.get("proposed_date")
+        ),
         "details": details,
     }
 
@@ -273,6 +289,33 @@ def _claim_entries_for(
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
 
 
+BACKGROUND_PREDICATE_ORDER = (
+    BIOGRAPHY_EDUCATION_PREDICATE,
+    NEC_EDUCATION_PREDICATE,
+    BIOGRAPHY_CAREER_PREDICATE,
+    NEC_CAREER_PREDICATE,
+)
+BACKGROUND_NOTE = (
+    "국회 의원 프로필 / 선관위 후보자 제출 자료에 적힌 학력·경력 문구입니다. "
+    "별도로 검증된 사실은 아닙니다."
+)
+
+
+def _background_record_entries(
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    order = {predicate: index for index, predicate in enumerate(BACKGROUND_PREDICATE_ORDER)}
+    selected = [
+        claim
+        for claim in claims
+        if claim.predicate in order
+        and not re.fullmatch(r"<[^<>]+>", claim.object_text.strip())
+    ]
+    selected.sort(key=lambda claim: (order[claim.predicate], str(claim.id)))
+    return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+
+
 def _source_record_sections(
     claims: Sequence[Claim],
     evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
@@ -324,7 +367,11 @@ def _discovery_facet_entry(
 
 # The only Claim predicates the roster discovery projection reads; list reads load nothing else.
 PEOPLE_DISCOVERY_PREDICATES = frozenset(
-    {"HELD_ROLE", *(item.predicate for item in ASSEMBLY_BASE_PROFILE_FIELDS)}
+    {
+        "HELD_ROLE",
+        ASSEMBLY_COMMITTEE_MEMBERSHIP_PREDICATE,
+        *(item.predicate for item in ASSEMBLY_BASE_PROFILE_FIELDS),
+    }
 )
 
 
@@ -343,6 +390,7 @@ def build_people_discovery_projection(
     field_definitions = {item.name: item for item in ASSEMBLY_BASE_PROFILE_FIELDS}
     field_claims: dict[str, list[Claim]] = {name: [] for name in field_definitions}
     role_claims: list[Claim] = []
+    membership_claims: list[Claim] = []
     for claim in claims:
         if (
             claim.person_id != person.id
@@ -351,6 +399,9 @@ def build_people_discovery_projection(
             or claim.epistemic_status != EpistemicStatus.FACT
             or not claim.asserted_as_true
         ):
+            continue
+        if claim.predicate == ASSEMBLY_COMMITTEE_MEMBERSHIP_PREDICATE:
+            membership_claims.append(claim)
             continue
         is_current_assembly_roster_claim = (
             claim.qualifiers.get("source_contract") == ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT
@@ -420,8 +471,29 @@ def build_people_discovery_projection(
     source_ids = _ordered_unique(
         [source_id for item in selected_facets for source_id in item["source_ids"]]
     )
+    memberships_by_code: dict[str, dict[str, Any]] = {}
+    for claim in sorted(membership_claims, key=lambda item: str(item.id)):
+        code = claim.qualifiers.get("committee_code")
+        name = claim.qualifiers.get("committee_name")
+        evidence = evidence_by_claim.get(claim.id, ())
+        if not isinstance(code, str) or not code.strip() or not isinstance(name, str) or not name.strip() or not evidence:
+            continue
+        memberships_by_code.setdefault(
+            code,
+            {
+                "committee_code": code,
+                "committee_name": name,
+                "claim_id": str(claim.id),
+                "evidence_ids": [str(item.id) for item in evidence],
+            },
+        )
+    committee_memberships = sorted(
+        memberships_by_code.values(),
+        key=lambda item: (item["committee_name"], item["committee_code"]),
+    )
     return {
         "facets": facets,
+        "committee_memberships": committee_memberships,
         "as_of": as_of,
         "evidence_ids": evidence_ids,
         "source_ids": source_ids,
@@ -571,13 +643,24 @@ def _relationship_entries(
 
 
 def _explicit_claim_date(claim: Claim) -> date | None:
-    value = claim.qualifiers.get("date")
+    value = claim.qualifiers.get(
+        "term_start" if claim.predicate == HISTORICAL_TERM_PREDICATE else "date"
+    )
     if not value:
         return None
     try:
         return date.fromisoformat(value)
     except ValueError:
         return None
+
+
+def _dated_historical_term(claim: Claim) -> bool:
+    return (
+        claim.predicate == HISTORICAL_TERM_PREDICATE
+        and claim.epistemic_status == EpistemicStatus.FACT
+        and claim.asserted_as_true
+        and _explicit_claim_date(claim) is not None
+    )
 
 
 def _assembly_role_entries(
@@ -603,7 +686,7 @@ def _assembly_dated_career_entries(
 ) -> list[dict[str, Any]]:
     selected: list[Claim] = []
     for claim in claims:
-        if claim.predicate not in CAREER_PREDICATES:
+        if claim.predicate not in CAREER_PREDICATES and not _dated_historical_term(claim):
             continue
         if _explicit_claim_date(claim) is None:
             continue
@@ -904,6 +987,14 @@ def build_profile_projection(
 ) -> dict[str, Any]:
     """Build a deterministic read model without creating new profile truth."""
 
+    claims = [
+        claim
+        for claim in claims
+        if claim.person_id == person.id
+        and claim.publication_status == PublicationStatus.PUBLISHED
+        and claim.superseded_at is None
+    ]
+
     identity_entries: list[dict[str, Any]] = [
         {
             "id": f"identity:{person.id}",
@@ -926,7 +1017,17 @@ def build_profile_projection(
 
     assembly_base_profile_entries = _assembly_base_profile_entries(claims, evidence_by_claim)
     summary_entries = _claim_entries_for(claims, evidence_by_claim, SUMMARY_PREDICATES)
-    timeline_entries = _claim_entries_for(claims, evidence_by_claim, CAREER_PREDICATES)
+    timeline_claims = [
+        claim
+        for claim in claims
+        if claim.predicate in CAREER_PREDICATES
+        or _dated_historical_term(claim)
+    ]
+    timeline_claims.sort(
+        key=lambda claim: (_explicit_claim_date(claim) or date.min, str(claim.id))
+    )
+    timeline_entries = [_claim_entry(claim, evidence_by_claim) for claim in timeline_claims]
+    background_entries = _background_record_entries(claims, evidence_by_claim)
     recent_changes, eligible_change_claim_count = _assembly_role_sequence_changes(
         person, claims, evidence_by_claim, sources, policies
     )
@@ -1034,6 +1135,17 @@ def build_profile_projection(
                     else "현재 roster는 현직 상태만 나타내며, 과거 경력 전체를 의미하지 않습니다."
                 ),
                 reason=SOURCE_NOT_COLLECTED,
+            ),
+            *(
+                [_section(
+                    "background_records",
+                    "학력·경력 기재 사항",
+                    background_entries,
+                    status="PARTIAL",
+                    note=BACKGROUND_NOTE,
+                )]
+                if background_entries
+                else []
             ),
             _section(
                 "legislative_activity",
@@ -1186,6 +1298,14 @@ def build_profile_projection(
                 if timeline_entries
                 else "검토된 경력 타임라인 근거가 없습니다."
             ),
+            reason=SOURCE_NOT_COLLECTED,
+        ),
+        _section(
+            "background_records",
+            "학력·경력 기재 사항",
+            background_entries,
+            status="PARTIAL" if background_entries else "UNKNOWN",
+            note=BACKGROUND_NOTE,
             reason=SOURCE_NOT_COLLECTED,
         ),
         _section(
