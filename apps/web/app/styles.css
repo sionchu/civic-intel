@@ -642,7 +642,8 @@ main { flex: 1; }
   .gukgam-committee h4 { margin-top: 0; }
 }
 @media (max-width: 600px) {
-  .gukgam-date-index { top: 68px; }
+  .gukgam-date-index { position: static; }
+  .gukgam-day { scroll-margin-top: 112px; }
   .gukgam-target-row { grid-template-columns: 1fr; }
 }
 

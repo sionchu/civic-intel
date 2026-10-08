@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import ReadState from "./components/read-state";
 import { getGukgamTargets, getPeople } from "./data";
-import { AuditBrief, KstToday } from "./components/kst-schedule";
+import { AuditBrief } from "./components/kst-schedule";
 import { groupByDateAndCommittee, renderedKstToday, seoulDate } from "./gukgam/2026/schedule";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +67,6 @@ export default async function HomePage() {
       <div className="home-columns">
         <section className="home-block" aria-labelledby="home-today-title">
           <h2 id="home-today-title">국감 일정</h2>
-          <p className="home-block-meta">오늘(KST) <KstToday serverToday={today} /></p>
           {targetsResult.state === "error" ? (
             <p className="coverage-caption">국감 일정을 불러오지 못했습니다.</p>
           ) : (
