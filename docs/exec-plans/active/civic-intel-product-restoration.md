@@ -418,7 +418,7 @@ fixture was disposed; the current generated reader independently reproduced all 
 status/JSON-byte/hash tuples against retained read-only D1. Full `make verify` **PASS**:
 1,116 Python passed / 3 skipped, 87 web tests at that checkpoint, lint/typecheck/quality
 and Next production build. Final narrow web counts are 86/86 PASS; revised compiled restore proof
-remain pending; unchanged Python code is not re-tested for these Worker-only deltas. The existing public dataset remains CURRENT_FRONTEND_PUBLIC_API, with
+is PASS; unchanged Python code is not re-tested for these Worker-only deltas. The existing public dataset remains CURRENT_FRONTEND_PUBLIC_API, with
 upstream runtime UNKNOWN and capture-window consistency UNVERIFIED.
 
 Exact existing public v3 source `bd059df163ce6dabc643e5dc806b2cd988414b3f` was opened
@@ -431,9 +431,9 @@ Evidence lives under `dist/full-goal-evidence/public-deployment/`.
 
 ## Next concrete action
 
-Finish revised compiled A/B restore and policy-negative D1 tests, final narrow web
-verification, independent delta review and clean-commit artifact builds. Before any hosted change, pin the exact bootstrap and
-final artifacts and review the single-operator sequence: runtime secret/approved hash,
+Clean candidate `b2b59aadf0999961e8f335d085866873ecdb8df3` is frozen: final lint and web86 PASS, Worker build/scanner PASS (148 files / 1,765,404 B), independent retry-race review CLOSED. Compiled disposable D1 A/B restore, corrupt-PREVIOUS preservation, stale CAS and actual TEL_NO boundary rejection PASS (`compiled-final-b2b59aa.json`). Bootstrap preserves all 2,720 old assets and is 238,720,154 B; compiled SHA `1f43e4cacb6dab096f975c72e169d1619039d7fd4cd07bc03fc2bac163b9dd51`. Full real rehearsal remains explicitly pre-restore-extension evidence, supplemented by final synthetic compiled proofs and retained-reader 5,170 tuple parity. Hosted operations remain NOT_RUN.
+
+Execute the reviewed single-operator sequence: runtime secret/approved hash,
 bootstrap save/deploy with schema, anonymous-write rejection and existing asset continuity,
 typed load/validate/activate, then final code-only reader cutover with maintenance secret
 removed. Initial hosted rollback is the exact retained public v3 saved version, not an
@@ -451,4 +451,6 @@ sequential strict ci recovered. The artifact scanner then detected its own `TEL_
 array in compiled server code. Only canonical policy-constant representation changed to
 codepoints with exact source labels; all 15 runtime tokens remain identical. No scanner
 exemption or operator-surface bypass was added; subsequent Worker build/scanner passed.
-Final compiled synthetic policy-negative validation remains required before release.
+Final compiled synthetic policy-negative validation executed and rejected at the public-boundary gate, preserving ACTIVE.
+
+Initial bootstrap failure recovery uses exact public v3 saved version; after bootstrap succeeds, final-reader failure recovery uses its actual returned bootstrap saved-version ID with DB binding/data and removed-secret state retained. Source ZIP: `worker-clean-b2b59aa-source.zip`, 273,532 B, SHA256 `f473d2a61fd4166259330c24815630cb08a8ac427b59476e59f5e36bae52ba18`.
