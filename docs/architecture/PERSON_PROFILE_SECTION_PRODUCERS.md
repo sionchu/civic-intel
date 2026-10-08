@@ -1,6 +1,6 @@
 # Person profile section producers
 
-Updated on 2026-10-09 for the validated declared-asset projection. This is the canonical inventory
+Updated on 2026-10-09 for Korean presentation, complete eligible vote retrieval and bounded public disclosure source paths. This is the canonical inventory
 of which upstream producer feeds each Person profile section rendered by
 `packages/rendering/profile_projection.py`.
 A section label in the UI is not evidence that a collection pipeline exists.
@@ -14,6 +14,28 @@ A section label in the UI is not evidence that a collection pipeline exists.
   → reviewed derived artifact (method version, input IDs, coverage, limitations) → section.
   A derived result is never a FACT, and model output never becomes one automatically
   ([North Star](../product/CIVIC_INTEL_NORTH_STAR.md)).
+
+## Current public read projection
+
+The Person API embeds every eligible published, subject-bound plenary vote as its actual canonical
+public Claim DTO. Its public qualifier allowlist removes importer duplication without changing
+canonical persistence or Claim/Evidence/Source semantics. `decision_episodes` retains the recent
+10 summary; optional `eligible_count` and `input_scope=PUBLISHED_SOURCE_VALIDATED_SUBJECT_VOTES`
+come from the same eligibility calculation. Missing metadata in an older snapshot means unknown
+completeness. The frontend retrieves the embedded records in bounded lists with selected exact
+Claim/Evidence panels and preserves direct Claim and Source anchors.
+
+Both profile paths also emit `official_press_records` and `public_self_housing`. Published entries
+require the canonical immutable source factory, one source proof, one copied current published
+roster identity bridge, exclusive active identity links, a successful current full-roster checkpoint
+and separate publication. Empty sections remain explicitly uncollected/UNKNOWN. A housing absence
+is never inferred from an empty receipt; a positive count describes disclosed SELF records, not
+all properties. See [press metadata](NATIONAL_ASSEMBLY_PRESS_METADATA.md) and
+[asset disclosure](NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md). Operational records in these new lanes
+remain absent; disposable positive/negative tests do not establish live coverage.
+
+Generated public labels and explanations are Korean. Canonical codes, source quotations, provider
+identifiers and method/version fields remain unchanged.
 
 ## Producer matrix (general Person profile)
 

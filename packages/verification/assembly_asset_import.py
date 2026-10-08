@@ -70,6 +70,10 @@ PETI_ASSET_DETAIL = "https://www.peti.go.kr/peoptp/openPeOptpListVieDtlPop.do"
 PETI_TOTAL_HEADERS = (
     "종전가액(천원)", "증가액(실거래가격)", "감소액(실거래가격)", "현재가액(천원)",
 )
+PETI_HOUSING_SOURCE_CONTRACT = "peti_public_self_housing_metadata_v1"
+PETI_HOUSING_FEEDER = "peti_public_self_housing"
+PETI_HOUSING_PREDICATE = "PETI_DECLARED_SELF_HOUSING"
+PETI_HOUSING_POLICY_SCOPE = "PETI_SELF_HOUSING_METADATA_SCOPE"
 _POLICY_NAMESPACE = UUID("3f6c1d0e-8a51-4c43-9e0f-2b7f5a9d6c14")
 _KST = timezone(timedelta(hours=9))
 
@@ -218,6 +222,131 @@ def build_peti_asset_capture(
         semantic_scope=ASSEMBLY_ASSET_SEMANTIC_SCOPE, identity_hints={},
         normalized=normalized, content_hash=content_hash)
     return source, snapshot, observation
+
+
+def normalize_peti_housing_receipt(raw: Mapping[str, object], *, policy: SourcePolicy) -> dict[str, object]:
+    """Safe declared self-ownership facts only; never infer residence or family holdings."""
+    require_peti_asset_metadata_policy(policy)
+    if PETI_HOUSING_POLICY_SCOPE not in (policy.policy_note or ""):
+        raise AssemblyAssetImportError("PETI housing metadata scope has not been reviewed")
+    expected = {"source_page_url", "detail_route", "publication_date", "registration_date",
+        "institution", "office", "printed_name", "self_scope_coverage", "absence_basis", "absence_evidence", "items"}
+    if set(raw) != expected:
+        raise AssemblyAssetImportError("PETI housing receipt fields are invalid")
+    if (raw["source_page_url"] != PETI_ASSET_PAGE or raw["detail_route"] != PETI_ASSET_DETAIL
+            or raw["institution"] != "국회" or raw["office"] != "국회의원"
+            or not isinstance(raw["printed_name"], str) or not raw["printed_name"].strip()
+            or len(raw["printed_name"]) > 100):
+        raise AssemblyAssetImportError("PETI housing selector is invalid")
+    try:
+        published = date.fromisoformat(str(raw["publication_date"]))
+        registered = date.fromisoformat(str(raw["registration_date"]))
+    except ValueError:
+        raise AssemblyAssetImportError("PETI housing dates are invalid") from None
+    if published.isoformat() != raw["publication_date"] or registered.isoformat() != raw["registration_date"] or registered > published:
+        raise AssemblyAssetImportError("PETI housing dates are invalid")
+    coverage = raw["self_scope_coverage"]
+    if coverage not in {"COMPLETE_SELF_HOUSING", "PARTIAL", "WITHHELD", "UNKNOWN"}:
+        raise AssemblyAssetImportError("PETI housing coverage is invalid")
+    if raw["absence_basis"] not in {None, "EXPLICIT_SOURCE_NO_SELF_HOUSING"}:
+        raise AssemblyAssetImportError("PETI housing absence basis is invalid")
+    items = raw["items"]
+    if not isinstance(items, list) or len(items) > 100:
+        raise AssemblyAssetImportError("PETI housing item boundary is invalid")
+    for item in items:
+        if (not isinstance(item, dict) or set(item) != {"holder", "dwelling_type", "right_type", "count"}
+                or item["holder"] != "SELF"
+                or item["dwelling_type"] not in {"APARTMENT", "DETACHED_HOUSE", "MULTIFAMILY_HOUSE", "ROW_HOUSE"}
+                or item["right_type"] not in {"OWNERSHIP", "SHARED_OWNERSHIP"}
+                or type(item["count"]) is not int or not 1 <= item["count"] <= 100):
+            raise AssemblyAssetImportError("PETI housing needs explicit self-owned dwelling facts")
+    if raw["absence_basis"] is not None and (items or coverage in {"PARTIAL", "WITHHELD"}):
+        raise AssemblyAssetImportError("PETI housing absence conflicts with source coverage")
+    proof = raw["absence_evidence"]
+    if raw["absence_basis"] is not None:
+        if (not isinstance(proof, dict) or set(proof) != {"selector_record_key", "source_statement"}
+                or proof["selector_record_key"] != peti_asset_record_key(raw)
+                or proof["source_statement"] != "본인 소유 주택 없음"):
+            raise AssemblyAssetImportError("PETI housing absence needs exact selector-bound source evidence")
+    elif proof is not None:
+        raise AssemblyAssetImportError("PETI housing unexpected absence evidence")
+    return dict(raw)
+
+
+def build_peti_housing_capture(raw: Mapping[str, object], *, policy: SourcePolicy, run_id: UUID
+                              ) -> tuple[Source, SourceSnapshot, FeederObservation]:
+    normalized = normalize_peti_housing_receipt(raw, policy=policy)
+    source = Source(id=uuid5(_POLICY_NAMESPACE, PETI_ASSET_DETAIL), url=PETI_ASSET_DETAIL,
+        title="PETI 국회 공개 재산신고 조회", publisher="공직윤리시스템", policy_id=policy.id)
+    digest = assembly_asset_observation_hash(normalized)
+    snapshot = SourceSnapshot(source_id=source.id, content_hash=digest, fulltext=None,
+        metadata={"source_contract": PETI_HOUSING_SOURCE_CONTRACT,
+            "capture_mode": "SUPPLIED_SCOPED_PUBLIC_METADATA", "receipt": normalized})
+    observation = FeederObservation(feeder=PETI_HOUSING_FEEDER,
+        scope_key=f"peti:{normalized['publication_date']}:selected-public-records",
+        provider_record_key=peti_asset_record_key(normalized), snapshot_id=snapshot.id, run_id=run_id,
+        semantic_scope="public_declared_self_housing", identity_hints={}, normalized=normalized,
+        content_hash=digest)
+    return source, snapshot, observation
+
+
+def build_peti_housing_claim(source: Source, snapshot: SourceSnapshot, observation: FeederObservation,
+                            *, policy: SourcePolicy, person: Person, link: PersonObservationLink,
+                            review: IdentityReviewItem, publication_approved: bool = False
+                            ) -> tuple[Claim, ClaimEvidence]:
+    normalized = normalize_peti_housing_receipt(observation.normalized, policy=policy)
+    if (source.policy_id != policy.id or str(source.url) != PETI_ASSET_DETAIL
+            or source.published_at is not None or snapshot.source_id != source.id
+            or snapshot.fulltext is not None or observation.snapshot_id != snapshot.id
+            or snapshot.content_hash != assembly_asset_observation_hash(normalized)
+            or observation.content_hash != snapshot.content_hash
+            or snapshot.metadata != {"source_contract": PETI_HOUSING_SOURCE_CONTRACT,
+                "capture_mode": "SUPPLIED_SCOPED_PUBLIC_METADATA", "receipt": normalized}
+            or observation.feeder != PETI_HOUSING_FEEDER
+            or observation.semantic_scope != "public_declared_self_housing"
+            or observation.scope_key != f"peti:{normalized['publication_date']}:selected-public-records"
+            or observation.provider_record_key != peti_asset_record_key(normalized)
+            or observation.identity_hints):
+        raise AssemblyAssetImportError("PETI housing immutable provenance differs")
+    _require_reviewed_asset_subject(person, observation, link, review)
+    items = normalized["items"]
+    if normalized["printed_name"] != person.canonical_name:
+        raise AssemblyAssetImportError("PETI housing reviewed identity name differs")
+    assert isinstance(items, list)
+    count = sum(item["count"] for item in items)
+    shared = sum(item["count"] for item in items if item["right_type"] == "SHARED_OWNERSHIP")
+    if count:
+        state, text = "DISCLOSED_OWNED", f"본인 소유 주택 {count}건 신고"
+    elif normalized["absence_basis"]:
+        state, text = "DISCLOSED_NONE", "신고 기준일의 본인 소유 주택 없음"
+    else:
+        state, text = "UNKNOWN", "본인 소유 주택 보유 여부 미확인"
+    claim = Claim(id=uuid5(_POLICY_NAMESPACE, f"{person.id}:{PETI_HOUSING_PREDICATE}:{observation.provider_record_key}:{observation.content_hash}"),
+        person_id=person.id, subject=person.canonical_name, predicate=PETI_HOUSING_PREDICATE,
+        proposition=f"{person.canonical_name}의 공개 재산신고: {text}.", object_text=text,
+        qualifiers={"source_contract": PETI_HOUSING_SOURCE_CONTRACT,
+            "provider_record_key": observation.provider_record_key,
+            "immutable_observation_hash": observation.content_hash, "review_item_id": str(review.id),
+            "identity_basis": "REVIEWED_SOURCE_CONTEXT", "housing_status": state,
+            "owned_housing_count": str(count) if state != "UNKNOWN" else "UNKNOWN",
+            "shared_housing_count": str(shared) if state != "UNKNOWN" else "UNKNOWN",
+            "self_scope_coverage": str(normalized["self_scope_coverage"]),
+            "publication_date": str(normalized["publication_date"]),
+            "registration_date": str(normalized["registration_date"]),
+            "value_semantics": "DECLARED_OWNERSHIP_NOT_RESIDENCE"},
+        epistemic_status=EpistemicStatus.UNKNOWN if state == "UNKNOWN" else EpistemicStatus.CLAIM,
+        resolution_note="본인 소유 주택의 명시적 근거 또는 부재 근거가 부족합니다." if state == "UNKNOWN" else None,
+        asserted_as_true=False,
+        publication_status=PublicationStatus.PUBLISHED if publication_approved else PublicationStatus.DRAFT,
+        valid_from=datetime.combine(date.fromisoformat(str(normalized["publication_date"])), time(), tzinfo=_KST),
+        recorded_at=observation.recorded_at)
+    evidence = ClaimEvidence(id=uuid5(claim.id, str(observation.id)), claim_id=claim.id,
+        source_id=source.id, snapshot_id=snapshot.id, feeder_observation_id=observation.id,
+        stance=EvidenceStance.SUPPORT, excerpt=None)
+    if publication_approved and not validate_claim_publication(claim, person, [evidence],
+            {source.id: source}, {policy.id: policy}).publishable:
+        raise AssemblyAssetImportError("PETI housing publication gate rejected the claim")
+    return claim, evidence
 
 
 def _require_reviewed_asset_subject(

@@ -1,3 +1,4 @@
+import { statusLabel } from "../display-labels";
 import type { ApiError } from "../types";
 
 const COPY: Record<ApiError["code"], { title: string; detail: string }> = {
@@ -7,7 +8,7 @@ const COPY: Record<ApiError["code"], { title: string; detail: string }> = {
   },
   INSUFFICIENT_ELIGIBLE_INPUTS: {
     title: "비교 가능한 입력이 부족합니다.",
-    detail: "현재 공개 적격 Claim만으로는 이 비교를 만들 수 없습니다.",
+    detail: "현재 공개 가능한 기록만으로는 이 비교를 만들 수 없습니다.",
   },
   SOURCE_VERSION_CONFLICT: {
     title: "서로 다른 출처 버전이 확인됐습니다.",
@@ -23,7 +24,7 @@ const COPY: Record<ApiError["code"], { title: string; detail: string }> = {
   },
   SERVICE_UNAVAILABLE: {
     title: "공개 데이터 서비스에 일시적인 문제가 있습니다.",
-    detail: "자료 없음이나 UNKNOWN으로 처리하지 않았습니다. 잠시 뒤 다시 시도해 주세요.",
+    detail: "자료 없음이나 미확인으로 처리하지 않았습니다. 잠시 뒤 다시 시도해 주세요.",
   },
 };
 
@@ -31,12 +32,12 @@ export default function ReadState({ error }: { error: ApiError }) {
   const copy = COPY[error.code];
   return (
     <div className={`read-state ${error.code}`} role={error.code === "SERVICE_UNAVAILABLE" ? "alert" : "status"}>
-      <span className="status">{error.code}</span>
+      <span className="status">{statusLabel(error.code)}</span>
       <strong>{copy.title}</strong>
       <p>{copy.detail}</p>
       {error.request_id && (
         <details className="audit-details">
-          <summary>요청 ID</summary>
+          <summary>요청 식별자</summary>
           <small>{error.request_id}</small>
         </details>
       )}

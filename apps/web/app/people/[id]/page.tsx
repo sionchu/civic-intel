@@ -1,10 +1,14 @@
+import { entryKindLabel, statusLabel } from "../../display-labels";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getPersonRelationships, getSource } from "../../data";
 import { careerAttribution, careerPeriodText } from "../../career-period";
-import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
+import PersonEvidenceProvider from "../../components/person-evidence-context";
+import PersonClaimLibrary from "../../components/person-claim-library";
+import SourceLibrary from "../../components/source-library";
+import EvidencePanel, { EvidenceTraceList } from "../../components/evidence-panel";
 import FactBox, { type FactRow } from "../../components/fact-box";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
@@ -40,8 +44,8 @@ const LINKED_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS";
 const EMPTY_LANE_REASONS: { reason: ProfileSectionReason; title: string; detail: string }[] = [
   {
     reason: "SOURCE_NOT_COLLECTED",
-    title: "공식 근거 출처 미연결",
-    detail: "기록이 없다는 뜻이 아니라 이 항목을 뒷받침할 공식 출처가 아직 이 인물에게 연결되지 않았다는 뜻입니다.",
+    title: "공식 출처 미수집",
+    detail: "이 항목의 공식 자료가 아직 수집되지 않았습니다. 실제 기록이 없다는 뜻은 아닙니다.",
   },
   {
     reason: "INSUFFICIENT_EVIDENCE",
@@ -51,7 +55,7 @@ const EMPTY_LANE_REASONS: { reason: ProfileSectionReason; title: string; detail:
   {
     reason: "DERIVATION_NOT_AVAILABLE",
     title: "검토된 분석 결과 없음",
-    detail: "근거에서 만든 질문·패턴·시나리오는 검토를 거친 경우에만 표시합니다.",
+    detail: "이 항목에 연결된 공개 분석 결과가 없습니다.",
   },
   {
     reason: "NOT_APPLICABLE",
@@ -76,7 +80,7 @@ export async function generateMetadata({
   }
   return buildPageMetadata({
     title: result.data.canonical_name,
-    description: `${result.data.canonical_name}의 공개 기록, Claim, Evidence와 출처를 확인합니다.`,
+    description: `${result.data.canonical_name}의 공개 기록, 근거와 출처를 확인합니다.`,
     path: `/people/${id}`,
   });
 }
@@ -137,7 +141,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const limitations = profile?.sections.find((section) => section.id === "limitations");
   const declaredAssets = profile?.sections.find((section) => section.id === "public_declared_assets");
   const representedClaims = new Set(profile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? []);
-  const otherClaims = publishedClaims.filter((claim) => !representedClaims.has(claim.id));
+  const voteIds = new Set(votes.map((record) => record.claimId));
+  const staticClaimIds = profile?.sections.filter((section) => section.id !== "legislative_activity").flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? [];
+  const otherClaims = publishedClaims.filter((claim) => !representedClaims.has(claim.id) && !voteIds.has(claim.id));
 
   const memberCommittees = committeesResult.state === "success"
     ? committeesResult.data.committees.flatMap((committee) => {
@@ -186,32 +192,34 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       return (
         <article className="claim change-card" key={entry.id}>
           <div className="claim-heading">
-            <span className="claim-kind">DERIVED · CHANGE</span>
-            {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{entry.epistemic_status}</span>}
+            <span className="claim-kind">공개 기록의 변화</span>
+            {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{statusLabel(entry.epistemic_status)}</span>}
           </div>
           <p className="claim-title">{entry.title}</p>
-          <div className="change-sequence" aria-label="Compared dated sequence">
+          <div className="change-sequence" aria-label="날짜별 기록 비교">
             <div className="change-point">
-              <span className="micro-label">이전 · {changeDetails.earlier?.date ?? "UNKNOWN"}</span>
+              <span className="micro-label">이전 · {changeDetails.earlier?.date ?? "미확인"}</span>
               <strong>{changeDetails.earlier?.role_text ?? "표시값 없음"}</strong>
-              <small>{changeDetails.earlier?.predicate ?? "UNKNOWN"} · Claim {changeDetails.earlier?.claim_id ?? "UNKNOWN"}</small>
+              <small>{predicateLabel(changeDetails.earlier?.predicate ?? "")} · {changeDetails.earlier?.claim_id ? <a href={`#claim-${changeDetails.earlier.claim_id}`}>근거 기록 열기</a> : "근거 미확인"}</small>
             </div>
             <span className="change-arrow" aria-hidden="true">→</span>
             <div className="change-point later">
-              <span className="micro-label">이후 · {changeDetails.later?.date ?? "UNKNOWN"}</span>
+              <span className="micro-label">이후 · {changeDetails.later?.date ?? "미확인"}</span>
               <strong>{changeDetails.later?.role_text ?? "표시값 없음"}</strong>
-              <small>{changeDetails.later?.predicate ?? "UNKNOWN"} · Claim {changeDetails.later?.claim_id ?? "UNKNOWN"}</small>
+              <small>{predicateLabel(changeDetails.later?.predicate ?? "")} · {changeDetails.later?.claim_id ? <a href={`#claim-${changeDetails.later.claim_id}`}>근거 기록 열기</a> : "근거 미확인"}</small>
             </div>
           </div>
           {changeDetails.derived_reason && <p className="change-reason">{changeDetails.derived_reason}</p>}
           <details className="audit-details">
             <summary>계산 방법과 범위</summary>
             <small>
-              Method {changeDetails.method_version ?? "UNKNOWN"}<br />
-              Scope {changeDetails.input_scope?.provider_record_identity ?? "UNKNOWN"}<br />
-              Correction semantics {changeDetails.input_scope?.correction_semantics ?? "UNKNOWN"}<br />
-              Eligible inputs {changeDetails.coverage?.eligible_claim_count ?? "UNKNOWN"}<br />
-              {changeDetails.coverage?.comparison ?? "Comparison rule unavailable"}<br />
+              이전 기록 식별자 {changeDetails.earlier?.claim_id ?? "미확인"}<br />
+              이후 기록 식별자 {changeDetails.later?.claim_id ?? "미확인"}<br />
+              방법 식별자 {changeDetails.method_version ?? "미확인"}<br />
+              범위 {changeDetails.input_scope?.provider_record_identity ?? "미확인"}<br />
+              정정 기준 {changeDetails.input_scope?.correction_semantics ?? "미확인"}<br />
+              비교 가능한 기록 {changeDetails.coverage?.eligible_claim_count ?? "미확인"}<br />
+              {changeDetails.coverage?.comparison ?? "비교 기준 미기재"}<br />
               {(changeDetails.limitations ?? []).map((item) => <span key={item}>{item}<br /></span>)}
             </small>
           </details>
@@ -237,11 +245,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <details className="audit-details vote-trace evidence-disclosure">
             <summary>근거</summary>
             <small>
-              {source ? <a href={`#source-${source.id}`}>{source.title}</a> : "출처"} · {entry.epistemic_status}<br />
-              Claim {entry.claim_id}<br />
-              Evidence {trace?.id ?? "없음"}<br />
-              SourceSnapshot {trace?.snapshot_id ?? "없음"}<br />
-              FeederObservation {trace?.feeder_observation_id ?? "없음"}
+              {source ? <a href={`#source-${source.id}`}>{source.title}</a> : "출처"} · {statusLabel(entry.epistemic_status)}<br />
+              기록 {entry.claim_id}<br />
+              근거 {trace?.id ?? "없음"}<br />
+              출처 저장본 {trace?.snapshot_id ?? "없음"}<br />
+              수집 기록 {trace?.feeder_observation_id ?? "없음"}
             </small>
           </details>
         </li>
@@ -249,6 +257,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     }
 
     if (claim) {
+      const housingDetails = claim.predicate === "PETI_DECLARED_SELF_HOUSING" && entry.details.source_contract === "peti_public_self_housing_metadata_v1" && entry.details.value_semantics === "DECLARED_OWNERSHIP_NOT_RESIDENCE" ? entry.details : null;
+      const pressDetails = claim.predicate === "ASSEMBLY_OFFICIAL_PRESS_RECORD" && entry.details.source_contract === "national_assembly_press_release_metadata_v1" ? entry.details : null;
       const assetDetails = claim.predicate === "ASSEMBLY_DECLARED_ASSET_TOTAL" ? entry.details : null;
       const assetAmount = assetDetails?.amount_unit === "THOUSAND_KRW" &&
         ["assembly_asset_gazette_reviewed_packet_v1", "peti_public_declared_total_metadata_v1"].includes(String(assetDetails.source_contract)) &&
@@ -261,18 +271,37 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           claim={claim}
           sourceById={sourceById}
           title={isLegislativeActivity ? activityTitle ?? entry.title : entry.title}
-          kind={assetDetails ? "신고재산" : isLegislativeActivity ? "OFFICIAL BILL RECORD" : entry.kind}
+          kind={housingDetails ? "본인 소유 주택 신고" : pressDetails ? "국회 공식 보도자료" : assetDetails ? "신고재산" : isLegislativeActivity ? "공식 법안 기록" : entryKindLabel(entry.kind)}
           sourceConflict={entry.source_conflict}
-          dateLabel={assetDetails || entry.details.career_semantics ? "기록 기준" : undefined}
+          dateLabel={assetDetails || housingDetails || pressDetails || entry.details.career_semantics ? "기록 기준" : undefined}
           claimAnchor={claimAnchor}
         >
+          {housingDetails && <>
+            <dl className="activity-facts">
+              <div><dt>신고 상태</dt><dd>{statusLabel(String(housingDetails.housing_status))}</dd></div>
+              <div><dt>소유 주택 건수</dt><dd>{housingDetails.housing_status === "UNKNOWN" ? "미확인" : String(housingDetails.owned_housing_count ?? "미확인")}</dd></div>
+              <div><dt>그중 공동 소유</dt><dd>{housingDetails.housing_status === "UNKNOWN" ? "미확인" : String(housingDetails.shared_housing_count ?? "미확인")}</dd></div>
+              <div><dt>확인 범위</dt><dd>{statusLabel(String(housingDetails.self_scope_coverage))}</dd></div>
+              <div><dt>공개일</dt><dd>{String(housingDetails.publication_date ?? "미기재")}</dd></div>
+              <div><dt>등록일</dt><dd>{String(housingDetails.registration_date ?? "미기재")}</dd></div>
+            </dl>
+            <p className="section-note">공개 신고의 본인 소유 주택 기록입니다. 현재 거주지나 실거주 여부를 뜻하지 않습니다.</p>
+          </>}
+          {pressDetails && <>
+            <dl className="activity-facts">
+              <div><dt>게시일</dt><dd>{String(pressDetails.written_date ?? "미기재")}</dd></div>
+              <div><dt>발행기관</dt><dd>{String(pressDetails.attribution ?? "미기재")}</dd></div>
+              <div><dt>확인 범위</dt><dd>{statusLabel(String(pressDetails.coverage))}</dd></div>
+            </dl>
+            <p className="section-note">국회 공식 보도자료의 제목과 게시 정보입니다. 개인의 직접 발언이나 언론기사 전체를 뜻하지 않습니다.</p>
+          </>}
           {assetDetails && (
             <>
               <dl className="activity-facts">
                 <div><dt>공개 신고 총계</dt><dd>{assetAmount === null ? "금액·단위 확인 불가" : `${assetAmount.toLocaleString("ko-KR")}천원`}</dd></div>
                 <div><dt>공개일</dt><dd>{typeof assetDetails.publication_date === "string" ? assetDetails.publication_date : "미기재"}</dd></div>
                 <div><dt>등록일</dt><dd>{typeof assetDetails.registration_date === "string" ? assetDetails.registration_date : "미기재"}</dd></div>
-                <div><dt>신고유형</dt><dd>{typeof assetDetails.report_type === "string" && assetDetails.report_type !== "UNKNOWN" ? assetDetails.report_type : "UNKNOWN · 원자료에서 확인되지 않음"}</dd></div>
+                <div><dt>신고유형</dt><dd>{typeof assetDetails.report_type === "string" && assetDetails.report_type !== "UNKNOWN" ? assetDetails.report_type : "미확인 · 원자료에서 확인되지 않음"}</dd></div>
                 {typeof assetDetails.reporting_period_text === "string" && <div><dt>신고 기준 기간</dt><dd>{assetDetails.reporting_period_text}</dd></div>}
               </dl>
               <p className="section-note">공개 서식에 인쇄된 신고 총계입니다. 본인만의 재산, 현재 시장가치 또는 순자산으로 해석하지 않습니다.</p>
@@ -300,18 +329,18 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     return (
       <article className="claim" key={entry.id}>
         <div className="claim-heading">
-          <span className="claim-kind">{entry.kind}</span>
-          {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{entry.epistemic_status}</span>}
+          <span className="claim-kind">{entryKindLabel(entry.kind)}</span>
+          {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{statusLabel(entry.epistemic_status)}</span>}
         </div>
         <p className="claim-title">{entry.title}</p>
         {entry.date && <small className="claim-date">기준 {entry.date}</small>}
         {entry.evidence && entry.evidence.length > 0 ? (
-          <EvidenceTraceList traces={entry.evidence} sourceById={sourceById} claimLabel={entry.claim_id ?? "not applicable"} />
+          <EvidenceTraceList traces={entry.evidence} sourceById={sourceById} claimLabel={entry.claim_id ?? "해당 없음"} />
         ) : entry.source_ids.length > 0 ? (
           <div className="source-links">
             <strong>출처 참조</strong>
             {entry.source_ids.map((sourceId) => (
-              <a href={`#source-${sourceId}`} key={sourceId}>{sourceById.get(sourceId)?.title ?? "Source record"}</a>
+              <a href={`#source-${sourceId}`} key={sourceId}>{sourceById.get(sourceId)?.title ?? "출처 기록"}</a>
             ))}
           </div>
         ) : null}
@@ -320,13 +349,14 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   };
 
   return (
+    <PersonEvidenceProvider claims={publishedClaims} sources={sources}>
     <div className="site-page profile-page">
       <Link href="/people" className="back-link"><span aria-hidden="true">←</span> 인물 찾기</Link>
       <header className="profile-header">
         <div>
           <div className="profile-title-row">
             <h1>{person.canonical_name}</h1>
-            <span className={`status identity ${person.identity_status}`}>{person.identity_status}</span>
+            <span className={`status identity ${person.identity_status}`}>{statusLabel(person.identity_status)}</span>
           </div>
         </div>
         {portrait ? (
@@ -343,8 +373,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               <details className="audit-details">
                 <summary>사진 출처 정보</summary>
                 <small>
-                  File {portrait.file_title}<br />
-                  Revision {portrait.source_revision_timestamp}<br />
+                  파일 {portrait.file_title}<br />
+                  판 {portrait.source_revision_timestamp}<br />
                   SHA-1 {portrait.source_sha1}<br />
                   {portrait.modification_note}
                 </small>
@@ -383,7 +413,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
           {career && career.entries.length > 0 && (
             <section className="person-section person-career" id="career" aria-labelledby="career-title">
-              <div className="section-intro"><h2 id="career-title">경력 <span className="domain-label" lang="en">TIMELINE</span></h2><span className={`status ${career.status}`}>{career.status}</span></div>
+              <div className="section-intro"><h2 id="career-title">경력 <span className="domain-label" lang="ko">연혁</span></h2><span className={`status ${career.status}`}>{statusLabel(career.status)}</span></div>
               {career.note && <p className="section-note">{career.note}</p>}
               {career.entries.map(renderEntry)}
             </section>
@@ -489,10 +519,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   <li className="vote-row" key={claim.id}>
                     <time className="vote-date" dateTime={date}>{date}</time>
                     <span className="vote-bill"><a href={`#claim-${claim.id}`}>{claim.object_text}</a><small className="claim-date">{action}</small></span>
-                    <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>
+                    <span className={`status ${claim.epistemic_status}`}>{statusLabel(claim.epistemic_status)}</span>
                     <div className="vote-trace source-links">
                       <a href={`#claim-${claim.id}`}>근거 기록 열기</a>
-                      {claim.source_conflict && <span className="status conflict">SOURCE CONFLICT</span>}
+                      {claim.source_conflict && <span className="status conflict">{statusLabel("CONFLICT")}</span>}
                       {supportingActivityEvidence(claim)
                         .filter((item, index, items) => items.findIndex((other) => other.source_id === item.source_id) === index)
                         .map((item) => <a key={item.source_id} href={`#source-${item.source_id}`}>{sourceById.get(item.source_id)?.title ?? "출처"}</a>)}
@@ -503,7 +533,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </section>
           )}
 
-          {person.identity_status === "RESOLVED" && <PersonVoteExplorer records={votes} />}
+          {person.identity_status === "RESOLVED" && <PersonVoteExplorer records={votes} eligibleCount={profile?.sections.find((section) => section.id === "decision_episodes")?.eligible_count} inputScope={profile?.sections.find((section) => section.id === "decision_episodes")?.input_scope}  existingClaimIds={[...representedClaims]} />}
 
           <section className="person-section" id="records" aria-labelledby="records-title">
             <div className="section-intro">
@@ -512,15 +542,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             {profile ? (
               <>
                 <div className="profile-sections">
-                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || (section.entries.length === 0 && section.id !== "public_declared_assets") ? null : (
+                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || (section.entries.length === 0 && !["public_declared_assets", "official_press_records", "public_self_housing"].includes(section.id)) ? null : (
                     <section className="profile-section" key={section.id} id={`section-${section.id}`} aria-labelledby={`heading-${section.id}`}>
                       <div className="section-heading">
                         <div><h3 id={`heading-${section.id}`}>{section.label}</h3></div>
-                        <span className={`status ${section.status}`}>{section.status}</span>
+                        <span className={`status ${section.status}`}>{statusLabel(section.status)}</span>
                       </div>
                       {section.note && <p className="section-note">{section.note}</p>}
                       {section.id === "public_declared_assets" && section.entries.length === 0 && <p className="empty-note">이 인물에게 근거가 연결된 공개 신고재산 기록이 없습니다. 재산이 없거나 0원이라는 뜻은 아닙니다.</p>}
-                      {section.entries.some(isPlenaryVote)
+                      {section.id === "legislative_activity" ? <PersonClaimLibrary claimIds={section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])} existingClaimIds={staticClaimIds} legislative /> : section.entries.some(isPlenaryVote)
                         ? <ol className="vote-rows">{section.entries.map(renderEntry)}</ol>
                         : section.entries.map(renderEntry)}
                     </section>
@@ -528,12 +558,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </div>
               </>
             ) : (
-              <p className="empty-state"><span><span className="status UNKNOWN">UNKNOWN</span> <strong>아직 공개된 기록이 없습니다.</strong></span></p>
+              <p className="empty-state"><span><span className="status UNKNOWN">{statusLabel("UNKNOWN")}</span> <strong>아직 공개된 기록이 없습니다.</strong></span></p>
             )}
             {otherClaims.length > 0 && (
               <details className="profile-other-records">
                 <summary>기타 공개 근거 기록 {otherClaims.length}건</summary>
-                {otherClaims.map((claim) => <EvidencePanel key={claim.id} claim={claim} sourceById={sourceById} kind={predicateLabel(claim.predicate)} />)}
+                <PersonClaimLibrary claimIds={otherClaims.map((claim) => claim.id)} existingClaimIds={staticClaimIds} />
               </details>
             )}
             {(emptyLaneGroups.length > 0 || Boolean(limitations?.entries.length)) && (
@@ -568,13 +598,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </div>
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 && !sourceError ? <p className="empty">표시할 출처가 없습니다.</p> : (
-              <div className="source-grid">
-                {sources.map((source) => <SourceCard key={source.id} source={source} />)}
-              </div>
+              <SourceLibrary />
             )}
           </section>
         </div>
       </div>
     </div>
+    </PersonEvidenceProvider>
   );
 }

@@ -22,12 +22,16 @@ from packages.verification.assembly_asset_import import (
     ASSEMBLY_ASSET_FEEDER,
     PETI_ASSET_FEEDER,
     PETI_ASSET_SOURCE_CONTRACT,
+    PETI_HOUSING_FEEDER,
+    PETI_HOUSING_SOURCE_CONTRACT,
     AssemblyAssetCapture,
     AssemblyAssetImportError,
     build_assembly_asset_capture,
     build_peti_asset_capture,
+    build_peti_housing_capture,
     effective_gazette_policy,
     gazette_asset_policy,
+    require_peti_asset_metadata_policy,
 )
 from packages.verification.policy import PolicyDenied
 
@@ -43,6 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--packet", type=Path)
     source.add_argument("--peti-receipt", type=Path)
+    source.add_argument("--peti-housing-receipt", type=Path)
     parser.add_argument("--artifact", type=Path, help="operator-saved Gazette PDF")
     parser.add_argument("--peti-policy", type=Path)
     parser.add_argument("--peti-operation", choices=("policy", "capture", "link", "publish"), default="capture")
@@ -89,7 +94,7 @@ def _safe_report(capture: AssemblyAssetCapture) -> dict[str, object]:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.peti_receipt:
+    if args.peti_receipt or args.peti_housing_receipt:
         return _peti_main(parser, args)
     if args.artifact is None:
         parser.error("--artifact is required for Gazette packets")
@@ -176,15 +181,23 @@ def _peti_main(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int
         parser.error("PETI requires --peti-policy; Gazette options and URL credentials are not accepted")
     try:
         policy = SourcePolicy.model_validate_json(args.peti_policy.read_text(encoding="utf-8"))
-        raw = json.loads(args.peti_receipt.read_text(encoding="utf-8"))
-        source, snapshot, observation = build_peti_asset_capture(raw, policy=policy, run_id=uuid4())
+        require_peti_asset_metadata_policy(policy)
+        housing = args.peti_housing_receipt is not None
+        builder = build_peti_housing_capture if housing else build_peti_asset_capture
+        feeder = PETI_HOUSING_FEEDER if housing else PETI_ASSET_FEEDER
+        contract = PETI_HOUSING_SOURCE_CONTRACT if housing else PETI_ASSET_SOURCE_CONTRACT
+        input_path = args.peti_housing_receipt if housing else args.peti_receipt
+        raw = json.loads(input_path.read_text(encoding="utf-8"))
+        source, snapshot, observation = builder(raw, policy=policy, run_id=uuid4())
         database_url = os.environ.get(args.database_env)
         repository = SqlAlchemyRepository(database_url) if database_url else None
         report: dict[str, object] = {"status": "DRY_RUN", "write_performed": False,
-            "feeder": PETI_ASSET_FEEDER, "record_count": 1,
+            "feeder": feeder, "record_count": 1,
             "provider_record_key": observation.provider_record_key,
-            "metadata_hash": observation.content_hash, "amount_unit": "THOUSAND_KRW",
+            "metadata_hash": observation.content_hash,
             "claim_publication": False, "identity_review_confirmed": False}
+        if not housing:
+            report["amount_unit"] = "THOUSAND_KRW"
         if args.peti_operation == "policy":
             if not args.command or repository is None:
                 parser.error("Policy registration preview requires --command and configured database environment")
@@ -216,14 +229,14 @@ def _peti_main(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int
                 stored = repository.policies().get(policy.id)
                 if stored is None or not source_policy_semantics_equal(stored, policy):
                     parser.error("PETI_STORED_POLICY_MISMATCH")
-                run = repository.start_source_run(PETI_ASSET_FEEDER, observation.scope_key,
-                    metadata={"source_contract": PETI_ASSET_SOURCE_CONTRACT, "record_count": 1})
+                run = repository.start_source_run(feeder, observation.scope_key,
+                    metadata={"source_contract": contract, "record_count": 1})
                 try:
-                    source, snapshot, observation = build_peti_asset_capture(raw, policy=policy, run_id=run.id)
+                    source, snapshot, observation = builder(raw, policy=policy, run_id=run.id)
                     committed = repository.commit_source_page(run_id=run.id, policy=policy,
                         source=source, snapshot=snapshot, observations=(observation,), cursor="1",
                         require_stored_policy_match=True,
-                        checkpoint_metadata={"source_contract": PETI_ASSET_SOURCE_CONTRACT,
+                        checkpoint_metadata={"source_contract": contract,
                             "selected_record_count": 1,
                             "seen_provider_hashes": {observation.provider_record_key: observation.content_hash}})
                     repository.finish_source_run(run.id, SourceRunStatus.SUCCESS)
@@ -260,7 +273,7 @@ def _peti_main(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int
                     contexts = repository.feeder_observation_contexts([UUID(str(item.feeder_observation_id))
                         for item in repository.evidence_for(command.record_ids[0]) if item.stance.value == "SUPPORT"])
                     selected = next(iter(contexts.values()))[0] if len(contexts) == 1 else None
-                if selected is None or selected.feeder != PETI_ASSET_FEEDER or selected.provider_record_key != observation.provider_record_key or selected.content_hash != observation.content_hash:
+                if selected is None or selected.feeder != feeder or selected.provider_record_key != observation.provider_record_key or selected.content_hash != observation.content_hash:
                     parser.error("PETI_SELECTED_RECEIPT_MISMATCH")
                 preview = repository.admin_preview(command)
                 if args.preview_output:

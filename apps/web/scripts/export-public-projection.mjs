@@ -26,8 +26,8 @@ import { SCOPES } from './snapshot-scopes.mjs';
 export { SCOPES } from './snapshot-scopes.mjs';
 
 export const PROJECTION_SCHEMA_VERSION = 2;
-// RECENT_PLENARY_VOTE_LIMIT in packages/rendering/profile_projection.py: a Person response carries only
-// the rendered recent votes; the vote universe stays in PostgreSQL and is never exported.
+// RECENT_PLENARY_VOTE_LIMIT bounds profile entries to ten recent votes.
+// Eligible published vote Claims retain the complete public vote list.
 const MAX_RENDERED_PLENARY_VOTES = 10;
 // gzip bytes per public_read row: hex-encoded in one INSERT this stays under D1's 100 KB statement limit.
 const PART_BYTES = 40_000;
@@ -159,7 +159,7 @@ async function main() {
   if ([...sourceIds].some((id) => !new RegExp(`^${UUID}$`).test(id))) fail("non-UUID source id");
   await readAll([...sourceIds].sort().map((id) => `/sources/${id}`));
 
-  // Bounded Person payloads: the rendered recent votes only, never the vote universe.
+  // The profile remains bounded to recent votes; its canonical Claim list retains eligible published votes.
   for (const { id } of people) {
     const person = entries.get(`/people/${id}`).body;
     if (person?.id !== id) fail(`/people/${id} returned a different Person`);

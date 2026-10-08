@@ -200,7 +200,9 @@ def test_review_surface_is_disabled_by_default(seeded_repository: SqlAlchemyRepo
 def test_public_profile_does_not_publish_unlinked_decision_episodes(client: TestClient) -> None:
     payload = client.get("/people/00000000-0000-0000-0000-000000000007").json()
     episodes = next(
-        section for section in payload["profile"]["sections"] if section["id"] == "decision_episodes"
+        section
+        for section in payload["profile"]["sections"]
+        if section["id"] == "decision_episodes"
     )
     assert episodes["status"] == "UNKNOWN"
     assert episodes["entries"] == []
@@ -213,19 +215,24 @@ def test_public_profiles_exclude_superseded_temporal_records(
         session.get(ClaimRow, "30000000-0000-0000-0000-000000000013").superseded_at = datetime.now(
             UTC
         )
-        session.get(RelationshipRow, "50000000-0000-0000-0000-000000000001").superseded_at = (
-            datetime.now(UTC)
-        )
-        session.get(DecisionEpisodeRow, "70000000-0000-0000-0000-000000000002").superseded_at = (
-            datetime.now(UTC)
-        )
+        session.get(
+            RelationshipRow, "50000000-0000-0000-0000-000000000001"
+        ).superseded_at = datetime.now(UTC)
+        session.get(
+            DecisionEpisodeRow, "70000000-0000-0000-0000-000000000002"
+        ).superseded_at = datetime.now(UTC)
         session.commit()
 
     profile = client.get("/people/00000000-0000-0000-0000-000000000007").json()
     assert all(claim["id"] != "30000000-0000-0000-0000-000000000013" for claim in profile["claims"])
-    assert next(
-        section for section in profile["profile"]["sections"] if section["id"] == "decision_episodes"
-    )["entries"] == []
+    assert (
+        next(
+            section
+            for section in profile["profile"]["sections"]
+            if section["id"] == "decision_episodes"
+        )["entries"]
+        == []
+    )
 
     relationship_profile = client.get("/people/00000000-0000-0000-0000-000000000009").json()
     assert relationship_profile["relationship_ids"] == []
@@ -287,7 +294,7 @@ def test_public_api_uses_safe_error_contract(client: TestClient) -> None:
     assert response.json() == {
         "error": {
             "code": "PUBLIC_RECORD_NOT_FOUND",
-            "message": "The public record was not found.",
+            "message": "공개 기록을 찾을 수 없습니다.",
             "request_id": response.headers["x-request-id"],
         }
     }
@@ -311,7 +318,7 @@ def test_public_api_masks_unexpected_failure(
     assert response.status_code == 503
     assert response.json()["error"] == {
         "code": "SERVICE_UNAVAILABLE",
-        "message": "The public data service is temporarily unavailable.",
+        "message": "공개 자료 서비스를 일시적으로 이용할 수 없습니다.",
         "request_id": response.headers["x-request-id"],
     }
     assert "password" not in response.text.casefold()
@@ -347,6 +354,8 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
         "controversies",
         "hearing_questions",
         "forecast",
+        "official_press_records",
+        "public_self_housing",
         "public_declared_assets",
         "limitations",
     ]
@@ -358,7 +367,9 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
     assert nomination["source_ids"] == [SOURCE_ID]
 
     assert sections["career_timeline"]["status"] == "AVAILABLE"
-    timeline_predicates = [entry["details"]["predicate"] for entry in sections["career_timeline"]["entries"]]
+    timeline_predicates = [
+        entry["details"]["predicate"] for entry in sections["career_timeline"]["entries"]
+    ]
     assert timeline_predicates == ["HELD_ROLE", "NOMINATED_AS"]
     held_role = sections["career_timeline"]["entries"][0]
     assert held_role["date"] == "2026-01-27"
@@ -373,9 +384,7 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
     assert sections["current_power_tasks"]["status"] == "UNKNOWN"
     assert sections["current_power_tasks"]["entries"] == []
     assert sections["stakeholders"]["status"] == "AVAILABLE"
-    assert sections["stakeholders"]["entries"][0]["details"]["evidence_types"] == [
-        "APPOINTMENT"
-    ]
+    assert sections["stakeholders"]["entries"][0]["details"]["evidence_types"] == ["APPOINTMENT"]
     assert sections["forecast"]["status"] == "UNKNOWN"
     assert sections["limitations"]["status"] == "AVAILABLE"
 
@@ -393,9 +402,7 @@ def test_profile_exposes_evidence_stance_and_batch_trace(client: TestClient) -> 
     assert nomination["evidence"][0]["snapshot_id"] == "21000000-0000-0000-0000-000000000001"
     assert nomination["evidence"][0]["feeder_observation_id"] is None
 
-    conflict_profile = client.get(
-        "/people/00000000-0000-0000-0000-000000000007"
-    )
+    conflict_profile = client.get("/people/00000000-0000-0000-0000-000000000007")
     assert conflict_profile.status_code == 200
     conflict_payload = conflict_profile.json()
     conflict_claim = next(
@@ -468,9 +475,7 @@ def test_review_surface_exposes_materialization_action_and_provenance(
     assert items["M-HARD-001"]["action"] == "HARD_CONFLICT"
     assert items["M-HARD-001"]["candidate_person"]["canonical_name"] == "하드 충돌 후보"
     assert "normalized" not in items["review-001"]["observation"]
-    public_candidate = client.get(
-        "/people/00000000-0000-0000-0000-000000000013"
-    ).json()
+    public_candidate = client.get("/people/00000000-0000-0000-0000-000000000013").json()
     assert all(
         claim["qualifiers"].get("provider_record_key") != "M-HARD-001"
         for claim in public_candidate["claims"]

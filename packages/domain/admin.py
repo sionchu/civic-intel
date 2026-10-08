@@ -77,10 +77,11 @@ class AdminCommand(BaseModel):
                 "OFFICIAL_CAREER_CONTINUITY",
                 "OFFICIAL_BIOGRAPHY_CONTINUITY",
                 "PUBLIC_DISCLOSURE_SOURCE_CONTEXT",
+                "OFFICIAL_PRESS_SOURCE_CONTEXT",
             }:
                 raise ValueError("Choose the reviewed official continuity evidence basis")
             if (
-                self.identity_basis == "PUBLIC_DISCLOSURE_SOURCE_CONTEXT"
+                self.identity_basis in {"PUBLIC_DISCLOSURE_SOURCE_CONTEXT", "OFFICIAL_PRESS_SOURCE_CONTEXT"}
                 and self.action != AdminAction.LINK_PERSON
             ):
                 raise ValueError("Public disclosure review permits linkage only, never merge")

@@ -1,3 +1,4 @@
+import { statusLabel } from "../display-labels";
 import Link from "next/link";
 
 import { statedDate } from "../career-period";
@@ -53,14 +54,14 @@ export default function PersonRelationshipsView({ data }: { data: PersonRelation
                 <li key={relation.relation_id} className="relationship-record">
                   <div className="relationship-heading">
                     <Link href={`/people/${relation.counterpart.id}`}>{relation.counterpart.name}</Link>
-                    <span className="status DERIVED">{relation.status}</span>
+                    <span className="status DERIVED">{statusLabel(relation.status)}</span>
                   </div>
                   <p>{LABELS[relation.relation_type] ?? "공식 기록상 접점"} · {OVERLAP[relation.temporal.overlap]}</p>
                   <dl className="relationship-periods">
                     <div><dt>{data.person.name}</dt><dd>{periodText(currentPeriod)}</dd></div>
                     <div><dt>{relation.counterpart.name}</dt><dd>{periodText(otherPeriod)}</dd></div>
                   </dl>
-                  {relation.source_conflict && <p><span className="status CONFLICT">SOURCE CONFLICT</span> 연결에 사용한 근거가 상충합니다.</p>}
+                  {relation.source_conflict && <p><span className="status CONFLICT">{statusLabel("CONFLICT")}</span> 연결에 사용한 근거가 상충합니다.</p>}
                   <details className="relationship-evidence">
                     <summary>양쪽 기록과 원문 근거</summary>
                     <ul>
@@ -71,7 +72,7 @@ export default function PersonRelationshipsView({ data }: { data: PersonRelation
                       {relation.source_ids.map((sourceId) => <li key={sourceId}><a href={`#source-${sourceId}`}>원문 출처</a></li>)}
                     </ul>
                     <p>{relation.interpretation_note}</p>
-                    <small>규칙 {relation.rule_id} · {relation.rule_version} / 시간 근거 {relation.temporal.basis}</small>
+                    <details className="audit-details"><summary>연결 계산 식별자</summary><small>규칙 {relation.rule_id} · 판 {relation.rule_version} / 시간 근거 식별값 {relation.temporal.basis}</small></details>
                     <details className="audit-details"><summary>근거 식별자</summary><p>{relation.evidence_ids.join(" · ")}</p></details>
                   </details>
                 </li>

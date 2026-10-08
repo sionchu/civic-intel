@@ -1,3 +1,47 @@
+# Current local implementation — 2026-10-09
+
+The Korean/public-record connection request supersedes the previous f5e3829 operational approval
+candidate. Its exact artifact and e575… policy preview remain historical NOT_EXECUTED evidence;
+neither API switch nor canonical writes were approved. Current product changes are local and
+fourth final integrated verification57531 passed with runnerexit0: Python1,330/3skip/6warnings
+517.34s, web104, Ruff/mypy157/Golden quality/lint/typecheck/Next standalone PASS. Third76716 exited0 withPython1,330,
+web102 and all gates; it is an exact prior-language-scope PASS. Final private message16/known-node
+and manifeststatus11 display corrections passed operator/API61 and wholeweb104 targeted checks. Second runner37322 exited2 after
+Python1,330/3skip/6warnings513.93s; web101/102 failed one stale phrase assertion only. Corrected
+complete web-verify83393 exited0 with102tests/lint/typecheck/Nextstandalone PASS. The first full runner63876 exited2
+after1,329 Python passes and one stale section-order failure; its two expected IDs were corrected
+and four targeted tests passed. First web phase was NOT_RUN; the failed log is preserved. Public Site v6 and operating API339363f/schema0008 stay
+unchanged. Lead owns backend/integration, UI Sol owns presentation, source Sol owns bounded source
+contracts/operators. No new schema/repository or parallel source truth store was introduced.
+
+Two read-only actual Persons each carry 1,910 subject-bound canonical vote Claims with a recent
+10 summary; largest Person DTO gzip is 1,412,221 B. Final bounded replay closes all 1,948 Source
+references across 1,956 actual routes, including ontology/relationship/Gukgam inputs and structured
+vote eligible_count/scope. Three representative organizations (ALIO roles, disclosed expenses and
+Gukgam targets), their money route and three cited Sources passed bounded read-only GET checks.
+This does not establish full-universe API/source-gate/storage coverage. The frontend now bounds
+Source and legislative/residual Claim cards while retaining every canonical body, ID and evidence
+path. Actual largest HTML fell from 39,126,848 to 10,657,022 B; gzip fell from 2,459,811 to 1,503,387 B.
+Direct Claim/Source flow has functional DOM proof; screenshot verification remains NOT_COMPLETED.
+
+Press/housing operators are local/synthetic verified, no real operational published records.
+Current MP roster bridge and owner-reviewed exact linkage are required; four additional official
+metadata adapters retain unverified locator/query status and cannot LINK/PUBLISH. Housing empty
+receipts remain UNKNOWN; no real housing receipt or inferred residence is claimed.
+
+Next: inspect the verified final diff, commit coherently, prepare the exact read-only API artifact
+and one fresh full public export, measure artifact/storage/reader budgets, then prepare a new exact approval candidate
+without executing live changes. See current active plan and public-predicate-coverage evidence.
+Hosted writer delivery remains a separate checkpoint: compiled read-only v6, discarded credential
+and no native SQL path do not authorize credential/environment recovery. Local activate.sql deletes
+RETIRED rows and is excluded from hosted execution under the no-cleanup scope. Preserve all old
+public snapshot rows. Exact fresh export/build/budget preparation proceeds before any final decision.
+
+
+---
+
+## Historical baseline and previous approval preparation
+
 # HANDOFF
 
 ## Current public delivery — 2026-10-09

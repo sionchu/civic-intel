@@ -1,17 +1,43 @@
 # Feeder Source Coverage
 
-## Bounded official press preparation — 2026-10-09
+## Current bounded public records — 2026-10-09
 
-`OpenAssemblyPressReleaseConnector` prepares one exact written-date/page request for
-`ninnagrlaelvtzfnt` ([official resource OBX2DO001030E516625](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OBX2DO001030E516625)). The inspected resource declares attribution
-reuse; existing Assembly API SourcePolicy FETCH and STORE_METADATA permissions are checked before
-discovery/network. NUM and WRITE_DATE are documented request filters. Only record key, title,
-written date, category and official API provenance survive normalization; CONTENT and unreviewed
-article routes are discarded. Maturity is **L1 CONTRACT_STAGED** with mocked contract checks,
-live pull **NOT_RUN**. No worker, SourceSnapshot, observation, canonical policy change or published
-Person Claim is added. The source has no authoritative Person identifier, so name/co-mention
-cannot authorize Person assignment. Official press metadata is distinct from external journalism
-and does not complete personal news or statement coverage.
+Official press metadata uses the existing Assembly SourcePolicy and canonical
+Source → SourceSnapshot → FeederObservation → reviewed identity → Claim/Evidence → separate
+publication path. The specific `ninnagrlaelvtzfnt` exact-date/page live metadata fetch passed;
+content/body and unreviewed article routes are dropped. AI processing is not authorized by that
+policy. Local capture/review/publication operators and public projection are implemented with
+synthetic regression proof; canonical operational capture/Person assignment/publication remain
+NOT_RUN. Reviewed Person linkage currently supports current Assembly members with an actual
+published roster bridge, not every public Person. External journalism and direct quotations are
+not covered. See [official press contracts](NATIONAL_ASSEMBLY_PRESS_METADATA.md).
+
+Existing committee-minutes speaker-turn observations remain an enrichment-only statement path:
+no Person linkage or published Claim is created. Printed speaker labels and whitespace-free parser
+glyph sequences are not a direct-quote feed. Exact source text/display rights, identity review and
+separate publication remain prerequisites; source AI restrictions remain unchanged. Vote/bill
+retrieval provides official activity records, not personal tendencies or ideological assertions.
+
+Four additional schema-specific supplied-metadata adapters (SPGRPPRESS, NAMEMBEREVENT,
+nkulntiravezskrjd and npeslxqbanwkimebr) share that canonical capture path. Their live request/date
+semantics and stable provider locator remain unverified; LINK/PUBLISH fail closed. Schema and
+license review does not establish live-record coverage or relevance to a Person.
+
+PETI printed totals have a reviewed local one-record candidate and executable policy registration,
+capture, reviewed link and separate publication operators. The self-housing receipt is a closed
+staged contract: only explicitly disclosed SELF ownership or exact source absence evidence is
+eligible. Empty/withheld/partial data stays UNKNOWN, without family, residence, address or amount
+inference. No real housing receipt exists and neither lane has operational published records.
+Public factual disclosure does not require blanket individual reuse consent; source-specific
+collection/storage restrictions, exact identity review and publication decisions remain separate.
+
+|Target category|Existing connected discovery/records|Assets and housing boundary|
+|---|---|---|
+|Current MPs|Assembly/NEC careers, bills, votes; reviewed official press local path|PETI printed total candidate/local operators; self-housing staged, actual receipt absent|
+|Other central/local/public-institution/judicial officers|Researched PETI/Gazette; ALIO disclosed roles for applicable institutions|MP-specific PETI contract rejects other categories; no general assets/housing importer|
+|Election candidates|NEC candidacy, submitted career and education|Assets/housing not connected by this implementation|
+|Corporate officers|DART disclosed executive, compensation/specific-security source paths where governed|No inferred personal real estate or general wealth coverage|
+|Academics/general public|Only existing governed public-role records|No assumed disclosure eligibility or private-family discovery|
 
 ## Purpose
 

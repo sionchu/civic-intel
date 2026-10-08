@@ -69,11 +69,10 @@ the KRDS numeric scale (principles only; no KRDS assets or government identity):
 - Numbers use `font-variant-numeric: tabular-nums` (set on `body`) and `Intl.NumberFormat("ko-KR")`.
 
 Public labels and summaries are Korean-first, and readers see Korean predicate labels
-(`apps/web/app/predicate-labels.ts`) instead of predicate codes such as `NOMINATED_AS`. Domain status codes (`FACT`, `UNKNOWN` …) and the
-data-model names `Claim`/`Evidence` stay verbatim because they are the published contract.
-Stable domain headings may be bilingual: CIVIC INTELLIGENCE, BRIEF / 국감 브리프,
-CAREER / 경력, CONNECTIONS / 공식 연결 and EVIDENCE / 출처. Use them only for real navigable
-content, not as repeated decoration or advertisements for unavailable capabilities.
+(`apps/web/app/predicate-labels.ts`) instead of predicate codes such as `NOMINATED_AS`.
+Public status, evidence and source headings use Korean display labels from the canonical UI mappings.
+Internal enum values, DTO names and IDs stay unchanged; optional evidence details retain exact identifiers
+beside Korean labels. Original source quotations, names and license identifiers remain faithful to the source.
 
 ### Spacing scale
 
@@ -137,8 +136,7 @@ and snapshot references stay behind `details` disclosure.
 
 ### Status and feedback
 
-Use the existing domain labels verbatim: `FACT`, `CLAIM`, `INFERENCE`, `HYPOTHESIS`, `UNKNOWN`,
-`AVAILABLE`, `PARTIAL`, `RESOLVED`, `REVIEW_REQUIRED`, `HARD_CONFLICT` and `SOURCE CONFLICT`.
+Use Korean display labels for the existing domain states, preserving their distinct semantics and internal codes.
 Status never relies on color alone: `.status` chips also carry a decorative shape (✓ resolved or
 supported, ◇ claim/review/partial, ? unknown or unresolved, ! conflict or service failure) with empty
 alt text, so the text label remains the accessible name.
@@ -178,7 +176,7 @@ search inputs, selects and primary filter buttons are 48px tall.
   right-aligned gray paragraph. A heading is followed by at most one short line under it.
 - Don't add decorative ordinal numbers (01/02/03), italic or colored accent words in headings,
   initial-letter avatars, circular arrow badges, KPI tiles or "where to start" card grids.
-- Don't repeat decorative English eyebrows; meaningful bilingual domain headings are permitted.
+- Use Korean public headings and status labels; preserve original source quotations and identifiers only where their exact form matters.
 - Don't add reassurance or disclaimer prose ("근거와 출처와 함께…", "없다는 뜻이 아니라…",
   "자동으로 합치지 않습니다", footer promises). Home carries one scope line. A short factual note is
   kept only where a misreading could harm someone, such as witness lists being 출석 요구, not a

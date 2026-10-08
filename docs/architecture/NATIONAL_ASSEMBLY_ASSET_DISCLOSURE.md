@@ -1,5 +1,37 @@
 # National Assembly asset disclosure source gate
 
+## PETI self-owned housing — local source contract
+
+The existing asset importer now stages a separate `peti_public_self_housing_metadata_v1`
+receipt via `--peti-housing-receipt`. The receipt contains only the exact public selector,
+publication/registration dates and explicit SELF-owned dwelling category/right/count enums.
+Only apartment, detached house, multifamily house and row-house records with explicit ownership
+or shared ownership qualify. Generic buildings, officetels, lease/presale rights, family holdings,
+addresses, residence, amounts and raw detail bodies are rejected, not used to infer ownership.
+
+An explicit `PETI_SELF_HOUSING_METADATA_SCOPE` policy-review marker is required in addition to
+metadata permission and the existing no-fetch/no-fulltext/no-excerpt ceiling. The marker does
+not grant any permission boolean or automatically expand the existing total-only policy. A changed
+policy candidate still requires its own exact preview/application decision; registration never
+overwrites a different existing policy. AI permission is neither inferred nor changed.
+
+The source receipt, SourceSnapshot, observation and reviewed Person linkage are immutable closure
+inputs to the existing draft Claim and separate publication gates. `DISCLOSED_OWNED` describes
+explicit disclosed ownership records, including shared ownership; a partial count is a disclosed
+minimum, not total properties. Empty rows, zero totals, withheld/partial scopes and even a supplied
+`COMPLETE_SELF_HOUSING` label yield UNKNOWN. `DISCLOSED_NONE` requires the exact selector-bound
+source statement `본인 소유 주택 없음` in a closed absence-evidence record and a genuine reviewed
+source context. No boolean flag establishes negative ownership. No actual absence statement or
+usable self-housing receipt has been verified for the inspected PETI record; actual housing
+coverage remains UNKNOWN. Absence of a usable row is not absence of ownership.
+
+Bounded Aside header-only review found `본인과의관계`, `재산의종류`, and
+`소재지 면적 등 권리의 명세`. The combined rights/location field must be reduced locally to safe
+enums; its address content must never enter snapshots, observations, receipts or model context.
+No PDF fetch, OCR or general-detail body retention is part of this contract. Current executable
+identity linkage is limited to exact resolved current Assembly members with official roster
+Evidence. It does not cover all PETI public officers or general public Persons.
+
 ## PETI public factual totals — 2026-10-09: LOCAL_STAGED
 
 The official PETI public search (`https://www.peti.go.kr/peOptpListVie.do`) opens a

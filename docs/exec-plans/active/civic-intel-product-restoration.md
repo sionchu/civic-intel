@@ -1,6 +1,6 @@
 # Civic Intel product restoration
 
-Status: PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
+Status: LOCAL_KOREAN_AND_PUBLIC_RECORD_CONNECTION_VERIFIED_RELEASE_PREPARATION / LIVE_BASELINE_PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
 Implementation owner: MAIN; 2026-10-08–09 follow-up execution/integration owner: GPT-6.1 Sol.
 The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
@@ -13,7 +13,22 @@ is the entry point, not the permanent product boundary. Preserve the North Star'
 long-term identity, activity, money, change and issue direction without advertising
 unimplemented feeds or inventing records.
 
-The latest request authorizes bounded eligible portrait acquisition/manifest expansion, public
+The latest 2026-10-09 request supersedes the prior local milestone scope: unify generated public
+copy and status labels in Korean, audit and connect existing eligible DB content through
+Claim/API/profile/snapshot/UI, and implement bounded public news/asset/self-owned housing source
+routes where their exact policy/identity/publication contracts permit. Source quotations and
+canonical enum/IDs remain unchanged. Existing pending API/canonical-write approval is not granted
+by this request. Lead owns API/profile/relationship generated copy, backend tests and integration;
+UI Sol owns apps/web/DESIGN presentation; source Sol owns source importers/workers/admin review
+seams and source-specific tests/docs. Global coverage inventory remains lead-owned.
+Actual repeatable-read/read-only inventory found1,142 eligible People,17 published Person
+predicates including542,361 votes,240,490 bill records,8,103 careers and1,730 education records.
+DRAFT ALIO2,483/NEC6,133 remain unpublished; no operational news/asset/housing records exist.
+Inventory is counts/SQL eligibility, not full source-gate validation. Current local profile retains recent10 and includes all canonical eligible votes in the same
+Person DTO using a public qualifier allowlist. Two actual subject-bound Persons each expose1910
+votes; largest current JSON10,089,831B/gzip1,412,221B. Claim bodies, valid-time and full
+Evidence/Source locators remain; domains/persistence are unchanged. Full-universe budget is NOT_RUN. No canonical DB, operating339363f or publicv6 change.
+The prior request authorized bounded eligible portrait acquisition/manifest expansion, public
 factual asset source-route preparation, recent activity implementation and actual read-only
 producer verification. Canonical PostgreSQL writes and identity/publication decisions remain
 separate governed operations; new Sites, audience changes and paid-resource increases remain
@@ -56,10 +71,10 @@ production service switches and new rights attestations are not delegated implic
 |---|---|---|
 | M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v6 retains DB binding and ACTIVE snapshot; original branches/worktrees preserved |
 | M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 exact public-response tuples/Source closure and local rollback PASS; v6 deployed, immutable maintenance POST404 PASS, largest Person fresh direct PASS (15.641 s, 2,383 Claims/36 Sources), current desktop delta and opened home viewport screenshot PASS; native390 USER_DEFERRED; historical v5 secret-removal gate FAIL retained |
-| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; v6 deployed, fresh desktop home/Enter/discovery and home viewport visual PASS; wider/native390 limits below |
+| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | Public v6 baseline deployed; current Korean presentation and bounded complete-record retrieval are local, targeted102 PASS and actual DOM interaction PASS; final integrated verification PASS (Python1,330/web104), new-stage Visual NOT_COMPLETED/native390 USER_DEFERRED |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; prior transport/browser proofs PASS; actual canonical five-predicate full-chain 9,143 Claims PASS and bounded operational relationship output 71 Claims PASS; running producer still lacks candidate career projection, operational apply NOT_RUN |
-| M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; final full verification PASS; subsequent Aside intrinsic geometry/keyboard PASS, screenshot NOT_RUN, public rollout NOT_RUN; Lee Jae-myung remains identity review |
-| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | Canonical local staged Claim/Evidence asset-total reader implemented; legacy reviewed-PDF route remains exact-packet gated. Public factual PETI pure staging/validated reader and Person delivery seam locally implemented; default-preview capture/link/publication implemented without generic individual consent gate; atomic policy checks and synthetic vertical delivery tested. Canonical PETI policy count0; explicit registration entry locally implemented/targeted110 PASS; final full makeverify exited0 (Python1,235/web94). Intermediate full runner FAIL on stale web assertions, completed Python1,208 and corrected web94 PASS; operational materialization NOT_RUN |
+| M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; prior milestone full verification PASS; subsequent Aside intrinsic geometry/keyboard PASS, screenshot NOT_RUN, public rollout NOT_RUN; Lee Jae-myung remains identity review |
+| M5 | Eligible public disclosure collection, exact reviewed identity, separate publication and evidence-backed delivery | Printed-total and explicit SELF-housing contracts/operators/read projection implemented locally; policy registration remains default no-write preview, atomic stored-policy equality and current roster bridge fail closed. Source192 + Activity22, disposable reader27 and UI102 targeted evidence; final make verify PASS (Python1,330/web104). Operational news/assets/housing Claim count0, no real housing receipt, canonical registration/capture/link/publication NOT_RUN. Legacy Gazette exact reviewed-packet route remains separately gated |
 | M6 | Further change/comparison/issues, API/MCP and community with scoped methods/rights | PLANNED, not advertised as live |
 
 M1 retains its storage-specific contract in [Sites storage split](sites-storage-split-v0.md).
@@ -83,6 +98,39 @@ This plan owns integration and product scope, not a second storage implementatio
 
 ### Local follow-up in progress (2026-10-09; public v6 unchanged)
 
+Current Korean/public-record implementation is frozen for fourth final make verify session57531: runnerexit0,
+Python1,330 passed/3 skipped/6 warnings517.34s, web104/104, Ruff/mypy157/Golden quality,
+lint/typecheck/Next production standalone all PASS. Backend157 file hashes remained unchanged;
+frontend85-file treeSHA3a2215e18fcebe3337e50baa58e0cc2a367f7297a9030944055560374aaecd5b. Third runner76716 exited0:
+Python1,330/3skip/6warnings555.60s, web102 and every constituent gate PASS. This is preserved
+for its exact earlier language scope. The final narrow private-manifest generated message16
+translations retain all nonmessage AST semantics; related operator/API/playbook61 tests passed.
+Known graph kinds and all11 emitted manifest statuses now have shared Korean display mappings;
+latest complete web-verify104/lint/typecheck/standalone PASS. Fourth full run passed on this final source. First full runner63876 exited2 (make test Error1):
+1,329 passed, one stale section-order assertion failed, three skipped and six warnings in550.81s;
+web phase NOT_RUN. Its expected list omitted the two newly contracted disclosure sections. Only
+the two expected IDs were added; the four targeted base-profile tests passed. The FAIL log remains
+separate. Second runner37322 exited2 after Python1,330/3skip/6warnings513.93s and quality PASS;
+web101/102 failed only a stale ontology-limit phrase assertion after freeze3 copy cleanup. Its
+single expected phrase was corrected; complete web-verify83393 then exited0 with102tests,
+lint/typecheck/production standalone build PASS. Product semantics stayed unchanged. UI freeze2 includes narrow dynamic-admin language corrections and102 targeted tests. Targeted backend reader 27 and API 18 tests
+passed; source 192 tests plus the subsequent malformed-link correction 22 tests passed separately.
+UI initial freeze101 tests/typecheck/lint/build passed; freeze2 web102/typecheck/lint passed,
+and freeze3 known node-kind corrections passed20 targeted tests before the full web phase. Actual bounded replay preserves 4,283/2,085 canonical
+Claims for the two Persons and closes 1,948 Sources across 1,956 routes. Representative ALIO,
+expense and Gukgam organization GETs, one money comparison and three cited Sources passed.
+Published public Person predicates total 17; the count-to-path matrix distinguishes DRAFT and
+policy/identity/publication exclusions from missing UI retrieval. Full-universe API/source-gate and
+new export storage budget remain NOT_RUN.
+
+Bounded canonical Claim/Source rendering reduced largest measured HTML from 39,126,848 to
+10,657,022 B (gzip 2,459,811 to 1,503,387 B). Actual bill/vote search, pagination, selected evidence
+and direct Claim/Source hashes passed DOM interaction with original records preserved. The new
+stage screenshot timed out: Visual NOT_COMPLETED; native 390 remains USER_DEFERRED. Public API
+error messages and generated projection explanations are Korean; original source statements and
+canonical codes remain unchanged. New press/assets/housing operational records remain zero.
+
+
 Verified milestone `64c11d3352571e03916ac476e311bee460ad9d6d` passed full make verify
 (Python1,144/web90). Subsequent actual Aside portrait DOM geometry passed intrinsic ratios,
 keyboard/licence and no overflow; screenshots NOT_RUN. The exact isolated Mac candidate has
@@ -96,7 +144,9 @@ Operating8100 remains339363f,
 public v6 remains the2026-10-08 capture. Superseded normalized8120/export processes were stopped
 only after ownership checks and labelled INTERRUPTED_SUPERSEDED, not PASS.
 
-Current local code follows intermediate64ded4662c13a773e6f0d83922ee421f5eb4c148: PETI pure metadata staging/validated reader, shared
+### Historical prior product milestone and approval preparation — superseded
+
+The prior local code followed intermediate64ded4662c13a773e6f0d83922ee421f5eb4c148: PETI pure metadata staging/validated reader, shared
 /assets validation feeding existing Person ProfileEntry `public_declared_assets`, printed-total
 UI and DERIVED bill-title/committee vote retrieval. Generic asset Claim fallback is excluded;
 `asset_disclosure_ids` stays empty because no AssetDisclosure rows are created. Targeted
@@ -111,7 +161,7 @@ count0 confirms the separate registration entry prerequisite; root authorized it
 preview/commit implementation after intermediate64ded46. That bounded entry is now implemented: complete candidate-policy hash/state dependencies, locked exact-match no-op, mismatched policy rejection, existing audited atomic creation and rollback. Final targeted110 tests/Ruff/mypy PASS; independent review found no actionable findings. Final frozen-code makeverify session80753 exited0: Python1,235 passed/3 skipped/6 warnings in545.76s; web94/94, Ruff/mypy153/Golden quality/lint/typecheck/Next standalone PASS. Canonical registration and PostgreSQL concurrent execution NOT_RUN.
 
 
-Product source/deploy target is frozen at f5e3829dc5b11f785d1e9fb5785a2df0d8864583;
+The superseded product source/deploy target was f5e3829dc5b11f785d1e9fb5785a2df0d8864583;
 subsequent docs-only recording HEAD is distinct. Exact169 raw Git blobs/mismatch0 PASS,
 gzip425,866B/SHA256d135b1697155b0166b7da73b3b9110ad55fb94bdabedc95a3c87f76d8839ea4a.
 Actual serving-interpreter candidate8122 runtime bootstrap/schema0008/default+current read-only
@@ -124,7 +174,7 @@ policyhash3662c58c8d082b67c7c3e921a4661f22e34b92d240d3d531f036be75509b268b;
 commandhash4e80798b0a3e5919480cd1cd5f286494fc70b74188d7618255a3f6e2ebb0a4e0.
 Full preview remains owner-local. Two helper import failures preceded DB access and were
 corrected; actual corrected preview PASS is separate. PostgreSQL concurrent commit NOT_RUN.
-Current next decision: independently selectable exact API-only switch/rollback and one official
+Historical pending decision (NOT_EXECUTED, requires fresh final target): independently selectable exact API-only switch/rollback and one official
 PETI1record policy/capture/genuine reviewed14ae/QWL link/separate publication. Both NOT_EXECUTED,
 not a generic public-fact reuse permission question. See producer-full-chain/final-operational-review.md
 and final-{source,exact-startup,api-smoke,canonical-policy-preview}-receipt.json. Public v6 and
@@ -533,12 +583,25 @@ Evidence lives under `dist/full-goal-evidence/public-deployment/`.
 
 ## Next concrete action
 
-Integrate the recent-official-activity UI and canonical asset slice, run targeted checks and
-`make verify`, then prepare the exact governed producer code update. Recheck the already verified
-career/relationship inputs against the updated API and a fresh finite public export before any
-public snapshot replacement. Canonical ingestion, identity merges and new publication decisions
-are separate operations; M6 remains PLANNED. Resolve news/statement inputs through the narrow
-source-specific path below, and reassess public asset metadata gates without a blanket consent ask.
+Final frozen-code make verify57531 passed. Inspect the final diff and make the coherent
+Korean/public-record connection commit. Prepare its exact raw Git-blob runtime on an isolated
+loopback read-only API using the existing serving interpreter and schema0008, then produce one
+fresh finite canonical public export. Measure full-universe route/source closure, byte/hash parity,
+40 KB parts and existing storage budget before preparing the same public Site delivery candidate.
+The old v6 snapshot and f5/e575 approval evidence do not prove the new product scope. Preserve
+serving8100, canonical source/policy/identity/publication records and current Site binding/access/env;
+API switch and actual one-record PETI operations remain separate pending decisions. Fresh exact
+policy/command/state preview is required if the candidate policy scope changed. No new news,
+statement or tendency implementation is added beyond the current bounded source contracts.
+
+Hosted upload is not currently established: v6 maintenance is compiled read-only, the prior writer
+credential was discarded, and native tools expose no SQL query/upsert path. New writer activation
+or credential/environment setup is a distinct security checkpoint, not implied by the earlier
+publication or D1 approval. Prepare exact export and derived build first. Do not execute the local
+`activate.sql` against hosted data: it deletes RETIRED rows, while this release scope preserves old
+ACTIVE/PREVIOUS/RETIRED data and prohibits cleanup. Hosted stored-byte/quota measurements remain
+UNKNOWN until a supported read operation establishes them.
+
 
 ### Historical M3 evidence-gap assessment — superseded by actual read-only audit below
 
@@ -602,8 +665,8 @@ The new Person UI candidate adds eight recent dated official bill/vote records f
 published exact-Person SUPPORT-backed Claims, using source event dates only and preserving every
 original Claim/Evidence anchor and UNKNOWN status. It does not fulfill the separate recent-news,
 statement or tendency request. Actual canonical grouped queries found no asset/news/statement
-Claim predicates and no asset/news/minutes feeder observations. There is no approved automated
-news feeder. Actual official Assembly press dataset `ninnagrlaelvtzfnt` exposes an attribution
+Claim predicates and no asset/news/minutes feeder observations. There is no approved automated external-journalism
+feeder. The new reviewed official-press capture/link/publication path is local and has no operational Claim. Actual official Assembly press dataset `ninnagrlaelvtzfnt` exposes an attribution
 licence and NUM/TITLE/WRITE_DATE/CONTENT/CONTENT_URL/BBS_TITLE fields, but no Person identifier.
 Its bounded connector preparation drops CONTENT before capture; official press is distinct from
 external journalism. A narrow news candidate should start with one exact provider's permitted

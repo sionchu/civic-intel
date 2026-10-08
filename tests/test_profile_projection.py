@@ -58,34 +58,52 @@ def section(profile: dict, section_id: str) -> dict:
 def test_declared_asset_section_requires_validated_rows_and_exact_evidence() -> None:
     from packages.verification.assembly_asset_import import ASSEMBLY_ASSET_TOTAL_PREDICATE
 
-    claim = nomination_claim().model_copy(update={
-        "predicate": ASSEMBLY_ASSET_TOTAL_PREDICATE,
-        "epistemic_status": EpistemicStatus.CLAIM,
-        "asserted_as_true": False,
-        "qualifiers": {"source_contract": "peti_public_declared_total_metadata_v1"},
-    })
+    claim = nomination_claim().model_copy(
+        update={
+            "predicate": ASSEMBLY_ASSET_TOTAL_PREDICATE,
+            "epistemic_status": EpistemicStatus.CLAIM,
+            "asserted_as_true": False,
+            "qualifiers": {"source_contract": "peti_public_declared_total_metadata_v1"},
+        }
+    )
     proof = nomination_evidence()
-    row = {"claim_id": str(claim.id), "person_id": str(PERSON_ID),
-           "evidence_id": str(proof.id), "source_id": str(proof.source_id),
-           "amount_thousand_krw": 0, "amount_unit": "THOUSAND_KRW",
-           "publication_date": "2099-03-26", "report_type": "UNKNOWN"}
+    row = {
+        "claim_id": str(claim.id),
+        "person_id": str(PERSON_ID),
+        "evidence_id": str(proof.id),
+        "source_id": str(proof.source_id),
+        "amount_thousand_krw": 0,
+        "amount_unit": "THOUSAND_KRW",
+        "publication_date": "2099-03-26",
+        "report_type": "UNKNOWN",
+    }
     empty = build_profile_projection(person(), [claim], {claim.id: [proof]}, [], [])
     assert section(empty, "public_declared_assets")["entries"] == []
-    assert not any(entry.get("claim_id") == str(claim.id)
-                   for lane in empty["sections"] for entry in lane["entries"])
-    profile = build_profile_projection(person(), [claim], {claim.id: [proof]}, [], [],
-                                       declared_assets=[row])
+    assert not any(
+        entry.get("claim_id") == str(claim.id)
+        for lane in empty["sections"]
+        for entry in lane["entries"]
+    )
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [proof]}, [], [], declared_assets=[row]
+    )
     entry = section(profile, "public_declared_assets")["entries"][0]
     assert entry["details"]["amount_thousand_krw"] == 0
     assert entry["epistemic_status"] == "CLAIM"
     assert entry["source_ids"] == [str(proof.source_id)]
     assert entry["evidence_ids"] == [str(proof.id)]
     with pytest.raises(ValueError):
-        build_profile_projection(person(), [claim], {claim.id: [proof]}, [], [],
-                                 declared_assets=[row | {"source_id": str(PERSON_ID)}])
+        build_profile_projection(
+            person(),
+            [claim],
+            {claim.id: [proof]},
+            [],
+            [],
+            declared_assets=[row | {"source_id": str(PERSON_ID)}],
+        )
 
 
-def test_profile_projection_has_stable_fifteen_section_contract() -> None:
+def test_profile_projection_has_stable_section_contract() -> None:
     claim = nomination_claim()
     evidence = nomination_evidence()
     profile = build_profile_projection(
@@ -97,7 +115,7 @@ def test_profile_projection_has_stable_fifteen_section_contract() -> None:
     )
 
     assert profile["section_order"] == [item[0] for item in SECTION_DEFINITIONS]
-    assert len(profile["sections"]) == 15
+    assert len(profile["sections"]) == len(SECTION_DEFINITIONS)
     assert profile["semantics"] == "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE"
 
 
@@ -183,9 +201,7 @@ def test_typed_relationship_is_stakeholder_but_co_mention_only_is_not() -> None:
 
     stakeholders = section(profile, "stakeholders")
     assert stakeholders["status"] == "AVAILABLE"
-    assert [item["id"] for item in stakeholders["entries"]] == [
-        "relationship:rel-appointment"
-    ]
+    assert [item["id"] for item in stakeholders["entries"]] == ["relationship:rel-appointment"]
     assert stakeholders["entries"][0]["source_ids"] == [str(SOURCE_ID)]
 
 
@@ -366,6 +382,8 @@ def test_assembly_profile_uses_role_aware_content_and_dated_career_only() -> Non
         "current_role",
         "career_timeline",
         "legislative_activity",
+        "official_press_records",
+        "public_self_housing",
         "public_declared_assets",
         "limitations",
     ]
@@ -551,15 +569,20 @@ def career_evidence(claim: Claim) -> ClaimEvidence:
 
 def test_attributed_month_career_reaches_assembly_timeline_without_truth_or_date_upgrade() -> None:
     claim = source_career_claim(
-        period_start="2024-01-01", period_start_precision="MONTH",
-        period_end="2024-05-01", period_end_precision="MONTH",
-        date="2026-10-07", private_contact="not a public projection field",
+        period_start="2024-01-01",
+        period_start_precision="MONTH",
+        period_end="2024-05-01",
+        period_end_precision="MONTH",
+        date="2026-10-07",
+        private_contact="not a public projection field",
     )
     evidence = career_evidence(claim)
-    roster = nomination_claim().model_copy(update={
-        "predicate": "HELD_ROLE",
-        "qualifiers": {"source_scope": "current_member_roster", "provider_record_key": "M-99"},
-    })
+    roster = nomination_claim().model_copy(
+        update={
+            "predicate": "HELD_ROLE",
+            "qualifiers": {"source_scope": "current_member_roster", "provider_record_key": "M-99"},
+        }
+    )
     profile = build_profile_projection(person(), [roster, claim], {claim.id: [evidence]}, [], [])
     timeline = section(profile, "career_timeline")
     [entry] = timeline["entries"]
@@ -572,9 +595,13 @@ def test_attributed_month_career_reaches_assembly_timeline_without_truth_or_date
     assert entry["details"]["career_semantics"] == "SOURCE_ATTRIBUTED_BIOGRAPHY"
     assert entry["date"] is None
     assert entry["details"]["career_period"] == {
-        "start": "2024-01-01", "start_precision": "MONTH",
-        "end": "2024-05-01", "end_precision": "MONTH",
-        "point": None, "point_precision": "UNKNOWN", "ongoing": False,
+        "start": "2024-01-01",
+        "start_precision": "MONTH",
+        "end": "2024-05-01",
+        "end_precision": "MONTH",
+        "point": None,
+        "point_precision": "UNKNOWN",
+        "ongoing": False,
     }
     assert entry["evidence_ids"] == [str(evidence.id)]
     assert entry["source_ids"] == [str(SOURCE_ID)]
@@ -585,10 +612,16 @@ def test_attributed_month_career_reaches_assembly_timeline_without_truth_or_date
 
 def test_former_only_member_term_preserves_past_party_and_does_not_create_current_role() -> None:
     claim = source_career_claim(
-        "ASSEMBLY_HISTORICAL_TERM", term_start="2012-05-30", term_end="2016-05-29",
-        party="당시정당", district="당시지역구", profile_unit_name="제19대",
+        "ASSEMBLY_HISTORICAL_TERM",
+        term_start="2012-05-30",
+        term_end="2016-05-29",
+        party="당시정당",
+        district="당시지역구",
+        profile_unit_name="제19대",
     )
-    profile = build_profile_projection(person(), [claim], {claim.id: [career_evidence(claim)]}, [], [])
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [career_evidence(claim)]}, [], []
+    )
     timeline = section(profile, "career_timeline")
     [entry] = timeline["entries"]
 
@@ -606,13 +639,22 @@ def test_former_only_member_term_preserves_past_party_and_does_not_create_curren
     assert all(item["id"] != "current_role" for item in profile["sections"])
 
 
-@pytest.mark.parametrize("field_name,text", [("career1", "전 테스트기관 이사"), ("occupation", "기업인")])
-def test_nec_undated_submitted_career_and_occupation_never_use_election_date(field_name, text) -> None:
+@pytest.mark.parametrize(
+    "field_name,text", [("career1", "전 테스트기관 이사"), ("occupation", "기업인")]
+)
+def test_nec_undated_submitted_career_and_occupation_never_use_election_date(
+    field_name, text
+) -> None:
     claim = source_career_claim(
-        "NEC_CANDIDATE_CAREER", field_name=field_name, election_id="20240410",
-        current_marker="FORMER", date="2024-04-10",
+        "NEC_CANDIDATE_CAREER",
+        field_name=field_name,
+        election_id="20240410",
+        current_marker="FORMER",
+        date="2024-04-10",
     ).model_copy(update={"object_text": text})
-    profile = build_profile_projection(person(), [claim], {claim.id: [career_evidence(claim)]}, [], [])
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [career_evidence(claim)]}, [], []
+    )
     [entry] = section(profile, "career_timeline")["entries"]
 
     assert entry["date"] is None
@@ -624,7 +666,9 @@ def test_nec_undated_submitted_career_and_occupation_never_use_election_date(fie
 @pytest.mark.parametrize("precision,value", [("YEAR", "1991-01-01"), ("DAY", "2020-04-03")])
 def test_source_career_single_point_preserves_precision(precision, value) -> None:
     claim = source_career_claim(period_point=value, period_point_precision=precision)
-    profile = build_profile_projection(person(), [claim], {claim.id: [career_evidence(claim)]}, [], [])
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [career_evidence(claim)]}, [], []
+    )
     [entry] = section(profile, "career_timeline")["entries"]
     assert entry["details"]["career_period"]["point"] == value
     assert entry["details"]["career_period"]["point_precision"] == precision
@@ -634,14 +678,27 @@ def test_source_career_single_point_preserves_precision(precision, value) -> Non
 @pytest.mark.parametrize("header", ["■ 경력:", "주요 경력：", "[약력]", "■ 학력:", ""])
 def test_heading_only_biography_does_not_become_a_career_event(header) -> None:
     claim = source_career_claim().model_copy(update={"object_text": header})
-    profile = build_profile_projection(person(), [claim], {claim.id: [career_evidence(claim)]}, [], [])
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [career_evidence(claim)]}, [], []
+    )
     assert section(profile, "career_timeline")["entries"] == []
 
 
-@pytest.mark.parametrize("case", [
-    "draft", "withheld", "superseded", "other_person", "unresolved_person",
-    "superseded_person", "missing_evidence", "other_claim_evidence", "refute_only", "wrong_contract",
-])
+@pytest.mark.parametrize(
+    "case",
+    [
+        "draft",
+        "withheld",
+        "superseded",
+        "other_person",
+        "unresolved_person",
+        "superseded_person",
+        "missing_evidence",
+        "other_claim_evidence",
+        "refute_only",
+        "wrong_contract",
+    ],
+)
 def test_new_career_sources_fail_closed_outside_current_published_subject(case) -> None:
     claim = source_career_claim()
     subject = person()
@@ -669,12 +726,16 @@ def test_new_career_sources_fail_closed_outside_current_published_subject(case) 
 
 
 def test_career_conflict_and_published_unknown_remain_visible_without_truth_assertion() -> None:
-    claim = source_career_claim().model_copy(update={
-        "epistemic_status": EpistemicStatus.UNKNOWN,
-        "resolution_note": "두 출처의 기간 기재가 상충하여 미해결입니다.",
-    })
+    claim = source_career_claim().model_copy(
+        update={
+            "epistemic_status": EpistemicStatus.UNKNOWN,
+            "resolution_note": "두 출처의 기간 기재가 상충하여 미해결입니다.",
+        }
+    )
     support = career_evidence(claim)
-    refute = support.model_copy(update={"id": uuid5(claim.id, "REFUTE"), "stance": EvidenceStance.REFUTE})
+    refute = support.model_copy(
+        update={"id": uuid5(claim.id, "REFUTE"), "stance": EvidenceStance.REFUTE}
+    )
     profile = build_profile_projection(person(), [claim], {claim.id: [support, refute]}, [], [])
     timeline = section(profile, "career_timeline")
     [entry] = timeline["entries"]
@@ -692,23 +753,37 @@ def test_career_dates_sort_before_undated_without_reordering_input_truth() -> No
     undated = source_career_claim("NEC_CANDIDATE_CAREER")
     claims = [undated, dated]
     profile = build_profile_projection(
-        person(), claims, {item.id: [career_evidence(item)] for item in claims}, [], [],
+        person(),
+        claims,
+        {item.id: [career_evidence(item)] for item in claims},
+        [],
+        [],
     )
     assert [item["claim_id"] for item in section(profile, "career_timeline")["entries"]] == [
-        str(dated.id), str(undated.id),
+        str(dated.id),
+        str(undated.id),
     ]
     assert claims == [undated, dated]
 
 
-@pytest.mark.parametrize("qualifiers", [
-    {"period_start": "2024-13-01", "period_start_precision": "DAY"},
-    {"period_start": "2024-01-01", "period_start_precision": "UNKNOWN"},
-    {"period_start": "2024-05-01", "period_start_precision": "MONTH",
-     "period_end": "2024-01-01", "period_end_precision": "MONTH"},
-])
+@pytest.mark.parametrize(
+    "qualifiers",
+    [
+        {"period_start": "2024-13-01", "period_start_precision": "DAY"},
+        {"period_start": "2024-01-01", "period_start_precision": "UNKNOWN"},
+        {
+            "period_start": "2024-05-01",
+            "period_start_precision": "MONTH",
+            "period_end": "2024-01-01",
+            "period_end_precision": "MONTH",
+        },
+    ],
+)
 def test_malformed_career_period_keeps_record_without_manufacturing_a_date(qualifiers) -> None:
     claim = source_career_claim(**qualifiers)
-    profile = build_profile_projection(person(), [claim], {claim.id: [career_evidence(claim)]}, [], [])
+    profile = build_profile_projection(
+        person(), [claim], {claim.id: [career_evidence(claim)]}, [], []
+    )
     [entry] = section(profile, "career_timeline")["entries"]
     assert entry["date"] is None
     assert entry["details"]["career_period"]["start"] is None

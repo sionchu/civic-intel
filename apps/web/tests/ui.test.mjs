@@ -45,7 +45,7 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /entry\.epistemic_status/);
   assert.match(page, /entry\.evidence/);
   assert.match(page, /entry\.source_ids/);
-  assert.match(page, /DERIVED · CHANGE/);
+  assert.match(page, /공개 기록의 변화/);
   assert.match(page, /changeDetails\.earlier/);
   assert.match(page, /method_version/);
   assert.match(page, /correction_semantics/);
@@ -120,7 +120,7 @@ test("Visual System v2 keeps Home editorial and People content-first", async () 
   const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
 
-  assert.match(home, /CIVIC INTELLIGENCE/);
+  assert.match(home, /공적 기록 탐색/);
   assert.match(home, /action="\/people"/);
   assert.match(home, /공개 조건을 충족한 기록/);
   assert.doesNotMatch(home, /<RosterGrid|hero-panel|signal-strip/);
@@ -140,7 +140,7 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   const throughput = await readFile(new URL("../app/admin/review/gukgam-review-throughput.tsx", import.meta.url), "utf8");
   const actions = await readFile(new URL("../app/admin/review/actions/route.ts", import.meta.url), "utf8");
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
-  assert.match(profile, /SOURCE CONFLICT/);
+  assert.match(profile, /CONFLICT/);
   assert.match(profile, /item\.stance|trace\.stance/);
   assert.match(profile, /snapshot_id/);
   assert.match(profile, /policy_summary/);
@@ -155,7 +155,7 @@ test("UI exposes explicit provenance and a read-only review surface", async () =
   assert.match(throughput, /HOLD/);
   assert.match(throughput, /batch_decided: false/);
   assert.match(actions, /gukgam_review_metric/);
-  assert.match(review, /CURRENT HUMAN REVIEW/);
+  assert.match(review, /현재 검토 상태/);
   assert.doesNotMatch(throughput, /adminRequest<[^>]+>\("commit"/);
   assert.doesNotMatch(review, /method="post"|--commit/);
   assert.doesNotMatch(layout, /admin\/review/);
@@ -168,11 +168,11 @@ test("organization page consumes the existing direct-ID evidence contract", asyn
   assert.match(page, /getOrganization\(id\)/);
   assert.match(page, /getOrganizationMoney\(id\)/);
   assert.match(page, /핵심 기록/);
-  assert.match(page, /DERIVED · MONEY/);
+  assert.match(page, /공시 금액 비교/);
   assert.match(page, /moneyResult\.error/);
   assert.match(page, /ReadState/);
-  assert.match(page, /SourceSnapshot/);
-  assert.match(page, /FeederObservation/);
+  assert.match(page, /출처 저장본/);
+  assert.match(page, /수집 기록/);
   assert.match(page, /policy_summary/);
   assert.match(data, /organizations\/\$\{id\}/);
   assert.match(data, /earlier_fiscal_year/);
@@ -191,7 +191,7 @@ test("public reads preserve distinct error states without blanket fallbacks", as
   assert.match(types, /INSUFFICIENT_ELIGIBLE_INPUTS/);
   assert.match(types, /SOURCE_VERSION_CONFLICT/);
   assert.match(state, /ACCESS_DENIED/);
-  assert.match(state, /자료 없음이나 UNKNOWN으로 처리하지 않았습니다/);
+  assert.match(state, /자료 없음이나 미확인으로 처리하지 않았습니다/);
 });
 
 test("organization page stays read-only while the directory is navigable", async () => {
@@ -248,7 +248,7 @@ test("Person detail renders a read-only accessible ontology local view", async (
   assert.match(types, /READ_ONLY_PROJECTION_FROM_CANONICAL_CLAIM_EVIDENCE/);
   assert.match(graph, /aria-label="공식 기록상 연결 목록"/);
   assert.match(graph, /source_conflict/);
-  assert.match(graph, /Claim\/Evidence/);
+  assert.match(graph, /공개된 기록과 근거에 따른 연결이며 친분, 영향력 또는 동기를 의미하지 않습니다/);
   assert.doesNotMatch(graph, /"use client"|onClick|confidence|score|probability/);
 });
 
@@ -278,7 +278,7 @@ test("Organization detail renders source-listed executive ontology without Perso
   assert.match(data, /\/ontology\/organizations\/\$\{id\}/);
   assert.match(types, /SOURCE_LISTED_ROLE_HOLDER/);
   assert.match(types, /LISTS_EXECUTIVE/);
-  assert.match(graph, /공식 공시상 임원/);
+  assert.match(await readFile(new URL("../app/display-labels.ts", import.meta.url), "utf8"), /LISTS_EXECUTIVE: "공식 공시상 임원"/);
   assert.match(graph, /인물 기록이 아닙니다/);
   assert.doesNotMatch(graph, /href=.*people.*target|confidence|probability|score/i);
 });
@@ -289,7 +289,7 @@ test("Ontology local graph collapses repeated relation labels for cleaner dense 
   assert.match(graph, /const relationKinds = new Set/);
   assert.match(graph, /const singleRelationType =/);
   assert.match(graph, /!singleRelationType/);
-  assert.match(graph, /RELATION_LABELS\[singleRelationType\]/);
+  assert.match(graph, /relationLabel\(singleRelationType\)/);
 });
 
 
@@ -317,9 +317,9 @@ test("public entity pages expose dynamic neutral metadata without generated like
   const gukgam = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
   assert.match(person, /generateMetadata/);
   assert.match(person, /buildPageMetadata/);
-  assert.match(person, /Claim, Evidence와 출처/);
+  assert.match(person, /기록, 근거와 출처/);
   assert.match(organization, /generateMetadata/);
-  assert.match(organization, /임원 공시, Claim과 Evidence/);
+  assert.match(organization, /임원 공시, 기록과 근거/);
   assert.match(gukgam, /path: "\/gukgam\/2026"/);
   assert.doesNotMatch(person + organization + gukgam, /og:image|generated portrait|AI portrait/i);
 });
@@ -386,7 +386,7 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(page, /공개된 피감대상/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
   assert.match(page, /이 일정의 근거 보기/);
-  assert.match(page, /Claim·Evidence 확인 경로/);
+  assert.match(page, /기록·근거 확인 경로/);
   assert.match(page, /organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}/);
   assert.match(data, /getJson\("\/gukgam\/2026\/targets"\)/);
   assert.match(types, /PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1/);
@@ -443,7 +443,7 @@ test("playbook prepares exact reference drafts and never pretends to dispatch", 
   assert.match(playbook, /에이전트 실행 미연동/);
   assert.match(playbook, /source_content_included/);
   assert.match(playbook, /clipboard\.writeText/);
-  assert.match(playbook, /Markdown 내려받기/);
+  assert.match(playbook, /문서 내려받기/);
   assert.match(queue, /records=\{selectedItems\}/);
   assert.match(page, /entry\.version/);
   assert.match(route, /work_order_draft: "playbook\/draft"/);
@@ -488,7 +488,7 @@ test("Gukgam schedule keeps scope limits and evidence links visible", async () =
   assert.match(page, /groupByDateAndCommittee\(targetItems, today\)/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
   assert.match(page, /계획서상 일정/);
-  assert.match(page, /오늘 \(KST\)/);
+  assert.match(page, /오늘 \(한국 시간\)/);
   assert.match(page, /근거 계획서 공개일/);
   const kst = await readFile(new URL("../app/components/kst-schedule.tsx", import.meta.url), "utf8");
   assert.match(page, /<AuditDateIndex serverToday=\{renderedToday\} days=\{scheduleDays\} \/>/);
@@ -607,7 +607,7 @@ test("one shared evidence panel renders every Claim on Person and Organization p
   assert.match(panel, /id=\{claimAnchor \? `claim-\$\{claim\.id\}` : undefined\}/);
   assert.match(panel, /<details className="evidence-disclosure">/);
   assert.match(panel, /근거 열기/);
-  assert.match(panel, /SOURCE CONFLICT/);
+  assert.match(panel, /CONFLICT/);
   assert.match(panel, /종료일 없음/);
   assert.match(panel, /공개일 미기재/);
   assert.match(panel, /현실 세계의 사건 시각이 아닙니다/);
@@ -615,7 +615,7 @@ test("one shared evidence panel renders every Claim on Person and Organization p
   assert.match(panel, /terms_checked_at/);
   assert.match(panel, /policy_summary/);
   assert.match(panel, /snapshot_id/);
-  for (const label of ["기록", "상태", "유효 기간", "기록 시각", "근거", "출처", "원문 값", "처리 방식", "출처 정책", "한계", "감사 ID"]) {
+  for (const label of ["기록", "상태", "유효 기간", "기록 시각", "근거", "출처", "원문 값", "처리 방식", "출처 정책", "한계", "근거 식별자"]) {
     assert.ok(panel.includes(label), label);
   }
   // Ordered definition list; IDs only inside the nested audit disclosure, never in the summary line.
@@ -629,7 +629,7 @@ test("one shared evidence panel renders every Claim on Person and Organization p
   assert.match(opener, /details\.evidence-disclosure/);
   assert.match(factBox, /href=\{`#claim-\$\{row\.claim\.id\}`\}/);
   assert.match(factBox, /집계/);
-  assert.match(state, /<summary>요청 ID<\/summary>/);
+  assert.match(state, /<summary>요청 식별자<\/summary>/);
   assert.doesNotMatch(state, /<small>Request ID/);
 });
 
@@ -643,7 +643,7 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   assert.match(person, /\/organizations\/\$\{organization\.id\}/);
   assert.match(person, /memberCommittees\.length > 0/);
   assert.match(person, /section\.entries\.length === 0/);
-  assert.match(person, /section\.entries\.length === 0 && section\.id !== "public_declared_assets"/);
+  assert.match(person, /\["public_declared_assets", "official_press_records", "public_self_housing"\]\.includes\(section\.id\)/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
   // Empty profile sections are grouped by the projection reason instead of one "not collected" line.
   for (const reason of ["SOURCE_NOT_COLLECTED", "INSUFFICIENT_EVIDENCE", "DERIVATION_NOT_AVAILABLE", "NOT_APPLICABLE"]) {
@@ -843,7 +843,7 @@ test("Plenary votes render as compact rows with the evidence trace one disclosur
   assert.match(person, /entry\.details\.action === "PLENARY_ROLL_CALL_VOTE"/);
   assert.match(person, /<ol className="vote-rows">/);
   assert.match(person, /<details className="(?=[^"]*\baudit-details\b)(?=[^"]*\bvote-trace\b)(?=[^"]*\bevidence-disclosure\b)[^"]*">/);
-  assert.match(person, /FeederObservation \{trace\?\.feeder_observation_id/);
+  assert.match(person, /수집 기록 \{trace\?\.feeder_observation_id/);
 });
 
 test("home brief renders source-backed plans with direct Claim paths, including missing time", () => {
@@ -925,7 +925,7 @@ test("home uses existing exploration paths and never picks arbitrary people", as
   for (const href of ["/people", "/organizations", "/people#filter-party", "/people#filter-committees", "/gukgam/2026"]) {
     assert.ok(html.includes(`href="${href}"`), href);
   }
-  assert.match(html, /CIVIC INTELLIGENCE/);
+  assert.match(html, /공적 기록 탐색/);
   assert.match(html, /공개 인물 1명/);
   assert.doesNotMatch(html, /노출하지않을임의인물|\/people\/fixture-person/);
 });

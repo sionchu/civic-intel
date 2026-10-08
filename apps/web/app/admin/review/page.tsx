@@ -1,9 +1,11 @@
+import { statusLabel } from "../../display-labels";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { ApiResult, OntologyGraph } from "../../types";
 import { operatorRead, requireOperator } from "./operator-data";
 import {
   KIND_LABELS,
+  catalogDisplay,
   publicOntologyDetail,
   type GukgamReviewThroughput,
   type Overview,
@@ -35,9 +37,9 @@ const STATUS_OPTIONS: Record<string, Record<string, string>> = {
   links: { CURRENT: "활성 연결", SUPERSEDED: "이전 연결" },
 };
 const METRICS = [
-  ["current_people", "전체 Person"], ["resolved_people", "신원 확인 완료"], ["source_context_review_people", "source-context 확인 대기"],
-  ["current_organizations", "현재 기관"], ["current_claims", "현재 Claim"],
-  ["published_claims", "공개 상태 Claim"], ["observations", "수집 기록 버전"], ["observation_keys", "고유 공급자 키"],
+  ["current_people", "전체 Person"], ["resolved_people", "신원 확인 완료"], ["source_context_review_people", "출처 맥락 확인 대기"],
+  ["current_organizations", "현재 기관"], ["current_claims", "현재 기록"],
+  ["published_claims", "공개 상태 기록"], ["observations", "수집 기록 버전"], ["observation_keys", "고유 공급자 키"],
   ["sources", "출처"], ["open_reviews", "DB 미해결 검토"],
 ];
 function time(value: string | null): string {
@@ -68,7 +70,7 @@ export default async function ReviewPage({ searchParams }: {
     operatorRead<Overview>("/admin/operations"), operatorRead<AdminCapabilities>("/admin/operations/capabilities"),
     operatorRead<PlaybookCatalog>("/admin/operations/playbook"),
   ]);
-  if (overviewResult.state === "error") return <div className="site-page"><h1>수집·DB 운영</h1><ReadState error={overviewResult.error} /></div>;
+  if (overviewResult.state === "error") return <div className="site-page"><h1>수집·기록 운영</h1><ReadState error={overviewResult.error} /></div>;
   const overview = overviewResult.data;
   if (capabilityResult.state === "error") return <div className="site-page"><h1>관리 기능 연결 실패</h1><ReadState error={capabilityResult.error} /></div>;
   const capabilities = capabilityResult.data;
@@ -105,16 +107,16 @@ export default async function ReviewPage({ searchParams }: {
   const laneKind = ["observations", "runs", "checkpoints"].includes(kind);
 
   return <div className="site-page operator-page" data-view={tab}>
-    <header className="operator-header"><div><div className="eyebrow">Civic Intel / Operator workspace</div>
+    <header className="operator-header"><div><div className="eyebrow">모두의국감 운영 공간</div>
       <h1>인물·수집 데이터 관리</h1><p>무엇을 수집했고, 어디에 저장했으며, 어떤 근거로 연결되었는지 확인합니다.</p></div>
-      <div className="operator-runtime"><strong>{overview.environment_label} · {capabilities.writes_enabled ? "ADMIN WRITE" : "READ / PREVIEW"}</strong>
-        <span>확인 {time(overview.checked_at)} KST</span><span>스키마 {capabilities.schema_ready ? capabilities.schema_required : "0006 · 변경 이력 준비 필요"} · 환경명은 운영자 지정</span>
+      <div className="operator-runtime"><strong>{overview.environment_label} · {capabilities.writes_enabled ? "운영 변경 가능" : "조회·미리보기"}</strong>
+        <span>확인 {time(overview.checked_at)} 한국 시간</span><span>스키마 {capabilities.schema_ready ? capabilities.schema_required : "0006 · 변경 이력 준비 필요"} · 환경명은 운영자 지정</span>
         <form action="/admin/review" method="get">
           {[...query.entries()].map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
           {focusId && <><input type="hidden" name="focus_kind" value={focusKind} /><input type="hidden" name="focus_id" value={focusId} /></>}
-          <button className="operator-refresh" type="submit">현재 DB 다시 확인 ↻</button>
+          <button className="operator-refresh" type="submit">현재 저장 기록 다시 확인 ↻</button>
         </form></div></header>
-    <aside className="operator-scope">운영자 {capabilities.actor} · {capabilities.writes_enabled ? "미리보기와 최종 확인을 거친 작업만 DB에 반영합니다." : "현재 연결에서는 목록 검토와 변경 미리보기를 사용할 수 있습니다."} 인물 검토 큐는 수집 기록을 기준으로 계산하며 DB의 OPEN 항목 수와 다릅니다. 원본 수집 기록은 보존합니다.</aside>
+    <aside className="operator-scope">운영자 {capabilities.actor} · {capabilities.writes_enabled ? "미리보기와 최종 확인을 거친 작업만 DB에 반영합니다." : "현재 연결에서는 목록 검토와 변경 미리보기를 사용할 수 있습니다."} 인물 검토 큐는 수집 기록을 기준으로 계산하며 저장된 미처리 항목 수와 다릅니다. 원본 수집 기록은 보존합니다.</aside>
     <div className="operator-metrics">{METRICS.filter(([key]) => tab !== "people-review" || ["current_people", "resolved_people", "source_context_review_people", "observations"].includes(key)).map(([key, label]) => <div key={key}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString("ko-KR") ?? "—"}</strong></div>)}</div>
     <nav className="operator-tabs" aria-label="운영 메뉴">{Object.entries(TABS).map(([key, label]) => <Link prefetch={false}
       key={key} aria-current={tab === key ? "page" : undefined} href={`/admin/review?tab=${key}`}>{label}</Link>)}</nav>
@@ -122,14 +124,14 @@ export default async function ReviewPage({ searchParams }: {
     {tab === "playbook" && (playbook ? <WorkPlaybook catalog={playbook} initialRecipe="product_fix" expanded /> : playbookResult.state === "error" ? <ReadState error={playbookResult.error} /> : null)}
     {tab === "people-review" && (queueResult?.state === "success" ? <AdminQueue key={`${queueState}:${q}:${offset}`} queue={queueResult.data} capabilities={capabilities} q={q} state={queueState} playbook={playbook} />
       : queueResult?.state === "error" ? <ReadState error={queueResult.error} /> : null)}
-    {tab === "history" && <section><div className="operator-section-head"><div><span className="micro-label">COMMITTED ADMIN OPERATIONS</span><h2>운영 변경 이력</h2></div></div>
+    {tab === "history" && <section><div className="operator-section-head"><div><span className="micro-label">반영된 운영 변경</span><h2>운영 변경 이력</h2></div></div>
       {historyResult?.state === "error" && <ReadState error={historyResult.error} />}
-      {historyResult?.state === "success" && (!historyResult.data.available ? <p className="admin-notice">아직 변경 이력 DB가 준비되지 않았습니다. 이 환경에서 작업 완료를 주장하지 않습니다.</p> : <>
-        <p>DB 반영이 완료된 작업 {historyResult.data.total}건. 취소·실패한 미리보기는 완료 이력에 포함하지 않습니다.</p>
+      {historyResult?.state === "success" && (!historyResult.data.available ? <p className="admin-notice">아직 변경 이력 저장소가 준비되지 않았습니다. 이 환경에서 작업 완료를 주장하지 않습니다.</p> : <>
+        <p>저장소 반영이 완료된 작업 {historyResult.data.total}건. 취소·실패한 미리보기는 완료 이력에 포함하지 않습니다.</p>
         {historyResult.data.items.map((entry) => <article className="admin-history-entry" key={entry.id}>
           <div className="operator-section-head"><strong>{ACTION_LABELS[entry.action] ?? entry.action}</strong><span>{entry.actor} · {time(entry.created_at)}</span></div>
           {playbook && <WorkPlaybook catalog={playbook} initialRecipe="result_check" records={[{ id: entry.id, kind: "operations", version: entry.version, label: ACTION_LABELS[entry.action] ?? entry.action, status: "COMMITTED", fields: {} }]} />}
-          <p>{entry.reason}</p><small>요청 ID {entry.id} · 변경 {entry.result.changed_rows}행</small>
+          <p>{entry.reason}</p><small>요청 식별자 {entry.id} · 변경 {entry.result.changed_rows}행</small>
           <details><summary>변경 전후와 처리 결과</summary><pre>{JSON.stringify({ changes: entry.changes, result: entry.result }, null, 2)}</pre></details>
         </article>)}
         <nav className="operator-pagination">{offset > 0 && <Link href={pageHref(Math.max(0, offset - 25))} prefetch={false}>← 이전</Link>}
@@ -137,10 +139,10 @@ export default async function ReviewPage({ searchParams }: {
       </>)}
     </section>}
 
-    {tab === "overview" && <section><div className="operator-section-head"><div><span className="micro-label">PERSISTED COLLECTION LANES</span><h2>실제 DB 수집 경로</h2></div>
+    {tab === "overview" && <section><div className="operator-section-head"><div><span className="micro-label">저장된 수집 경로</span><h2>실제 수집 경로</h2></div>
       <span>{overview.lanes.length}개 범위{overview.lanes_truncated ? " · 목록 제한 500" : ""}</span></div>
       <p className="operator-note">성공한 실행도 전체 출처 수집 완료를 뜻하지 않습니다. 공급자 전체 분모가 검증되지 않은 범위에는 진행률을 만들지 않습니다.</p>
-      {overview.lanes.length === 0 ? <p className="operator-empty">이 DB에는 수집 실행·기록·체크포인트가 아직 없습니다. 아래 DB 레코드 수와 출처 계획을 별도로 확인하세요.</p> :
+      {overview.lanes.length === 0 ? <p className="operator-empty">이 저장소에는 수집 실행·기록·체크포인트가 아직 없습니다. 아래 저장된 기록 수와 출처 계획을 별도로 확인하세요.</p> :
         <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>수집 경로 / 범위</th><th>최근 실행</th><th>저장 버전 / 고유 키</th><th>최근 실행 결과</th><th>성공 / 체크포인트</th><th>확인</th></tr></thead>
           <tbody>{overview.lanes.map((lane) => <tr key={`${lane.feeder}:${lane.scope_key}`}><td><strong>{lane.feeder}</strong><small>{lane.scope_key}</small></td>
             <td><span className="operator-tag">{lane.latest_run_status ?? "NO_RUN"}</span><small>{time(lane.latest_run_started_at)}</small></td>
@@ -149,15 +151,15 @@ export default async function ReviewPage({ searchParams }: {
             <td><small>성공 {time(lane.last_success_at)}</small><small>체크포인트 {time(lane.checkpoint_updated_at)}</small></td>
             <td><Link prefetch={false} href={`/admin/review?${new URLSearchParams({ tab: "records", kind: "observations", feeder: lane.feeder, scope: lane.scope_key })}`}>기록 목록 →</Link>
               {lane.latest_run_id && <small><Link prefetch={false} href={recordLink("runs", lane.latest_run_id)}>실행 근거·업무 준비 →</Link></small>}</td></tr>)}</tbody></table></div>}
-      <details className="operator-db-inventory"><summary>DB 테이블별 전체 행 수 확인</summary><div className="operator-inventory-grid">
+      <details className="operator-db-inventory"><summary>종류별 전체 저장 건수 확인</summary><div className="operator-inventory-grid">
         {Object.entries(KIND_LABELS).map(([key, label]) => <Link key={key} prefetch={false} href={recordLink(key)}><span>{label}</span><strong>{overview.counts[key]?.toLocaleString() ?? 0}</strong></Link>)}
       </div><p className="operator-note">전체 행에는 과거·대체된 버전이 포함될 수 있습니다. 위의 현재 레코드 수와 구분합니다.</p></details>
     </section>}
 
-    {tab === "records" && <section><nav className="operator-kind-tabs" aria-label="DB 레코드 종류">{Object.entries(KIND_LABELS).map(([key, label]) =>
+    {tab === "records" && <section><nav className="operator-kind-tabs" aria-label="저장된 기록 종류">{Object.entries(KIND_LABELS).map(([key, label]) =>
       <Link key={key} href={recordLink(key)} prefetch={false} aria-current={key === kind ? "page" : undefined}>{label} <small>{overview.counts[key]?.toLocaleString()}</small></Link>)}</nav>
       <form className="operator-filters" method="get" action="/admin/review"><input type="hidden" name="tab" value="records" /><input type="hidden" name="kind" value={kind} />
-        <label>이름·내용·ID 검색<input type="search" name="q" defaultValue={q} maxLength={200} placeholder="수집된 이름이나 기록을 검색" /></label>
+        <label>이름·내용·식별자 검색<input type="search" name="q" defaultValue={q} maxLength={200} placeholder="수집된 이름이나 기록을 검색" /></label>
         {["claims", "people", "organizations", "runs", "reviews", "links"].includes(kind) && <label>상태<select name="status" defaultValue={status}><option value="">전체 상태</option>{Object.entries(STATUS_OPTIONS[kind] ?? {}).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>}
         {laneKind && <><label>수집 경로<input name="feeder" defaultValue={feeder} maxLength={100} /></label><label>수집 범위<input name="scope" defaultValue={scope} maxLength={300} /></label></>}
         <button type="submit">검색·필터 적용</button><Link href={recordLink(kind)} prefetch={false}>초기화</Link></form>
@@ -166,15 +168,15 @@ export default async function ReviewPage({ searchParams }: {
         <p className="operator-note">현재 {Math.min(offset + 1, list.total)}–{Math.min(offset + list.items.length, list.total)} / {list.total.toLocaleString()} · 25개씩</p>
         {list.items.length === 0 ? <p className="operator-empty">이 조건에 해당하는 저장 기록이 없습니다.</p> : <div className="operator-record-list">
           {list.items.map((item) => <Link key={item.id} href={selectHref(item.id)} prefetch={false} className="operator-record"
-            aria-current={item.id === focusId && kind === focusKind ? "true" : undefined}><span className="operator-record-heading"><strong>{item.label}</strong><span className="operator-tag">{item.status}</span></span>
-            <span>{String(item.fields.object_text ?? item.fields.position_text ?? item.fields.semantic_scope ?? item.fields.publisher ?? item.fields.scope_key ?? "저장된 canonical 레코드").slice(0, 220)}</span>
+            aria-current={item.id === focusId && kind === focusKind ? "true" : undefined}><span className="operator-record-heading"><strong>{item.label}</strong><span className="operator-tag">{statusLabel(item.status)}</span></span>
+            <span>{String(item.fields.object_text ?? item.fields.position_text ?? item.fields.semantic_scope ?? item.fields.publisher ?? item.fields.scope_key ?? "저장된 정본 기록").slice(0, 220)}</span>
             <small>{String(item.fields.fiscal_year ?? item.fields.business_year ?? item.fields.audit_date ?? "")} {String(item.fields.predicate ?? "")} {String(item.fields.epistemic_status ?? "")} · {item.id}</small></Link>)}
         </div>}
         <nav className="operator-pagination" aria-label="목록 페이지">{offset > 0 && <Link href={pageHref(Math.max(0, offset - 25))} prefetch={false}>← 이전 25개</Link>}
           {offset + 25 < list.total && <Link href={pageHref(offset + 25)} prefetch={false}>다음 25개 →</Link>}</nav></div>
         <div className="operator-detail">
           {["people", "organizations"].includes(focusKind) && focusId && <nav className="operator-kind-tabs" aria-label="연결 종류">
-            <Link prefetch={false} href={viewHref("lineage")} aria-current={view === "lineage" ? "page" : undefined}>DB 근거·수집 경로</Link>
+            <Link prefetch={false} href={viewHref("lineage")} aria-current={view === "lineage" ? "page" : undefined}>저장된 근거·수집 경로</Link>
             <Link prefetch={false} href={viewHref("relations")} aria-current={view === "relations" ? "page" : undefined}>공개된 직책·임원 관계</Link>
           </nav>}
           {detailResult?.state === "success" && playbook && ["observations", "people", "organizations", "claims", "evidence", "runs"].includes(focusKind) && <WorkPlaybook key={`work:${focusKind}:${focusId}`} catalog={playbook} records={[detailResult.data.record]} initialRecipe={focusKind === "observations" ? "person_review" : focusKind === "runs" ? "collection_check" : "result_check"} />}
@@ -184,16 +186,16 @@ export default async function ReviewPage({ searchParams }: {
     </section>}
 
     {tab === "manifest" && <section>
-      <div className="operator-section-head"><div><span className="micro-label">CURRENT HUMAN REVIEW / CANONICAL DB</span><h2>현재 검토 경계</h2></div><span className="operator-tag">NO WRITE</span></div>
+      <div className="operator-section-head"><div><span className="micro-label">현재 검토 상태</span><h2>현재 검토 경계</h2></div><span className="operator-tag">읽기 전용</span></div>
       {manifestResult?.state === "error" && <ReadState error={manifestResult.error} />}
-      {manifest && <><div className="operator-scope"><strong>{manifest.status}</strong> · {manifest.message}</div>
-        <p className="operator-note">과거 완료 artifact를 현재 상태로 재사용하지 않습니다. 현재 schedule/checkpoint, Organization, Claim과 provider observation을 다시 읽어 검증하며 이 화면은 승인·반영을 수행하지 않습니다.</p>
+      {manifest && <><div className="operator-scope"><strong>{statusLabel(manifest.status)}</strong> · {manifest.message}</div>
+        <p className="operator-note">과거 완료 산출물을 현재 상태로 재사용하지 않습니다. 현재 일정과 수집 진행 상태, 기관과 기록과 출처 수집 기록을 다시 읽어 검증하며 이 화면은 승인·반영을 수행하지 않습니다.</p>
 
         <article className="operator-detail-card">
-          <div className="operator-section-head"><div><span className="micro-label">GUKGAM CLAIM REVIEW</span><h3>국감 exact-one Claim 후보</h3></div><span className="operator-tag">{manifest.gukgam_claim_review.status}</span></div>
-          <p>{manifest.gukgam_claim_review.item_count ?? 0} occurrence · {manifest.gukgam_claim_review.organization_count ?? 0}개 기관 · 기존 Gukgam Claim {manifest.gukgam_claim_review.existing_gukgam_claim_count ?? 0}건</p>
-          <p className="operator-note">{manifest.gukgam_claim_review.message} exact canonical-name 일치는 discovery candidate이며 사람 승인을 대신하지 않습니다.</p>
-          {manifest.gukgam_claim_review.manifest_sha256 && <details className="operator-hashes"><summary>현재 DRAFT manifest hash</summary><p>{manifest.gukgam_claim_review.manifest_sha256}</p><small>claim_commit_authorized = {String(manifest.gukgam_claim_review.claim_commit_authorized)}</small></details>}
+          <div className="operator-section-head"><div><span className="micro-label">국감 기록 검토</span><h3>국감 단일 근거 기록 후보</h3></div><span className="operator-tag">{statusLabel(manifest.gukgam_claim_review.status)}</span></div>
+          <p>{manifest.gukgam_claim_review.item_count ?? 0} 기재 건 · {manifest.gukgam_claim_review.organization_count ?? 0}개 기관 · 기존 국감 기록 {manifest.gukgam_claim_review.existing_gukgam_claim_count ?? 0}건</p>
+          <p className="operator-note">{manifest.gukgam_claim_review.message} 공개 이름의 정확한 일치는 탐색 후보이며 사람 승인을 대신하지 않습니다.</p>
+          {manifest.gukgam_claim_review.manifest_sha256 && <details className="operator-hashes"><summary>현재 초안 목록 해시</summary><p>{manifest.gukgam_claim_review.manifest_sha256}</p><small>기록 반영 승인 여부: {String(manifest.gukgam_claim_review.claim_commit_authorized)}</small></details>}
           {throughputResult?.state === "error" && <ReadState error={throughputResult.error} />}
           {manifestSha && manifest.gukgam_claim_review.items.length > 0 && <GukgamReviewThroughputPanel
             items={manifest.gukgam_claim_review.items}
@@ -203,38 +205,38 @@ export default async function ReviewPage({ searchParams }: {
         </article>
 
         <article className="operator-detail-card">
-          <div className="operator-section-head"><div><span className="micro-label">MOIS ORGANIZATION REVIEW</span><h3>MOIS 기관 생성 제안</h3></div><span className="operator-tag">{manifest.mois_organization_review.status}</span></div>
-          <p>{manifest.mois_organization_review.proposal_count ?? 0}개 proposal · {manifest.mois_organization_review.occurrence_count ?? 0} occurrence · 아직 unmatched {manifest.mois_organization_review.unmatched_distinct_target_count ?? "—"}개</p>
-          <p className="operator-note">{manifest.mois_organization_review.message} 이 검토는 Organization materialization 후보만 다루며 Gukgam Claim 승인을 포함하지 않습니다.</p>
-          {manifest.mois_organization_review.artifact_sha256 && <details className="operator-hashes"><summary>재검증된 proposal artifact hash</summary><p>{manifest.mois_organization_review.artifact_sha256}</p><small>materialization_authorized = {String(manifest.mois_organization_review.materialization_authorized)}</small></details>}
-          {manifest.mois_organization_review.items.length > 0 && <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>제안 기관</th><th>MOIS 분류 / orgCode</th><th>국감 occurrence</th><th>원본 수집 기록</th></tr></thead>
+          <div className="operator-section-head"><div><span className="micro-label">행정기관 검토</span><h3>행정안전부 기관 생성 제안</h3></div><span className="operator-tag">{statusLabel(manifest.mois_organization_review.status)}</span></div>
+          <p>{manifest.mois_organization_review.proposal_count ?? 0}개 기관 제안 · {manifest.mois_organization_review.occurrence_count ?? 0} 기재 건 · 아직 연결 미확인 {manifest.mois_organization_review.unmatched_distinct_target_count ?? "—"}개</p>
+          <p className="operator-note">{manifest.mois_organization_review.message} 이 검토는 기관 등록 후보만 다루며 국감 기록 승인을 포함하지 않습니다.</p>
+          {manifest.mois_organization_review.artifact_sha256 && <details className="operator-hashes"><summary>재검증된 기관 제안 파일 해시</summary><p>{manifest.mois_organization_review.artifact_sha256}</p><small>기관 등록 승인 여부: {String(manifest.mois_organization_review.materialization_authorized)}</small></details>}
+          {manifest.mois_organization_review.items.length > 0 && <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>제안 기관</th><th>행정안전부 분류 / 기관 코드</th><th>국감 기재 건</th><th>원본 수집 기록</th></tr></thead>
             <tbody>{manifest.mois_organization_review.items.map((item) => <tr key={item.org_code}>
-              <td><strong>{item.organization_name}</strong><small>승인 전 · canonical Organization 없음</small></td>
+              <td><strong>{item.organization_name}</strong><small>승인 전 · 등록된 기관 없음</small></td>
               <td>{item.type_big ?? "분류 없음"} / {item.type_mid ?? "세부분류 없음"}
-                <small>{item.org_code} · lowest {item.lowest_name ?? "—"}</small>
-                <small>parent {item.parent_org_code ?? "—"} · top {item.top_org_code ?? "—"} · representative {item.representative_org_code ?? "—"}</small>
+                <small>{item.org_code} · 최하위 {item.lowest_name ?? "—"}</small>
+                <small>상위 {item.parent_org_code ?? "—"} · 최상위 {item.top_org_code ?? "—"} · 대표 {item.representative_org_code ?? "—"}</small>
                 <small>기준일 {item.base_date ?? "—"} · 변경일 {item.changed_date ?? "—"}</small>
               </td>
               <td>{item.occurrence_count}건
-                <details className="audit-details"><summary>국감 occurrence 근거</summary>
+                <details className="audit-details"><summary>국감 기재 건 근거</summary>
                   {item.occurrences.map((occurrence) => <small key={occurrence.review_key}>
                     {occurrence.audit_date} · {occurrence.committee_name} · {occurrence.audited_target}<br />
-                    <Link prefetch={false} href={recordLink("observations", occurrence.observation_id)}>schedule observation →</Link><br />
+                    <Link prefetch={false} href={recordLink("observations", occurrence.observation_id)}>일정 수집 기록 →</Link><br />
                     {occurrence.review_key}<br />
                   </small>)}
                 </details>
               </td>
-              <td><Link prefetch={false} href={recordLink("observations", item.observation_id)}>MOIS observation →</Link></td>
+              <td><Link prefetch={false} href={recordLink("observations", item.observation_id)}>행정기관 수집 기록 →</Link></td>
             </tr>)}</tbody></table></div>}
         </article>
       </>}
     </section>}
 
-    {tab === "catalog" && <section><div className="operator-section-head"><div><span className="micro-label">DOCUMENTED SOURCE STRATEGY</span><h2>수집 출처 계획·제약</h2></div><span>{overview.documented_catalog.length}개 문서 항목</span></div>
-      <p className="operator-scope">기존 FEEDER_SOURCE_COVERAGE.md의 문서상 성숙도입니다. 이 DB에 실제 데이터가 있다는 뜻이 아니며, 실시간 수집 현황과 별도로 봅니다.</p>
+    {tab === "catalog" && <section><div className="operator-section-head"><div><span className="micro-label">출처별 수집 계획</span><h2>수집 출처 계획·제약</h2></div><span>{overview.documented_catalog.length}개 문서 항목</span></div>
+      <p className="operator-scope">기존 수집 출처 범위 문서의 문서상 성숙도입니다. 이 저장소에 실제 자료가 있다는 뜻이 아니며, 실시간 수집 현황과 별도로 봅니다.</p>
       <div className="operator-table-scroll"><table className="operator-table"><thead><tr><th>출처 경로</th><th>대상 범위</th><th>출처 / 방식</th><th>문서상 준비 단계·제약</th></tr></thead>
-        <tbody>{overview.documented_catalog.map((item) => <tr key={item.name}><td><strong>{item.name}</strong></td><td>{item.scope}</td><td>{item.source}<small>{item.mode}</small></td><td>{item.maturity}</td></tr>)}</tbody></table></div>
+        <tbody>{overview.documented_catalog.map((item, index) => { const display = catalogDisplay(item); return <tr key={item.name}><td><strong>수집 출처 계획 {index + 1}</strong><details><summary>문서 원문·식별 정보</summary><p>경로: {item.name}</p><p>대상 범위: {item.scope}</p><p>출처: {item.source}</p><p>수집 방식: {item.mode}</p><p>준비 단계·제약: {item.maturity}</p></details></td><td>{display.scope}</td><td>{display.mode}</td><td>{display.maturity}</td></tr>; })}</tbody></table></div>
     </section>}
-    <footer className="operator-footnote">원본 전문·연락처·민감 필드·접속 정보는 표시하지 않습니다. 이 화면은 canonical DB의 허용된 조회 모델이며 별도 데이터 저장소가 아닙니다.</footer>
+    <footer className="operator-footnote">원본 전문·연락처·민감 필드·접속 정보는 표시하지 않습니다. 이 화면은 정본 데이터베이스의 허용된 조회 모델이며 별도 데이터 저장소가 아닙니다.</footer>
   </div>;
 }

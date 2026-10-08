@@ -38,7 +38,7 @@ async function getJson<T>(
       state: "error",
       error: {
         code: payload?.error?.code ?? STATUS_CODE[response.status] ?? "SERVICE_UNAVAILABLE",
-        message: payload?.error?.message ?? "The public data service is temporarily unavailable.",
+        message: payload?.error?.message ?? "공개 데이터 서비스에 일시적으로 연결할 수 없습니다.",
         request_id: payload?.error?.request_id ?? response.requestId,
       },
     };
@@ -47,7 +47,7 @@ async function getJson<T>(
       state: "error",
       error: {
         code: "SERVICE_UNAVAILABLE",
-        message: "The public data service is temporarily unavailable.",
+        message: "공개 데이터 서비스에 일시적으로 연결할 수 없습니다.",
         request_id: null,
       },
     };

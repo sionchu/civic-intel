@@ -881,7 +881,7 @@ def build_alio_head_expense_money_from_claims(
             "limitations": [
                 "공식 기관·직위 범주의 공시액 변화이며 특정 개인의 지출액이 아니다.",
                 "변화 자체는 낭비, 부당집행, 비리, 정책 성과 또는 기관 간 우열을 뜻하지 않는다.",
-                "이 결과는 Claim이 아니며 새로운 FACT를 주장하지 않는 파생 읽기 결과다.",
+                "이 결과는 기존 근거를 비교한 읽기 결과이며 새로운 사실을 주장하지 않는다.",
             ],
             "input_scope": {
                 "source_contract": ALIO_ITEM12_SOURCE_CONTRACT,

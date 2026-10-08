@@ -1,3 +1,4 @@
+import { statusLabel } from "../display-labels";
 import type { ReactNode } from "react";
 
 import type { Claim } from "../types";
@@ -27,11 +28,11 @@ export default function FactBox({ rows }: { rows: FactRow[] }) {
             <td>{row.value}</td>
             <td>
               {row.claim ? (
-                <span className={`status ${row.claim.epistemic_status}`}>{row.claim.epistemic_status}</span>
+                <span className={`status ${row.claim.epistemic_status}`}>{statusLabel(row.claim.epistemic_status)}</span>
               ) : (
                 <span className="status DERIVED">집계</span>
               )}
-              {row.claim?.source_conflict && <span className="status CONFLICT">SOURCE CONFLICT</span>}
+              {row.claim?.source_conflict && <span className="status CONFLICT">{statusLabel("CONFLICT")}</span>}
             </td>
             <td>{row.claim ? formatDay(row.claim.valid_from) ?? "미기재" : "—"}</td>
             <td>

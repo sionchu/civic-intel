@@ -73,7 +73,7 @@ test("declared assets preserve signed/zero thousand-KRW amounts, unknowns and th
   } };
   const section = (entry) => ({ id: "public_declared_assets", label: "신고재산", status: "AVAILABLE", entries: [entry] });
   const zero = await renderPerson(success(relationships), [assetClaim], null, [section(assetEntry)]);
-  assert.match(zero.html, /0천원/); assert.match(zero.html, /UNKNOWN · 원자료에서 확인되지 않음/);
+  assert.match(zero.html, /0천원/); assert.match(zero.html, /미확인 · 원자료에서 확인되지 않음/);
   assert.match(zero.html, /본인만의 재산, 현재 시장가치 또는 순자산으로 해석하지 않습니다/);
   assert.match(zero.html, /<dt>등록일<\/dt><dd>2026-09-01/);
   assert.equal((zero.html.match(/id="claim-asset-a"/g) ?? []).length, 1);
@@ -148,7 +148,8 @@ test("vote panel bounds initial rows without duplicating Claim anchors and discl
   assert.match(panel, /DERIVED/); assert.match(panel, /소관위원회 미기재 \(0건\)/);
   assert.doesNotMatch(panel, /id="claim-/);
   const { html } = await renderPerson(success(relationships), inputs);
-  for (const input of inputs) assert.equal((html.match(new RegExp(`id="claim-${input.id}"`, "g")) ?? []).length, 1);
+  assert.equal((html.match(/id="claim-vote-/g) ?? []).length, 0);
+  assert.equal((html.match(/<li class="vote-row"/g) ?? []).length, 28);
   const empty = renderToStaticMarkup(createElement(PersonVoteExplorer, { records: [] }));
   assert.match(empty, /미수집·미공개 기록의 수는 알 수 없습니다/);
 });
@@ -156,7 +157,7 @@ test("vote panel bounds initial rows without duplicating Claim anchors and discl
 test("vote panel more action reveals remaining records and changing the query resets its window", () => {
   const state = []; let cursor = 0;
   const { default: Explorer } = loadPresentation("../app/components/person-vote-explorer.tsx", {
-    react: { useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial;
+    react: { ...createRequire(import.meta.url)("react"), useContext: () => null, useEffect: () => {}, useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial;
       return [state[index], (value) => { state[index] = value; }]; } },
   });
   const records = officialVoteRecords(activityPerson, Array.from({ length: 25 }, (_, i) => vote(String(i))));
@@ -239,7 +240,7 @@ test("Person page places career before coverage and closes both relationship sou
   assert.deepEqual(requestedSources, ["source-a", "source-b"]);
   assert.match(html, /시간 겹침 미확인/);
   assert.doesNotMatch(html, /표시할 공개 기록이 아직 없습니다/);
-  assert.match(html, /SOURCE CONFLICT/);
+  assert.match(html, /출처 충돌/);
   assert.match(html, /공개 연결 4건 중 1건/);
   assert.doesNotMatch(html, /공개된 연결이 없습니다|공개 직접 연결 기록이 없습니다/);
   assert.doesNotMatch(html, /재산 0원/);
@@ -267,4 +268,202 @@ test("relationship bounds are labelled as calculation bounds, never source month
   assert.match(html, /비교 경계 2010.05.31 – 2012.01.01/);
   assert.doesNotMatch(html, /2012년 1월/);
   assert.match(html, /선거 캠프 기간 겹침/);
+});
+
+
+test("Korean display labels preserve unresolved and evidence semantics without changing contract codes", () => {
+  const { statusLabel, sourceClassLabel } = loadPresentation("../app/display-labels.ts");
+  assert.equal(statusLabel("UNKNOWN"), "미확인");
+  assert.notEqual(statusLabel("UNKNOWN"), statusLabel("SERVICE_UNAVAILABLE"));
+  assert.notEqual(statusLabel("CLAIM"), statusLabel("FACT"));
+  assert.notEqual(statusLabel("SUPPORT"), statusLabel("REFUTE"));
+  assert.equal(sourceClassLabel("official_public_declared_asset_metadata"), "공개 재산신고 자료");
+  const { SourceCard } = loadPresentation("../app/components/evidence-panel.tsx");
+  const html = renderToStaticMarkup(createElement(SourceCard, { source: source("source-localized") }));
+  assert.match(html, /이용 조건 미기재/);
+  assert.match(html, /id="source-source-localized"/);
+  assert.doesNotMatch(html, /License not specified/);
+});
+
+
+test("evidence localizes known fields, keeps exact quotations and places technical codes in optional audit", () => {
+  const { default: EvidencePanel } = loadPresentation("../app/components/evidence-panel.tsx");
+  const record = { ...claim("localized", "ASSEMBLY_BILL_PARTICIPATION"), epistemic_status: "UNKNOWN", proposition: "Source quotation stays EXACT", qualifiers: { participation_role: "REPRESENTATIVE_PROPOSER", source_contract: "assembly_term_bill_participation", parser_revision: "REVISION_EXACT", proposed_date: "2026-10-08" } };
+  const before = JSON.stringify(record);
+  const html = renderToStaticMarkup(createElement(EvidencePanel, { claim: record, sourceById: new Map([["source-a", source("source-a")]]) }));
+  const main = html.slice(0, html.indexOf('<details class="audit-details evidence-audit"'));
+  assert.match(main, /미확인/); assert.match(main, /대표 발의/); assert.match(main, /Source quotation stays EXACT/);
+  assert.doesNotMatch(main, /REPRESENTATIVE_PROPOSER|assembly_term_bill_participation|parser_revision/);
+  assert.match(html, /기록 속성 식별값 parser_revision: REVISION_EXACT/);
+  assert.match(html, /기록 localized/); assert.match(html, /href="#source-source-a"/);
+  assert.equal(JSON.stringify(record), before);
+});
+
+
+test("all vote metadata remains bounded and selected canonical evidence is rendered once", () => {
+  const state = []; let cursor = 0;
+  const react = createRequire(import.meta.url)("react");
+  const { default: Explorer } = loadPresentation("../app/components/person-vote-explorer.tsx", {
+    react: { ...react, useContext: () => null, useEffect: () => {}, useState(initial) { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; } },
+  });
+  const claims = Array.from({ length: 1890 }, (_, index) => vote(String(index)));
+  const records = officialVoteRecords(activityPerson, claims);
+  const props = { records, claims, sources: [source("source-a")], existingClaimIds: [] };
+  const render = () => { cursor = 0; return Explorer(props); };
+  let tree = render(); let html = renderToStaticMarkup(tree);
+  assert.equal((html.match(/<li class="vote-row"/g) ?? []).length, 20);
+  assert.doesNotMatch(html, /class="claim evidence-panel"/);
+  function find(node) { if (!node || typeof node !== "object") return null; if (node.type === "a" && node.props.href === `#claim-${records[0].claimId}`) return node; for (const child of [node.props?.children].flat(Infinity)) { const result = find(child); if (result) return result; } return null; }
+  find(tree).props.onClick(); html = renderToStaticMarkup(render());
+  assert.equal((html.match(/class="claim evidence-panel"/g) ?? []).length, 1);
+  assert.equal((html.match(new RegExp(`id="claim-${records[0].claimId}"`, "g")) ?? []).length, 1);
+  assert.match(html, /href="#source-source-a"/);
+  assert.equal(records.length, 1890);
+});
+
+
+test("official press and self-housing sections preserve unknowns and exact evidence paths", async () => {
+  const housing = { ...claim("housing-a", "PETI_DECLARED_SELF_HOUSING"), epistemic_status: "UNKNOWN" };
+  const press = claim("press-a", "ASSEMBLY_OFFICIAL_PRESS_RECORD");
+  const section = (id, label, record, details) => ({ id, label, status: "AVAILABLE", entries: [{ ...entries[0], id: `${id}-entry`, title: label, claim_id: record.id, details }] });
+  const { html } = await renderPerson(success(relationships), [housing, press], null, [
+    section("public_self_housing", "본인 소유 주택 신고", housing, { source_contract: "peti_public_self_housing_metadata_v1", value_semantics: "DECLARED_OWNERSHIP_NOT_RESIDENCE", housing_status: "UNKNOWN", owned_housing_count: "UNKNOWN", shared_housing_count: "UNKNOWN", self_scope_coverage: "PARTIAL", publication_date: "2026-10-08" }),
+    section("official_press_records", "국회 공식 보도자료", press, { source_contract: "national_assembly_press_release_metadata_v1", written_date: "2026-10-08", attribution: "국회사무처", coverage: "REVIEWED_SELECTED_RECORD" }),
+  ]);
+  assert.match(html, /현재 거주지나 실거주 여부를 뜻하지 않습니다/);
+  assert.match(html, /소유 주택 건수<\/dt><dd>미확인/);
+  assert.doesNotMatch(html, /소유 주택 건수<\/dt><dd>0/);
+  assert.match(html, /개인의 직접 발언이나 언론기사 전체를 뜻하지 않습니다/);
+  assert.match(html, /검토된 해당 기록/);
+  assert.match(html, /id="claim-housing-a"/); assert.match(html, /id="claim-press-a"/);
+  assert.match(html, /href="#source-source-a"/);
+  const empty = await renderPerson(success(relationships), [], null, [
+    { id: "official_press_records", label: "국회 공식 보도자료", status: "UNKNOWN", reason: "SOURCE_NOT_COLLECTED", note: "공개 보도자료가 연결되지 않았습니다.", entries: [] },
+    { id: "public_self_housing", label: "본인 소유 주택 신고", status: "UNKNOWN", reason: "SOURCE_NOT_COLLECTED", note: "주택이 없다는 뜻은 아닙니다.", entries: [] },
+  ]);
+  assert.match(empty.html, /id="section-official_press_records"/);
+  assert.match(empty.html, /id="section-public_self_housing"/);
+  assert.match(empty.html, /주택이 없다는 뜻은 아닙니다/);
+});
+
+
+test("vote coverage distinguishes legacy loaded records from a complete eligible set", () => {
+  const records = officialVoteRecords(activityPerson, Array.from({ length: 10 }, (_, i) => vote(String(i))));
+  const render = (eligibleCount) => renderToStaticMarkup(createElement(PersonVoteExplorer, { records, eligibleCount, inputScope: "PUBLISHED_SOURCE_VALIDATED_SUBJECT_VOTES" }));
+  assert.match(render(undefined), /전체가 포함되었는지는 확인되지 않았습니다/);
+  assert.match(render(1910), /공개 대상 1,910건과 이 화면의 연결 기록 10건이 일치하지 않습니다/);
+  assert.doesNotMatch(render(1910), /모두 연결되었습니다/);
+  assert.match(render(10), /10건이 모두 연결되었습니다/);
+  assert.doesNotMatch(renderToStaticMarkup(createElement(PersonVoteExplorer, { records, eligibleCount: 10, inputScope: "UNVERIFIED" })), /모두 연결되었습니다/);
+  assert.doesNotMatch(render(-1), /모두 연결되었습니다/);
+});
+
+
+test("large source library bounds cards and reveals one exact off-window source without duplicates", () => {
+  const state = []; let cursor = 0; const effects = [];
+  const react = createRequire(import.meta.url)("react");
+  const { default: Library } = loadPresentation("../app/components/source-library.tsx", {
+    react: { ...react, useContext: () => null, useEffect: (fn) => effects.push(fn), useState(initial) { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; } },
+  });
+  const sources = Array.from({ length: 1936 }, (_, i) => source(`bounded-${i}`));
+  const render = () => { cursor = 0; effects.length = 0; return Library({ sources }); };
+  let tree = render(); let html = renderToStaticMarkup(tree);
+  assert.equal((html.match(/<article class="source"/g) ?? []).length, 20);
+  const oldWindow = globalThis.window, oldDocument = globalThis.document, oldFrame = globalThis.requestAnimationFrame;
+  try {
+    globalThis.window = { location: { hash: "#source-bounded-1935" }, addEventListener() {}, removeEventListener() {} };
+    globalThis.document = { getElementById: () => null, addEventListener() {}, removeEventListener() {} };
+    globalThis.requestAnimationFrame = (fn) => fn();
+    effects[0](); tree = render(); html = renderToStaticMarkup(tree);
+    assert.equal((html.match(/<article class="source"/g) ?? []).length, 21);
+    assert.equal((html.match(/id="source-bounded-1935"/g) ?? []).length, 1);
+    function button(node) { if (!node || typeof node !== "object") return null; if (node.type === "button") return node; for (const child of [node.props?.children].flat(Infinity)) { const found = button(child); if (found) return found; } return null; }
+    button(tree).props.onClick(); html = renderToStaticMarkup(render());
+    assert.equal((html.match(/<article class="source"/g) ?? []).length, 41);
+    globalThis.window.location.hash = "#source-bounded-0"; effects[0](); html = renderToStaticMarkup(render());
+    assert.equal((html.match(/<article class="source"/g) ?? []).length, 40);
+    assert.equal((html.match(/id="source-bounded-0"/g) ?? []).length, 1);
+  } finally { globalThis.window = oldWindow; globalThis.document = oldDocument; globalThis.requestAnimationFrame = oldFrame; }
+});
+
+
+test("large Claim library preserves source order, bounded cards, search and exact hash access", () => {
+  const state = []; let cursor = 0; const effects = [];
+  const react = createRequire(import.meta.url)("react");
+  const claims = Array.from({ length: 2341 }, (_, i) => ({ ...claim(`bill-${i}`, "ASSEMBLY_BILL_PARTICIPATION"), object_text: `검증법안 ${i} [정확]` }));
+  const { default: Library } = loadPresentation("../app/components/person-claim-library.tsx", {
+    "./person-evidence-context": { usePersonEvidence: () => ({ claims, sources: [source("source-a")] }) },
+    react: { ...react, useEffect: (fn) => effects.push(fn), useState(initial) { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; } },
+  });
+  const ids = [...claims].reverse().map((item) => item.id);
+  const draw = () => { cursor = 0; effects.length = 0; return Library({ claimIds: ids, legislative: true }); };
+  let tree = draw(); let html = renderToStaticMarkup(tree);
+  assert.equal((html.match(/class="claim evidence-panel"/g) ?? []).length, 20);
+  assert.ok(html.indexOf('id="claim-bill-2340"') < html.indexOf('id="claim-bill-2339"'));
+  assert.match(html, /2,341건/);
+  const oldWindow = globalThis.window, oldDocument = globalThis.document;
+  try {
+    globalThis.window = { location: { hash: "#claim-bill-0" }, addEventListener() {}, removeEventListener() {} };
+    globalThis.document = { addEventListener() {}, removeEventListener() {} };
+    effects[0](); html = renderToStaticMarkup(draw());
+    assert.equal((html.match(/class="claim evidence-panel"/g) ?? []).length, 21);
+    assert.equal((html.match(/id="claim-bill-0"/g) ?? []).length, 1);
+  } finally { globalThis.window = oldWindow; globalThis.document = oldDocument; }
+  function find(node, type) { if (!node || typeof node !== "object") return null; if (node.type === type) return node; for (const child of [node.props?.children].flat(Infinity)) { const found = find(child, type); if (found) return found; } return null; }
+  state[2] = null; tree = draw(); find(tree, "button").props.onClick(); html = renderToStaticMarkup(draw());
+  assert.equal((html.match(/class="claim evidence-panel"/g) ?? []).length, 40);
+  find(draw(), "input").props.onChange({ target: { value: "검증법안 2000 [정확]" } }); html = renderToStaticMarkup(draw());
+  assert.equal((html.match(/class="claim evidence-panel"/g) ?? []).length, 1);
+  assert.match(html, /id="claim-bill-2000"/); assert.match(html, /href="#source-source-a"/);
+});
+
+test("operator dynamic fields localize closed arrays without modifying original identifiers", () => {
+ const { fieldDisplayText, FIELD_LABELS, catalogDisplay } = loadPresentation("../app/admin/review/operator-types.ts");
+ const values = ["FACT", "UNKNOWN"];
+ assert.equal(fieldDisplayText("epistemic_status", values), "확인된 사실 · 미확인");
+ assert.deepEqual(values, ["FACT", "UNKNOWN"]);
+ assert.equal(fieldDisplayText("node_kind", "PERSON"), "인물");
+ for (const [code, label] of Object.entries({ EDUCATIONAL_INSTITUTION: "교육기관", COMPANY: "기업", COMMITTEE: "위원회", HEARING: "청문회", ISSUE: "쟁점" })) {
+   assert.equal(fieldDisplayText("node_kind", code), label);
+ }
+ assert.equal(fieldDisplayText("status", "CANONICAL"), "정본 등록 기록");
+ assert.equal(fieldDisplayText("status", "SOURCE_RECORD_NOT_PERSON"), "출처상 기록 · 인물 미연결");
+ assert.equal(fieldDisplayText("relation_types", ["WORKED_AT"]), "경력");
+ assert.equal(fieldDisplayText("source_ids", ["source-original"]), "source-original");
+ assert.equal(FIELD_LABELS.recorded_at, "저장 시각");
+ assert.equal(FIELD_LABELS.source_id, "출처 식별자");
+ const catalog = { name: "original", source: "source", scope: "scope", mode: "API", maturity: "L3 FULL_ENUMERATION; blocked" };
+ assert.equal(catalogDisplay(catalog).mode, "공개 자료 연동");
+ assert.match(catalogDisplay(catalog).maturity, /지정 범위 전체 수집 · 제약 있음/);
+ assert.equal(catalog.name, "original");
+});
+
+test("operator graph inspector and keyboard labels share the canvas closed-kind adapter", () => {
+ const { default: View, operatorNodeLabel } = loadPresentation("../app/admin/review/operator-graph.tsx");
+ for (const [kind, label] of Object.entries({ EDUCATIONAL_INSTITUTION: "교육기관", COMPANY: "기업", COMMITTEE: "위원회", HEARING: "청문회", ISSUE: "쟁점" })) {
+   const record = { id: "node-a", record_id: "record-a", kind, label: "검증 대상", status: "CANONICAL", fields: {} };
+   const detail = { record, graph: { center: "node-a", nodes: [record], edges: [], max_depth: 1, max_nodes: 80, truncated: false, semantics: "PUBLIC_CANONICAL_CLAIM_EVIDENCE_RELATIONS" } };
+   const html = renderToStaticMarkup(createElement(View, { detail, contextQuery: "" }));
+   assert.equal(operatorNodeLabel(kind), label);
+   assert.ok(html.split(label).length >= 3, "inspector and keyboard both display the known label");
+   assert.doesNotMatch(html.replace(/href="[^"]*"/g, ""), new RegExp(kind));
+ }
+ assert.equal(operatorNodeLabel("people"), "인물");
+ assert.equal(operatorNodeLabel("UNRECOGNIZED"), "대상 유형 미확인");
+ const graphSource = readFileSync(new URL("../app/admin/review/operator-graph.tsx", import.meta.url), "utf8");
+ assert.match(graphSource, /caption:.*operatorNodeLabel\(node.kind\)/);
+});
+
+test("every operator manifest emitted status has a precise Korean presentation", () => {
+ const { statusLabel } = loadPresentation("../app/display-labels.ts");
+ const producer = readFileSync(new URL("../../api/operator_review.py", import.meta.url), "utf8");
+ const codes = [...new Set([...producer.matchAll(/"status": "([A-Z_]+)"/g)].map((match) => match[1]).concat("CURRENT_REVIEW_BLOCKED"))];
+ assert.equal(codes.length, 11);
+ for (const code of codes) {
+   assert.notEqual(statusLabel(code), "상태 미확인", code);
+   assert.match(statusLabel(code), /[가-힣]/);
+ }
+ assert.notEqual(statusLabel("CURRENT_SOURCE_UNAVAILABLE"), statusLabel("CURRENT_SOURCE_CONFLICT"));
+ assert.notEqual(statusLabel("CURRENT_REVIEW_DRIFT"), statusLabel("CURRENT_REVIEW_BLOCKED"));
+ assert.equal(statusLabel("UNKNOWN"), "미확인");
 });

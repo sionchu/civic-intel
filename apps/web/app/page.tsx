@@ -43,7 +43,7 @@ export default async function HomePage() {
   return (
     <div className="site-page home-page">
       <section className="home-intro home-search" aria-labelledby="hero-title">
-        <h1 id="hero-title">모두의국감 <span lang="en">CIVIC INTELLIGENCE</span></h1>
+        <h1 id="hero-title">모두의국감 <span lang="ko">공적 기록 탐색</span></h1>
         <p className="lede">인물과 기관의 공적 이력, 활동과 연결을 공개 기록에서 살펴봅니다.</p>
         <form className="home-search-form" action="/people" method="get" role="search">
           <label className="gukgam-search-field">
@@ -66,7 +66,7 @@ export default async function HomePage() {
 
       <div className="home-columns">
         <section className="home-block" aria-labelledby="home-today-title">
-          <h2 id="home-today-title">국감 브리프 <span className="domain-label" lang="en">BRIEF</span></h2>
+          <h2 id="home-today-title">국감 브리프 <span className="domain-label" lang="ko">국감 일정</span></h2>
           {targetsResult.state === "error" ? (
             <ReadState error={targetsResult.error} />
           ) : (
@@ -76,7 +76,7 @@ export default async function HomePage() {
         </section>
 
         <section className="home-block" aria-labelledby="home-explore-title">
-          <h2 id="home-explore-title">공개 기록 탐색 <span className="domain-label" lang="en">EXPLORE</span></h2>
+          <h2 id="home-explore-title">공개 기록 탐색 <span className="domain-label" lang="ko">탐색</span></h2>
           <nav aria-label="공개 기록 탐색">
             <ul className="home-explore-list">
               <li><Link href="/people">인물</Link><span>공적 경력 · 입법 · 표결 · 출처</span></li>

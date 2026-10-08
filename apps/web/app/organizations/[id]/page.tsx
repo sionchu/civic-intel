@@ -1,3 +1,4 @@
+import { statusLabel } from "../../display-labels";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,7 +12,8 @@ import {
   getSource,
 } from "../../data";
 import CommitteeMembers from "../../components/committee-members";
-import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
+import SourceLibrary from "../../components/source-library";
+import EvidencePanel, { EvidenceTraceList } from "../../components/evidence-panel";
 import FactBox, { type FactRow } from "../../components/fact-box";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
@@ -45,7 +47,7 @@ export async function generateMetadata({
   }
   return buildPageMetadata({
     title: result.data.name,
-    description: `${result.data.name}의 공개 기관 기록, 임원 공시, Claim과 Evidence를 확인합니다.`,
+    description: `${result.data.name}의 공개 기관 기록, 임원 공시, 기록과 근거를 확인합니다.`,
     path: `/organizations/${id}`,
   });
 }
@@ -67,7 +69,7 @@ function OrganizationClaim({
 }) {
   const fiscalYear = claim.qualifiers.fiscal_year;
   return (
-    <EvidencePanel claim={claim} sourceById={sourceById} kind="ORGANIZATION CLAIM" className="organization-claim-card">
+    <EvidencePanel claim={claim} sourceById={sourceById} kind="기관 공개 기록" className="organization-claim-card">
       {fiscalYear && <div className="organization-claim-meta"><span>{fiscalYear} 회계연도</span></div>}
     </EvidencePanel>
   );
@@ -117,14 +119,14 @@ function MoneyCard({
   return (
     <article className="money-panel">
       <div className="claim-heading">
-        <span className="claim-kind">DERIVED · MONEY</span>
-        <span className="status AVAILABLE">AVAILABLE</span>
+        <span className="claim-kind">공시 금액 비교</span>
+        <span className="status AVAILABLE">{statusLabel("AVAILABLE")}</span>
       </div>
       <h3>기관장 업무추진비 공시액의 회계연도 간 변화</h3>
       <p className="money-scope">
         {money.details.organization.role_scope} · {money.details.organization.code} · 공개 기록 기반
       </p>
-      <div className="money-values" aria-label="Annual disclosed values">
+      <div className="money-values" aria-label="연도별 공시금액">
         <div className="money-value">
           <span className="micro-label">이전 · {earlier.fiscal_year}</span>
           <strong>{formatThousandKrw(earlier.amount_thousand_krw)}</strong>
@@ -149,13 +151,13 @@ function MoneyCard({
       <details className="audit-details">
         <summary>계산 방법과 범위</summary>
         <small>
-          Method {money.method_version}<br />
-          Scope {money.details.input_scope.source_contract}<br />
-          Correction semantics {money.details.input_scope.correction_semantics}<br />
-          Identity rule {money.details.input_scope.identity_rule}<br />
-          Claims {money.claim_ids.join(", ")}<br />
-          Snapshots {money.snapshot_ids.join(", ")}<br />
-          Observations {money.observation_ids.join(", ")}<br />
+          방법 {money.method_version}<br />
+          범위 {money.details.input_scope.source_contract}<br />
+          정정 기준 {money.details.input_scope.correction_semantics}<br />
+          인물 연결 규칙 {money.details.input_scope.identity_rule}<br />
+          기록 {money.claim_ids.join(", ")}<br />
+          출처 저장본 {money.snapshot_ids.join(", ")}<br />
+          수집 기록 {money.observation_ids.join(", ")}<br />
           {money.details.limitations.map((item) => <span key={item}>{item}<br /></span>)}
         </small>
       </details>
@@ -268,7 +270,7 @@ export default async function OrganizationPage({
         <div>
           <div className="profile-title-row">
             <h1>{organization.name}</h1>
-            <span className="status AVAILABLE">AVAILABLE</span>
+            <span className="status AVAILABLE">{statusLabel("AVAILABLE")}</span>
           </div>
         </div>
       </header>
@@ -314,7 +316,7 @@ export default async function OrganizationPage({
                           {item.time_text ? ` · ${item.time_text}` : ""}
                           {item.venue ? ` · ${item.venue}` : ""}
                         </span>
-                        <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
+                        <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">{statusLabel("FACT")}</span>
                         <Link className="inline-action" href={`#claim-${item.claim_id}`}>근거 보기</Link>
                       </li>
                     ))}
@@ -343,12 +345,12 @@ export default async function OrganizationPage({
               <h2 id="organization-records-title">기록</h2>
             </div>
             {claims.length === 0 && (
-              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 현재 연결된 공개 기록이 없습니다.</p>
+              <p className="empty"><span className="status UNKNOWN">{statusLabel("UNKNOWN")}</span> 현재 연결된 공개 기록이 없습니다.</p>
             )}
             {executiveClaims.length > 0 && (
               <div className="organization-records-block" id="executives">
                 <h3>현재 임원현황</h3>
-                <p className="records-note">ALIO가 해당 기관에 대해 공개한 직위·성명·직책과 기준일을 표시합니다. 개인 Person으로 자동 연결하지 않습니다.</p>
+                <p className="records-note">ALIO가 해당 기관에 대해 공개한 직위·성명·직책과 기준일을 표시합니다. 등록된 개인으로 자동 연결하지 않습니다.</p>
                 <div className="organization-claim-list">
                   {executiveClaims.map((claim) => <ExecutiveDisclosure key={claim.id} claim={claim} sourceById={sourceById} />)}
                 </div>
@@ -395,7 +397,7 @@ export default async function OrganizationPage({
             {sources.length === 0 ? (
               !sourceError && <p className="empty">표시할 출처가 없습니다.</p>
             ) : (
-              <div className="source-grid">{sources.map((source) => <SourceCard key={source.id} source={source} />)}</div>
+              <SourceLibrary sources={sources} />
             )}
           </section>
         </div>

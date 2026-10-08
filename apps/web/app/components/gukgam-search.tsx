@@ -146,7 +146,7 @@ export default function GukgamSearch({
       {normalizedQuery && (
         <div className="gukgam-search-share-row">
           <p className="gukgam-search-share-note">
-            현재 검색어가 주소에 반영됩니다. 이 URL을 그대로 공유할 수 있습니다.
+            현재 검색어가 주소에 반영됩니다. 이 주소을 그대로 공유할 수 있습니다.
           </p>
           <button
             className="gukgam-search-copy"

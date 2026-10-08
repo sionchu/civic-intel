@@ -353,6 +353,8 @@ export type PersonRelationships = {
 };
 
 export type ProfileSection = {
+  eligible_count?: number;
+  input_scope?: string;
   id: string;
   label: string;
   status: ProfileSectionStatus;

@@ -12,6 +12,7 @@ const PREDICATE_LABELS: Record<string, string> = {
   ASSEMBLY_BIOGRAPHY_CAREER: "국회 약력에 기재된 경력",
   ASSEMBLY_BIOGRAPHY_EDUCATION: "국회 약력에 기재된 학력",
   ASSEMBLY_HISTORICAL_TERM: "과거 국회의원 임기",
+  ASSEMBLY_OFFICIAL_PRESS_RECORD: "국회 공식 보도자료", PETI_DECLARED_SELF_HOUSING: "본인 소유 주택 신고", ASSEMBLY_DECLARED_ASSET_TOTAL: "공개 신고재산 총계",
   ASSEMBLY_PLENARY_VOTE: "본회의 표결",
   NOMINATED_AS: "지명",
   DESIGNATED_AS: "지정",
