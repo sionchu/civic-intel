@@ -8,8 +8,7 @@ Rights Sol is the single native release operator, Astra orchestrates only. The b
 Worker-only authenticated writer, independent approved hash pin, D1 protocol state and
 empty/populated reversible migration have 13 narrow tests PASS. Initial actual local D1
 and exact-v3 static bootstrap asset checks passed. Full real bounded HTTP/D1 rehearsal passed (5,170/7,449/578, 664.05 s), and `make verify`
-passed (Python 1,116/3skip, web87 at that checkpoint). Final revised compiled restore,
-policy-negative tests and narrow checks remain pending. Hosted save/deploy/binding/import/
+passed (Python 1,116/3skip, web87 at that checkpoint). Final clean b2b59aa Worker/scanner, lint and web86 PASS; compiled actual D1 A/B restore, stale-CAS, corrupt-PREVIOUS and TEL_NO policy-negative checks PASS. Hosted save/deploy/binding/import/
 activation remain NOT_RUN.
 Current exact public v3 source is `bd059df163ce6dabc643e5dc806b2cd988414b3f`, with
 2,720 preserved assets / 238,690,338 B. Bootstrap is temporary; the final reader artifact
