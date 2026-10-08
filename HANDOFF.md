@@ -2,6 +2,17 @@
 
 ## Current local implementation — 2026-10-08
 
+Hosted-writer investigation completed read-only on clean `ac2ecca`: current Site remains
+owner/public/version 3 with no D1 bindings/tables. Documented owner-private dispatch and
+`env.DB.prepare()/batch()` primitives exist, but same-project owner-only writer/DB authority
+is not verified. Exact local SQL preflight is recorded in the active plan: activate 220,538,210 B /
+7,490 statements, maximum statement 80,354 B, BLOB 40,000 B, scope 727,132 B. A whole buffered
+batch exceeds Worker memory; statement-versus-API-call limits remain provider-confirmation
+required. No new protocol/schema/product code or credentials/hosted mutations were introduced;
+tests/build/browser were NOT_RUN for this documentation/read-only investigation. One copyable,
+unsent provider inquiry in the current plan owns the next decision. Evidence:
+`dist/full-goal-evidence/hosted-writer-investigation/`.
+
 Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
 browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current
 desktop synthetic graph/Claim/Source flows passed. Native 390px is `USER_DEFERRED`. A new

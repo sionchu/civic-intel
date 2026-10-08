@@ -317,8 +317,11 @@ Capture integrity PASS is not complete frontend or producer-chain acceptance.
 
 Installed Sites storage contract supports logical DB binding plus schema-only migrations.
 Available connector tools expose database overview/row reads, save/deploy and access control;
-no supported arbitrary bulk SQL writer was found. Fresh read-only overview still had no D1
-binding and Site version remained 3. Local SQL imports do not establish hosted access.
+no native arbitrary bulk SQL writer was found. The 2026-10-08 investigation verifies documented
+`env.DB.prepare()/batch()` and owner-private dispatch service-access primitives; this is not an
+installed or authorized writer for the current public project. Fresh read-only overview remains
+owner/public/version 3, access revision 2, no D1 bindings/tables. Local SQL imports do not
+establish hosted account access or ownership of a runtime visitor principal.
 
 Prepared inputs are the existing schema migration, exporter load/activate/rollback SQL,
 public-boundary validation, and code-only Worker artifact. A hosted proposal must identify an
@@ -333,14 +336,66 @@ and family-included-total annotation only, followed by exact Person linkage and 
 approval. The existing synthetic 2099-1 fixture is not that packet. SourcePolicy can_send_to_ai
 restrictions remain in force; do not use AI to manufacture human review.
 
+### Hosted writer read-only preflight — 2026-10-08
+
+**READ_ONLY_PREFLIGHT_COMPLETE / PROVIDER_CONTRACT_REQUIRED / HOSTED_NOT_RUN**. Clean input
+`ac2eccab7168e2bd1edc579c19ea2f0db8bef144`; product code remains `145348b` with the same web tree.
+`dist/full-goal-evidence/hosted-writer-investigation/pinned-preflight.json` verifies exporter LF
+SHA `95846fd8af8b98d8ec0ba847810d2f68a2d33f0587bc1fb460628b340c28bb5d`, both manifest hashes,
+original/local load hashes, all 5,170 response tuples and existing source ZIP hash. No refresh,
+import, credential generation, Site mutation or external inquiry ran.
+
+`measure-sql.py` executed against existing files and read-only SQLite; `sql-measurement.json`
+and `statement-batch-inventory.json` preserve exact hashes/offsets without printing SQL bodies.
+
+| Local artifact | Bytes | SQL statements | Largest statement B |
+|---|---:|---:|---:|
+| load.sql | 219,947,725 | 7,487 | 80,275 |
+| validate.sql | 220,537,529 | 7,487 | 80,354 |
+| activate.sql | 220,538,210 | 7,490 | 80,354 |
+| rollback.sql | 220,538,013 | 7,488 | 80,354 |
+
+Maximum gzip BLOB is 40,000 B; scope metadata is 727,132 B. Individual statements fit the
+[100,000 B SQL and 2 MB value/row limits](https://developers.cloudflare.com/d1/platform/limits/).
+The full activation SQL contents alone are 220,530,628 B: buffering the entire statement array
+is incompatible with the documented [128 MB Worker isolate](https://developers.cloudflare.com/workers/platform/limits/).
+Whole batch duration is limited to 30 seconds; Sites dispatch/account limits remain UNKNOWN.
+All SQL files fit the documented 5 GB direct-file import size, but Sites-managed account/resource
+authority and its whole-file transaction/receipt contract are NOT_VERIFIED.
+
+One local Wrangler `batch()` method call contains 7,490 SQL statements. Do not equate these
+units: D1's 50/1,000 query wording and newer Workers subrequest defaults differ; exact Sites/D1
+statement versus API-call accounting is **PROVIDER_CONFIRMATION_REQUIRED**, not a proven
+7,490-statement rejection. [D1 batch](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch)
+provides one transaction, not a transaction spanning requests. Hypothetical 16-statement
+descriptors require 469 activation calls with at most 1,285,562 SQL B each; this is planning
+inventory, not a writer implementation or measured hosted performance.
+
+`reviewable-recipe.md` preserves the conditional canonical extension: bounded typed parts,
+pinned full manifest/metadata, STAGED-only writes, durable seal and transactional validation
+cursor, final atomic expected-pointer transition/readback, exact PREVIOUS restore and separate
+bounded retention/GC. Current unconditional ON CONFLICT prevents overwrite but not extra-key
+append; full metadata assertions and in-flight-reader retention would also need review for a
+future multi-request writer. These are future protocol risks, not failures of the trusted exact
+local file/exclusive lifecycle already verified. No speculative schema, parallel importer or
+public write endpoint was added. Tests/build/browser are **NOT_RUN this investigation** because
+product code/schema/runtime are unchanged; the executed evidence is read-only measurement,
+hash preflight, official/installed-document review and sanitized native Site state.
+
+Installed documents do not verify management-owner to Site-scoped runtime-principal mapping,
+another private project's authority over this DB, or a same-public-project owner-private hosted
+writer. Service access supplies no visitor identity. The current Site audience was preserved.
+`supported-path-assessment.md` and `read-only-provider-state.json` contain the exact live and
+installed-contract evidence; no claim of absolute platform impossibility is made.
+
 ## Next concrete action
 
 The owner explicitly deferred native 390px on 2026-10-08 (`USER_DEFERRED`); the current Aside
 capability limitation remains recorded and does not block the authorized desktop follow-up.
-Next task only: obtain and read-only verify an actual supported **owner-private hosted D1 bulk
-writer contract**, using `readiness/owner-review-packet.md` and the pinned source/snapshot
-receipts. The provider must identify owner scope, authorization, size/transaction limits,
-idempotency/resume, exact validation/atomic activation receipts and rollback before a concrete
-hosted-write approval can be requested. No hosted cutover is authorized by this completed local
-follow-up. Producer full-chain, real visual capture and M4/M5 rights/identity/publication remain
-the explicit acceptance gaps above; native390 remains USER_DEFERRED.
+Next task only: obtain the provider's **same-project owner-only write-authority contract**.
+The following inquiry is prepared for copying; it has **not been sent**:
+
+> 프로젝트 `appgprj_6ac46916b4d08191872983ffd6d52aba`의 현재 public audience/version 3을 유지하면서, 정확한 Sites-managed D1에 owner-only로 적재·검증·원자적 활성화·롤백할 수 있는 공식 지원 경로를 확인해 주세요. 관리 owner와 runtime principal의 검증된 매핑 또는 플랫폼 owner-only enforcement, 정확한 DB/binding 쓰기 권한(다른 private project를 제안한다면 명시적 공유 권한), 비밀값 없이 사용 가능한 credential 방식, request/memory/time 및 SQL 문장 수와 batch API 호출 수의 제한 단위, immutable load·idempotent resume·validation-to-activation exclusion·실제 상태 readback/rollback receipt 계약과 읽기 전용 확인 방법을 제공해 주세요. 직접 administrative file import를 지원한다면 Sites 계정/DB 권한과 whole-file transaction/receipt 및 R2/cost 조건도 명시해 주세요. 접근·배포·binding·적재 변경은 이번 문의에 포함되지 않습니다.
+
+No hosted cutover is authorized. Producer full-chain, real visual capture and M4/M5
+rights/identity/publication remain the acceptance gaps above; native390 remains USER_DEFERRED.
