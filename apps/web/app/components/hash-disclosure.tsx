@@ -7,10 +7,15 @@ import { useEffect } from "react";
 export default function HashDisclosure({ prefix }: { prefix: string }) {
   useEffect(() => {
     function reveal() {
-      const id = decodeURIComponent(window.location.hash.slice(1));
+      let id: string;
+      try {
+        id = decodeURIComponent(window.location.hash.slice(1));
+      } catch {
+        return; // a malformed hash names no row
+      }
       if (!id.startsWith(prefix)) return;
       const target = document.getElementById(id);
-      if (!target) return;
+      if (!target || !target.closest("details:not([open])")) return;
       for (let node = target.parentElement; node; node = node.parentElement) {
         if (node instanceof HTMLDetailsElement) node.open = true;
       }

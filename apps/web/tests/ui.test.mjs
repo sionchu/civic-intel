@@ -758,8 +758,7 @@ test("Home shows a deterministic audit-day brief and a people count, not a sampl
   // The brief keeps groupByDateAndCommittee order and shows its first rows plus a count.
   assert.match(home, /groupByDateAndCommittee\(targetsResult\.data\.items, seoulDate\(now\)\)/);
   assert.match(home, /\.slice\(0, 3\)/);
-  assert.match(kst, /const BRIEF_ROWS = 3;/);
-  assert.match(kst, /외 \{day\.count - BRIEF_ROWS\}건/);
+  assert.match(kst, /외 \{day\.count - day\.rows\.length\}건/);
   assert.match(kst, /오늘은 공개된 감사 일정이 없습니다/);
   assert.match(home, /공개 \$\{peopleCount\}명\$\{latestAsOf \? ` · 최신 출처 기준일 \$\{latestAsOf\}` : ""\}/);
   assert.match(home, /<Link href="\/people">인물 찾기<\/Link>/);

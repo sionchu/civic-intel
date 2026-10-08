@@ -35,7 +35,9 @@ function committeeSummary(items: GukgamWitnessProjectionItem[]): string {
     .filter(([, count]) => count > 0)
     .map(([category, count]) => `${category} ${count}명`);
   const supplied = items.filter((item) => item.acquisition_channel === "OWNER_SUPPLIED_COPY").length;
-  const official = items.length - supplied;
+  const official = items.filter(
+    (item) => item.acquisition_channel === "OFFICIAL_SITE" || item.acquisition_channel === "OFFICIAL_MINUTES",
+  ).length;
   return [
     ...counts,
     official > 0 ? `공식 출처 ${official}명` : null,

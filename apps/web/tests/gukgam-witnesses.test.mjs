@@ -62,6 +62,12 @@ test("Gukgam witness lists start collapsed per committee and stay reachable by d
   assert.match(opener, /node instanceof HTMLDetailsElement\) node\.open = true/);
   assert.match(opener, /addEventListener\("hashchange", reveal\)/);
   assert.match(opener, /return null;/);
+  // A malformed hash (e.g. #%E0) is ignored instead of throwing inside the effect.
+  assert.match(opener, /try \{\s*id = decodeURIComponent\(window\.location\.hash\.slice\(1\)\);\s*\} catch \{\s*return;/);
+  // Row-level labels survive the collapse; the summary counts only known official channels.
+  assert.match(component, /위법 판단이 아닙니다/);
+  assert.match(component, /OWNER_SUPPLIED_COPY" \? " · 아직 공식 발표 아님"/);
+  assert.match(component, /"OFFICIAL_SITE" \|\| item\.acquisition_channel === "OFFICIAL_MINUTES"/);
   assert.match(css, /\.gukgam-witnesses-category li:target/);
   assert.match(css, /summary:focus-visible/);
 });

@@ -27,8 +27,6 @@ export type ScheduleDay = { date: string; count: number; committeeCount: number 
 export type ScheduleBriefRow = { claimId: string; committee: string; organization: string; time: string | null };
 export type ScheduleBriefDay = ScheduleDay & { rows: ScheduleBriefRow[] };
 
-const BRIEF_ROWS = 3;
-
 export function KstToday({ serverToday }: { serverToday: string | null }) {
   const today = useKstToday(serverToday);
   return <>{today ? formatAuditDate(today) : "—"}</>;
@@ -56,7 +54,7 @@ export function AuditBrief({ serverToday, days }: { serverToday: string | null; 
         <span>감사 {day.count}건 · 위원회 {day.committeeCount}곳</span>
       </p>
       <ul className="audit-brief-rows">
-        {day.rows.slice(0, BRIEF_ROWS).map((row) => (
+        {day.rows.map((row) => (
           <li key={row.claimId}>
             <strong>{row.organization}</strong>
             <span>{[row.committee, row.time].filter(Boolean).join(" · ")}</span>
@@ -64,7 +62,7 @@ export function AuditBrief({ serverToday, days }: { serverToday: string | null; 
         ))}
       </ul>
       <p className="audit-brief-more">
-        {day.count > BRIEF_ROWS && <span>외 {day.count - BRIEF_ROWS}건 · </span>}
+        {day.count > day.rows.length && <span>외 {day.count - day.rows.length}건 · </span>}
         <Link href={`/gukgam/2026#audit-${day.date}`}>이날 일정 전체 보기</Link>
       </p>
     </div>
@@ -76,7 +74,7 @@ export function NextAuditAction({ serverToday, dates }: { serverToday: string | 
   const nextDate = today ? nextDateOf(dates, today) : null;
   return (
     <a className="primary-action" href={nextDate ? `#audit-${nextDate}` : "#gukgam-published-targets-title"}>
-      {nextDate !== null && nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"}
+      {nextDate === today ? "오늘 감사 일정 보기" : "감사 일정 보기"}
     </a>
   );
 }

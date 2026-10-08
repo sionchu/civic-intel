@@ -25,7 +25,7 @@ export default async function HomePage() {
     ? groupByDateAndCommittee(targetsResult.data.items, seoulDate(now))
     : [];
   // Each day keeps the canonical schedule order (committee, time, institution); the brief shows
-  // the first rows of that order and a count, never a selection.
+  // only the first three rows of that order plus the remaining count, never a selection.
   const scheduleDays = scheduleGroups.map((group) => ({
     date: group.date,
     count: group.count,

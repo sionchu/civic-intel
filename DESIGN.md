@@ -80,8 +80,8 @@ breakpoint requires one.
 ### Layout and containers
 
 The content container is capped at 1180px with fluid 20–48px gutters. Home opens with one short
-heading, the search form, and then real records (today's 국감 schedule and the person list) in two
-columns that collapse to one; no hero sentence with empty space beside it. People uses a readable directory column with flat
+heading, the search form, and then real records (today's or the next 국감 audit day in schedule
+order, and the public people count with a 인물 찾기 link) in two columns that collapse to one; no hero sentence with empty space beside it. People uses a readable directory column with flat
 editorial rows and one mobile column. Profile pages keep their narrow index beside a readable
 content column and reflow below 820px. Long Korean values and identifiers wrap instead of clip.
 
