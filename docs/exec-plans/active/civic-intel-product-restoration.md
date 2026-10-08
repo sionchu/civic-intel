@@ -1,6 +1,6 @@
 # Civic Intel product restoration
 
-Status: PUBLIC_BOOTSTRAP_DEPLOYED / HOSTED_LOAD_IN_PROGRESS / FINAL_READER_NOT_RUN / FULL_CONTRACT_INCOMPLETE.
+Status: PUBLIC_READER_V5_DEPLOYED / HOSTED_ACTIVE_PASS / MAINTENANCE_REVOCATION_FAIL / READ_ONLY_HOTFIX_IN_PROGRESS / FULL_CONTRACT_INCOMPLETE.
 Implementation owner: MAIN; 2026-10-08 follow-up execution/integration owner: GPT-6.1 Sol,
 2026-10-08. The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
@@ -70,7 +70,7 @@ This plan owns integration and product scope, not a second storage implementatio
 
 ## Current checkpoint
 
-The existing public Site is now **v4 bootstrap deployed**, preserving its historical 504-person static UI while the authenticated writer loads the pinned 1,142-person public-API snapshot. Actual hosted log observed `LOADING cursor=1300/7449`; validation and ACTIVE are not yet claimed. Final reader deployment remains NOT_RUN. Canonical PostgreSQL, producer runtime, identity/publication decisions and source rights remain unchanged. Sol lead owns integration; Rights Sol exclusively owns native source/environment/deployment; Astra orchestrates.
+The existing public Site is now **v4 bootstrap deployed**, preserving its historical 504-person static UI while the authenticated writer loads the pinned 1,142-person public-API snapshot. Hosted load/validation and exact ACTIVE readback completed (7,449 parts / 5,170 paths, epoch1). Public final reader v5 deployed; its security closure FAILED because a formerly valid secret was still accepted after the native environment key removal. A source-owned read-only route hotfix is in progress. Canonical PostgreSQL, producer runtime, identity/publication decisions and source rights remain unchanged. Sol lead owns integration; Rights Sol exclusively owns native source/environment/deployment; Astra orchestrates.
 
 Public v4 source `5f713e2fd7325034f2c556ec9317a47964d5aede`, saved version `appgprj_6ac46916b4d08191872983ffd6d52aba~appgver_b2ea0c123a3881919fbbdf54305ae371`, deployment `appgdep_6ac7a9b0981081918a0d85c86641e2c3` succeeded. Audience remains public (access revision2), environment revision1; DB has the expected 17 snapshot_meta columns including all six writer fields, initially zero rows. Anonymous/wrong auth401 and authenticated malformed400 PASS. Native archive: 240,578,560 B / 2,728 files, SHA256 `b8e5253a931277c8dd2e1cf2ae6b7d0551c362f07a81d312c19de5daedbc35d8`. Aside home/search/Person/Organization/roster/RSC continuity PASS; bootstrap screenshots NOT_RUN and native390 USER_DEFERRED.
 
@@ -434,8 +434,7 @@ Evidence lives under `dist/full-goal-evidence/public-deployment/`.
 
 Clean candidate `b2b59aadf0999961e8f335d085866873ecdb8df3` is frozen: final lint and web86 PASS, Worker build/scanner PASS (148 files / 1,765,404 B), independent retry-race review CLOSED. Compiled disposable D1 A/B restore, corrupt-PREVIOUS preservation, stale CAS and actual TEL_NO boundary rejection PASS (`compiled-final-b2b59aa.json`). Bootstrap preserves all 2,720 old assets and is 238,720,154 B; compiled SHA `1f43e4cacb6dab096f975c72e169d1619039d7fd4cd07bc03fc2bac163b9dd51`. Full real rehearsal remains explicitly pre-restore-extension evidence, supplemented by final synthetic compiled proofs and retained-reader 5,170 tuple parity. Public bootstrap deploy/schema/continuity are PASS; pinned hosted load is IN_PROGRESS, validation/ACTIVE/final reader NOT_RUN.
 
-Continue the running pinned hosted load without changing its immutable candidate, then verify bounded validation and exact ACTIVE/hash readback. Only after the root checkpoint deploy the prepared final code-only reader with maintenance secret
-removed. Initial hosted rollback is the exact retained public v3 saved version, not an
+Complete the immutable maintenance-disabled reader build/compiled proof and single-operator redeploy; verify public maintenance denial independently of any retained secret. Do not reload or mutate the already ACTIVE data. Initial hosted rollback is the exact retained public v3 saved version, not an
 invented D1 PREVIOUS snapshot. Prior protocol restore requires its separately approved previous-manifest pin and full
 bounded revalidation. Legacy local SQL rollback remains separate; no implicit legacy
 adoption is claimed. The final reader deployment removes the maintenance secret so the
@@ -459,3 +458,11 @@ Initial bootstrap failure recovery uses exact public v3 saved version; after boo
 The rejected task-owned old-root cleanup was a tool-policy denial and was not retried. Recovery preserved every filesystem/Git legacy file, committed only additions/modifications (D/R0), and used official standalone packaging of a newly copied reviewed build allowlist. Every selected file matched its pushed Git blob (2,728 files / 238,653,861 B, mismatches0). Full helper archive is separately retained. GNU tar Windows path/colon errors were ordinary runner errors, resolved by supported process-only Git Bash path/TAR_OPTIONS --force-local, with no helper patch. CRLF normalization was a separate provenance failure: physical RSC10,119 B/24CRLF versus Gitblob and actual published entity10,095 B/0CRLF. Attributes preserve selected runtime bytes; corrected blob-based artifacts supersede physical copies. Production exact entity-byte proof is one RSC route; Sites-injected HTML response is not equated with source HTML bytes.
 
 Prepared final reader `final-reader-b2b59aa` has 160 allowlisted files / 1,789,762 B (runtime148 / 1,765,404 B), exact existing project_id/DB logical binding and zero legacy static HTML/RSC data assets. Inventory SHA256 `042babcbe6189375636855d894f9d97df20c0f6cecf38f569c42cb765d8c3c19`; native deployment NOT_RUN. Task-root `.wrangler/` untracked disposable smoke residue is preserved; no cleanup retry. Full contract remains incomplete, M4/M5 blocked and M6 planned.
+
+### 2026-10-09 security closure correction (in progress)
+
+Hosted snapshot `ps-65e086d2eb00c3c5` is ACTIVE/VALIDATED, cursors7,449/5,170, pointer epoch1 (`hosted-active-receipt.json`). Observed completion3694s is not exact end timing; stable fatal log0 is not unmeasured network retries0. Capture/data-as-of remain their original 2026-10-08 values.
+
+Public v5 saved/deployed source28dc48f2ccb5d8ad5d9090f4989ce661c6009f15, deployment appgdep_6ac7b9cc7b2c8191b909041e0ae227af, environment revision2. Its native archive is1,914,880 B/154files/SHAe47be09741179c6bc25dfcb178ac0c8112204086876f9f0a6fb5b60ee4f98955. Native metadata no longer listed the secret, but a formerly valid authenticated state call exited0 at2026-10-08T15:43:03.806Z; anonymous401. This proves unexpected authorization acceptance, not writes or recovered ACTIVE fields. Provider propagation/runtime cause UNKNOWN. Secret memory discarded; no recovery, regeneration or new environment mutation.
+
+The final reader route now imports no environment, writer, authorization or DB code and always returns404 MAINTENANCE_DISABLED/no-store for all methods. Explicit bootstrap build retains its authenticated writer separately. Source request/context spy0, web87, lint/typecheck and independent QA review PASS; clean compiled actual Vinext denial proof/build remain pending. No payload/schema/reader/source-rights changes; unchanged Python full suite not rerun for this isolated Worker-only route closure. Evidence: native-final-reader-receipt.json, final-maintenance-revocation.json, final-revocation-rca.md.
