@@ -11,12 +11,33 @@ import ts from 'typescript';
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { sizeReport } from "../scripts/bundle-size-report.mjs";
+import { personRelationshipPath } from "../app/relationship-path.mjs";
 
 const exporter = fileURLToPath(new URL("../scripts/export-public-projection.mjs", import.meta.url));
-const PERSON_A = "11111111-1111-4111-8111-111111111111";
+const PERSON_A = "a1111111-1111-4111-8111-11111111111a";
 const PERSON_B = "22222222-2222-4222-8222-222222222222";
 const ORG = "33333333-3333-4333-8333-333333333333";
 const SOURCE = "44444444-4444-4444-8444-444444444444";
+const RELATIONSHIP_SOURCE = "55555555-5555-4555-8555-555555555555";
+const relationshipModuleUrl = new URL('../app/relationship-path.mjs', import.meta.url).href;
+
+function personRelationships(id) {
+  const relations = id === PERSON_A ? [{
+    id: 'derived-relation', status: 'DERIVED', relation_type: 'SAME_COMPANY_BOARD',
+    subject_person_id: PERSON_A, object_person_id: PERSON_B,
+    source_claim_ids: ['66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777777'],
+    source_ids: [SOURCE, RELATIONSHIP_SOURCE],
+    evidence_ids: ['88888888-8888-4888-8888-888888888888'],
+    temporal_overlap: 'UNKNOWN', rule_id: 'shared_company_board', rule_version: '1.0',
+  }] : [];
+  return {
+    person: { id, name: id === PERSON_A ? '가' : '나' },
+    semantics: 'DETERMINISTIC_READ_TIME_PROJECTION_FROM_PUBLISHED_CLAIMS',
+    ruleset_version: '1.0', affiliations: [], career_transitions: [],
+    groups: relations.length ? [{ via: { kind: 'COMPANY', label: '기관' }, relations, relation_count: 1 }] : [],
+    relation_count: relations.length, limitations: [],
+  };
+}
 
 function vote(index) {
   return { id: `v${index}`, details: { action: "PLENARY_ROLL_CALL_VOTE" } };
@@ -41,9 +62,12 @@ function fakeApi(overrides = {}) {
     [`/people/${PERSON_B}`]: person(PERSON_B, "나"),
     [`/ontology/people/${PERSON_A}`]: { nodes: [] },
     [`/ontology/people/${PERSON_B}`]: { nodes: [] },
+    [personRelationshipPath(PERSON_A)]: personRelationships(PERSON_A),
+    [personRelationshipPath(PERSON_B)]: personRelationships(PERSON_B),
     [`/organizations/${ORG}`]: { id: ORG },
     [`/ontology/organizations/${ORG}`]: { nodes: [] },
     [`/sources/${SOURCE}`]: { id: SOURCE, title: "출처" },
+    [`/sources/${RELATIONSHIP_SOURCE}`]: { id: RELATIONSHIP_SOURCE, title: "관계에만 연결된 출처" },
     ...overrides,
   };
   return createServer((request, response) => {
@@ -88,9 +112,13 @@ test("projection export is deterministic and keeps public 4xx answers", async ()
   assert.deepEqual(a.paths, b.paths);
   assert.equal(a.semantics, "REPLACEABLE_PUBLIC_READ_SNAPSHOT_NOT_SSOT");
   assert.equal(a.counts.public_people, 2);
-  // Source records cited by exported Claims are exported once each.
-  assert.equal(a.counts.sources, 1);
+  // The counterpart's source is reachable only through the relationship response.
+  assert.equal(a.counts.sources, 2);
   assert.ok(a.paths.some((row) => row.path === `/sources/${SOURCE}` && row.status === 200));
+  assert.equal(a.paths.filter((row) => row.path === `/sources/${RELATIONSHIP_SOURCE}` && row.status === 200).length, 1);
+  for (const id of [PERSON_A, PERSON_B]) {
+    assert.ok(a.paths.some((row) => row.path === personRelationshipPath(id) && row.status === 200));
+  }
   // The org money comparison answers 422 in this fixture; it is stored as that answer.
   assert.equal(a.counts.client_error_paths, 1);
   const loadSql = (out) => readFileSync(join(out, "load.sql"), "utf8").split("\n").slice(2).join("\n");
@@ -112,6 +140,9 @@ test("projection export fails closed on the public boundary", async () => {
     [{ [`/people/${PERSON_B}`]: 404 }, /returned HTTP 404/],
     [{ [`/organizations/${ORG}`]: 404 }, /returned HTTP 404/],
     [{ [`/sources/${SOURCE}`]: 404 }, /returned HTTP 404/],
+    [{ [personRelationshipPath(PERSON_A)]: 503 }, /returned HTTP 503/],
+    [{ [personRelationshipPath(PERSON_B)]: 404 }, /returned HTTP 404/],
+    [{ [`/sources/${RELATIONSHIP_SOURCE}`]: 404 }, /returned HTTP 404/],
     [{ [`/ontology/people/${PERSON_A}`]: 401 }, /returned HTTP 401/],
     [{ [`/organizations/${ORG}`]: 403 }, /returned HTTP 403/],
     [{ [`/organizations/${ORG}/money?earlier_fiscal_year=2024&later_fiscal_year=2025`]: 429 }, /returned HTTP 429/],
@@ -177,13 +208,37 @@ test('D1 reader checks manifest/hash/parts and distinguishes lost rows from unkn
   globalThis.__projectionTestEnv = { DB: binding };
   const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
     .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__projectionTestEnv;')
-    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value; return () => value ??= fn(); };');
+    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value; return () => value ??= fn(); };')
+    .replace('"./relationship-path.mjs"', JSON.stringify(relationshipModuleUrl));
   const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
   const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
   try {
     assert.equal((await reader.readPublic(`/people/${PERSON_A}`)).body.id, PERSON_A);
     for (const id of [PERSON_A.toUpperCase(), PERSON_A.replaceAll('-', ''), `{${PERSON_A}}`, `urn:uuid:${PERSON_A}`]) {
       assert.equal((await reader.readPublic(`/people/${id}`)).body.id, PERSON_A);
+    }
+    for (const id of [PERSON_A, PERSON_A.toUpperCase(), PERSON_A.replaceAll('-', ''), `{${PERSON_A}}`, encodeURIComponent(`{${PERSON_A}}`), `urn:uuid:${PERSON_A}`]) {
+      for (const query of ['include_candidates=false&limit_per_via=3', 'limit_per_via=3&include_candidates=false']) {
+        const relationship = await reader.readPublic(`/relationships/people/${id}?${query}`);
+        assert.equal(relationship.status, 200);
+        assert.deepEqual(relationship.body, personRelationships(PERSON_A));
+      }
+    }
+    assert.deepEqual((await reader.readPublic(personRelationshipPath(PERSON_B))).body, personRelationships(PERSON_B));
+    assert.equal((await reader.readPublic(`/sources/${RELATIONSHIP_SOURCE}`)).body.title, '관계에만 연결된 출처');
+    for (const query of [
+      '', '?include_candidates=false', '?limit_per_via=3',
+      '?include_candidates=true&limit_per_via=3', '?include_candidates=false&limit_per_via=50',
+      '?include_candidates=false&limit_per_via=3&unknown=value',
+      '?include_candidates=false&include_candidates=false&limit_per_via=3',
+      '?include_candidates=false&limit_per_via=3&limit_per_via=3',
+    ]) {
+      const invalid = await reader.readPublic(`/relationships/people/${PERSON_A}${query}`);
+      assert.equal(invalid.status, 422, query);
+      assert.equal(invalid.body.error.code, 'INVALID_INPUT', query);
+    }
+    for (const id of ['not-a-uuid', '%invalid']) {
+      assert.equal((await reader.readPublic(personRelationshipPath(id))).status, 422);
     }
     for (const prefix of ['/people', '/organizations', '/sources', '/ontology/people', '/ontology/organizations']) {
       const invalid = await reader.readPublic(`${prefix}/not-a-uuid`);
@@ -192,6 +247,11 @@ test('D1 reader checks manifest/hash/parts and distinguishes lost rows from unkn
     }
     assert.match(await reader.readSnapshotAt(), /KST$/);
     assert.equal((await reader.readPublic('/people/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).status, 404);
+    const unknownRelationship = await reader.readPublic(personRelationshipPath('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'));
+    assert.equal(unknownRelationship.status, 404);
+    assert.equal(unknownRelationship.body, null);
+    db.prepare('DELETE FROM public_read WHERE path = ?').run(personRelationshipPath(PERSON_B));
+    await assert.rejects(reader.readPublic(personRelationshipPath(PERSON_B)), /missing exported/);
     await assert.rejects(reader.readPublic('/admin/review'), /outside the exported/);
     db.prepare('UPDATE public_read SET body_gzip = ? WHERE path = ?').run(gzipSync(Buffer.from('{}')), `/people/${PERSON_A}`);
     await assert.rejects(reader.readPublic(`/people/${PERSON_A}`), /corrupt public projection/);
@@ -218,7 +278,8 @@ test('installed Vinext cache pins metadata and reads to one snapshot per request
   globalThis.__projectionRequestEnv = { DB: binding };
   const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
     .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__projectionRequestEnv;')
-    .replace('"vinext/cache"', JSON.stringify(pathToFileURL(fileURLToPath(new URL('cache-for-request.js', vinextShims))).href));
+    .replace('"vinext/cache"', JSON.stringify(pathToFileURL(fileURLToPath(new URL('cache-for-request.js', vinextShims))).href))
+    .replace('"./relationship-path.mjs"', JSON.stringify(relationshipModuleUrl));
   const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
   const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
   const { createRequestContext, runWithRequestContext } = await import(new URL('unified-request-context.js', vinextShims));
