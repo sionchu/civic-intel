@@ -10,6 +10,10 @@ export type PublicReadResponse = {
 
 const API = process.env.CIVIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export async function readSnapshotAt(): Promise<string | null> {
+  return process.env.CIVIC_SNAPSHOT_AT?.trim() || null;
+}
+
 export async function readPublic(
   path: string,
   options: { revalidateSeconds?: number } = {},

@@ -17,7 +17,7 @@ import { homedir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
-import { sizeReport } from "./bundle-size-report.mjs";
+import { sizeReport, SITES_PLATFORM_LIMIT_BYTES } from "./bundle-size-report.mjs";
 import { EMAIL, forbiddenToken } from "./public-boundary.mjs";
 
 const appRoot = resolve(import.meta.dirname, "..");
@@ -30,9 +30,11 @@ function fail(message) {
 }
 
 function run(command, args, options = {}) {
-  // npm is a .cmd shim on Windows, which Node only spawns through a shell.
-  const shell = process.platform === "win32" && command === "npm";
-  const result = spawnSync(command, args, { cwd: stage, stdio: "inherit", shell, ...options });
+  // Honor the npm selected by the caller (e.g. npm 11.21 exec), without global tool changes.
+  const npmCli = command === 'npm' && process.env.npm_execpath;
+  const shell = process.platform === "win32" && command === "npm" && !npmCli;
+  const result = spawnSync(npmCli ? process.execPath : command, npmCli ? [npmCli, ...args] : args,
+    { cwd: stage, stdio: "inherit", shell, ...options });
   if (result.status !== 0) fail(`${command} ${args.join(" ")} exited ${result.status}`);
   return result;
 }
@@ -87,14 +89,23 @@ writeFileSync(join(stage, ".openai", "hosting.json"), `${JSON.stringify({
 // This app's runtime dependencies on top of the starter's pinned set.
 const appPackage = JSON.parse(readFileSync(join(appRoot, "package.json"), "utf8"));
 const stagePackage = JSON.parse(readFileSync(join(stage, "package.json"), "utf8"));
+// Official Cloudflare Vinext patch release and its declared compatible RSC peer. Keep the Sites
+// integration intact; beta.5's lazy Link navigation chunk is broken in the retained starter.
+stagePackage.devDependencies.vinext = '1.0.1';
+stagePackage.devDependencies['@vitejs/plugin-rsc'] = '0.5.36';
 const added = Object.entries(appPackage.dependencies).filter(([name]) => !stagePackage.dependencies[name]);
-if (added.length > 0) {
+{
   stagePackage.dependencies = Object.fromEntries(
     [...Object.entries(stagePackage.dependencies), ...added].sort(([a], [b]) => a.localeCompare(b)),
   );
   stagePackage.name = "moduigukgam-sites-worker";
   writeFileSync(join(stage, "package.json"), `${JSON.stringify(stagePackage, null, 2)}\n`);
-  run("npm", ["install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund"]);
+  // npm's retained cross-platform starter lock omitted optional WASM dependencies on Windows.
+  // Resolve a fresh generated-stage lock, then require npm ci to validate it (no install fallback).
+  rmSync(join(stage, 'package-lock.json'), { force: true });
+  // Resolve once with the caller's supported npm, then validate with the strict ci step.
+  run("npm", ["install", '--package-lock-only',
+    "--ignore-scripts", "--workspaces=false", "--include=dev", "--include=optional", "--no-audit", "--no-fund"]);
 }
 const lockSha = createHash("sha256").update(readFileSync(join(stage, "package-lock.json"))).digest("hex");
 const lockMarker = join(stage, ".lock-sha256");
@@ -116,6 +127,10 @@ run("npm", ["run", "build"], { env });
 // 4. Fail closed on the public boundary and on anything that is not this code-only artifact.
 const dist = join(stage, "dist");
 const distFiles = walk(dist);
+const artifactSize = sizeReport(dist, {});
+if (artifactSize.bundle.total_bytes > SITES_PLATFORM_LIMIT_BYTES) {
+  fail(`Worker artifact exceeds ${SITES_PLATFORM_LIMIT_BYTES} uncompressed bytes`);
+}
 const rel = (path) => relative(dist, path).split("\\").join("/");
 for (const path of distFiles.filter((file) => /\.(html|txt|m?js|json|map)$/.test(file))) {
   const text = readFileSync(path, "utf8");
@@ -133,8 +148,11 @@ if (!wrangler.d1_databases?.some((binding) => binding.binding === "DB")) fail("D
 if (values["load-local"]) {
   const projection = resolve(values["load-local"]);
   const wranglerCli = ["--import", "./scripts/sites-env.mjs", "./node_modules/wrangler/bin/wrangler.js"];
-  rmSync(join(stage, ".wrangler", "state"), { recursive: true, force: true });
-  for (const file of [join(stage, "drizzle", "0000_public_projection.sql"), join(projection, "load.sql"), join(projection, "activate.sql")]) {
+  // Only this disposable local D1 is writable. Rebuilds retain its ACTIVE/PREVIOUS snapshots.
+  const localSchema = join(stage, '.wrangler', 'local-schema.sql');
+  mkdirSync(join(stage, '.wrangler'), { recursive: true });
+  writeFileSync(localSchema, readFileSync(join(stage, 'drizzle', '0000_public_projection.sql'), 'utf8').replaceAll('CREATE TABLE ', 'CREATE TABLE IF NOT EXISTS '));
+  for (const file of [localSchema, join(projection, "load.sql"), join(projection, "activate.sql")]) {
     run(process.execPath, [...wranglerCli, "d1", "execute", "DB", "--local", "--config", "dist/server/wrangler.json",
       "--persist-to", ".wrangler/state", "--file", file]);
   }
@@ -162,7 +180,10 @@ const manifest = {
   git_commit: commit,
   git_worktree_dirty: dirty,
   sites_plugin_version: pluginVersion,
-  worker_artifact: sizeReport(dist, {}),
+  vinext_version: stagePackage.devDependencies.vinext,
+  rsc_plugin_version: stagePackage.devDependencies['@vitejs/plugin-rsc'],
+  generated_lock_sha256: lockSha,
+  worker_artifact: artifactSize,
 };
 writeFileSync(join(out, "worker-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(JSON.stringify({ status: "PASS", out, stage, ...manifest }, null, 2));

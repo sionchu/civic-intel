@@ -3,6 +3,7 @@
 export const FORBIDDEN_TOKENS = [
   "TEL_NO", "E_MAIL", "normalized_payload", "raw_payload", "railway.internal",
   "X-Civic-Operator-Token", "CIVIC_OPERATOR", "DATABASE_URL", "postgresql://", "postgresql+psycopg",
+  "/admin/review", "/operator/", '"api_key"', '"operator_token"', '"private_contact"',
 ];
 export const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 

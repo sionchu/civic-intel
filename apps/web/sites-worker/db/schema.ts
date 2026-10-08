@@ -13,7 +13,8 @@ export const snapshotMeta = sqliteTable("snapshot_meta", {
   generatedAt: text("generated_at").notNull(),
   generatedAtKst: text("generated_at_kst").notNull(),
   gitCommit: text("git_commit").notNull(),
-  // JSON array of path patterns whose absence means "no public record" (HTTP 404).
+  // Versioned JSON {patterns, paths}: exact expected paths/status/hashes distinguish corrupt or
+  // missing exported rows from unknown UUIDs (404). No additional payload store.
   scopeJson: text("scope_json").notNull(),
   pathCount: integer("path_count").notNull(),
   partCount: integer("part_count").notNull(),

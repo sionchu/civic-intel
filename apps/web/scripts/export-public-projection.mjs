@@ -20,7 +20,7 @@ import { gzipSync } from "node:zlib";
 
 import { EMAIL, forbiddenToken } from "./public-boundary.mjs";
 
-export const PROJECTION_SCHEMA_VERSION = 1;
+export const PROJECTION_SCHEMA_VERSION = 2;
 // RECENT_PLENARY_VOTE_LIMIT in packages/rendering/profile_projection.py: a Person response carries only
 // the rendered recent votes; the vote universe stays in PostgreSQL and is never exported.
 const MAX_RENDERED_PLENARY_VOTES = 10;
@@ -59,14 +59,20 @@ async function main() {
   });
   const api = values.api?.replace(/\/+$/, "");
   if (!api) fail("--api <private Civic Intel API origin on this host> is required");
-  const apiOrigin = new URL(api).origin;
+  const apiUrl = new URL(api);
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(apiUrl.hostname) || apiUrl.username || apiUrl.password) {
+    fail("--api must be a credential-free loopback API origin");
+  }
+  const apiOrigin = apiUrl.origin;
+  const concurrency = Number(values.concurrency);
+  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 8) fail("concurrency must be an integer from 1 to 8");
 
   // Detail reads keep a public 4xx answer (e.g. 404, or 422 for a money comparison the record does
   // not support) exactly as the pages would have received it; a 5xx always fails the export.
-  async function read(path, { allowClientError = false } = {}) {
-    const response = await fetch(`${api}${path}`, { cache: "no-store" });
+  async function read(path, { allowedStatuses = [] } = {}) {
+    const response = await fetch(`${api}${path}`, { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(120_000) });
     if (response.ok) return { status: response.status, body: await response.json() };
-    if (allowClientError && response.status >= 400 && response.status < 500) {
+    if (allowedStatuses.includes(response.status)) {
       const body = await response.json().catch(() => null);
       // A request id identifies one private API call, not the public answer; it is not replayed.
       if (body?.error) delete body.error.request_id;
@@ -102,10 +108,12 @@ async function main() {
   ];
   async function readAll(paths) {
     const queue = [...paths];
-    await Promise.all(Array.from({ length: Number(values.concurrency) }, async () => {
+    await Promise.all(Array.from({ length: concurrency }, async () => {
       while (queue.length > 0) {
         const path = queue.shift();
-        add(path, await read(path, { allowClientError: !path.startsWith("/people/") }));
+        // Listed records and cited sources must exist. Only the optional money comparison has
+        // contract-valid 404/422 answers; auth/rate-limit/provider failures never become snapshots.
+        add(path, await read(path, { allowedStatuses: path.includes('/money?') ? [404, 422] : [] }));
       }
     }));
   }
@@ -123,7 +131,7 @@ async function main() {
       }
     }
   };
-  for (const path of detailPaths) collectSources(entries.get(path).body);
+  for (const response of entries.values()) collectSources(response.body);
   if ([...sourceIds].some((id) => !new RegExp(`^${UUID}$`).test(id))) fail("non-UUID source id");
   await readAll([...sourceIds].sort().map((id) => `/sources/${id}`));
 
@@ -168,30 +176,56 @@ async function main() {
     ...row, part: index, chunk: row.gzip.subarray(index * PART_BYTES, (index + 1) * PART_BYTES),
   })));
   const partCount = parts.length;
+  const scopeJson = JSON.stringify({
+    patterns: SCOPES,
+    paths: Object.fromEntries(rows.map((row) => [row.path, [row.status, row.sha256]])),
+  });
   const meta = [
     snapshotId, "STAGED", PROJECTION_SCHEMA_VERSION, generatedAt.toISOString(), generatedAtKst, gitCommit,
-    JSON.stringify(SCOPES), rows.length, partCount, people.length, organizations.length,
+    '', rows.length, partCount, people.length, organizations.length,
   ];
   const load = [
     "-- 모두의국감 public read projection (REPLACEABLE_PUBLIC_READ_SNAPSHOT_NOT_SSOT). Generated; never edit.",
     `INSERT INTO snapshot_meta (snapshot_id, status, projection_schema_version, generated_at, generated_at_kst, git_commit, scope_json, path_count, part_count, public_people, public_organizations) VALUES (${meta.map((value) => (typeof value === "number" ? value : sqlText(value))).join(", ")}) ON CONFLICT DO NOTHING;`,
     ...parts.map((row) => `INSERT INTO public_read (snapshot_id, path, part, status, content_sha256, body_gzip) VALUES (${sqlText(snapshotId)}, ${sqlText(row.path)}, ${row.part}, ${row.status}, ${sqlText(row.sha256)}, X'${row.chunk.toString("hex")}') ON CONFLICT DO NOTHING;`),
   ];
+  // Keep metadata INSERTs bounded too; manifest chunks resume by committed length and never
+  // append again to an already complete STAGED/ACTIVE snapshot.
+  for (let offset = 0; offset < scopeJson.length; offset += 20_000) {
+    const chunk = scopeJson.slice(offset, offset + 20_000);
+    load.push(`UPDATE snapshot_meta SET scope_json = scope_json || ${sqlText(chunk)} WHERE snapshot_id = ${sqlText(snapshotId)} AND status = 'STAGED' AND length(scope_json) = ${offset};`);
+  }
   writeFileSync(join(out, "load.sql"), `${load.join("\n")}\n`);
 
-  // Activation only proceeds when the staged snapshot is complete; otherwise every statement is a no-op.
+  // Validate exact expected bytes before any status mutation. Each assertion stays below D1's
+  // statement limit. Execute the entire file in the local D1 batch; any error aborts activation.
+  // The assertions also detect a missing path replaced by an extra row with the same total count.
+  const validation = [
+    `SELECT CASE WHEN EXISTS (SELECT 1 FROM snapshot_meta WHERE snapshot_id = ${sqlText(snapshotId)} AND projection_schema_version = ${PROJECTION_SCHEMA_VERSION} AND scope_json = ${sqlText(scopeJson)} AND path_count = ${rows.length} AND part_count = ${partCount}) AND (SELECT COUNT(*) FROM public_read WHERE snapshot_id = ${sqlText(snapshotId)}) = ${partCount} THEN 1 ELSE json('INVALID_PROJECTION_METADATA') END;`,
+    ...parts.map((row) => `SELECT CASE WHEN EXISTS (SELECT 1 FROM public_read WHERE snapshot_id = ${sqlText(snapshotId)} AND path = ${sqlText(row.path)} AND part = ${row.part} AND status = ${row.status} AND content_sha256 = ${sqlText(row.sha256)} AND body_gzip = X'${row.chunk.toString('hex')}') THEN 1 ELSE json('INCOMPLETE_OR_CORRUPT_PROJECTION') END;`),
+  ];
+  // The metadata manifest can exceed the statement limit: verify its hash through exact bounded
+  // substring assertions, keeping the main assertion constant-size.
+  validation[0] = validation[0].replace(`scope_json = ${sqlText(scopeJson)}`, `length(scope_json) = ${[...scopeJson].length}`);
+  for (let offset = 0; offset < scopeJson.length; offset += 20_000) {
+    const chunk = scopeJson.slice(offset, offset + 20_000);
+    validation.push(`SELECT CASE WHEN EXISTS (SELECT 1 FROM snapshot_meta WHERE snapshot_id = ${sqlText(snapshotId)} AND substr(scope_json, ${offset + 1}, ${chunk.length}) = ${sqlText(chunk)}) THEN 1 ELSE json('INVALID_PROJECTION_MANIFEST') END;`);
+  }
+  writeFileSync(join(out, 'validate.sql'), `${validation.join('\n')}\n`);
+
   const complete = `(SELECT COUNT(*) FROM public_read WHERE snapshot_id = ${sqlText(snapshotId)}) = ${partCount} AND EXISTS (SELECT 1 FROM snapshot_meta WHERE snapshot_id = ${sqlText(snapshotId)} AND status = 'STAGED')`;
   writeFileSync(join(out, "activate.sql"), `${[
     `-- Activate ${snapshotId}; the current ACTIVE becomes PREVIOUS (the rollback target).`,
-    `UPDATE snapshot_meta SET status = 'RETIRED' WHERE status = 'PREVIOUS' AND ${complete};`,
-    `UPDATE snapshot_meta SET status = CASE WHEN snapshot_id = ${sqlText(snapshotId)} THEN 'ACTIVE' ELSE 'PREVIOUS' END WHERE (snapshot_id = ${sqlText(snapshotId)} OR status = 'ACTIVE') AND ${complete};`,
+    ...validation,
+    `UPDATE snapshot_meta SET status = CASE WHEN snapshot_id = ${sqlText(snapshotId)} THEN 'ACTIVE' WHEN status = 'ACTIVE' THEN 'PREVIOUS' ELSE 'RETIRED' END WHERE (snapshot_id = ${sqlText(snapshotId)} OR status IN ('ACTIVE', 'PREVIOUS')) AND ${complete};`,
     "DELETE FROM public_read WHERE snapshot_id IN (SELECT snapshot_id FROM snapshot_meta WHERE status = 'RETIRED');",
     "DELETE FROM snapshot_meta WHERE status = 'RETIRED';",
   ].join("\n")}\n`);
-  // Rollback swaps ACTIVE and PREVIOUS, and only when exactly one of each exists.
+  // Roll back to THIS exported snapshot. Retrying after response loss is a no-op, never a swap back.
   writeFileSync(join(out, "rollback.sql"), `${[
-    "-- Serve the PREVIOUS snapshot again; the current ACTIVE becomes PREVIOUS.",
-    "UPDATE snapshot_meta SET status = CASE status WHEN 'ACTIVE' THEN 'PREVIOUS' ELSE 'ACTIVE' END WHERE status IN ('ACTIVE', 'PREVIOUS') AND (SELECT COUNT(*) FROM snapshot_meta WHERE status = 'PREVIOUS') = 1 AND (SELECT COUNT(*) FROM snapshot_meta WHERE status = 'ACTIVE') = 1;",
+    `-- Restore ${snapshotId} if it is PREVIOUS; current ACTIVE becomes PREVIOUS.`,
+    ...validation,
+    `UPDATE snapshot_meta SET status = CASE WHEN snapshot_id = ${sqlText(snapshotId)} THEN 'ACTIVE' ELSE 'PREVIOUS' END WHERE status IN ('ACTIVE', 'PREVIOUS') AND EXISTS (SELECT 1 FROM snapshot_meta WHERE snapshot_id = ${sqlText(snapshotId)} AND status = 'PREVIOUS') AND (SELECT COUNT(*) FROM snapshot_meta WHERE status = 'PREVIOUS') = 1 AND (SELECT COUNT(*) FROM snapshot_meta WHERE status = 'ACTIVE') = 1;`,
   ].join("\n")}\n`);
 
   const manifest = {

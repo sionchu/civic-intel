@@ -1,11 +1,14 @@
 # 모두의국감 — ChatGPT Sites deployment runbook
 
-Status: `PREPARED_NOT_APPLIED`. No Site and no `.openai/hosting.json` exist yet. No Railway
-production service, domain or indexing variable has been created.
+Status: `RELEASE_01_LOCAL_REVIEW_WITH_BLOCKERS` (2026-10-08). Native read-only Sites inspection
+confirmed the existing `moduigukgam` Site at version 3, active/public, with no D1 bindings:
+`https://moduigukgam.leeje92.chatgpt.site`. This does not verify its current source commit or
+served contents. RELEASE-01 made no Site, hosted D1, access, secret or canonical DB change.
 
 - Governing plan: `docs/exec-plans/active/moduigukgam-public-launch-v0.md`.
-- The D1-backed Worker candidate (not production; cutover needs owner approval) is in
-  `docs/exec-plans/active/sites-storage-split-v0.md`. This static runbook stays the production path.
+- The D1-backed Worker candidate, current evidence and blockers are in
+  `docs/exec-plans/active/sites-storage-split-v0.md`. The current full static input exceeds the
+  256 MiB limit; it is not a passing large-data fallback. Cutover requires separate owner approval.
 - Owner decision (2026-10-06, in thread): generate the site **from the Mac canonical DB** and ship it
   **through ChatGPT Sites**.
 
@@ -42,7 +45,7 @@ What they say:
 - **Not documented.** Robots, SEO and canonical handling: Codex verifies these on the real runtime.
   There is no data residency at launch, and beta usage limits apply.
 
-## 2. Chosen shape: static public-read snapshot built from the Mac canonical DB
+## 2. Existing static path: public-read snapshot built from the Mac canonical DB
 
 ```text
 Mac canonical PostgreSQL ──(DATABASE_URL, Mac only)──▶ private FastAPI on 127.0.0.1
@@ -71,7 +74,7 @@ Mac canonical PostgreSQL ──(DATABASE_URL, Mac only)──▶ private FastAPI
 - **Rebuilding.** New data is a rebuild followed by a Sites save-and-deploy. Between rebuilds the
   site shows the snapshot as of its build time.
 
-The build fails closed when any of these is true:
+The build fails closed when any of these is true (including the unchanged 256 MiB limit):
 - `/ready` is not ready
 - `/people` is empty
 - any required route or public Person page is missing
@@ -79,6 +82,48 @@ The build fails closed when any of these is true:
 - the bundle contains `TEL_NO`, `E_MAIL`, `normalized_payload`, `raw_payload`, `railway.internal`,
   the operator token header, a `postgresql://` URL or the API origin
 - an HTML or RSC payload contains email-like text
+- the uncompressed bundle exceeds 256 MiB
+
+### 2a. RELEASE-01 Worker candidate (local-only; not a cutover)
+
+Reuse the same Next UI and `data.ts -> public-read.ts` boundary. The generated Sites Worker
+reads publication-gated, gzip-compressed API answers from exactly one ACTIVE local D1 snapshot;
+PostgreSQL remains the canonical store. The footer displays that snapshot's `generated_at_kst`,
+while schedule today/next/past remains a reader-time KST fact.
+
+The fixed 1,142-Person input measured 5,164,508,878 B for static export (guard FAIL), versus
+1,724,822 B for the final clean Mac Worker artifact (GREEN). Data is outside the code artifact:
+4,028 paths / 6,372 parts / 105,913,861 gzip bytes. No R2 or hosted write endpoint is introduced.
+These replace the older 504-Person measurements as current local evidence; full measurements,
+hashes, commands, 27-route comparison and retained screenshot locations are in the active plan.
+
+Local procedure on an isolated checkout:
+
+```sh
+node apps/web/scripts/export-public-projection.mjs --api http://127.0.0.1:8100 --out <local-projection>
+node apps/web/scripts/build-sites-worker.mjs --out <local-worker> --load-local <local-projection>
+```
+
+Use the existing healthy loopback API when authorized; never restart it merely for this build.
+Windows scoped npm command, when the installed npm reproduces the retained lock issue:
+
+```powershell
+npx --yes npm@11.21.0 exec -- node apps/web/scripts/build-sites-worker.mjs
+```
+
+The generated stage applies schema and dataset only via Wrangler `--local`. STAGED data is
+validated against exact metadata, paths, parts, statuses, hashes and gzip bytes before one atomic
+ACTIVE/PREVIOUS transition. Keep the intended previous projection's validated `rollback.sql`.
+Load/activate/rollback retries are idempotent. Rebuilding preserves local D1. Schema-1 projections
+require a schema-2 re-export; do not weaken the reader or edit canonical records to accommodate it.
+
+The installed Sites 1.0.0-c storage guide requires bounded schema-only migrations and keeps seeds
+outside them. Current native D1 tools provide bounded reads only. A Sites-managed hosted bulk
+writer was not verified. Cloudflare account-level import commands are not proof of Sites access.
+Do not use an unauthenticated endpoint, embed seed data in a migration, or invent an import path.
+Binding, writer design/secrets, fresh hosted load, private preview, save/deploy and public change
+are separate owner approvals. The largest Person's Aside rendered comparison remains BLOCKED;
+do not call the candidate `READY_FOR_CUTOVER`.
 
 Shapes that were not chosen:
 - **Next/FastAPI/Postgres on Sites:** impossible, because Sites has no TCP to PostgreSQL and cannot
@@ -89,9 +134,10 @@ Shapes that were not chosen:
 
 ## 3. Build host prerequisites (the Mac mini)
 
-1. The Mac is online and the canonical PostgreSQL is reachable locally. Its state is UNKNOWN in this
-   session. It was last reported offline on 2026-10-04.
-2. Make a clean checkout of the **merged master** that contains PR #193. Record `git rev-parse HEAD`.
+1. On 2026-10-08 the Mac's existing loopback API at port 8100 was ready and returned 1,142 public
+   People / 387 Organizations. Recheck readiness before a later build; this is not a standing
+   authorization to write or restart the canonical service.
+2. Make a clean checkout of the approved source commit. Record `git rev-parse HEAD`.
    The manifest records `git_worktree_dirty`; it must be `false`.
 3. Install with `python -m pip install .` and `npm --prefix apps/web ci`.
 4. Start the API against the canonical DB, bound to loopback only. Prefer a read-only DB role if one
@@ -106,7 +152,7 @@ Shapes that were not chosen:
 5. Build: `npm --prefix apps/web run build:sites -- --api http://127.0.0.1:8000`. It must end with
    `"status": "PASS"`. The output goes to `dist/moduigukgam-site/`, or to the path given with
    `--out`.
-6. Stop the API.
+6. Stop only an API process started and owned by this build. Leave an existing canonical API running.
 7. Smoke-test locally:
 
    ```sh
@@ -117,9 +163,9 @@ Shapes that were not chosen:
 
    It must PASS.
 
-Check that the manifest counts match what you expect from the canonical DB. As of 2026-10-04 the
-DB had 151 public Gukgam targets across 7 committees and 444 Organizations. The public People count
-must be re-measured.
+Check manifest counts against the captured public API input. RELEASE-01 measured 1,142 People,
+387 public Organizations, 151 Gukgam targets and 1,731 witness/reference rows; the actual Gukgam
+page had 2,963 anchors. These are dated observations, not fixed future requirements.
 
 ### 3a. Witness lists (증인·참고인) — before the snapshot build
 
@@ -165,13 +211,16 @@ is not an attestation):
 
 ## 4. Sites sequence
 
-1. In ChatGPT (desktop Codex/Work, or Work on the web), ask `@Sites` to create a Site named
-   **모두의국감** from the folder `dist/moduigukgam-site` as a **static site**. Confirm the project
-   produces compatible deployment artifacts.
+All steps below require separate owner approval under RELEASE-01. Its local QA does not authorize
+publication. A failing full static bundle cannot be saved as a passing fallback.
+
+1. Reuse the existing **모두의국감** Site (`moduigukgam`) and its exact returned project ID;
+   do not create a duplicate Site. For the static path, use a verified passing static artifact.
    - Do not add a server, D1, R2, env vars or secrets.
-   - Request the URL slug `moduigukgam` if it is free; otherwise use any lowercase slug.
-2. **Save a version** and keep the audience owner-only. Run the private preview QA in §6.
-3. **Deploy that saved version.** Set the audience to **Anyone on the internet**. Record the URL.
+2. **Save an approved version** and run owner-private version-preview QA in §6. Preserve the
+   existing published Site's audience; do not restrict it merely to review an unpublished version.
+3. **Deploy that reviewed saved version** only after owner approval. Preserve the existing audience;
+   any public-access change needs separate approval. Record the exact version and URL.
 4. Run the public smoke in §6 as a logged-out visitor, plus preflight against the Site URL.
 5. To update later:
    - rebuild into the **same folder**; the build keeps `.openai/`
@@ -202,7 +251,7 @@ is not an attestation):
   - the search box is in the first viewport
   - the 오늘 (KST) date matches the real date
   - the schedule line and the 자료 범위 section are present
-  - the footer shows 자료 기준 with the build time
+  - the static footer shows the capture/build time; the Worker footer shows ACTIVE snapshot time
 - **Search:**
   - searching a real current member's name lands on `/people/?q=…` with that person listed
   - the detail page shows 핵심 기록 and 근거 열기, and the source card shows policy and date
@@ -228,23 +277,23 @@ is not an attestation):
 - **Bad version:** redeploy the previous saved version.
 - **Bad data:** rebuild from the DB, then save, preview and deploy. Never hand-edit the bundle.
 - **Indexing mistake:** rebuild without `--index`, then save, preview and deploy.
-- **Code:** revert the merge of PR #193. It has no schema or data change.
+- **Code:** redeploy the last known-good saved version after approval. A source revert must target
+  the actual faulty change; PR #193 is not the Worker cutover. Do not claim the full large-data
+  static rebuild passes merely because an earlier saved static version remains available.
 
 ## 8. Authority
 
-**Codex may do these without asking:**
-- read docs and the repo
-- run local checks
-- run the snapshot build on the Mac against the loopback API
-- create the Site
-- save versions and use the private preview
-- deploy a reviewed version and set the audience to public
-- run read-only smoke and preflight
-- enable indexing per §5 after a passing public smoke
-- write the receipt
-- unpublish on a failed smoke
+**RELEASE-01 may do these without asking:**
+- read docs, repository, existing Site metadata and publication-gated loopback API responses
+- install local dependencies; run local tests/builds/previews and read-only smoke
+- write schema/data only to disposable local D1; validate lifecycle and rollback
+- make verified code commits and update existing PR #204 without force-pushing or merging master
+- update the active plan and this runbook with executed evidence
 
 **These need explicit owner approval:**
+- hosted D1 creation, binding, import, activation or a hosted writer/security design
+- Sites project/settings changes, version save, hosted private preview, deploy or access changes
+- public publication, indexing or unpublishing
 - any paid resource or plan upgrade, including Railway production
 - any public API or DB endpoint, tunnel or proxy, or any relaxed auth
 - copying `DATABASE_URL`, operator tokens or provider keys anywhere except the Mac API process

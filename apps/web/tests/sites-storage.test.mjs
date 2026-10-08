@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { DatabaseSync } from 'node:sqlite';
+import { gzipSync } from 'node:zlib';
+import ts from 'typescript';
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { sizeReport } from "../scripts/bundle-size-report.mjs";
 
@@ -96,7 +99,7 @@ test("projection export is deterministic and keeps public 4xx answers", async ()
   const activate = readFileSync(join(first.out, "activate.sql"), "utf8");
   assert.match(activate, /status = 'STAGED'/);
   assert.match(activate, new RegExp(`= ${a.counts.parts} AND`));
-  assert.match(readFileSync(join(first.out, "rollback.sql"), "utf8"), /WHEN 'ACTIVE' THEN 'PREVIOUS' ELSE 'ACTIVE'/);
+  assert.match(readFileSync(join(first.out, "rollback.sql"), "utf8"), /snapshot_id = .* AND status = 'PREVIOUS'/);
 });
 
 test("projection export fails closed on the public boundary", async () => {
@@ -107,12 +110,129 @@ test("projection export fails closed on the public boundary", async () => {
     [{ [`/organizations/${ORG}`]: { id: ORG, contact: "someone@example.com" } }, /email-like text/],
     [{ [`/people/${PERSON_B}`]: 503 }, /returned HTTP 503/],
     [{ [`/people/${PERSON_B}`]: 404 }, /returned HTTP 404/],
+    [{ [`/organizations/${ORG}`]: 404 }, /returned HTTP 404/],
+    [{ [`/sources/${SOURCE}`]: 404 }, /returned HTTP 404/],
+    [{ [`/ontology/people/${PERSON_A}`]: 401 }, /returned HTTP 401/],
+    [{ [`/organizations/${ORG}`]: 403 }, /returned HTTP 403/],
+    [{ [`/organizations/${ORG}/money?earlier_fiscal_year=2024&later_fiscal_year=2025`]: 429 }, /returned HTTP 429/],
   ];
   for (const [overrides, message] of cases) {
     const result = await exportWith(overrides);
     assert.notEqual(result.code, 0);
     assert.match(result.output, message);
   }
+});
+
+test('snapshot SQL validates exact data before atomic activation and retry-safe rollback', async () => {
+  const a = await exportWith();
+  const b = await exportWith({ [`/sources/${SOURCE}`]: { id: SOURCE, title: '변경된 출처' } });
+  for (const result of [a, b]) assert.equal(result.code, 0, result.output);
+  const manifest = (result) => JSON.parse(readFileSync(join(result.out, 'projection-manifest.json'), 'utf8'));
+  const sql = (result, name) => readFileSync(join(result.out, `${name}.sql`), 'utf8');
+  const db = new DatabaseSync(':memory:');
+  db.exec(readFileSync(new URL('../sites-worker/drizzle/0000_public_projection.sql', import.meta.url), 'utf8'));
+  const statuses = () => db.prepare('SELECT snapshot_id, status FROM snapshot_meta ORDER BY snapshot_id').all();
+  const active = () => db.prepare("SELECT snapshot_id FROM snapshot_meta WHERE status = 'ACTIVE'").get()?.snapshot_id;
+  try {
+    db.exec(sql(a, 'load'));
+    assert.equal(active(), undefined);
+    db.exec(sql(a, 'activate'));
+    assert.equal(active(), manifest(a).snapshot_id);
+    const before = statuses();
+    db.exec(sql(a, 'load')); db.exec(sql(a, 'activate'));
+    assert.deepEqual(statuses(), before);
+    db.exec(sql(b, 'load'));
+    // Same count, wrong path; activation must fail before changing the current ACTIVE.
+    db.prepare('UPDATE public_read SET path = ? WHERE snapshot_id = ? AND path = ?').run('/unexpected', manifest(b).snapshot_id, `/sources/${SOURCE}`);
+    assert.throws(() => db.exec(sql(b, 'activate')), /malformed JSON/);
+    assert.equal(active(), manifest(a).snapshot_id);
+    db.prepare('DELETE FROM public_read WHERE snapshot_id = ? AND path = ?').run(manifest(b).snapshot_id, '/unexpected');
+    db.exec(sql(b, 'load'));
+    db.prepare('UPDATE public_read SET body_gzip = ? WHERE snapshot_id = ? AND path = ?').run(gzipSync(Buffer.from('{}')), manifest(b).snapshot_id, `/sources/${SOURCE}`);
+    assert.throws(() => db.exec(sql(b, 'activate')), /malformed JSON/);
+    assert.equal(active(), manifest(a).snapshot_id);
+    db.prepare('DELETE FROM public_read WHERE snapshot_id = ? AND path = ?').run(manifest(b).snapshot_id, `/sources/${SOURCE}`);
+    db.exec(sql(b, 'load')); db.exec(sql(b, 'activate'));
+    assert.equal(active(), manifest(b).snapshot_id);
+    db.exec(sql(a, 'rollback'));
+    assert.equal(active(), manifest(a).snapshot_id);
+    const rolledBack = statuses();
+    db.exec(sql(a, 'rollback'));
+    assert.deepEqual(statuses(), rolledBack);
+    // Complete activation SQL queries (including hex bytes) stay under D1's 100 KB limit.
+    for (const line of sql(b, 'activate').split('\n')) assert.ok(Buffer.byteLength(line) < 100_000);
+  } finally { db.close(); }
+});
+
+test('D1 reader checks manifest/hash/parts and distinguishes lost rows from unknown UUIDs', async () => {
+  const result = await exportWith();
+  assert.equal(result.code, 0, result.output);
+  const db = new DatabaseSync(':memory:');
+  db.exec(readFileSync(new URL('../sites-worker/drizzle/0000_public_projection.sql', import.meta.url), 'utf8'));
+  for (const name of ['load', 'activate']) db.exec(readFileSync(join(result.out, `${name}.sql`), 'utf8'));
+  const binding = { prepare(query) {
+    let values = [];
+    return { bind(...args) { values = args; return this; }, async all() { return { results: db.prepare(query).all(...values) }; } };
+  } };
+  globalThis.__projectionTestEnv = { DB: binding };
+  const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
+    .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__projectionTestEnv;')
+    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value; return () => value ??= fn(); };');
+  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+  try {
+    assert.equal((await reader.readPublic(`/people/${PERSON_A}`)).body.id, PERSON_A);
+    for (const id of [PERSON_A.toUpperCase(), PERSON_A.replaceAll('-', ''), `{${PERSON_A}}`, `urn:uuid:${PERSON_A}`]) {
+      assert.equal((await reader.readPublic(`/people/${id}`)).body.id, PERSON_A);
+    }
+    for (const prefix of ['/people', '/organizations', '/sources', '/ontology/people', '/ontology/organizations']) {
+      const invalid = await reader.readPublic(`${prefix}/not-a-uuid`);
+      assert.equal(invalid.status, 422);
+      assert.equal(invalid.body.error.code, 'INVALID_INPUT');
+    }
+    assert.match(await reader.readSnapshotAt(), /KST$/);
+    assert.equal((await reader.readPublic('/people/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).status, 404);
+    await assert.rejects(reader.readPublic('/admin/review'), /outside the exported/);
+    db.prepare('UPDATE public_read SET body_gzip = ? WHERE path = ?').run(gzipSync(Buffer.from('{}')), `/people/${PERSON_A}`);
+    await assert.rejects(reader.readPublic(`/people/${PERSON_A}`), /corrupt public projection/);
+    db.prepare('DELETE FROM public_read WHERE path = ?').run(`/sources/${SOURCE}`);
+    await assert.rejects(reader.readPublic(`/sources/${SOURCE}`), /missing exported/);
+  } finally { db.close(); delete globalThis.__projectionTestEnv; }
+});
+
+const vinextShims = new URL('../.sites-worker-build/node_modules/vinext/dist/shims/', import.meta.url);
+test('installed Vinext cache pins metadata and reads to one snapshot per request', {
+  skip: !existsSync(new URL('cache-for-request.js', vinextShims)),
+}, async () => {
+  const a = await exportWith();
+  const b = await exportWith({ [`/sources/${SOURCE}`]: { id: SOURCE, title: '변경된 출처' } });
+  for (const result of [a, b]) assert.equal(result.code, 0, result.output);
+  const db = new DatabaseSync(':memory:');
+  db.exec(readFileSync(new URL('../sites-worker/drizzle/0000_public_projection.sql', import.meta.url), 'utf8'));
+  const sql = (result, name) => readFileSync(join(result.out, `${name}.sql`), 'utf8');
+  db.exec(sql(a, 'load')); db.exec(sql(a, 'activate')); db.exec(sql(b, 'load'));
+  const binding = { prepare(query) {
+    let values = [];
+    return { bind(...args) { values = args; return this; }, async all() { return { results: db.prepare(query).all(...values) }; } };
+  } };
+  globalThis.__projectionRequestEnv = { DB: binding };
+  const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
+    .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__projectionRequestEnv;')
+    .replace('"vinext/cache"', JSON.stringify(pathToFileURL(fileURLToPath(new URL('cache-for-request.js', vinextShims))).href));
+  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+  const { createRequestContext, runWithRequestContext } = await import(new URL('unified-request-context.js', vinextShims));
+  try {
+    await runWithRequestContext(createRequestContext(), async () => {
+      const before = await reader.readSnapshotAt();
+      db.exec(sql(b, 'activate'));
+      assert.equal(await reader.readSnapshotAt(), before);
+      assert.equal((await reader.readPublic(`/sources/${SOURCE}`)).body.title, '출처');
+    });
+    await runWithRequestContext(createRequestContext(), async () => {
+      assert.equal((await reader.readPublic(`/sources/${SOURCE}`)).body.title, '변경된 출처');
+    });
+  } finally { db.close(); delete globalThis.__projectionRequestEnv; }
 });
 
 test("bundle size report attributes bytes per category and per Person route", () => {
