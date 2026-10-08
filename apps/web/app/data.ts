@@ -9,6 +9,7 @@ import type {
   Organization,
   OrganizationSummary,
   Person,
+  PersonRelationships,
   Source,
 } from "./types";
 
@@ -61,6 +62,9 @@ export function getPeople(): Promise<ApiResult<Person[]>> {
   return getJson("/people", { revalidateSeconds: DIRECTORY_REVALIDATE_SECONDS });
 }
 export function getPerson(id: string): Promise<ApiResult<Person>> { return getJson(`/people/${id}`); }
+export function getPersonRelationships(id: string): Promise<ApiResult<PersonRelationships>> {
+  return getJson(`/relationships/people/${id}?limit_per_via=300`);
+}
 export function getPersonOntology(id: string): Promise<ApiResult<OntologyGraph>> {
   return getJson(`/ontology/people/${id}`);
 }

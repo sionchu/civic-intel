@@ -331,6 +331,43 @@ export type Person = {
   profile?: ProfileProjection;
 };
 
+// Public, read-time relationship projection. Only fields used by the Person page are typed here.
+export type PersonRelationships = {
+  groups: {
+    via: { label: string };
+    layer: string;
+    relation_count: number;
+    relations: {
+      relation_type: string;
+      status: string;
+      rule_id: string;
+      rule_version: string;
+      subject_person_id: string;
+      object_person_id: string;
+      temporal: {
+        overlap: string;
+        basis: string;
+        subject_period: { start: string | null; end: string | null; as_of: string | null };
+        object_period: { start: string | null; end: string | null; as_of: string | null };
+      };
+      source_claim_ids: string[];
+      evidence_ids: string[];
+      source_ids: string[];
+    }[];
+  }[];
+  cosponsorship: {
+    relation_type: string;
+    status: string;
+    rule_id: string;
+    rule_version: string;
+    subject_person_id: string;
+    object_person_id: string;
+    shared_bill_count: number;
+    source_claim_ids: string[];
+  }[];
+  limitations: string[];
+};
+
 export type OntologyNode = {
   id: string;
   kind: "PERSON" | "ORGANIZATION" | "EDUCATIONAL_INSTITUTION" | "COMPANY" | "COMMITTEE" | "OFFICE" | "HEARING" | "ISSUE" | "SOURCE_LISTED_ROLE_HOLDER";

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getSource } from "../../data";
+import { getGukgamCommittees, getGukgamTargets, getPeople, getPerson, getPersonOntology, getPersonRelationships, getSource } from "../../data";
 import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
 import CareerTermStrip from "../../components/career-term-strip";
 import FactBox, { type FactRow } from "../../components/fact-box";
@@ -10,6 +10,7 @@ import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
 import PendingLanes from "../../components/pending-lanes";
 import ReadState from "../../components/read-state";
+import RelationshipSummary, { summarizeRelationships } from "../../components/relationship-summary";
 import ReviewedPortraitImage from "../../components/reviewed-portrait";
 import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
@@ -93,16 +94,22 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
   }
   const person = personResult.data;
-  const [portrait, ontologyResult, committeesResult, targetsResult] = await Promise.all([
+  const [portrait, ontologyResult, committeesResult, targetsResult, relationshipsResult, peopleResult] = await Promise.all([
     getReviewedPortrait(person),
     getPersonOntology(id),
     getGukgamCommittees(),
     getGukgamTargets(),
+    getPersonRelationships(id),
+    getPeople(),
   ]);
   const gukgamCommittees = committeesResult.state === "success"
     ? committeesResult.data.committees.map((committee) => committee.committee_name)
     : [];
   const ontology = ontologyResult.state === "success" ? ontologyResult.data : null;
+  const relationshipSummary = relationshipsResult.state === "success" && peopleResult.state === "success"
+    ? summarizeRelationships(id, relationshipsResult.data, peopleResult.data) : null;
+  const showRelationships = Boolean(relationshipSummary &&
+    (relationshipSummary.groups.length > 0 || relationshipSummary.cosponsors.length > 0));
 
   const sectionSourceIds =
     person.profile?.sections.flatMap((section) =>
@@ -110,7 +117,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     ) ?? [];
   const claimSourceIds = (person.claims ?? []).flatMap((claim) => claim.source_ids);
   const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
-  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds])];
+  const relationshipSourceIds = relationshipsResult.state === "success"
+    ? relationshipsResult.data.groups.flatMap((group) => group.relations
+      .filter((relation) => relation.status === "DERIVED").flatMap((relation) => relation.source_ids)) : [];
+  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds, ...relationshipSourceIds])];
   const sourceResults = await Promise.all(sourceIds.map(getSource));
   const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
   const sourceError = sourceResults.find((item) => item.state === "error");
@@ -330,6 +340,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               {hasGukgam && <li><a href="#gukgam-2026">국정감사</a></li>}
               <li><a href="#records">기록</a></li>
               <li><a href="#official-connections">연결</a></li>
+              {(showRelationships || relationshipsResult.state === "error" || peopleResult.state === "error") &&
+                <li><a href="#relationship-summary">공식자료 기준 관계</a></li>}
               <li><a href="#sources">출처</a></li>
             </ul>
           </nav>
@@ -480,6 +492,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </p>
             )}
           </section>
+
+          {(showRelationships || relationshipsResult.state === "error" || peopleResult.state === "error") && (
+            <section className="person-section relationship-section" id="relationship-summary" aria-labelledby="relationship-summary-title">
+              <div className="section-intro"><h2 id="relationship-summary-title">공식자료 기준 관계</h2></div>
+              {relationshipsResult.state === "error" ? <ReadState error={relationshipsResult.error} />
+                : peopleResult.state === "error" ? <ReadState error={peopleResult.error} />
+                : relationshipSummary && <RelationshipSummary {...relationshipSummary} />}
+            </section>
+          )}
 
           <section className="source-library person-section" id="sources" aria-labelledby="sources-title">
             <div className="section-intro">

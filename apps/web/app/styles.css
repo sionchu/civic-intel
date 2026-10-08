@@ -792,3 +792,24 @@ main { flex: 1; }
 .witness-matches ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-line); }
 .witness-matches li a { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--color-line); color: var(--color-ink); text-decoration: none; }
 .witness-matches li span, .witness-matches li small { color: var(--color-ink-muted); font-size: 13px; overflow-wrap: anywhere; }
+
+/* Public relationship projection: flat rows, with provenance kept beside each relation. */
+.relationship-limitations { margin: 0 0 24px; padding-left: 20px; color: var(--color-ink-muted); font-size: 15px; line-height: 1.65; }
+.relationship-limitations li + li { margin-top: 4px; }
+.relationship-group { margin-top: 32px; border-top: 2px solid var(--color-ink); }
+.relationship-group h3 { margin: 16px 0 4px; overflow-wrap: anywhere; font-size: 20px; }
+.relationship-group h3 span, .relationship-count { color: var(--color-ink-muted); font-size: 13px; font-weight: 400; }
+.relationship-count { margin: 0 0 12px; line-height: 1.55; }
+.relationship-people, .relationship-cosponsors { margin: 0; padding: 0; list-style: none; }
+.relationship-person, .relationship-cosponsors li { padding: 12px 0; border-top: 1px solid var(--color-line); overflow-wrap: anywhere; }
+.relationship-person > a, .relationship-cosponsors a { display: inline-flex; min-height: 44px; align-items: center; font-weight: 700; }
+.relationship-person > ul { margin: 0; padding: 0; list-style: none; }
+.relationship-relation { display: grid; gap: 2px; padding: 8px 0; }
+.relationship-relation small, .relationship-cosponsors small { display: block; color: var(--color-ink-muted); font-size: 13px; overflow-wrap: anywhere; }
+.relationship-relation .audit-details { margin-top: 4px; }
+.relationship-relation .audit-details small { margin: 4px 0; }
+.relationship-more > summary { display: flex; min-height: 44px; align-items: center; color: var(--color-accent); font-weight: 700; cursor: pointer; }
+.relationship-cosponsors li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 16px; }
+.relationship-cosponsors li small, .relationship-cosponsors li details { flex-basis: 100%; }
+.relationship-names { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; padding: 0; list-style: none; }
+.relationship-names a { display: inline-flex; min-height: 44px; align-items: center; }

@@ -844,3 +844,41 @@ test("Plenary votes render as compact rows with the evidence trace one disclosur
   assert.match(person, /<details className="audit-details vote-trace">/);
   assert.match(person, /FeederObservation \{trace\?\.feeder_observation_id/);
 });
+
+test("Person relationship summary uses public derived records and serializes only summarized props", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const [page, data, summary, types, snapshot] = await Promise.all([
+    read("../app/people/[id]/page.tsx"),
+    read("../app/data.ts"),
+    read("../app/components/relationship-summary.tsx"),
+    read("../app/types.ts"),
+    read("../scripts/build-sites-snapshot.mjs"),
+  ]);
+  assert.match(data, /getPersonRelationships\(id: string\)/);
+  assert.match(data, /\/relationships\/people\/\$\{id\}\?limit_per_via=300/);
+  assert.doesNotMatch(data, /include_candidates/);
+  assert.match(page, /getPersonRelationships\(id\)/);
+  assert.match(page, /getPeople\(\)/);
+  assert.match(page, /공식자료 기준 관계/);
+  assert.ok(page.indexOf('id="relationship-summary"') > page.indexOf('id="official-connections"'));
+  assert.ok(page.indexOf('id="relationship-summary"') < page.indexOf('id="sources"'));
+  assert.match(page, /relationshipsResult\.state === "error" \? <ReadState error=\{relationshipsResult\.error\}/);
+  assert.match(page, /<RelationshipSummary \{\.\.\.relationshipSummary\} \/>/);
+  assert.doesNotMatch(page, /<RelationshipSummary[^>]*(relationshipsResult\.data|payload|groups=\{relationshipsResult)/);
+  assert.match(summary, /limitations: payload\.limitations/);
+  assert.match(summary, /status === "DERIVED"/);
+  assert.match(summary, /publicNames\.get\(otherId\)/);
+  assert.match(summary, /\.slice\(0, 12\)/);
+  assert.match(summary, /\.slice\(12\)/);
+  assert.match(summary, /\.slice\(0, 10\)/);
+  assert.match(summary, /group\.relation_count/);
+  assert.match(summary, /group\.returnedRelations/);
+  assert.match(summary, /relation\.temporal\.basis/);
+  assert.match(summary, /relation\.evidence_ids/);
+  assert.match(summary, /relation\.source_ids/);
+  assert.match(summary, /DERIVED · \{relation\.rule\}/);
+  assert.doesNotMatch(summary, /counterpart\.name|scores|\/admin/);
+  assert.doesNotMatch(types, /scores:|counterpart:|include_candidates:/);
+  assert.match(snapshot, /FORBIDDEN_TOKENS/);
+  assert.match(snapshot, /operator surface present in bundle/);
+});
