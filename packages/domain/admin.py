@@ -8,11 +8,14 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from packages.domain.contracts import SourcePolicy
+
 PERSON_ROLE_PREDICATE = "ALIO_REVIEWED_PERSON_ROLE"
 CORRECTION_PREDICATE = "OPERATOR_REVIEWED_CORRECTION"
 
 
 class AdminAction(StrEnum):
+    REGISTER_SOURCE_POLICY = "REGISTER_SOURCE_POLICY"
     HOLD = "HOLD"
     EXCLUDE = "EXCLUDE"
     REOPEN = "REOPEN"
@@ -49,6 +52,7 @@ class AdminCommand(BaseModel):
         if len(self.reason.strip()) < 10:
             raise ValueError("A substantive reason is required")
         single = {
+            AdminAction.REGISTER_SOURCE_POLICY,
             AdminAction.LINK_PERSON,
             AdminAction.CORRECT_CLAIM,
             AdminAction.RENAME_PERSON,
@@ -82,7 +86,15 @@ class AdminCommand(BaseModel):
                 raise ValueError("Public disclosure review permits linkage only, never merge")
         elif self.target_person_id is not None or self.identity_basis is not None:
             raise ValueError("Unexpected target identity or bridge basis")
-        if self.action in {AdminAction.CORRECT_CLAIM, AdminAction.RENAME_PERSON}:
+        if self.action == AdminAction.REGISTER_SOURCE_POLICY:
+            if self.human_verified:
+                raise ValueError("Policy registration does not accept an identity attestation")
+            if self.value is None:
+                raise ValueError("An explicit complete SourcePolicy is required")
+            policy = SourcePolicy.model_validate_json(self.value)
+            if self.record_ids != (policy.id,):
+                raise ValueError("Selected policy ID must equal the complete candidate policy ID")
+        elif self.action in {AdminAction.CORRECT_CLAIM, AdminAction.RENAME_PERSON}:
             if not self.value or not self.value.strip() or not self.evidence_ids:
                 raise ValueError("A corrected value and Evidence references are required")
             if self.action == AdminAction.RENAME_PERSON and len(self.value.strip()) > 100:

@@ -525,6 +525,22 @@ Capture `--commit` requires an already stored SourcePolicy exactly equal to the 
 policy file. It commits the existing Source/Snapshot/Observation/checkpoint through the
 canonical repository. It cannot create or relax that policy. The capture receipt returns
 the exact observation IDs needed for the next operation.
+An absent policy can first be reviewed with `--peti-operation policy --command COMMAND.json`.
+The canonical `REGISTER_SOURCE_POLICY` command selects exactly the candidate policy ID and
+contains the complete typed SourcePolicy JSON in the existing `value` field. This preserves
+historical command serialization. The action is closed to the reviewed PETI metadata policy
+ID `12ee6a2d-b36f-4bea-9a6e-79d0a2f65f75`, `www.peti.go.kr` and the
+`official_public_declared_asset_metadata` source class, with the existing closed PETI receipt
+route/field contract. Fetch, fulltext, excerpts and commercialization stay false; license
+remains unset. `can_send_to_ai` must be explicitly supplied: false is preserved and true
+refers only to the already reviewed public-total metadata scope, not PDF/private detail rights.
+The full candidate policy hash and existing/absent ID/domain state are bound into the preview
+state hash. Commit uses `--commit --actor OWNER --state-hash EXACT_PREVIEW_HASH`, recomputes
+locked current state and never overwrites a different policy. An exact existing match is a
+no-write no-op, including no new audit row. New registration writes one SourcePolicy and its
+canonical audit atomically; ID/domain uniqueness conflicts roll back. Registration creates
+no source run, capture, identity link or Claim. PostgreSQL concurrency execution remains
+NOT_RUN until tested on that backend; SQLite locking/rollback is covered by regressions.
 The repository repeats complete policy equality inside the same locked transaction:
 PostgreSQL locks the stored policy row; SQLite takes its existing immediate write lock.
 A policy revoked after CLI precheck blocks capture without advancing a checkpoint.

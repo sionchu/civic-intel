@@ -77,15 +77,15 @@ external64c11d provenance is explicit. No SQL applied. Receipts:
 producer-full-chain/candidate-64c11d-exact-{source,startup,api-smoke}-receipt.json,
 candidate-64c11d-exporter-git-blobs.json and candidate-64c11d-exact-export-verification.json.
 
-Next local slice is in progress: PETI source-specific pure staging, shared validated /assets→
+Current local candidate includes: PETI source-specific pure staging, shared validated /assets→
 Person public_declared_assets ProfileEntry, explicit printed-total UI, and bill-vote retrieval.
 Targeted API/profile/Person61 tests and UI12 tests PASS; actual UI uses synthetic static data for assets,
 not operational records. Existing canonical review/admin operation CLI is implemented: capture, actual owner LINK_PERSON
 review producing DRAFT, separate PUBLISH with source/identity checks; content-free stdout and
 optional owner-local full preview. The policy equality check is atomic inside page commit.
 Disposable canonical DB lifecycle→Person API→Source GET tests PASS; no production write.
-Intermediate full make verify exited2: Python1,208 passed/3 skipped/6 warnings in493.08s; Ruff/mypy153/Golden quality PASS, then web92/94 failed on two stale static assertions. Only those assertions were corrected; canonical web-verify subsequently exited0 with94/94, lint/typecheck/Next standalone PASS. The full runner remains FAIL; final full make verify follows the required policy-registration milestone. Canonical PETI policy count0 was observed read-only;
-explicit registration preview/commit is the next required local milestone, not a Golden/implicit
+Intermediate full make verify exited2: Python1,208 passed/3 skipped/6 warnings in493.08s; Ruff/mypy153/Golden quality PASS, then web92/94 failed on two stale static assertions. Only those assertions were corrected; canonical web-verify subsequently exited0 with94/94, lint/typecheck/Next standalone PASS. That intermediate full runner remains FAIL. The subsequent required policy-registration milestone passed final full makeverify80753: Python1,235/3 skipped/6 warnings/545.76s, web94/94, Ruff/mypy153/quality/lint/typecheck/Next standalone PASS. Canonical PETI policy count0 was observed read-only;
+explicit registration preview/commit is now locally implemented and independently reviewed, not a Golden/implicit
 creation workaround. Operational switch, exact identity review
 and canonical one-record materialization/publication are separate reviewable decisions. No canonical
 writes/merges or new publication decisions occurred.
@@ -94,6 +94,14 @@ news metadata, reviewed Person anchors and publishable statement text remain dis
 Reassess statutory public asset metadata without a generic individual consent requirement;
 SourcePolicy collection/AI, privacy, exact identity and publication gates still apply. M6 PLANNED,
 whole contract incomplete. The current active plan records this superseding evidence and scope.
+
+
+Next authorized preparation is exact final-commit raw Git artifact and unused-loopback8122
+bounded read-only preflight using the actual serving interpreter, followed by canonical PETI
+policy-registration preview only. Preserve full owner preview locally and report hashes/status.
+API-only switch/rollback and one-record policy/capture/reviewed-link/publication remain concrete
+approval targets, NOT_EXECUTED; public Site v6 and serving339363f remain unchanged. Next complete
+fresh export is deferred until approved real PETI Claim data exists; prior64c11d export is historical.
 
 Use the active plan for current exact receipts and next step. Older checkpoints below are historical.
 

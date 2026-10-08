@@ -198,7 +198,7 @@ class Change:
             for key in self.after
             if self.before is None or self.after[key] != self.before.get(key)
         }
-        keys &= SAFE_CHANGE_FIELDS
+        keys &= (set(SourcePolicy.model_fields) if self.model is db.SourcePolicyRow else SAFE_CHANGE_FIELDS)
         return {
             "table": self.model.__tablename__,
             "id": self.record_id,
@@ -1522,11 +1522,58 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
     )
 
 
+PETI_METADATA_POLICY_ID = UUID("12ee6a2d-b36f-4bea-9a6e-79d0a2f65f75")
+
+
+def _register_peti_policy(plan: Plan) -> None:
+    from packages.persistence.repository import source_policy_semantics_equal
+    from packages.verification.assembly_asset_import import require_peti_asset_metadata_policy
+
+    assert plan.command.value is not None
+    candidate = SourcePolicy.model_validate_json(plan.command.value)
+    require_peti_asset_metadata_policy(candidate)
+    # This is the previously reviewed public-total metadata decision, not a generic grant.
+    # can_send_to_ai remains explicitly supplied (required by SourcePolicy); false is preserved.
+    if (
+        candidate.id != PETI_METADATA_POLICY_ID
+        or candidate.source_class != "official_public_declared_asset_metadata"
+        or candidate.can_commercialize or candidate.license is not None
+        or not candidate.policy_note or len(candidate.policy_note.strip()) < 20
+    ):
+        raise AdminError("PETI_POLICY_SCOPE_INVALID", "검토된 PETI 공개 총계 메타데이터 정책만 등록합니다.")
+    values = candidate.model_dump(mode="json")
+    for name in ("robots_checked_at", "terms_checked_at"):
+        audit_date = getattr(candidate, name)
+        if audit_date is not None and audit_date.tzinfo is not None:
+            values[name] = audit_date.astimezone(UTC).isoformat()
+    policy_hash = digest(values)
+    plan.dependencies["peti_candidate_policy"] = policy_hash
+    existing = plan.query(db.SourcePolicyRow,
+        or_(db.SourcePolicyRow.id == str(candidate.id), db.SourcePolicyRow.domain == candidate.domain),
+        limit=2)
+    if existing:
+        if len(existing) != 1 or not source_policy_semantics_equal(
+            SourcePolicy.model_validate(existing[0], from_attributes=True), candidate
+        ):
+            raise AdminError("PETI_POLICY_CONFLICT", "기존 정책이 다릅니다. 자동 덮어쓰기는 허용하지 않습니다.")
+        disposition = "ALREADY_REGISTERED_EXACT_MATCH"
+    else:
+        row_values = candidate.model_dump(mode="python")
+        row_values.update(id=str(candidate.id), collection_mode=candidate.collection_mode.value)
+        plan.create(db.SourcePolicyRow, **row_values)
+        disposition = "REGISTER_POLICY"
+    plan.outcomes.append({"policy_id": str(candidate.id), "policy_hash": policy_hash,
+        "disposition": disposition, "capture_performed": False,
+        "identity_link_performed": False, "claim_publication": False})
+
+
 def build_plan(session: Session, command: AdminCommand, *, locking: bool = False) -> Plan:
     plan = Plan(session, command, locking)
     created_names: set[str] = set()
     for identifier in sorted(command.record_ids, key=str):
-        if command.action in {AdminAction.HOLD, AdminAction.EXCLUDE, AdminAction.REOPEN}:
+        if command.action == AdminAction.REGISTER_SOURCE_POLICY:
+            _register_peti_policy(plan)
+        elif command.action in {AdminAction.HOLD, AdminAction.EXCLUDE, AdminAction.REOPEN}:
             row = plan.get(db.FeederObservationRow, identifier)
             if (
                 row.feeder != ALIO_EXECUTIVE_FEEDER
@@ -1562,7 +1609,7 @@ def build_plan(session: Session, command: AdminCommand, *, locking: bool = False
             _claim_action(plan, identifier)
         else:
             _person_action(plan, identifier)
-    if not plan.changes:
+    if not plan.changes and command.action != AdminAction.REGISTER_SOURCE_POLICY:
         raise AdminError("NO_CHANGE", "변경할 항목이 없습니다.")
     return plan
 
@@ -1596,6 +1643,9 @@ def commit_command(
     plan = build_plan(session, command, locking=True)
     if plan.state_hash() != expected_state:
         raise AdminError("STALE_PREVIEW", "미리보기 이후 데이터가 바뀌었습니다. 다시 검토하세요.")
+    if command.action == AdminAction.REGISTER_SOURCE_POLICY and not plan.changes:
+        return {**plan.report(), "changed_rows": 0, "replayed": False,
+            "status": "ALREADY_REGISTERED_EXACT_MATCH"}
     plan.apply()
     result = {
         "outcomes": plan.outcomes,

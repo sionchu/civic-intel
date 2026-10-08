@@ -59,7 +59,7 @@ production service switches and new rights attestations are not delegated implic
 | M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; v6 deployed, fresh desktop home/Enter/discovery and home viewport visual PASS; wider/native390 limits below |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; prior transport/browser proofs PASS; actual canonical five-predicate full-chain 9,143 Claims PASS and bounded operational relationship output 71 Claims PASS; running producer still lacks candidate career projection, operational apply NOT_RUN |
 | M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; final full verification PASS; subsequent Aside intrinsic geometry/keyboard PASS, screenshot NOT_RUN, public rollout NOT_RUN; Lee Jae-myung remains identity review |
-| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | Canonical local staged Claim/Evidence asset-total reader implemented; legacy reviewed-PDF route remains exact-packet gated. Public factual PETI pure staging/validated reader and Person delivery seam locally implemented; default-preview capture/link/publication implemented without generic individual consent gate; atomic policy checks and synthetic vertical delivery tested. Canonical PETI policy count0; explicit registration entry is the next required local milestone. Intermediate full runner FAIL on stale web assertions, completed Python1,208 and corrected web94 PASS; operational materialization NOT_RUN |
+| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | Canonical local staged Claim/Evidence asset-total reader implemented; legacy reviewed-PDF route remains exact-packet gated. Public factual PETI pure staging/validated reader and Person delivery seam locally implemented; default-preview capture/link/publication implemented without generic individual consent gate; atomic policy checks and synthetic vertical delivery tested. Canonical PETI policy count0; explicit registration entry locally implemented/targeted110 PASS; final full makeverify exited0 (Python1,235/web94). Intermediate full runner FAIL on stale web assertions, completed Python1,208 and corrected web94 PASS; operational materialization NOT_RUN |
 | M6 | Further change/comparison/issues, API/MCP and community with scoped methods/rights | PLANNED, not advertised as live |
 
 M1 retains its storage-specific contract in [Sites storage split](sites-storage-split-v0.md).
@@ -96,7 +96,7 @@ Operating8100 remains339363f,
 public v6 remains the2026-10-08 capture. Superseded normalized8120/export processes were stopped
 only after ownership checks and labelled INTERRUPTED_SUPERSEDED, not PASS.
 
-Next code slice is local and uncommitted: PETI pure metadata staging/validated reader, shared
+Current local code follows intermediate64ded4662c13a773e6f0d83922ee421f5eb4c148: PETI pure metadata staging/validated reader, shared
 /assets validation feeding existing Person ProfileEntry `public_declared_assets`, printed-total
 UI and DERIVED bill-title/committee vote retrieval. Generic asset Claim fallback is excluded;
 `asset_disclosure_ids` stays empty because no AssetDisclosure rows are created. Targeted
@@ -106,9 +106,17 @@ admin Plan/Preview/Commit seams implement default-preview PETI capture/link/publ
 with separate actual owner identity review and publication, not generic public-fact reuse consent.
 Atomic page-transaction policy equality rejects revoked/missing policies; PostgreSQL locking is
 code-reviewed, SQLite race/rollback exercised. Full owner previews stay local, stdout only safe
-statehash/IDs/counts. Intermediate full make verify exited2 after Python1,208 passed/3 skipped/6 warnings in493.08s and Ruff/mypy153/Golden quality PASS. Web92/94 failed on stale empty-section/class-string assertions; only tests were corrected. Subsequent canonical web-verify exited0:94/94 plus lint/typecheck/Next standalone PASS. The full runner is retained as FAIL; required final full verification follows policy-registration implementation. Read-only canonical PETI policy
+statehash/IDs/counts. Intermediate full make verify exited2 after Python1,208 passed/3 skipped/6 warnings in493.08s and Ruff/mypy153/Golden quality PASS. Web92/94 failed on stale empty-section/class-string assertions; only tests were corrected. Subsequent canonical web-verify exited0:94/94 plus lint/typecheck/Next standalone PASS. That intermediate runner is retained as FAIL; the subsequent required registration milestone final full makeverify80753 exited0 (Python1,235/web94 and all constituent gates PASS). Read-only canonical PETI policy
 count0 confirms the separate registration entry prerequisite; root authorized its explicit
-preview/commit implementation after this frozen milestone commit, with no operational execution.
+preview/commit implementation after intermediate64ded46. That bounded entry is now implemented: complete candidate-policy hash/state dependencies, locked exact-match no-op, mismatched policy rejection, existing audited atomic creation and rollback. Final targeted110 tests/Ruff/mypy PASS; independent review found no actionable findings. Final frozen-code makeverify session80753 exited0: Python1,235 passed/3 skipped/6 warnings in545.76s; web94/94, Ruff/mypy153/Golden quality/lint/typecheck/Next standalone PASS. Canonical registration and PostgreSQL concurrent execution NOT_RUN.
+
+
+Next authorized preparation is exact final-commit raw Git artifact and unused-loopback8122
+bounded read-only preflight using the actual serving interpreter, followed by canonical PETI
+policy-registration preview only. Preserve full owner preview locally and report hashes/status.
+API-only switch/rollback and one-record policy/capture/reviewed-link/publication remain concrete
+approval targets, NOT_EXECUTED; public Site v6 and serving339363f remain unchanged. Next complete
+fresh export is deferred until approved real PETI Claim data exists; prior64c11d export is historical.
 
 Actual official Assembly press one-page FETCH/STORE_METADATA compatibility passed5 records on
 2026-10-08 (provider total10), content/key excluded from capture. Existing policy still has
@@ -625,8 +633,10 @@ THOUSAND_KRW and declared scope, metadata-only evidence, packet and canonical pu
 all sibling source-version conflicts, source-date agreement in KST and exact Person/text/amount
 lineage. Missing published asset Claims remains explicit empty coverage, never zero wealth.
 No operational asset observation, Claim, reviewed link or publication decision was created.
-Official press preparation remains L1/live NOT_RUN and has no Person binding. PETI public factual
-total staging is the next independent local slice, preserving UNKNOWN report type and exact
+At this historical checkpoint official press preparation was L1/live NOT_RUN. Subsequent bounded
+one-page FETCH/STORE_METADATA compatibility PASS is recorded above; AI content use remains
+NOT_AUTHORIZED and Person binding/publication NOT_RUN. PETI local staging and operations now
+exist as recorded in the current checkpoint, preserving UNKNOWN report type and exact
 identity review without a fabricated HUMAN_REVIEWED assertion.
 
 The first integrated full suite was interrupted after late malformed-response/date/identity

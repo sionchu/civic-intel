@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 
 from packages.domain import db
 from packages.domain.admin import AdminCommand
+from packages.domain.enums import SourceCollectionMode
 from packages.persistence.admin_workflow import AdminError
 from packages.verification.assembly_base_profile import AssemblyBaseProfilePublisher
 from tests.test_assembly_asset_disclosure import migrated_repository
@@ -278,3 +279,200 @@ def test_policy_audit_times_compare_instants_without_assigning_unknown_timezone(
     assert not source_policy_semantics_equal(first,
         first.model_copy(update={"robots_checked_at": kst.replace(tzinfo=None)}))
     assert not source_policy_semantics_equal(first, first.model_copy(update={"can_send_to_ai": True}))
+
+
+def registration_policy(**updates):
+    return policy().model_copy(update={
+        "id": UUID("12ee6a2d-b36f-4bea-9a6e-79d0a2f65f75"),
+        "source_class": "official_public_declared_asset_metadata",
+        "policy_note": "SYNTHETIC explicit reviewed PETI public-total receipt metadata-only decision",
+    } | updates)
+
+
+def registration_command(candidate=None, **updates):
+    candidate = candidate or registration_policy()
+    return AdminCommand(request_id=uuid4(), action="REGISTER_SOURCE_POLICY",
+        record_ids=(candidate.id,), reason="SYNTHETIC exact scoped source-policy registration review",
+        value=candidate.model_dump_json(), **updates)
+
+
+def store_policy(repository, candidate):
+    with repository.sessions() as session:
+        values = candidate.model_dump(mode="python") | {
+            "id": str(candidate.id), "collection_mode": candidate.collection_mode.value}
+        session.add(db.SourcePolicyRow(**values))
+        session.commit()
+
+
+def assert_no_capture_or_identity(repository):
+    with repository.sessions() as session:
+        for model in (db.SourceRunRow, db.SourceRow, db.SourceSnapshotRow, db.FeederObservationRow,
+            db.SourceCheckpointRow, db.PersonRow, db.PersonObservationLinkRow, db.ClaimRow):
+            assert session.scalar(select(func.count()).select_from(model)) == 0
+
+
+def test_policy_registration_preview_atomic_commit_and_exact_noop(tmp_path):
+    repository, _ = migrated_repository(tmp_path / "registration.db")
+    command = registration_command()
+    preview = repository.admin_preview(command)
+    assert preview["write_performed"] is False
+    assert preview["changes"][0]["after"]["can_send_to_ai"] is False
+    assert repository.policies() == {}
+    committed = repository.admin_commit(command, actor="SYNTHETIC_OWNER", state_hash=preview["state_hash"])
+    assert committed["write_performed"] is True
+    assert repository.policies()[command.record_ids[0]].can_send_to_ai is False
+    assert_no_capture_or_identity(repository)
+    no_op = registration_command()
+    preview = repository.admin_preview(no_op)
+    assert preview["outcomes"][0]["disposition"] == "ALREADY_REGISTERED_EXACT_MATCH"
+    result = repository.admin_commit(no_op, actor="SYNTHETIC_OWNER", state_hash=preview["state_hash"])
+    assert result["write_performed"] is False and result["changed_rows"] == 0
+    with repository.sessions() as session:
+        assert session.scalar(select(func.count()).select_from(db.AdminOperationRow)) == 1
+
+
+@pytest.mark.parametrize("update", [
+    {"can_fetch": True}, {"can_store_fulltext": True}, {"can_show_excerpt": True},
+    {"can_commercialize": True}, {"license": "CC-BY-4.0"},
+    {"source_class": "generic_public_source"}, {"domain": "other.example"},
+    {"id": uuid4()}, {"collection_mode": SourceCollectionMode.API}, {"can_store_metadata": False},
+    {"policy_note": None}, {"policy_note": "short"},
+])
+def test_registration_never_widens_reviewed_peti_permission_scope(tmp_path, update):
+    repository, _ = migrated_repository(tmp_path / "closed-policy.db")
+    with pytest.raises((AdminError, PermissionError)):
+        repository.admin_preview(registration_command(registration_policy(**update)))
+    assert repository.policies() == {}
+    assert_no_capture_or_identity(repository)
+
+
+def test_reviewed_scoped_ai_choice_is_explicit_and_false_not_defaulted(tmp_path):
+    repository, _ = migrated_repository(tmp_path / "ai-choice.db")
+    candidate = registration_policy(can_send_to_ai=True)
+    command = registration_command(candidate)
+    preview = repository.admin_preview(command)
+    assert preview["changes"][0]["after"]["can_send_to_ai"] is True
+    assert repository.policies() == {}
+    raw = json.loads(command.value)
+    del raw["can_send_to_ai"]
+    with pytest.raises(ValidationError):
+        AdminCommand.model_validate(command.model_dump(mode="json") | {"value": json.dumps(raw)})
+
+
+@pytest.mark.parametrize("change", [
+    {"record_ids": (uuid4(),)}, {"record_ids": (uuid4(), uuid4())},
+    {"target_person_id": uuid4()}, {"evidence_ids": (uuid4(),)},
+    {"human_verified": True}, {"value": "{}"},
+])
+def test_registration_command_is_one_typed_policy_without_identity_attestation(change):
+    command = registration_command()
+    with pytest.raises(ValidationError):
+        AdminCommand.model_validate(command.model_dump(mode="python") | change)
+
+
+def test_changed_candidate_cannot_use_prior_absence_state_hash(tmp_path):
+    repository, _ = migrated_repository(tmp_path / "candidate-state.db")
+    command = registration_command()
+    preview = repository.admin_preview(command)
+    changed = registration_command(registration_policy(can_send_to_ai=True))
+    with pytest.raises(AdminError, match="다시 검토"):
+        repository.admin_commit(changed, actor="SYNTHETIC_OWNER", state_hash=preview["state_hash"])
+    assert repository.policies() == {}
+
+
+def test_exact_noop_rechecks_locked_state_after_policy_revocation(tmp_path):
+    repository, _ = migrated_repository(tmp_path / "noop-state.db")
+    candidate = registration_policy()
+    store_policy(repository, candidate)
+    command = registration_command(candidate)
+    preview = repository.admin_preview(command)
+    with repository.sessions() as session:
+        session.get(db.SourcePolicyRow, str(candidate.id)).can_store_metadata = False
+        session.commit()
+    with pytest.raises(AdminError):
+        repository.admin_commit(command, actor="SYNTHETIC_OWNER", state_hash=preview["state_hash"])
+    assert repository.policies()[candidate.id].can_store_metadata is False
+
+
+def test_competing_registration_after_preview_stays_intact_and_fails_closed(tmp_path):
+    repository, _ = migrated_repository(tmp_path / "competing-policy.db")
+    command = registration_command()
+    preview = repository.admin_preview(command)
+    store_policy(repository, registration_policy())
+    with pytest.raises(AdminError, match="다시 검토"):
+        repository.admin_commit(command, actor="SYNTHETIC_OWNER", state_hash=preview["state_hash"])
+    with repository.sessions() as session:
+        assert session.scalar(select(func.count()).select_from(db.SourcePolicyRow)) == 1
+        assert session.scalar(select(func.count()).select_from(db.AdminOperationRow)) == 0
+
+
+def test_existing_domain_or_id_mismatch_never_overwrites_policy(tmp_path):
+    repository, _ = migrated_repository(tmp_path / "different-policy.db")
+    existing = registration_policy(id=uuid4(), can_store_metadata=False)
+    store_policy(repository, existing)
+    with pytest.raises(AdminError):
+        repository.admin_preview(registration_command())
+    assert repository.policies()[existing.id].can_store_metadata is False
+
+
+def test_unique_conflict_rolls_back_registration_and_audit(tmp_path, monkeypatch):
+    from sqlalchemy.exc import IntegrityError
+
+    from packages.persistence.admin_workflow import Plan
+    repository, _ = migrated_repository(tmp_path / "unique-conflict.db")
+    command = registration_command()
+    preview = repository.admin_preview(command)
+    original = Plan.apply
+
+    def inject_duplicate(self):
+        candidate = registration_policy()
+        values = candidate.model_dump(mode="python") | {
+            "id": str(candidate.id), "collection_mode": candidate.collection_mode.value}
+        self.session.add(db.SourcePolicyRow(**values))
+        self.session.flush()
+        original(self)
+
+    monkeypatch.setattr(Plan, "apply", inject_duplicate)
+    with pytest.raises(IntegrityError):
+        repository.admin_commit(command, actor="SYNTHETIC_OWNER", state_hash=preview["state_hash"])
+    assert repository.policies() == {}
+    with repository.sessions() as session:
+        assert session.scalar(select(func.count()).select_from(db.AdminOperationRow)) == 0
+
+
+def test_registration_cli_only_preview_until_explicit_commit(tmp_path, monkeypatch, capsys):
+    from pathlib import Path
+    repository, url = migrated_repository(tmp_path / "cli-policy.db")
+    args = inputs(tmp_path)
+    Path(args[3]).write_text(registration_policy().model_dump_json(), encoding="utf-8")
+    path = tmp_path / "registration-command.json"
+    path.write_text(registration_command().model_dump_json(), encoding="utf-8")
+    monkeypatch.setenv("CIVIC_DATABASE_URL", url)
+    invocation = args + ["--peti-operation", "policy", "--command", str(path)]
+    assert main(invocation) == 0
+    output = capsys.readouterr().out
+    preview = json.loads(output)
+    assert preview["status"] == "POLICY_REGISTRATION_PREVIEW"
+    assert preview["write_performed"] is False and preview["policy_registration"] is False
+    assert "policy_note" not in output and "printed_name" not in output
+    assert repository.policies() == {}
+    assert main(invocation + ["--commit", "--actor", "SYNTHETIC_OWNER", "--state-hash", preview["state_hash"]]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["write_performed"] is True and result["policy_registration"] is True
+    assert result["claim_publication"] is False and result["identity_review_confirmed"] is False
+    assert_no_capture_or_identity(repository)
+
+
+def test_registration_cli_rejects_receipt_route_outside_peti_allowlist(tmp_path, monkeypatch):
+    from pathlib import Path
+    repository, url = migrated_repository(tmp_path / "closed-route.db")
+    args = inputs(tmp_path)
+    Path(args[1]).write_text(json.dumps(receipt() | {"detail_route": "https://other.example/private"}), encoding="utf-8")
+    Path(args[3]).write_text(registration_policy().model_dump_json(), encoding="utf-8")
+    path = tmp_path / "registration-command.json"
+    path.write_text(registration_command().model_dump_json(), encoding="utf-8")
+    monkeypatch.setenv("CIVIC_DATABASE_URL", url)
+    with pytest.raises(SystemExit):
+        main(args + ["--peti-operation", "policy", "--command", str(path)])
+    assert repository.policies() == {}
+    assert_no_capture_or_identity(repository)

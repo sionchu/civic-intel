@@ -45,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     source.add_argument("--peti-receipt", type=Path)
     parser.add_argument("--artifact", type=Path, help="operator-saved Gazette PDF")
     parser.add_argument("--peti-policy", type=Path)
-    parser.add_argument("--peti-operation", choices=("capture", "link", "publish"), default="capture")
+    parser.add_argument("--peti-operation", choices=("policy", "capture", "link", "publish"), default="capture")
     parser.add_argument("--command", type=Path, help="Explicit reviewed canonical AdminCommand JSON")
     parser.add_argument("--state-hash", help="Exact state hash from canonical admin preview")
     parser.add_argument("--actor", help="Non-secret operator audit identifier")
@@ -185,7 +185,29 @@ def _peti_main(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int
             "provider_record_key": observation.provider_record_key,
             "metadata_hash": observation.content_hash, "amount_unit": "THOUSAND_KRW",
             "claim_publication": False, "identity_review_confirmed": False}
-        if args.peti_operation == "capture":
+        if args.peti_operation == "policy":
+            if not args.command or repository is None:
+                parser.error("Policy registration preview requires --command and configured database environment")
+            command = AdminCommand.model_validate_json(args.command.read_text(encoding="utf-8"))
+            if command.action != AdminAction.REGISTER_SOURCE_POLICY or command.value is None:
+                parser.error("PETI_POLICY_REGISTRATION_COMMAND_REQUIRED")
+            if not source_policy_semantics_equal(SourcePolicy.model_validate_json(command.value), policy):
+                parser.error("PETI_POLICY_CANDIDATE_MISMATCH")
+            preview = repository.admin_preview(command)
+            if args.preview_output:
+                with args.preview_output.open("x", encoding="utf-8") as output:
+                    json.dump(preview, output, ensure_ascii=False, indent=2, sort_keys=True)
+            report.update(status="POLICY_REGISTRATION_PREVIEW", state_hash=preview["state_hash"],
+                policy_id=str(policy.id), policy_hash=preview["outcomes"][0]["policy_hash"],
+                disposition=preview["outcomes"][0]["disposition"], policy_registration=False)
+            if args.commit:
+                if not args.actor or not args.state_hash:
+                    parser.error("--actor and --state-hash are required for policy registration commit")
+                result = repository.admin_commit(command, actor=args.actor, state_hash=args.state_hash)
+                changed = bool(result["write_performed"])
+                report.update(status="POLICY_REGISTERED" if changed else "POLICY_NO_WRITE",
+                    write_performed=changed, policy_registration=changed)
+        elif args.peti_operation == "capture":
             if args.command:
                 parser.error("Capture does not accept an identity/publication command")
             if args.commit:
