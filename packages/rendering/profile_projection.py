@@ -27,15 +27,28 @@ from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_SOURCE_CONTRACT,
 )
 from packages.verification.assembly_committee_roles import ASSEMBLY_COMMITTEE_ROLE_PREDICATE
+from packages.verification.assembly_former_members import (
+    FORMER_MEMBER_PREDICATE,
+    FORMER_MEMBER_SOURCE_CONTRACT,
+)
 from packages.verification.assembly_legislative_activity import (
     ASSEMBLY_LEGISLATIVE_PARTICIPATION_PREDICATE,
     ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT,
+)
+from packages.verification.assembly_member_biography import (
+    ASSEMBLY_BIOGRAPHY_CAREER_PREDICATE,
+    ASSEMBLY_BIOGRAPHY_SOURCE_CONTRACT,
+    section_of,
 )
 from packages.verification.assembly_plenary_votes import (
     ASSEMBLY_PLENARY_VOTE_PREDICATE,
     VOTE_VALUE_LABELS,
 )
 from packages.verification.claims import validate_pattern
+from packages.verification.nec_assembly_candidates import (
+    NEC_ASSEMBLY_SOURCE_CONTRACT,
+    NEC_CAREER_PREDICATE,
+)
 from packages.verification.person_record_links import (
     LINKED_WITNESS_COPIED_QUALIFIERS,
     LINKED_WITNESS_PREDICATE,
@@ -90,6 +103,12 @@ CAREER_PREDICATES = frozenset(
         "APPOINTED_TO",
     }
 )
+SOURCE_CAREER_LANES = {
+    (ASSEMBLY_BIOGRAPHY_CAREER_PREDICATE, ASSEMBLY_BIOGRAPHY_SOURCE_CONTRACT):
+        "SOURCE_ATTRIBUTED_BIOGRAPHY",
+    (NEC_CAREER_PREDICATE, NEC_ASSEMBLY_SOURCE_CONTRACT): "CANDIDATE_SUBMITTED_CAREER",
+    (FORMER_MEMBER_PREDICATE, FORMER_MEMBER_SOURCE_CONTRACT): "HISTORICAL_ASSEMBLY_TERM",
+}
 POWER_TASK_PREDICATES = frozenset(
     {
         "HAS_AUTHORITY",
@@ -617,6 +636,93 @@ def _assembly_dated_career_entries(
     return [_claim_entry(claim, evidence_by_claim) for claim in selected]
 
 
+def _career_period(claim: Claim) -> dict[str, Any]:
+    """Preserve stated date units; collection/election dates are never career dates.
+
+    Biography normalization already parsed dates into qualifiers. Unlike the relationship
+    overlap helper, this display projection must not move month/year bounds to a unit's end.
+    NEC submissions without stated period qualifiers remain undated, including occupations.
+    """
+    q = claim.qualifiers
+    historical = claim.predicate == FORMER_MEMBER_PREDICATE
+    period: dict[str, Any] = {"ongoing": not historical and q.get("period_ongoing") == "true"}
+    for key in ("start", "end", "point"):
+        raw = q.get(f"term_{key}" if historical else f"period_{key}")
+        precision = "DAY" if historical else q.get(f"period_{key}_precision", "UNKNOWN")
+        parsed = None
+        if raw and precision in {"DAY", "MONTH", "YEAR"}:
+            try:
+                parsed = date.fromisoformat(raw)
+            except ValueError:
+                pass
+        period[key] = parsed.isoformat() if parsed else None
+        period[f"{key}_precision"] = precision if parsed else "UNKNOWN"
+    if period["start"] and period["end"] and period["start"] > period["end"]:
+        # Preserve the source Claim itself, but do not manufacture a valid interval.
+        for key in ("start", "end", "point"):
+            period[key], period[f"{key}_precision"] = None, "UNKNOWN"
+        period["ongoing"] = False
+    return period
+
+
+def _source_career_entries(
+    person: Person,
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+) -> list[dict[str, Any]]:
+    """Consume already policy/publication-gated Claims, never observations or raw biographies."""
+    if person.identity_status != IdentityStatus.RESOLVED or person.superseded_at is not None:
+        return []
+    entries = []
+    for claim in claims:
+        contract = claim.qualifiers.get("source_contract", "")
+        semantics = SOURCE_CAREER_LANES.get((claim.predicate, contract))
+        text = claim.object_text.strip()
+        evidence = [item for item in evidence_by_claim.get(claim.id, ()) if item.claim_id == claim.id]
+        if (
+            semantics is None
+            or claim.person_id != person.id
+            or claim.publication_status != PublicationStatus.PUBLISHED
+            or claim.superseded_at is not None
+            or not any(item.stance == EvidenceStance.SUPPORT for item in evidence)
+            or not text
+            or section_of(text.rstrip(":： ")) is not None
+        ):
+            continue
+        entry = _claim_entry(claim, {claim.id: evidence})
+        period = _career_period(claim)
+        entry["details"] |= {
+            "source_contract": contract,
+            "career_semantics": semantics,
+            "career_period": period,
+        }
+        if claim.predicate == FORMER_MEMBER_PREDICATE:
+            for key, qualifier in (
+                ("historical_party", "party"),
+                ("historical_district", "district"),
+                ("term_name", "profile_unit_name"),
+            ):
+                value = claim.qualifiers.get(qualifier)
+                if value:
+                    entry["details"][key] = value
+        # The old single-date field is day-precise. Coarse periods must be rendered from the
+        # additive details, so an unaware consumer cannot label the first of a month as fact.
+        first_date = next((key for key in ("start", "point", "end") if period[key]), None)
+        entry["date"] = (
+            period[first_date]
+            if first_date and period[f"{first_date}_precision"] == "DAY"
+            else None
+        )
+        entries.append(entry)
+    return entries
+
+
+def _career_order(entry: dict[str, Any]) -> tuple[bool, str, str]:
+    period = entry["details"].get("career_period", {})
+    stated = period.get("start") or period.get("point") or period.get("end") or entry["date"]
+    return not bool(stated), stated or "", entry["id"]
+
+
 def _assembly_activity_entries(
     claims: Sequence[Claim],
     evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
@@ -927,6 +1033,8 @@ def build_profile_projection(
     assembly_base_profile_entries = _assembly_base_profile_entries(claims, evidence_by_claim)
     summary_entries = _claim_entries_for(claims, evidence_by_claim, SUMMARY_PREDICATES)
     timeline_entries = _claim_entries_for(claims, evidence_by_claim, CAREER_PREDICATES)
+    source_career_entries = _source_career_entries(person, claims, evidence_by_claim)
+    timeline_entries = sorted([*timeline_entries, *source_career_entries], key=_career_order)
     recent_changes, eligible_change_claim_count = _assembly_role_sequence_changes(
         person, claims, evidence_by_claim, sources, policies
     )
@@ -951,6 +1059,9 @@ def build_profile_projection(
     source_record_sections = _source_record_sections(claims, evidence_by_claim)
     assembly_role_entries = _assembly_role_entries(claims, evidence_by_claim)
     assembly_career_entries = _assembly_dated_career_entries(claims, evidence_by_claim)
+    assembly_career_entries = sorted(
+        [*assembly_career_entries, *source_career_entries], key=_career_order
+    )
     assembly_activity_entries = _assembly_activity_entries(claims, evidence_by_claim)
     committee_office_entries = _claim_entries_for(
         claims, evidence_by_claim, frozenset({ASSEMBLY_COMMITTEE_ROLE_PREDICATE})
@@ -1027,9 +1138,12 @@ def build_profile_projection(
                 "career_timeline",
                 "경력 타임라인",
                 assembly_career_entries,
-                status="AVAILABLE" if assembly_career_entries else "PARTIAL",
+                status=(
+                    _claim_section_status(assembly_career_entries)
+                    if assembly_career_entries else "PARTIAL"
+                ),
                 note=(
-                    "명시적 날짜가 있는 reviewed career Claim만 시간순으로 표시합니다."
+                    "출처에 기재된 기간·정밀도를 유지하며, 기간 미기재 경력은 뒤에 표시합니다."
                     if assembly_career_entries
                     else "현재 roster는 현직 상태만 나타내며, 과거 경력 전체를 의미하지 않습니다."
                 ),
@@ -1182,7 +1296,7 @@ def build_profile_projection(
             "경력 타임라인",
             timeline_entries,
             note=(
-                "날짜가 있는 명시적 경력·인선 predicate만 사용합니다."
+                "출처에 기재된 기간·정밀도를 유지하며, 기간 미기재 경력은 뒤에 표시합니다."
                 if timeline_entries
                 else "검토된 경력 타임라인 근거가 없습니다."
             ),
