@@ -1,5 +1,18 @@
 # Feeder Source Coverage
 
+## Bounded official press preparation — 2026-10-09
+
+`OpenAssemblyPressReleaseConnector` prepares one exact written-date/page request for
+`ninnagrlaelvtzfnt` ([official resource OBX2DO001030E516625](https://open.assembly.go.kr/portal/data/service/selectAPIServicePage.do/OBX2DO001030E516625)). The inspected resource declares attribution
+reuse; existing Assembly API SourcePolicy FETCH and STORE_METADATA permissions are checked before
+discovery/network. NUM and WRITE_DATE are documented request filters. Only record key, title,
+written date, category and official API provenance survive normalization; CONTENT and unreviewed
+article routes are discarded. Maturity is **L1 CONTRACT_STAGED** with mocked contract checks,
+live pull **NOT_RUN**. No worker, SourceSnapshot, observation, canonical policy change or published
+Person Claim is added. The source has no authoritative Person identifier, so name/co-mention
+cannot authorize Person assignment. Official press metadata is distinct from external journalism
+and does not complete personal news or statement coverage.
+
 ## Purpose
 
 Civic Intel maintains one canonical map of **where publicly consequential people can be

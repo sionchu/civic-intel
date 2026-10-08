@@ -24,8 +24,27 @@ from packages.connectors.assembly_asset_packet import (
     MemberDisclosure,
     ReviewedAssemblyAssetPacket,
 )
-from packages.domain.contracts import FeederObservation, Source, SourcePolicy, SourceSnapshot
-from packages.domain.enums import SourceCollectionMode
+from packages.domain.contracts import (
+    Claim,
+    ClaimEvidence,
+    FeederObservation,
+    IdentityReviewItem,
+    Person,
+    PersonObservationLink,
+    Source,
+    SourcePolicy,
+    SourceSnapshot,
+)
+from packages.domain.enums import (
+    EpistemicStatus,
+    EvidenceStance,
+    IdentityReviewStatus,
+    IdentityStatus,
+    MaterializationAction,
+    PublicationStatus,
+    SourceCollectionMode,
+)
+from packages.verification.claims import validate_claim_publication
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
 
 ASSEMBLY_ASSET_FEEDER = "assembly_asset_gazette_reviewed"
@@ -40,6 +59,7 @@ RELATIVE_ITEMS_POLICY = "RELATIVE_HELD_ITEMS_EXCLUDED_FROM_OBSERVATIONS"
 TOTALS_SCOPE = "PRINTED_MEMBER_TOTAL_INCLUDES_REPORTED_RELATIVES"
 LINK_MODE = "REVIEW_ONLY_NO_AUTO_LINK"
 AUTHORITY = "OFFICIAL_NATIONAL_ASSEMBLY_GAZETTE"
+ASSEMBLY_ASSET_TOTAL_PREDICATE = "ASSEMBLY_DECLARED_ASSET_TOTAL"
 _POLICY_NAMESPACE = UUID("3f6c1d0e-8a51-4c43-9e0f-2b7f5a9d6c14")
 _KST = timezone(timedelta(hours=9))
 
@@ -91,7 +111,7 @@ def effective_gazette_policy(stored: Iterable[SourcePolicy]) -> SourcePolicy:
     return policy
 
 
-def _digest(normalized: dict[str, object]) -> str:
+def assembly_asset_observation_hash(normalized: dict[str, object]) -> str:
     return hashlib.sha256(
         json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
@@ -202,7 +222,7 @@ class AssemblyAssetCapture:
             semantic_scope=ASSEMBLY_ASSET_SEMANTIC_SCOPE,
             identity_hints=self._identity_hints(member),
             normalized=normalized,
-            content_hash=_digest(normalized),
+            content_hash=assembly_asset_observation_hash(normalized),
         )
 
     def _item_observation(
@@ -233,7 +253,7 @@ class AssemblyAssetCapture:
             semantic_scope=ASSEMBLY_ASSET_SEMANTIC_SCOPE,
             identity_hints=self._identity_hints(member),
             normalized=normalized,
-            content_hash=_digest(normalized),
+            content_hash=assembly_asset_observation_hash(normalized),
         )
 
     def observations(self, run_id: UUID) -> tuple[FeederObservation, ...]:
@@ -289,6 +309,8 @@ def build_assembly_asset_capture(
         "amount_unit": AMOUNT_UNIT,
         "value_semantics": VALUE_SEMANTICS,
         "packet_coverage": packet.coverage,
+        "review_status": packet.review_status,
+        "reviewed_packet_hash": packet.content_hash,
     }
     source = Source(
         url=source_info.canonical_url,  # type: ignore[arg-type]
@@ -301,3 +323,81 @@ def build_assembly_asset_capture(
         source_id=source.id, content_hash=actual, metadata=metadata, fulltext=None
     )
     return AssemblyAssetCapture(packet=packet, policy=governing, source=source, snapshot=snapshot)
+
+
+def build_assembly_asset_total_claim(
+    capture: AssemblyAssetCapture,
+    observation: FeederObservation,
+    *,
+    person: Person,
+    link: PersonObservationLink,
+    review: IdentityReviewItem,
+    official_member_code: str,
+    publication_approved: bool = False,
+) -> tuple[Claim, ClaimEvidence]:
+    """Stage one exact reviewed linkage; never create/link a Person or write rows.
+
+    The caller obtains official_member_code from the canonical Assembly roster context.
+    Reviewer-stated codes and names alone cannot authorize the supplied reviewed link.
+    Publication is a separate explicit decision, and needs reviewed source terms.
+    """
+    candidates = capture.observations(observation.run_id)
+    expected = next((item for item in candidates if
+                     item.provider_record_key == observation.provider_record_key), None)
+    if (expected is None or expected.content_hash != observation.content_hash
+            or expected.normalized != observation.normalized
+            or observation.snapshot_id != capture.snapshot.id
+            or observation.normalized.get("record_kind") != RECORD_KIND_MEMBER_TOTAL):
+        raise AssemblyAssetImportError("asset total observation does not match reviewed capture")
+    if (person.identity_status != IdentityStatus.RESOLVED or person.superseded_at is not None
+            or link.person_id != person.id or link.observation_id != observation.id
+            or link.superseded_at is not None or link.action != MaterializationAction.REVIEWED_LINK
+            or link.review_item_id != review.id or review.status != IdentityReviewStatus.RESOLVED
+            or review.observation_id != observation.id or review.candidate_person_id != person.id
+            or not review.resolution_note):
+        raise AssemblyAssetImportError("asset total requires an exact resolved reviewed Person link")
+    code = observation.normalized.get("reviewer_stated_mona_cd")
+    if not code or code != official_member_code:
+        raise AssemblyAssetImportError("asset total requires the exact canonical Assembly code")
+    amount = observation.normalized["declared_totals"]["current_value"]
+    if amount is None:
+        raise AssemblyAssetImportError("asset total current value is unavailable, never zero")
+    if publication_approved and (
+        not capture.policy.license or capture.policy.terms_checked_at is None
+        or not capture.packet.source.rights_mark
+    ):
+        raise AssemblyAssetImportError("asset publication requires reviewed issue rights and SourcePolicy terms")
+    claim_id = uuid5(_POLICY_NAMESPACE, "|".join((str(person.id),
+        ASSEMBLY_ASSET_TOTAL_PREDICATE, observation.provider_record_key, observation.content_hash)))
+    claim = Claim(
+        id=claim_id, person_id=person.id, subject=person.canonical_name,
+        proposition=f"{person.canonical_name}의 국회공보 신고 재산 총액은 {amount['value']:,}천원이다.",
+        predicate=ASSEMBLY_ASSET_TOTAL_PREDICATE, object_text=f"{amount['value']:,}천원",
+        qualifiers={
+            "source_contract": ASSEMBLY_ASSET_SOURCE_CONTRACT,
+            "provider_record_key": observation.provider_record_key,
+            "immutable_observation_hash": observation.content_hash,
+            "reviewed_packet_hash": capture.packet_hash,
+            "assembly_mona_cd": official_member_code,
+            "review_item_id": str(review.id),
+            "amount_thousand_krw": str(amount["value"]), "amount_unit": AMOUNT_UNIT,
+            "value_semantics": VALUE_SEMANTICS, "declared_totals_scope": TOTALS_SCOPE,
+            "publication_date": observation.normalized["publication_date"],
+            "gazette_issue": capture.packet.source.gazette_issue,
+            "report_type": observation.normalized["report_type"],
+            "reporting_period_text": observation.normalized["reporting_period_text"],
+        },
+        epistemic_status=EpistemicStatus.CLAIM, asserted_as_true=False,
+        publication_status=PublicationStatus.PUBLISHED if publication_approved else PublicationStatus.DRAFT,
+        valid_from=capture.source.published_at or observation.recorded_at,
+        recorded_at=observation.recorded_at,
+    )
+    evidence = ClaimEvidence(id=uuid5(claim.id, str(observation.id)), claim_id=claim.id,
+        source_id=capture.source.id, snapshot_id=capture.snapshot.id,
+        feeder_observation_id=observation.id, stance=EvidenceStance.SUPPORT, excerpt=None)
+    if publication_approved:
+        gate = validate_claim_publication(claim, person, [evidence],
+            {capture.source.id: capture.source}, {capture.policy.id: capture.policy})
+        if not gate.publishable:
+            raise AssemblyAssetImportError("asset total publication gate rejected the reviewed claim")
+    return claim, evidence

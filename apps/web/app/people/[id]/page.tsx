@@ -15,6 +15,7 @@ import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
 import { getReviewedPortrait } from "../../portrait";
 import { predicateLabel } from "../../predicate-labels";
+import { recentOfficialActivity, supportingActivityEvidence } from "../../person-activity";
 import { buildPageMetadata } from "../../site-metadata";
 import type { Claim, ProfileEntry, ProfileSectionReason } from "../../types";
 
@@ -122,6 +123,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const claims = person.claims ?? [];
   const claimById = new Map(claims.map((claim) => [claim.id, claim]));
   const publishedClaims = claims.filter((claim) => claim.publication_status === "PUBLISHED");
+  const recentActivity = recentOfficialActivity(person, claims);
   const factRows: FactRow[] = [
     ...FACT_PREDICATES.flatMap(([predicate, label]) =>
       publishedClaims.filter((claim) => claim.predicate === predicate).map((claim) => ({
@@ -339,6 +341,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <ul className="page-anchors">
               {factRows.length > 0 && <li><a href="#key-facts">핵심 기록</a></li>}
               {career && career.entries.length > 0 && <li><a href="#career">경력</a></li>}
+              {recentActivity.items.length > 0 && <li><a href="#recent-activity">최근 공식 활동</a></li>}
               {hasGukgam && <li><a href="#gukgam-2026">국정감사</a></li>}
               <li><a href="#records">기록</a></li>
               <li><a href="#official-connections">연결</a></li>
@@ -448,6 +451,32 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   국회 명부 시점의 위원 표기이며 감사 당일 출석이 아닙니다. 일정은 공식 계획서상 일정입니다.
                 </p>
               )}
+            </section>
+          )}
+
+          {recentActivity.items.length > 0 && (
+            <section className="person-section" id="recent-activity" aria-labelledby="recent-activity-title">
+              <div className="section-intro"><h2 id="recent-activity-title">최근 공식 활동</h2></div>
+              <p className="section-note">
+                공개된 발의·표결 기록의 활동일 기준 {recentActivity.datedCount.toLocaleString("ko-KR")}건 중 최근 {recentActivity.items.length}건
+                {recentActivity.undatedCount > 0 && ` · 날짜 미기재·형식 미확인 ${recentActivity.undatedCount.toLocaleString("ko-KR")}건은 정렬에서 제외`}
+              </p>
+              <ol className="vote-rows">
+                {recentActivity.items.map(({ claim, date, action }) => (
+                  <li className="vote-row" key={claim.id}>
+                    <time className="vote-date" dateTime={date}>{date}</time>
+                    <span className="vote-bill"><a href={`#claim-${claim.id}`}>{claim.object_text}</a><small className="claim-date">{action}</small></span>
+                    <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>
+                    <div className="vote-trace source-links">
+                      <a href={`#claim-${claim.id}`}>근거 기록 열기</a>
+                      {claim.source_conflict && <span className="status conflict">SOURCE CONFLICT</span>}
+                      {supportingActivityEvidence(claim)
+                        .filter((item, index, items) => items.findIndex((other) => other.source_id === item.source_id) === index)
+                        .map((item) => <a key={item.source_id} href={`#source-${item.source_id}`}>{sourceById.get(item.source_id)?.title ?? "출처"}</a>)}
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </section>
           )}
 

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from collections.abc import Mapping, Sequence
+from datetime import timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -12,22 +14,177 @@ from packages.connectors.alio_disclosures import (
     ITEM12_REPORT_FORM_NO,
     POLICY_ID,
 )
+from packages.connectors.assembly_asset_packet import DeclaredAmount, GazetteLocator, GazetteSource
 from packages.domain.contracts import (
     Claim,
     ClaimEvidence,
     FeederObservation,
     Organization,
+    Person,
+    PersonObservationLink,
     Source,
     SourcePolicy,
     SourceSnapshot,
 )
-from packages.domain.enums import EpistemicStatus, EvidenceStance, PublicationStatus
+from packages.domain.enums import (
+    EpistemicStatus,
+    EvidenceStance,
+    MaterializationAction,
+    PublicationStatus,
+)
 from packages.rendering.change_projection import build_source_neutral_change_trace
+from packages.verification.assembly_asset_import import (
+    AMOUNT_UNIT,
+    ASSEMBLY_ASSET_FEEDER,
+    ASSEMBLY_ASSET_SEMANTIC_SCOPE,
+    ASSEMBLY_ASSET_SOURCE_CONTRACT,
+    ASSEMBLY_ASSET_TOTAL_PREDICATE,
+    RECORD_KIND_MEMBER_TOTAL,
+    TOTALS_SCOPE,
+    VALUE_SEMANTICS,
+    assembly_asset_observation_hash,
+    effective_gazette_policy,
+)
 from packages.verification.claims import validate_claim_publication
 
 MONEY_METHOD_VERSION = "money.alio-head-expense-yoy.v1"
 MONEY_FEEDER = "alio_institution_head_business_expense"
 MONEY_SEMANTIC_SCOPE = "institutional_head_business_expense_annual_disclosure"
+PERSON_ASSET_METHOD_VERSION = "money.assembly-declared-total.v1"
+
+
+class AssetSourceVersionConflict(ValueError):
+    """Published Gazette versions conflict; no implicit latest-version precedence."""
+
+
+def build_assembly_declared_assets_from_claims(
+    person: Person,
+    claims: Sequence[Claim],
+    evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
+    *,
+    observations: Mapping[UUID, FeederObservation],
+    snapshots: Mapping[UUID, SourceSnapshot],
+    sources: Mapping[UUID, Source],
+    policies: Mapping[UUID, SourcePolicy],
+    links: Sequence[PersonObservationLink],
+) -> list[dict[str, Any]]:
+    """Only published, exactly linked, metadata-permitted declared headline totals.
+
+    These integers remain THOUSAND_KRW. No legacy float-valued AssetItem, household
+    detail, market-wealth interpretation or zero inference is manufactured.
+    """
+    selected = [claim for claim in claims if claim.predicate == ASSEMBLY_ASSET_TOTAL_PREDICATE
+                and claim.qualifiers.get("source_contract") == ASSEMBLY_ASSET_SOURCE_CONTRACT
+                and claim.publication_status == PublicationStatus.PUBLISHED
+                and claim.superseded_at is None]
+    rows: list[dict[str, Any]] = []
+    versions: dict[str, str] = {}
+    for claim in selected:
+        evidence = list(evidence_by_claim.get(claim.id, ()))
+        gate = validate_claim_publication(claim, person, evidence, dict(sources), dict(policies))
+        if not gate.publishable or claim.person_id != person.id:
+            raise ValueError("asset Claim publication integrity failed")
+        supports = [item for item in evidence if item.claim_id == claim.id
+                    and item.stance == EvidenceStance.SUPPORT]
+        if len(supports) != 1 or supports[0].excerpt is not None:
+            raise ValueError("asset total requires one metadata-only supporting provenance path")
+        proof = supports[0]
+        observation = observations.get(proof.feeder_observation_id) if proof.feeder_observation_id else None
+        snapshot = snapshots.get(proof.snapshot_id) if proof.snapshot_id else None
+        source = sources.get(proof.source_id)
+        if observation is None or snapshot is None or source is None:
+            raise ValueError("asset provenance is unavailable")
+        policy = policies.get(source.policy_id)
+        if policy is None:
+            raise ValueError("asset policy is unavailable")
+        effective_gazette_policy([policy])
+        n = observation.normalized
+        sibling_hashes = {
+            item.content_hash for item in observations.values()
+            if item.feeder == observation.feeder and item.scope_key == observation.scope_key
+            and item.provider_record_key == observation.provider_record_key
+        }
+        if len(sibling_hashes) != 1:
+            raise AssetSourceVersionConflict("corrected Gazette record requires explicit review")
+        if (observation.feeder != ASSEMBLY_ASSET_FEEDER
+                or observation.semantic_scope != ASSEMBLY_ASSET_SEMANTIC_SCOPE
+                or observation.snapshot_id != snapshot.id or snapshot.source_id != source.id
+                or observation.content_hash != assembly_asset_observation_hash(n)
+                or claim.qualifiers.get("immutable_observation_hash") != observation.content_hash
+                or claim.qualifiers.get("provider_record_key") != observation.provider_record_key
+                or n.get("record_kind") != RECORD_KIND_MEMBER_TOTAL
+                or n.get("amount_unit") != AMOUNT_UNIT or n.get("value_semantics") != VALUE_SEMANTICS
+                or n.get("declared_totals_scope") != TOTALS_SCOPE
+                or n.get("totals_cross_check") != "ITEM_SUM_MATCHED"
+                or snapshot.fulltext is not None
+                or snapshot.metadata.get("source_contract") != ASSEMBLY_ASSET_SOURCE_CONTRACT
+                or snapshot.metadata.get("review_status") != "HUMAN_REVIEWED"
+                or snapshot.metadata.get("reviewed_packet_hash") != claim.qualifiers.get("reviewed_packet_hash")
+                or not re.fullmatch(r"[0-9a-f]{64}", str(snapshot.content_hash))
+                or not policy.license or policy.terms_checked_at is None):
+            raise ValueError("asset total immutable metadata provenance is inconsistent")
+        matching_links = [link for link in links if link.observation_id == observation.id
+                          and link.superseded_at is None]
+        if (len(matching_links) != 1 or matching_links[0].person_id != person.id
+                or matching_links[0].action != MaterializationAction.REVIEWED_LINK
+                or str(matching_links[0].review_item_id) != claim.qualifiers.get("review_item_id")
+                or not n.get("reviewer_stated_mona_cd")
+                or n.get("reviewer_stated_mona_cd") != claim.qualifiers.get("assembly_mona_cd")):
+            raise ValueError("asset exact reviewed Person linkage is unavailable")
+        m = snapshot.metadata
+        gazette = GazetteSource.from_mapping({
+            "gazette_issue": m.get("gazette_issue"), "gazette_title": m.get("gazette_title"),
+            "publication_date": m.get("publication_date"), "disclosure_kind": m.get("disclosure_kind"),
+            "reporting_period_text": n.get("reporting_period_text"),
+            "reporting_period_start": n.get("reporting_period_start"),
+            "reporting_period_end": n.get("reporting_period_end"), "pdf_id": m.get("pdf_id"),
+            "page_url": str(source.url), "artifact_filename": m.get("artifact_filename"),
+            "artifact_sha256": snapshot.content_hash, "rights_mark": m.get("rights_mark"),
+            "automation_gate": m.get("automation_gate"),
+        })
+        if (n.get("publication_date") != gazette.publication_date.isoformat()
+                or source.published_at is None
+                or (source.published_at.astimezone(timezone(timedelta(hours=9))).date()
+                    if source.published_at.tzinfo is not None else source.published_at.date())
+                != gazette.publication_date
+                or person.superseded_at is not None
+                or claim.subject != person.canonical_name):
+            raise ValueError("asset date or Person subject differs from canonical provenance")
+        amount = DeclaredAmount.from_mapping(n.get("declared_totals", {}).get("current_value"), "current_value")
+        if amount is None:
+            raise ValueError("asset current total is unavailable, never zero")
+        if (claim.object_text != f"{amount.value:,}천원"
+                or claim.proposition != (
+                    f"{person.canonical_name}의 국회공보 신고 재산 총액은 {amount.value:,}천원이다."
+                )):
+            raise ValueError("asset Claim text differs from its exact declared total")
+        expected = {"amount_thousand_krw": str(amount.value), "amount_unit": AMOUNT_UNIT,
+                    "value_semantics": VALUE_SEMANTICS, "declared_totals_scope": TOTALS_SCOPE,
+                    "publication_date": n.get("publication_date"), "gazette_issue": gazette.gazette_issue,
+                    "report_type": n.get("report_type"), "reporting_period_text": n.get("reporting_period_text")}
+        if any(claim.qualifiers.get(key) != value for key, value in expected.items()):
+            raise ValueError("asset Claim and source amounts/period differ")
+        key = observation.provider_record_key
+        previous = versions.setdefault(key, observation.content_hash)
+        if previous != observation.content_hash:
+            raise AssetSourceVersionConflict("conflicting Gazette records require explicit review")
+        locator = GazetteLocator.from_mapping(n["locator"], "total locator")
+        if observation.provider_record_key != (
+            f"{gazette.gazette_issue}:p{locator.page_number}:t{locator.table_index}:r{locator.table_row}"
+        ):
+            raise ValueError("asset record locator differs from provenance")
+        rows.append({"claim_id": str(claim.id), "person_id": str(person.id),
+                     "method_version": PERSON_ASSET_METHOD_VERSION,
+                     "epistemic_status": claim.epistemic_status.value,
+                     "asserted_as_true": claim.asserted_as_true,
+                     "amount_thousand_krw": amount.value, "amount_unit": AMOUNT_UNIT,
+                     "value_semantics": VALUE_SEMANTICS, "declared_totals_scope": TOTALS_SCOPE,
+                     "gazette_issue": gazette.gazette_issue, "publication_date": n["publication_date"],
+                     "report_type": n["report_type"], "reporting_period_text": n["reporting_period_text"],
+                     "locator": locator.normalized(), "evidence_id": str(proof.id),
+                     "source_id": str(source.id), "snapshot_id": str(snapshot.id),
+                     "observation_id": str(observation.id)})
+    return sorted(rows, key=lambda row: (row["publication_date"], row["claim_id"]))
 _PERCENT_QUANTUM = Decimal("0.01")
 _ALIO_ITEM12_CLAIM_NAMESPACE = UUID("c2e18890-c2bd-4c13-8c68-92bf44950228")
 

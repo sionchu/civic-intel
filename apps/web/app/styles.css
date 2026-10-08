@@ -250,7 +250,7 @@ main { flex: 1; }
 .profile-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 17px; }
 .profile-lede { max-width: 56ch; margin: 22px 0 0; color: var(--color-ink-muted); font-size: 15px; }
 .profile-portrait { display: grid; width: min(180px, 30vw); gap: 8px; margin: 0; }
-.profile-portrait img { display: block; width: 100%; height: auto; aspect-ratio: 400 / 534; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); }
+.profile-portrait img { display: block; width: 100%; height: auto; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); }
 .portrait-credit { color: var(--color-ink-muted); font-size: 13px; line-height: 1.45; text-align: right; overflow-wrap: anywhere; }
 .portrait-credit a { color: var(--color-ink); text-decoration-color: var(--color-line-strong); text-underline-offset: 3px; }
 .portrait-credit a:hover { color: var(--color-accent); }

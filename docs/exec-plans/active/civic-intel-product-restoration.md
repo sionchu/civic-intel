@@ -13,14 +13,25 @@ is the entry point, not the permanent product boundary. Preserve the North Star'
 long-term identity, activity, money, change and issue direction without advertising
 unimplemented feeds or inventing records.
 
-Canonical PostgreSQL writes, identity/publication decisions, new image reuse, new Sites,
-audience changes and paid-resource increases remain outside this slice. On 2026-10-08 the
+The latest request authorizes bounded eligible portrait acquisition/manifest expansion, public
+factual asset source-route preparation, recent activity implementation and actual read-only
+producer verification. Canonical PostgreSQL writes and identity/publication decisions remain
+separate governed operations; new Sites, audience changes and paid-resource increases remain
+outside this slice. On 2026-10-08 the
 owner cancelled the provider inquiry and explicitly chose the existing public Site delivery
 path. Its bounded authenticated D1 bootstrap/import/cutover is authorized after exact local
 proof and orchestration review; public audience does not authorize anonymous writes.
 Original Mac/Windows worktrees and their operational services remain preserved.
 
 ## Baseline and ownership
+
+The CI-FULL role bullets below describe the initial isolated-worktree baseline. Current
+2026-10-09 Sol owners share the integration checkout with exclusive file ownership: lead owns
+plan/HANDOFF/integration and read-only producer audit; rights owner owns asset importer/reader/API
+and portrait manifest/bytes; UI owner owns Person activity/styles/tests and the narrow press
+connector. Bounded Aside public-source review/acquisition and read-only Mac API/canonical audit
+are authorized. Credentials remain transient; canonical writes/merges/publication decisions,
+production service switches and new rights attestations are not delegated implicitly.
 
 - Remote master: `339363f5cf35502abb14fc2af04ed629a7ee8250`.
 - Integration base: RELEASE-01 `31e1d7ae84aa970e722cfa8b4eccf156961541eb`;
@@ -46,9 +57,9 @@ Original Mac/Windows worktrees and their operational services remain preserved.
 | M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v6 retains DB binding and ACTIVE snapshot; original branches/worktrees preserved |
 | M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 exact public-response tuples/Source closure and local rollback PASS; v6 deployed, immutable maintenance POST404 PASS, largest Person fresh direct PASS (15.641 s, 2,383 Claims/36 Sources), current desktop delta and opened home viewport screenshot PASS; native390 USER_DEFERRED; historical v5 secret-removal gate FAIL retained |
 | M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; v6 deployed, fresh desktop home/Enter/discovery and home viewport visual PASS; wider/native390 limits below |
-| M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; synthetic50/50 and existing real public API5,170/5,170 DTO parity incl1,142relationship paths PASS; real browser both Claim endpoints PASS; CURRENT_PRODUCER_FULL_CHAIN missing, operational apply NOT_RUN |
-| M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Existing one-photo contract hardened and tested; actual coverage expansion BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
-| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | L1 privacy hardening tested; actual packet and money slice BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
+| M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; prior transport/browser proofs PASS; actual canonical five-predicate full-chain 9,143 Claims PASS and bounded operational relationship output 71 Claims PASS; running producer still lacks candidate career projection, operational apply NOT_RUN |
+| M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; final full verification PASS, rendered image QA pending, public rollout NOT_RUN; Lee Jae-myung remains identity review |
+| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | Canonical local staged Claim/Evidence asset-total reader implemented; legacy reviewed-PDF route remains exact-packet gated. Public factual PETI route assessment in progress without generic individual consent gate; canonical asset observations/Claims currently absent, operational materialization NOT_RUN |
 | M6 | Further change/comparison/issues, API/MCP and community with scoped methods/rights | PLANNED, not advertised as live |
 
 M1 retains its storage-specific contract in [Sites storage split](sites-storage-split-v0.md).
@@ -114,10 +125,10 @@ Evidence: `public-deployment/native-bootstrap-receipt.json`, `bootstrap-derived-
 | Person / organization discovery | Public v6 serves the pinned 1,142 People; largest-Person direct navigation PASS with 2,383 Claims/36 Sources | Source-backed brief, exploration and exact committee facets deployed; final desktop delta evidence below |
 | Legislative activity / votes | Existing published producers; static artifact grows with dense rendered records | Existing behavior retained; code-only Worker reused |
 | Party / historical scope | Current Assembly facets apply only to their source scope; historical party is not current membership | Korean predicate labels and scoped filter copy deployed; no name merges |
-| Career | Biography/NEC/historical Claims previously missed career producer allowlist or source date rendering | Candidate exact contract pairs/date units validated; captured careers delivered in v6; producer full-chain NOT_VERIFIED |
+| Career | Actual running producer339363f emits no candidate career-semantic entries in ten sampled Person GETs | Canonical9,143-Claim scoped full-chain PASS; candidate8,103 career entries verified in isolation; operational application NOT_RUN |
 | Official relationships | API existed; frontend and exporter did not consume it | Bounded include_candidates=false query, both endpoint Claim links and Source closure deployed and freshly verified |
-| Portrait | One local eligible exact-ID image; additional source rights not established | Existing image retained; withdrawal, no bytes for inactive/unlisted records, zero-eligible handling tested |
-| Personal declared assets | Packet importer stops at Source/Snapshot/Observation; /assets=[] and no eligible real published Claim | URL privacy hardened; NOT_IMPLEMENTED real materialization/read slice remains blocked before rights/identity/publication |
+| Portrait | Public v6 retains one eligible image | Second eligible Lee Jun-seok image locally acquired/reviewed with exact identity; final integrated verification/public rollout pending |
+| Personal declared assets | Actual canonical asset Claims/observations absent; running /assets=[] | Local staged Claim/Evidence and metadata-only asset reader implemented; legacy exact-PDF review gate retained, public factual PETI route assessed separately; operational materialization NOT_RUN |
 | Organization MONEY / other money | Existing institution comparison is distinct from personal wealth; no new compensation/ownership producer approved | Existing behavior retained; no zero or inferred personal wealth |
 | CHANGE / issues / community / API-MCP extensions | Source availability and methods vary; further product scope is not implemented | Existing CHANGE retained; additional work PLANNED (M6) |
 
@@ -315,11 +326,11 @@ fixes the measured Source anchor offset; producer semantics and persistence sche
   This does not establish an independent performance acceptance or a screenshot-related product
   defect. No further unchanged-input capture retries or speculative pagination refactor occurred.
   The old `cd8cdcc` candidate and pre-fix browser receipts remain historical evidence.
-- Dataset acceptance is **CURRENT_FRONTEND_PUBLIC_API**. Upstream API runtime revision is
+- Historical dataset acceptance was **CURRENT_FRONTEND_PUBLIC_API**. Upstream API runtime revision was
   **UNKNOWN**, and consistency is **UNVERIFIED_CAPTURE_WINDOW** (not a DB transaction).
-  Current candidate producer runtime is **NOT_VERIFIED / NOT_APPLIED_BY_THIS_TASK**. Public Source-reference
+  Then-current candidate producer runtime was **NOT_VERIFIED / NOT_APPLIED_BY_THIS_TASK**. Public Source-reference
   closure and token scanning do not independently revalidate rights or canonical publication.
-  **CURRENT_PRODUCER_FULL_CHAIN** remains separate missing evidence; public DTOs intentionally
+  **CURRENT_PRODUCER_FULL_CHAIN** was separate missing evidence, now superseded by the scoped audit below; public DTOs intentionally
   omit canonical SourcePolicy and cannot safely reconstruct that gate.
 - `readiness/owner-review-packet.md` and `sites-readonly-state.json`: fresh owner/public/version 3,
   no D1 binding/table and no exposed Sites-managed bulk writer. Required owner-scoped writer
@@ -464,15 +475,14 @@ Evidence lives under `dist/full-goal-evidence/public-deployment/`.
 
 ## Next concrete action
 
-Perform a bounded, read-only **M3 CURRENT_PRODUCER_FULL_CHAIN** conformance check before any
-operational apply: pin the actual authorized API/producer runtime revision, and inspect exact
-existing career/relationship inputs through SourcePolicy → Source → SourceSnapshot → observation
-→ resolved identity → Claim/ClaimEvidence → publication gate → projected entry. Compare the
-source-contract semantics and exact provenance to the candidate code and retained capture.
-Use existing authorized records; no new source collection, canonical write or publication is
-implied. M4/M5 still await their exact rights/identity/publication inputs; M6 remains PLANNED.
+Integrate the recent-official-activity UI and canonical asset slice, run targeted checks and
+`make verify`, then prepare the exact governed producer code update. Recheck the already verified
+career/relationship inputs against the updated API and a fresh finite public export before any
+public snapshot replacement. Canonical ingestion, identity merges and new publication decisions
+are separate operations; M6 remains PLANNED. Resolve news/statement inputs through the narrow
+source-specific path below, and reassess public asset metadata gates without a blanket consent ask.
 
-### M3 evidence-gap assessment — read-only, 2026-10-09
+### Historical M3 evidence-gap assessment — superseded by actual read-only audit below
 
 `packages/rendering/profile_projection.py` consumes already policy/publication-gated Claims and
 checks resolved Person identity, exact source-contract/predicate pairs, published current Claims
@@ -486,6 +496,109 @@ Available local artifacts therefore cannot establish CURRENT_PRODUCER_FULL_CHAIN
 bounded authorized runtime/canonical read above. Status remains **NOT_VERIFIED**, operational
 apply **NOT_RUN**. This is an evidence gap for existing M3 inputs, not a presumption that every
 M3 source needs new rights or collection.
+
+### Actual producer verification and current implementation — 2026-10-09
+
+The authorized Mac API `127.0.0.1:8100` returned ready; listener PID59426, process cwd
+`/Users/lee/Projects/civic-intel-deploy`, successful deployment receipt and unchanged governing
+source files pin its disk revision to `339363f5cf35502abb14fc2af04ed629a7ee8250`. Resident module
+hashes are not exposed by the API, so this provenance does not claim direct in-process hash
+attestation. Canonical schema is `0008`. All subsequent canonical audits explicitly asserted
+`transaction_read_only=on` under repeatable-read transactions; an initial ineffective connection
+guard is retained as a runner error, with SELECT-only execution/rollback and no writes.
+
+Existing published current Claims were fully enumerated within five exact predicates: biography
+career4,292, NEC career2,820, historical Assembly term993, committee membership477, biography
+education561. All **9,143** passed canonical publication validation, policy metadata permissions,
+exact Source/Snapshot/observation links and immutable hashes, successful current checkpoint
+manifests, and each feeder's governed identity rule. This is **PASS_SCOPED_FULL_CHAIN**, not a
+claim about every feeder. The isolated candidate projection consumed these gated records and
+produced **8,103 unique career Claim entries** (biography4,290/NEC2,820/historical993); two
+heading-only biography Claims were excluded. Candidate code was loaded only in an isolated QA
+folder; no operational source, canonical data or public snapshot was changed.
+
+Actual GET `/people/{id}` for ten exact sampled Persons returned200/RESOLVED but zero candidate
+`details.career_semantics` entries, confirming the running producer has not applied the career
+slice. A corrected nested-field counter supersedes the initial counter's runner mistake.
+Actual largest-Person relationship GET (`limit_per_via=3`) exposed seven affiliations, four groups
+and three co-sponsorship entries. Every one of its **71 distinct referenced Claims** passed
+current identity/publication and exact support Source/Snapshot/observation provenance checks.
+This bounded relationship output proof does not establish full all-person relationship enumeration.
+Receipts: `dist/full-goal-evidence/producer-full-chain/canonical-full-scope-read.json`,
+`actual-api-corrected-read.json`, `actual-relationship-chain-read.json`, and the retained scripts.
+Operational apply remains **NOT_RUN**; capture-window parity after a producer update remains
+unverified. No new rights or canonical ingestion are necessary to render the already valid
+five-predicate career slice.
+
+The existing Mac `deploy-master.sh` is unsuitable for this unpushed candidate: it fetches and
+checks out `origin/master`, builds Web, and restarts both existing services. It contains no
+migration, but would alter the preserved deployment checkout and cannot pin this local commit.
+Prepare an isolated exact-commit source artifact with dependency/schema compatibility and rollback
+to339363f; run a private loopback candidate API against unchanged canonical data before any service
+switch. Keep API credentials transient and its binding private. Validate `/ready`, sampled career
+semantics, bounded relationships, assets coverage and the finite public export, then compare all
+exported path bytes/statuses and Claim/Source closure. A service switch and subsequent existing-Site
+snapshot replacement require the established deployment authority; neither has been executed.
+
+The new Person UI candidate adds eight recent dated official bill/vote records from existing
+published exact-Person SUPPORT-backed Claims, using source event dates only and preserving every
+original Claim/Evidence anchor and UNKNOWN status. It does not fulfill the separate recent-news,
+statement or tendency request. Actual canonical grouped queries found no asset/news/statement
+Claim predicates and no asset/news/minutes feeder observations. There is no approved automated
+news feeder. Actual official Assembly press dataset `ninnagrlaelvtzfnt` exposes an attribution
+licence and NUM/TITLE/WRITE_DATE/CONTENT/CONTENT_URL/BBS_TITLE fields, but no Person identifier.
+Its bounded connector preparation drops CONTENT before capture; official press is distinct from
+external journalism. A narrow news candidate should start with one exact provider's permitted
+headline/link/date metadata, correction/version contract and reviewed exact
+Person anchor, followed by canonical Claim/Evidence publication and a bounded projection; neither
+full article reuse nor name-only assignment follows from a public URL. Minutes require exact
+speaker identity and a publishable text representation before Person statements can render.
+Observed voting/bill activity may support explicit reproducible summaries only when inputs,
+period, denominator and limitations are available; political/private traits must not be invented.
+
+Public asset totals do not require a generic individual's reuse consent merely because they
+are personal assets. Reassess the exact statutory public register and factual metadata route,
+while preserving actual SourcePolicy collection/AI restrictions, privacy, identity and publication
+gates. Historical raw-PDF transcription review is not a blanket public-metadata permission gate.
+Assets and portraits are being implemented in their existing canonical paths; their actual
+operational coverage stays pending their separate evidence and integrated verification.
+
+### Local extension milestone — final code verification PASS, 2026-10-09
+
+Person activity preserves the complete Claim anchor set while presenting eight source-dated
+official bill/vote entries. Final real Aside retained-DTO replay verified eight rows,2,383 unique
+Claim anchors, keyboard Claim→Source navigation and no horizontal overflow. The recent heading
+was measured visible; screenshot correction timed out, so **VISUAL_NOT_COMPLETED**, native390
+USER_DEFERRED. No fallback or further capture retry was used. Evidence:
+`followup/browser/recent-official-activity-acceptance.md` and its final bounded receipt/log.
+
+Lee Jun-seok's exact resolved UUID/MONA portrait is original Commons own-work CC BY4.0,
+1,522,363 B, SHA256 `ce3defcf0504800a5c27866c616fc9206fca2355e222d35d3eb01a440f4c66bc`;
+original pixels and creator attribution are preserved and the acquired image was actually opened.
+Two local eligible portraits pass integrity checks. Lee Jae-myung stays REVIEW/not public, so
+his candidate image is not applied. Evidence: `followup/readiness/portrait-jun-addition.json`.
+The acquired image's visual inspection is source evidence only. The fixed400/534 CSS ratio was
+removed to preserve each image's intrinsic supplied dimensions; the final web checks cover this
+correction. Actual Aside rendered-image dimensions/decoding verification is pending the production
+build. New portrait visual readiness is not claimed, and public rollout remains NOT_RUN.
+
+The existing Gazette asset importer now builds staged exact-reviewed-link Claim/Evidence pairs
+and the canonical API reads only published declared headline totals. It preserves integer
+THOUSAND_KRW and declared scope, metadata-only evidence, packet and canonical publication gates,
+all sibling source-version conflicts, source-date agreement in KST and exact Person/text/amount
+lineage. Missing published asset Claims remains explicit empty coverage, never zero wealth.
+No operational asset observation, Claim, reviewed link or publication decision was created.
+Official press preparation remains L1/live NOT_RUN and has no Person binding. PETI public factual
+total staging is the next independent local slice, preserving UNKNOWN report type and exact
+identity review without a fabricated HUMAN_REVIEWED assertion.
+
+The first integrated full suite was interrupted after late malformed-response/date/identity
+integrity corrections; its exit1 is **INTERRUPTED_SUPERSEDED_BY_FINAL_CODE**, not PASS. The fresh
+final frozen-code `make verify` exited0: **1,144 Python passed/3 skipped/6 warnings in492.05s**,
+web **90/90**, Ruff, mypy153 source files, Golden quality, lint, typecheck and Next production
+standalone build PASS. The later portrait CSS correction froze before the runner's web stages,
+which cover its final code/test. No schema or dependency change was made. Logs:
+`public-deployment/make-verify-assets-activity-final.log` and its superseded-run receipt.
 
 ### Historical frozen bootstrap and recovery receipts
 
@@ -585,8 +698,10 @@ effects or writes. This docs-only closure does not rerun the unchanged full suit
   Person listener intervals had no observed pageerrors. Initial selector/API/receipt runner
   errors and corrected reused v5 metadata remain in the QA packet, not product failures or hidden
   PASS. Final source client hashes differ, so historical v5 blanket QA is not reused.
-- Current evidence class remains CURRENT_FRONTEND_PUBLIC_API; producer runtime/freshness UNKNOWN,
-  capture-window consistency UNVERIFIED. CURRENT_PRODUCER_FULL_CHAIN NOT_VERIFIED, apply NOT_RUN.
-  M4/M5 BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION, M6 PLANNED; full contract incomplete.
+- V6 capture evidence class remains CURRENT_FRONTEND_PUBLIC_API. Subsequent actual producer audit
+  pins deployment checkout339363f/schema0008 and establishes scoped9,143-Claim career chain and
+  bounded71-Claim relationship chain PASS; candidate producer application remains NOT_RUN and
+  post-update capture-window consistency UNVERIFIED. M4/M5 implementation/evidence follow-up is
+  in progress under the narrower public-metadata policy assessment; M6 PLANNED, contract incomplete.
   Original Windows/Mac/release worktrees and PR204 preserved; no GitHub push/merge. Tool-policy-denied
   original staging cleanup remains blocked and was not retried; generated fixtures/residue retained.

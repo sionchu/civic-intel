@@ -38,20 +38,41 @@ capability at source. Memo 3 decoded reads→1 measured locally and final direct
 diagnose historical Worker memory-limit causes. Sol owns execution/integration/native operations;
 Astra orchestrates. Original Windows/Mac/release worktrees and PR204 preserved, no GitHub push/merge.
 Tool-policy-denied original cleanup was not retried; `.wrangler/` and fixture residue retained,
-ignored generated runtime. M4/M5 BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION, M6 PLANNED.
+ignored generated runtime. Subsequent M4/M5 local implementation is in progress under the latest
+portrait/public factual asset request; operational data/coverage remains pending, M6 PLANNED.
 
 Current receipts under `dist/full-goal-evidence/`: `public-deployment/native-readonly-b7ec64c-receipt.json`,
 `hosted-readonly-b7ec64c-denial.json`, `compiled-reader-disabled-b7ec64c.json`,
 `retained-reader-b7ec64c.json`, `make-verify-readonly-memo.log`, and
 `followup/browser/public-v6-acceptance.md`. The active plan records exact hashes and all QA limits.
 
-Next concrete action: bounded read-only M3 CURRENT_PRODUCER_FULL_CHAIN conformance verification
-against the actual authorized API/producer revision and existing SourcePolicy→Source→Snapshot→
-observation→resolved identity→Claim/Evidence→publication→projection inputs before operational apply.
-Candidate domain/regression and current-frontend capture are PASS; local public DTOs omit canonical
-SourcePolicy and cannot reconstruct that full gate. Runtime revision/freshness UNKNOWN,
-capture-window consistency UNVERIFIED, producer full-chain NOT_VERIFIED, apply NOT_RUN. This does
-not presume new rights are required for all M3 inputs. Blocked M4/M5 inputs remain separate.
+Current follow-up: actual authorized Mac API is ready on loopback port 8100, deployment checkout
+`339363f5cf35502abb14fc2af04ed629a7ee8250`, canonical schema 0008. Strict read-only audits verified
+all 9,143 published Claims across five career/education/committee predicates through policy,
+Source/Snapshot/observation hash/checkpoint, governed identity and publication gates PASS.
+Isolated candidate projection produced 8,103 unique career entries; it is not applied operationally.
+Ten actual Person GETs returned 200/RESOLVED and zero candidate career-semantic entries, confirming
+the producer code gap. Actual bounded largest-Person relationships referenced 71 distinct Claims,
+all canonical support/publication chains PASS. Resident module hashes are not directly attested;
+all-feeder/all-person proof and post-update capture-window consistency remain unverified.
+Receipts reside in `dist/full-goal-evidence/producer-full-chain/`.
+
+Local asset reader, second eligible portrait, recent-official-activity UI and bounded official
+press metadata preparation are integrated. Final frozen-code `make verify` exited0: Python
+1,144 passed/3 skipped/6 warnings in492.05s, web90/90, Ruff/mypy153/Golden quality/lint/typecheck/
+Next standalone PASS. The superseded pre-correction run was interrupted, not PASS. New portrait
+source bytes were opened; actual rendered-image geometry evidence remains pending and screenshot
+visual acceptance is not claimed. Current local changes are not public deployment.
+
+Next action: prepare the isolated exact-commit private API candidate and finite read-only fresh
+export comparison before a separately approved operational service switch. PETI local factual
+total staging and grounded bill-vote exploration are the next source/UI slices. No canonical
+writes/merges or new publication decisions occurred.
+Recent bill/vote activity does not fulfill requested news/statements/tendencies; exact permitted
+news metadata, reviewed Person anchors and publishable statement text remain distinct inputs.
+Reassess statutory public asset metadata without a generic individual consent requirement;
+SourcePolicy collection/AI, privacy, exact identity and publication gates still apply. M6 PLANNED,
+whole contract incomplete. The current active plan records this superseding evidence and scope.
 
 Use the active plan for current exact receipts and next step. Older checkpoints below are historical.
 

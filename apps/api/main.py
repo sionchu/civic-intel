@@ -8,7 +8,7 @@ from typing import Annotated
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -48,7 +48,11 @@ from packages.rendering.gukgam_witness_claim import (
     GUKGAM_WITNESS_PREDICATE,
     build_gukgam_witness_projection,
 )
-from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
+from packages.rendering.money_projection import (
+    AssetSourceVersionConflict,
+    build_alio_head_expense_money_from_claims,
+    build_assembly_declared_assets_from_claims,
+)
 from packages.rendering.profile_projection import (
     PEOPLE_DISCOVERY_PREDICATES,
     build_people_discovery_projection,
@@ -66,6 +70,7 @@ from packages.rendering.relationship_projection import (
     cosponsorship_pairs,
     shortest_evidence_path,
 )
+from packages.verification.assembly_asset_import import ASSEMBLY_ASSET_TOTAL_PREDICATE
 from packages.verification.assembly_plenary_votes import ASSEMBLY_PLENARY_VOTE_PREDICATE
 from packages.verification.claims import validate_claim_publication
 from packages.verification.person_record_links import LINKED_WITNESS_PREDICATE
@@ -835,9 +840,49 @@ def create_app(
         return path
 
     @app.get("/people/{person_id}/assets")
-    def assets(person_id: UUID) -> list:
-        person_or_404(person_id, public=True)
-        return []
+    def assets(person_id: UUID, response: Response) -> list:
+        person = person_or_404(person_id, public=True)
+        claims, evidence = target.published_person_claim_contexts(
+            [person_id], predicates=(ASSEMBLY_ASSET_TOTAL_PREDICATE,)
+        ).get(
+            person_id, ((), {})
+        )
+        observation_ids = {
+            item.feeder_observation_id
+            for items in evidence.values() for item in items
+            if item.feeder_observation_id is not None
+        }
+        contexts = target.feeder_observation_contexts(observation_ids)
+        active_person_ids = target.active_person_ids_by_observation(list(observation_ids))
+        if any(active_person_ids.get(key, frozenset()) != frozenset({person_id})
+               for key in observation_ids):
+            raise PublicApiError(503, "SERVICE_UNAVAILABLE",
+                                 "The public data service is temporarily unavailable.")
+        observations = {key: value[0] for key, value in contexts.items()}
+        for observation in tuple(observations.values()):
+            for sibling in target.feeder_observations(
+                observation.feeder, observation.scope_key, observation.provider_record_key
+            ):
+                observations[sibling.id] = sibling
+        try:
+            rows = build_assembly_declared_assets_from_claims(
+                person, claims, evidence,
+                observations=observations,
+                snapshots={value[1].id: value[1] for value in contexts.values()},
+                sources={value[2].id: value[2] for value in contexts.values()},
+                policies={value[3].id: value[3] for value in contexts.values()},
+                links=target.person_observation_links(person_id),
+            )
+            response.headers["X-Civic-Asset-Coverage"] = (
+                "PUBLISHED_DECLARED_TOTALS" if rows else "NO_PUBLISHED_ASSET_CLAIMS"
+            )
+            return rows
+        except AssetSourceVersionConflict as exc:
+            raise PublicApiError(409, "SOURCE_VERSION_CONFLICT",
+                                 "Conflicting source versions prevent this disclosure.") from exc
+        except ValueError as exc:
+            raise PublicApiError(503, "SERVICE_UNAVAILABLE",
+                                 "The public data service is temporarily unavailable.") from exc
 
     @app.get("/sources/{source_id}")
     def get_source(source_id: UUID) -> dict:
