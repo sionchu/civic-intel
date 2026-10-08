@@ -7,6 +7,7 @@ overriding them. `exec-plans/active/` contains only currently approved long-runn
 work. Closed milestones move to `exec-plans/completed/`; source/rights/precondition stops move to
 `exec-plans/blocked/`. Historical plans remain reference evidence, not current instructions.
 
+- [Active Civic Intel product restoration](exec-plans/active/civic-intel-product-restoration.md) — full-goal local implementation and staged/blocked evidence.
 - [Architecture](../ARCHITECTURE.md)
 - [System overview: purpose, architecture, source gates and current state](architecture/CIVIC_INTEL_SYSTEM_OVERVIEW.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)

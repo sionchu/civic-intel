@@ -1,5 +1,15 @@
 # HANDOFF
 
+## Current local implementation — 2026-10-08
+
+Owner MAIN works in isolated `codex/civic-intel-full-goal`, based on RELEASE-01
+`31e1d7a`. The active [product restoration plan](docs/exec-plans/active/civic-intel-product-restoration.md)
+owns current milestone status and evidence. Source-specific career projection, source-backed
+home/facets, bounded relationship API–D1–UI transport, and portrait/Gazette hardening
+are integrated locally. Operational API and Sites are unchanged by this work. Real photo/asset
+rights, canonical writes and hosted activation remain separate approval gates. Older states
+below are historical checkpoints; use the active plan and actual Git/runtime for current status.
+
 ## Current state — 2026-10-07 evening (official careers: former members, NEC, OpenDART master)
 
 PR #205 merged (`1ecb06b`) and deployed on the Mac API (`/relationships/*` live). Branch
