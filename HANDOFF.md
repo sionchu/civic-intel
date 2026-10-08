@@ -3851,3 +3851,12 @@ Keep the exact 41-item post-org.go Gukgam Claim DRAFT uncommitted until explicit
 its manifest hash. Independently review the new 70-item MOIS Organization proposal. Only after
 explicit review should a source-specific reviewed Organization materialization contract be created;
 do not auto-create Organizations from exact names and do not merge these two approval boundaries.
+
+
+### 2026-10-09 최종 제품 커밋 및 공개 전달 준비
+
+제품 정본은 `d67a42d87315dd08c06502d58884630d6cf17280`이다. 최종 전체 `make verify` 세션 57531은 실제 exit 0: Python 1,330 passed / 3 skipped / 6 warnings / 517.34초, 웹 104/104 및 Ruff·mypy 157파일·Golden 품질·lint·typecheck·Next standalone PASS다. 앞선 실패 이력은 기존 기록대로 보존한다.
+
+원본 Git blob API 패키지는 173파일, gzip 438,113바이트, SHA256 `8a7eb1d63f76a50afb7069a668e4b47b1f70e223aeeba90c1978a3bafa87060c`다. 근거는 `dist/full-goal-evidence/producer-full-chain/producer-d67a42d-exact-source.json`이다. 실제 전송 시 원격 Mac이 offline(last seen 41분 전)을 반환하여 전송은 수행되지 않았다. 원격 raw-byte 검증·격리 API 실행·최신 전체 공개 export·실제 hosted 예산/메모리 검증은 NOT_RUN_DEVICE_OFFLINE이다. 다음 실행은 Mac 연결이 복구된 뒤 같은 exact artifact를 전송하여 바이트 대조와 read-only candidate를 검증하고 전체 export를 수행하는 것이다.
+
+운영 API 339363f/8100과 공개 Site v6는 그대로다. canonical 정책 등록·수집·인물 연결·publication과 운영 API 전환은 미실행이며 이전 f5/e575 승인 대상을 재사용하지 않는다. 새 뉴스·자산·주택 운영 기록은 0이며 staged 경로 연결을 실제 수집 완료로 표시하지 않는다. hosted writer 보안 경계와 no-cleanup 제약은 유지한다.
