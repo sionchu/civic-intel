@@ -2,12 +2,60 @@
 
 ## Current public delivery — 2026-10-09
 
-PUBLIC_READER_V5_DEPLOYED / HOSTED_ACTIVE_PASS / MAINTENANCE_REVOCATION_FAIL / READ_ONLY_HOTFIX_IN_PROGRESS (2026-10-09).
-Public v5 source28dc48f2ccb5d8ad5d9090f4989ce661c6009f15 and deployment appgdep_6ac7b9cc7b2c8191b909041e0ae227af succeeded, same public audience and DB binding. Auth/schema/Aside continuity PASS. Hosted load/validation ACTIVE PASS:7,449parts/5,170paths/epoch1. Public reader v5 deployed, but formerly valid secret acceptance after env removal is a security FAIL; cause UNKNOWN, writes not proven. Source-owned immutable maintenance-disabled reader hotfix now required. Rights Sol owns all native operations; Sol lead owns canonical integration, Astra orchestrates. Final reader is prepared (160files/1,789,762 B, no legacy static data), superseded by source-owned route closure candidate; wait compiled proof and root redeploy signal.
+PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS /
+LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
 
-Code b2b59aa clean-build lint/web86/Worker/scanner and compiled actual D1 restore/corruption/CAS/TEL_NO tests PASS. Full make verify Python1116/3skip and web87 historical checkpoint PASS. Original-v3 Gitblob assets2720/238,611,871 B supersede CRLF checkout copies; actual public entity-byte baseline is one RSC route. Preserve-all source/derived archive provenance D/R0/mismatch0 PASS. Tool-denied cleanup was not retried; GNU tar errors and Git normalization are separate runner/provenance events. Local .wrangler/ smoke residue is retained and ignored as generated runtime; no deletion. Native390 USER_DEFERRED, screenshot NOT_RUN for bootstrap, full contract incomplete/M4-M5 blocked/M6 planned.
+Product code `b7ec64c1f9e6da29c13102301d62ed443e6af692`; native source
+`f79ad69dd68bae3c54dcde96c9807b9b24db2a0a`; saved version
+`appgprj_6ac46916b4d08191872983ffd6d52aba~appgver_caa5c78cfe748191a0d805f0eb105735`;
+deployment `appgdep_6ac7d5b6eec08191ad05e72ff043a3d9` succeeded at the same
+`https://moduigukgam.leeje92.chatgpt.site`, public access revision 2/environment revision 2 and DB binding retained.
+Only the non-secret manifest pin is listed. Previously validated ACTIVE snapshot
+`ps-65e086d2eb00c3c5` remains epoch 1 / 7,449 parts / 5,170 paths / 1,142 People / 387 Organizations /
+578 Sources; capture/data-as-of remains 2026-10-08. Capture manifest b6839703… and hosted transport
+pin cf88a931… are separate. No reload, pointer transition or canonical write accompanied v6.
+
+Immutable route compiled synthetic POSTs and hosted service fixed-state synthetic-auth POST
+all 404/no-store/MAINTENANCE_DISABLED PASS; actual Aside GET 404 PASS. Fresh largest-Person direct
+navigation completed 15.641 s under 60 s, 2,383 Claims/36 Sources, no observed pageerrors during its
+listener interval. Home Enter/client navigation, 12 relationships/2 edges, both endpoint Claims,
+Person/Organization Source keyboard navigation, 1,142 unique People, 387 Organizations and Gukgam
+counts PASS. Home 1440×900 viewport screenshot actually opened PASS; broader/full-page visual
+NOT_RUN, native 390 USER_DEFERRED. Browser POST NOT_RUN under Aside's GET/HEAD-only fetch contract;
+service POST is separate. Listener-free empty errors arrays are not error-absence proof.
+
+Full `make verify` at combined code exit 0: Python 1,116 passed/3 skipped/6 warnings, 407.25 s;
+web 87/87, Ruff/mypy 152/quality/lint/typecheck/Next standalone PASS. Final clean Worker 147 files /
+1,746,848 B/scanner PASS; installed Vinext separate request contexts reproduced all 5,170 exact
+status/JSON-byte/hash tuples and 386 valid 4xx. Final local reader 159 files / 1,771,206 B. Native
+selected Git blobs D/R0/mismatch0; official archive 152 exact files plus one expected hosting JSON
+format transform 96→91 B with equal semantics. Native tar and local gzip hashes are distinct;
+raw archive equality not proven. Full source helper exit0 preserved legacy assets.
+
+Historical v5 formerly valid-secret acceptance after env removal remains security FAIL, cause
+UNKNOWN, writes not proven; secret discarded and not recovered. V6 removes the maintenance
+capability at source. Memo 3 decoded reads→1 measured locally and final direct read PASS do not
+diagnose historical Worker memory-limit causes. Sol owns execution/integration/native operations;
+Astra orchestrates. Original Windows/Mac/release worktrees and PR204 preserved, no GitHub push/merge.
+Tool-policy-denied original cleanup was not retried; `.wrangler/` and fixture residue retained,
+ignored generated runtime. M4/M5 BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION, M6 PLANNED.
+
+Current receipts under `dist/full-goal-evidence/`: `public-deployment/native-readonly-b7ec64c-receipt.json`,
+`hosted-readonly-b7ec64c-denial.json`, `compiled-reader-disabled-b7ec64c.json`,
+`retained-reader-b7ec64c.json`, `make-verify-readonly-memo.log`, and
+`followup/browser/public-v6-acceptance.md`. The active plan records exact hashes and all QA limits.
+
+Next concrete action: bounded read-only M3 CURRENT_PRODUCER_FULL_CHAIN conformance verification
+against the actual authorized API/producer revision and existing SourcePolicy→Source→Snapshot→
+observation→resolved identity→Claim/Evidence→publication→projection inputs before operational apply.
+Candidate domain/regression and current-frontend capture are PASS; local public DTOs omit canonical
+SourcePolicy and cannot reconstruct that full gate. Runtime revision/freshness UNKNOWN,
+capture-window consistency UNVERIFIED, producer full-chain NOT_VERIFIED, apply NOT_RUN. This does
+not presume new rights are required for all M3 inputs. Blocked M4/M5 inputs remain separate.
 
 Use the active plan for current exact receipts and next step. Older checkpoints below are historical.
+
+## Historical local follow-up — 2026-10-08
 
 Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
 browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current
@@ -33,8 +81,8 @@ Owner MAIN works in isolated `codex/civic-intel-full-goal`, based on RELEASE-01
 `31e1d7a`. The active [product restoration plan](docs/exec-plans/active/civic-intel-product-restoration.md)
 owns current milestone status and evidence. Source-specific career projection, source-backed
 home/facets, bounded relationship API–D1–UI transport, and portrait/Gazette hardening
-are integrated locally. Operational API and Sites are unchanged by this work. Real photo/asset
-rights, canonical writes and hosted activation remain separate approval gates. Older states
+were integrated locally at this historical checkpoint, before the v6 hosted release above.
+Real photo/asset rights and canonical writes remain separate approval gates. Older states
 below are historical checkpoints; use the active plan and actual Git/runtime for current status.
 
 ## Current state — 2026-10-07 evening (official careers: former members, NEC, OpenDART master)

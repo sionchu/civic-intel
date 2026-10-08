@@ -1,8 +1,8 @@
 # Civic Intel product restoration
 
-Status: PUBLIC_READER_V5_DEPLOYED / HOSTED_ACTIVE_PASS / MAINTENANCE_REVOCATION_FAIL / READ_ONLY_HOTFIX_IN_PROGRESS / FULL_CONTRACT_INCOMPLETE.
-Implementation owner: MAIN; 2026-10-08 follow-up execution/integration owner: GPT-6.1 Sol,
-2026-10-08. The full contract is not complete. User authorized implementation and
+Status: PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
+Implementation owner: MAIN; 2026-10-08–09 follow-up execution/integration owner: GPT-6.1 Sol.
+The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
 
 ## Objective and scope
@@ -43,9 +43,9 @@ Original Mac/Windows worktrees and their operational services remain preserved.
 
 | Milestone | Work and acceptance | Current state |
 |---|---|---|
-| M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v5 has DB binding and ACTIVE snapshot; branch states preserved |
-| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 real public-API response hashes/Source-reference closure, largest Person/Org SSR–Worker content parity and local rollback round trip PASS; real visual NOT_COMPLETED, native390 USER_DEFERRED; public v5 reader and hosted ACTIVE PASS; secret-removal security gate FAIL, immutable read-only hotfix in progress |
-| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; local verification and Aside acceptance below |
+| M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v6 retains DB binding and ACTIVE snapshot; original branches/worktrees preserved |
+| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 exact public-response tuples/Source closure and local rollback PASS; v6 deployed, immutable maintenance POST404 PASS, largest Person fresh direct PASS (15.641 s, 2,383 Claims/36 Sources), current desktop delta and opened home viewport screenshot PASS; native390 USER_DEFERRED; historical v5 secret-removal gate FAIL retained |
+| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; v6 deployed, fresh desktop home/Enter/discovery and home viewport visual PASS; wider/native390 limits below |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; synthetic50/50 and existing real public API5,170/5,170 DTO parity incl1,142relationship paths PASS; real browser both Claim endpoints PASS; CURRENT_PRODUCER_FULL_CHAIN missing, operational apply NOT_RUN |
 | M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Existing one-photo contract hardened and tested; actual coverage expansion BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
 | M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | L1 privacy hardening tested; actual packet and money slice BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
@@ -70,7 +70,38 @@ This plan owns integration and product scope, not a second storage implementatio
 
 ## Current checkpoint
 
-The existing public Site is now **v5 D1 reader deployed**, serving the pinned 1,142-person public-API snapshot. The historical v4 bootstrap preserved its 504-person UI while data was staged. Hosted load/validation and exact ACTIVE readback completed (7,449 parts / 5,170 paths, epoch1). Public final reader v5 deployed; its security closure FAILED because a formerly valid secret was still accepted after the native environment key removal. A source-owned read-only route hotfix is in progress. Canonical PostgreSQL, producer runtime, identity/publication decisions and source rights remain unchanged. Sol lead owns integration; Rights Sol exclusively owns native source/environment/deployment; Astra orchestrates.
+The existing public Site now serves **v6 with maintenance immutably disabled** at
+`https://moduigukgam.leeje92.chatgpt.site`. Product source is
+`b7ec64c1f9e6da29c13102301d62ed443e6af692`; native source is
+`f79ad69dd68bae3c54dcde96c9807b9b24db2a0a`, saved version
+`appgprj_6ac46916b4d08191872983ffd6d52aba~appgver_caa5c78cfe748191a0d805f0eb105735`,
+deployment `appgdep_6ac7d5b6eec08191ad05e72ff043a3d9` **succeeded**. Public access revision2,
+environment revision2 and existing DB binding are retained; the only listed environment key is
+the non-secret manifest pin. No new import, pointer transition or canonical write accompanied v6.
+
+The previously validated ACTIVE snapshot remains `ps-65e086d2eb00c3c5`, epoch1,
+7,449 parts / 5,170 paths, 1,142 People / 387 Organizations / 578 Sources. Its capture is
+**2026-10-08**, not newly refreshed on 2026-10-09. Generated local capture manifest
+`b68397038606d3de1612b5b60b8a1b4d41b7be202759a8677ab8cb5db95ad7a6` and hosted transport pin
+`cf88a931321b0d9508cb3a223ea8d17c7627e3d663d14fd79b0576c6fe9e672c` are distinct contracts.
+Canonical PostgreSQL, producer runtime, identity/publication decisions and source rights remain
+unchanged. Sol owns execution/integration and native release; Astra orchestrates.
+
+Compiled actual Vinext synthetic-auth POSTs with valid, malformed and oversized bodies all
+returned 404, with writer/auth/operations absent and no canonical D1 schema effects. Hosted service
+POST with synthetic auth and fixed `op=state` returned 404 / `MAINTENANCE_DISABLED` / `no-store`.
+Final largest-Person fresh direct navigation completed in 15.641 s under the 60 s bound, showing
+2,383 Claims and 36 Sources; observed page errors were empty and 1440px viewport had 1425px scroll
+width. These prove the final route and direct read behavior; earlier native memory-limit causes
+remain UNKNOWN. Request memoization measured 3 decoded reads → 1 locally; it is not a causal diagnosis
+of those earlier failures.
+
+Current receipts: `public-deployment/native-readonly-b7ec64c-receipt.json`,
+`hosted-readonly-b7ec64c-denial.json`, `compiled-reader-disabled-b7ec64c.json`,
+`retained-reader-b7ec64c.json`, and `followup/browser/public-v6-acceptance.md`.
+Final desktop delta QA and screenshot evidence are recorded in the final closure below.
+
+### Historical v4 bootstrap
 
 Public v4 source `5f713e2fd7325034f2c556ec9317a47964d5aede`, saved version `appgprj_6ac46916b4d08191872983ffd6d52aba~appgver_b2ea0c123a3881919fbbdf54305ae371`, deployment `appgdep_6ac7a9b0981081918a0d85c86641e2c3` succeeded. Audience remains public (access revision2), environment revision1; DB has the expected 17 snapshot_meta columns including all six writer fields, initially zero rows. Anonymous/wrong auth401 and authenticated malformed400 PASS. Native archive: 240,578,560 B / 2,728 files, SHA256 `b8e5253a931277c8dd2e1cf2ae6b7d0551c362f07a81d312c19de5daedbc35d8`. Aside home/search/Person/Organization/roster/RSC continuity PASS; bootstrap screenshots NOT_RUN and native390 USER_DEFERRED.
 
@@ -80,11 +111,11 @@ Evidence: `public-deployment/native-bootstrap-receipt.json`, `bootstrap-derived-
 
 | Capability | Operational baseline / why not visible | This candidate |
 |---|---|---|
-| Person / organization discovery | API has 1,142 public People; public v5 now serves 1,142 People from the pinned ACTIVE snapshot; direct largest-Person runtime acceptance remains under investigation | Source-backed brief, exploration and exact committee facets staged |
+| Person / organization discovery | Public v6 serves the pinned 1,142 People; largest-Person direct navigation PASS with 2,383 Claims/36 Sources | Source-backed brief, exploration and exact committee facets deployed; final desktop delta evidence below |
 | Legislative activity / votes | Existing published producers; static artifact grows with dense rendered records | Existing behavior retained; code-only Worker reused |
-| Party / historical scope | Current Assembly facets apply only to their source scope; historical party is not current membership | Korean predicate labels and scoped filter copy staged; no name merges |
-| Career | Biography/NEC/historical Claims previously missed career producer allowlist or source date rendering | Exact contract pairs, coarse date units and provenance connected locally |
-| Official relationships | API existed; frontend and exporter did not consume it | Bounded include_candidates=false query, both endpoint Claim links and Source closure staged |
+| Party / historical scope | Current Assembly facets apply only to their source scope; historical party is not current membership | Korean predicate labels and scoped filter copy deployed; no name merges |
+| Career | Biography/NEC/historical Claims previously missed career producer allowlist or source date rendering | Candidate exact contract pairs/date units validated; captured careers delivered in v6; producer full-chain NOT_VERIFIED |
+| Official relationships | API existed; frontend and exporter did not consume it | Bounded include_candidates=false query, both endpoint Claim links and Source closure deployed and freshly verified |
 | Portrait | One local eligible exact-ID image; additional source rights not established | Existing image retained; withdrawal, no bytes for inactive/unlisted records, zero-eligible handling tested |
 | Personal declared assets | Packet importer stops at Source/Snapshot/Observation; /assets=[] and no eligible real published Claim | URL privacy hardened; NOT_IMPLEMENTED real materialization/read slice remains blocked before rights/identity/publication |
 | Organization MONEY / other money | Existing institution comparison is distinct from personal wealth; no new compensation/ownership producer approved | Existing behavior retained; no zero or inferred personal wealth |
@@ -113,7 +144,7 @@ Evidence: `public-deployment/native-bootstrap-receipt.json`, `bootstrap-derived-
   dependencies remain intact. A running Worker preview also held dist files; only this task's
   preview was stopped before rebuilding.
 
-### Current pinned QA input and evidence
+### Historical synthetic QA input and evidence
 
 All files below are local ignored artifacts under `dist/full-goal-evidence/`; they are not
 published receipts. The separate fixture worktree's `dist/full-goal-fixture/receipt.json`
@@ -316,7 +347,7 @@ tabs closed. Original Windows and Mac checkout changes are preserved. Temporary 
 NOT_RUN_TOOL_POLICY_DENIAL. `followup-acceptance-receipt.json` consolidates these evidence classes.
 Capture integrity PASS is not complete frontend or producer-chain acceptance.
 
-### Hosted writer and approval boundary
+### Historical hosted writer and approval boundary
 
 Installed Sites storage contract supports logical DB binding plus schema-only migrations.
 Available connector tools expose database overview/row reads, save/deploy and access control;
@@ -331,7 +362,8 @@ public-boundary validation, and code-only Worker artifact. A hosted proposal mus
 actual supported writer, owner-only authorization, credential handling, exact snapshot hash,
 staged validation, atomic activation receipt and prior snapshot rollback. A public import
 endpoint, hidden migration seed or invented Sites route is not an approved substitute.
-Saving a Site version, binding DB, loading/activating hosted data and deploying remain NOT_RUN.
+At this historical checkpoint, saving a Site version, binding DB, loading/activating hosted data
+and deploying were NOT_RUN; later ACTIVE/v6 receipts supersede those execution states.
 
 M4/M5 needs a separately approved source packet: exact official Gazette issue/PDF hash,
 rights attestation, human comparison of permitted totals in THOUSAND_KRW, source period/type
@@ -339,7 +371,7 @@ and family-included-total annotation only, followed by exact Person linkage and 
 approval. The existing synthetic 2099-1 fixture is not that packet. SourcePolicy can_send_to_ai
 restrictions remain in force; do not use AI to manufacture human review.
 
-### Hosted writer read-only preflight — 2026-10-08
+### Historical hosted writer read-only preflight — 2026-10-08
 
 **READ_ONLY_PREFLIGHT_COMPLETE / PROVIDER_CONTRACT_REQUIRED / HOSTED_NOT_RUN**. Clean input
 `ac2eccab7168e2bd1edc579c19ea2f0db8bef144`; product code remains `145348b` with the same web tree.
@@ -391,12 +423,12 @@ writer. Service access supplies no visitor identity. The current Site audience w
 `supported-path-assessment.md` and `read-only-provider-state.json` contain the exact live and
 installed-contract evidence; no claim of absolute platform impossibility is made.
 
-## Public delivery follow-up — in progress
+## Historical public-delivery implementation and rehearsal
 
 The owner cancelled the unsent provider inquiry (`SUPERSEDED_NOT_SENT`) and directed
 public delivery on the existing project. Actual GPT-6.1 Sol owns implementation/final
 verification; Astra only orchestrates. Rights Sol is the single native release operator.
-No hosted operation, credential generation or source push has occurred at this checkpoint.
+At this historical implementation checkpoint, no hosted operation, credential generation or source push had occurred; the current v6 release is recorded above.
 
 The canonical exporter now prepares finite hash-bound transport from the exact approved
 existing capture without new API reads. The Worker-only route uses a dedicated runtime
@@ -432,16 +464,44 @@ Evidence lives under `dist/full-goal-evidence/public-deployment/`.
 
 ## Next concrete action
 
-Clean candidate `b2b59aadf0999961e8f335d085866873ecdb8df3` is frozen: final lint and web86 PASS, Worker build/scanner PASS (148 files / 1,765,404 B), independent retry-race review CLOSED. Compiled disposable D1 A/B restore, corrupt-PREVIOUS preservation, stale CAS and actual TEL_NO boundary rejection PASS (`compiled-final-b2b59aa.json`). Bootstrap preserves all 2,720 old assets and is 238,720,154 B; compiled SHA `1f43e4cacb6dab096f975c72e169d1619039d7fd4cd07bc03fc2bac163b9dd51`. Full real rehearsal remains explicitly pre-restore-extension evidence, supplemented by final synthetic compiled proofs and retained-reader 5,170 tuple parity. Public bootstrap deploy/schema/continuity are PASS; pinned hosted load is IN_PROGRESS, validation/ACTIVE/final reader NOT_RUN.
+Perform a bounded, read-only **M3 CURRENT_PRODUCER_FULL_CHAIN** conformance check before any
+operational apply: pin the actual authorized API/producer runtime revision, and inspect exact
+existing career/relationship inputs through SourcePolicy → Source → SourceSnapshot → observation
+→ resolved identity → Claim/ClaimEvidence → publication gate → projected entry. Compare the
+source-contract semantics and exact provenance to the candidate code and retained capture.
+Use existing authorized records; no new source collection, canonical write or publication is
+implied. M4/M5 still await their exact rights/identity/publication inputs; M6 remains PLANNED.
 
-Complete the immutable maintenance-disabled reader build/compiled proof and single-operator redeploy; verify public maintenance denial independently of any retained secret. Do not reload or mutate the already ACTIVE data. Initial hosted rollback is the exact retained public v3 saved version, not an
+### M3 evidence-gap assessment — read-only, 2026-10-09
+
+`packages/rendering/profile_projection.py` consumes already policy/publication-gated Claims and
+checks resolved Person identity, exact source-contract/predicate pairs, published current Claims
+and SUPPORT Evidence. `PERSON_PROFILE_SECTION_PRODUCERS.md`, the profile/relationship regressions,
+synthetic50-path proof and final full verification establish candidate semantics; the retained
+5,170-path parity and fresh v6 UI establish delivery of the existing public-API capture. They do
+not pin the upstream runtime revision or revalidate canonical rights, identity materialization
+and publication receipts. Public DTOs deliberately omit canonical SourcePolicy and cannot
+reconstruct that gate; historical operational summaries are not fresh full-chain receipts.
+Available local artifacts therefore cannot establish CURRENT_PRODUCER_FULL_CHAIN without the
+bounded authorized runtime/canonical read above. Status remains **NOT_VERIFIED**, operational
+apply **NOT_RUN**. This is an evidence gap for existing M3 inputs, not a presumption that every
+M3 source needs new rights or collection.
+
+### Historical frozen bootstrap and recovery receipts
+
+Earlier frozen candidate `b2b59aadf0999961e8f335d085866873ecdb8df3` passed final lint/web86,
+Worker build/scanner and compiled restore/CAS/policy-negative proofs. Its then-pending hosted
+load/validation/final-reader steps are superseded by the ACTIVE and v6 receipts above.
+
+The immutable maintenance-disabled reader build, compiled proof, deploy and hosted denial are
+now complete. Initial hosted rollback was the exact retained public v3 saved version, not an
 invented D1 PREVIOUS snapshot. Prior protocol restore requires its separately approved previous-manifest pin and full
 bounded revalidation. Legacy local SQL rollback remains separate; no implicit legacy
-adoption is claimed. The final reader deployment removes the maintenance secret so the
-endpoint fails closed.
+adoption is claimed. The current final reader denies maintenance independently of environment
+or retained secrets; no secret recovery or new environment mutation occurred for v6.
 
-Native390 remains `USER_DEFERRED`; producer full-chain, real visual capture and M4/M5
-rights/identity/publication acceptance gaps remain unchanged above.
+Native390 remains `USER_DEFERRED`; producer full-chain and M4/M5 rights/identity/publication
+acceptance gaps remain. Current home viewport visual PASS does not complete broader visual QA.
 
 Build receipts preserve two runner failures: npm ci initially hit OS EPERM because the
 task's active Miniflare held workerd.exe; no privilege change/forced stop occurred, and
@@ -457,18 +517,76 @@ Initial bootstrap failure recovery uses exact public v3 saved version; after boo
 
 The rejected task-owned old-root cleanup was a tool-policy denial and was not retried. Recovery preserved every filesystem/Git legacy file, committed only additions/modifications (D/R0), and used official standalone packaging of a newly copied reviewed build allowlist. Every selected file matched its pushed Git blob (2,728 files / 238,653,861 B, mismatches0). Full helper archive is separately retained. GNU tar Windows path/colon errors were ordinary runner errors, resolved by supported process-only Git Bash path/TAR_OPTIONS --force-local, with no helper patch. CRLF normalization was a separate provenance failure: physical RSC10,119 B/24CRLF versus Gitblob and actual published entity10,095 B/0CRLF. Attributes preserve selected runtime bytes; corrected blob-based artifacts supersede physical copies. Production exact entity-byte proof is one RSC route; Sites-injected HTML response is not equated with source HTML bytes.
 
-Prepared final reader `final-reader-b2b59aa` has 160 allowlisted files / 1,789,762 B (runtime148 / 1,765,404 B), exact existing project_id/DB logical binding and zero legacy static HTML/RSC data assets. Inventory SHA256 `042babcbe6189375636855d894f9d97df20c0f6cecf38f569c42cb765d8c3c19`; native deployment NOT_RUN. Task-root `.wrangler/` disposable smoke residue is preserved, now covered by the conventional generated-runtime ignore rule; no cleanup retry. Full contract remains incomplete, M4/M5 blocked and M6 planned.
+Historical prepared reader `final-reader-b2b59aa` had160 files /1,789,762 B and was superseded
+by the final b7ec64c reader described below. Its former native NOT_RUN state is historical.
+Task-root `.wrangler/` disposable smoke residue is preserved and ignored as generated runtime;
+no cleanup retry. Full contract remains incomplete, M4/M5 blocked and M6 planned.
 
-### 2026-10-09 security closure correction (in progress)
+### Historical v5 security failure and source-owned correction
 
 Hosted snapshot `ps-65e086d2eb00c3c5` is ACTIVE/VALIDATED, cursors7,449/5,170, pointer epoch1 (`hosted-active-receipt.json`). Observed completion3694s is not exact end timing; stable fatal log0 is not unmeasured network retries0. Capture/data-as-of remain their original 2026-10-08 values.
 
 Public v5 saved/deployed source28dc48f2ccb5d8ad5d9090f4989ce661c6009f15, deployment appgdep_6ac7b9cc7b2c8191b909041e0ae227af, environment revision2. Its native archive is1,914,880 B/154files/SHAe47be09741179c6bc25dfcb178ac0c8112204086876f9f0a6fb5b60ee4f98955. Native metadata no longer listed the secret, but a formerly valid authenticated state call exited0 at2026-10-08T15:43:03.806Z; anonymous401. This proves unexpected authorization acceptance, not writes or recovered ACTIVE fields. Provider propagation/runtime cause UNKNOWN. Secret memory discarded; no recovery, regeneration or new environment mutation.
 
-The final reader route now imports no environment, writer, authorization or DB code and always returns404 MAINTENANCE_DISABLED/no-store for all methods. Explicit bootstrap build retains its authenticated writer separately. Source request/context spy0, web87, lint/typecheck and independent QA review PASS; clean compiled actual Vinext denial proof/build remain pending. No payload/schema/reader/source-rights changes; unchanged Python full suite not rerun for this isolated Worker-only route closure. Evidence: native-final-reader-receipt.json, final-maintenance-revocation.json, final-revocation-rca.md.
+The final reader route imports no environment, writer, authorization or DB code and always
+returns404 MAINTENANCE_DISABLED/no-store for all methods. Explicit bootstrap build retains its
+authenticated writer separately. Source request/context spy0, web87, lint/typecheck and independent
+QA review PASS; the final compiled/build and hosted v6 proofs below complete the correction.
+No payload/schema/source-rights changes. Historical v5 evidence:
+native-final-reader-receipt.json, final-maintenance-revocation.json, final-revocation-rca.md.
 
-Request-memory candidate: actual installed Vinext request context reproduced three part/decode reads for three normalized-path calls before the fix; after a request-local path→Promise map the same calls use one decoded DTO. Different paths, next-request ACTIVE, concurrent failed decode and retry isolation PASS; independent QA found no consumer DTO mutation. This is measured duplicate-work reduction, not yet proof of hosted peak-memory or direct-SSR resolution. Actual native logs contain three memory-limit failures without path correlation; public largest-Person client navigation works but direct load was incomplete. No record or policy is removed.
+Request memoization in actual installed Vinext reduced three normalized-path part/decode reads
+to one decoded DTO. Different paths, next-request ACTIVE, concurrent failed decode and retry
+isolation PASS; independent QA found no consumer DTO mutation. Historical native logs contained
+three memory-limit failures without path correlation and v5 direct loading was incomplete.
+The v6 direct read now passes, but peak-memory causality remains UNKNOWN. No record or policy
+was removed.
 
-The maintenance-disabled compiled0724442 candidate returned404 for retained synthetic-secret POST with valid/malformed/131,073 B bodies; all executable writer-auth/operations code was absent and canonical D1 schema stayed absent. Runner failures before that proof were dynamic module enumeration/path setup and unread-upload transport/D1 internal-metadata assumptions, not product or native acceptance. Final combined request-memo artifact must repeat the compiled closure and exact retained response parity after full make verify. Generated runtime `.wrangler/` is ignored without deleting any files.
+The maintenance-disabled compiled0724442 candidate returned404 for synthetic-secret POST with
+valid/malformed/131,073 B bodies. The final combined b7ec64c artifact repeated the same compiled
+closure after full verification and passed exact retained response parity. Runner failures were
+dynamic module/path setup, unread-upload transport and D1 internal-metadata assumptions; they
+remain historical runner evidence. Generated runtime `.wrangler/` is ignored without deletion.
 
-Final combined source full `make verify` executed exit0 on2026-10-09: ruff/mypy152files/quality PASS; Python1,116passed/3skip/6warnings407.25s; web87/87, lint/typecheck/Next production+standalone PASS (`make-verify-readonly-memo.log`). Independent read-only request-memo and route reviews PASS. Fresh clean combined Worker and final compiled/parity receipts remain pending at this commit.
+Final combined source full `make verify` executed exit0 on2026-10-09: ruff/mypy152files/quality
+PASS; Python1,116passed/3skip/6warnings407.25s; web87/87, lint/typecheck/Next production+standalone
+PASS (`make-verify-readonly-memo.log`). Independent read-only request-memo and route reviews PASS.
+Fresh clean combined Worker147 files /1,746,848 B, build/scanner PASS; compiled index SHA256
+`22b935c04854fa3d6f8af6cd0cf18680f44653acaf062573b7131adf5366bbf9`. Actual installed Vinext
+separate request contexts reproduced all5,170 status/JSON-byte/hash tuples,7,449 parts and386
+contract-valid4xx from retained local read-only D1 (`retained-reader-b7ec64c.json`); no hosted
+effects or writes. This docs-only closure does not rerun the unchanged full suite.
+
+### Final v6 release closure — 2026-10-09 KST
+
+- Frozen local reader159 files /1,771,206 B, inventory SHA256
+  `ab7b81dc1730460ecbf150db071baa135395ddc0c611f760df38f5179d5702c3`.
+  Native selected source159 files /1,771,206 B matched Git blobs with D/R0 and mismatch0
+  (`readonly-b7ec64c-derived-provenance.json`). Official derived gzip544,875 B /153 files /
+  1,759,022 payload B, SHA256 `561fe1c1943149adc80f56e174bc13a91d849958540d36f6077f92bb6542b317`:
+  152 mapped files exact, one expected official `hosting.json` formatting transform96→91 B,
+  same project/DB/r2-null semantics, no runtime-byte mismatch (`readonly-b7ec64c-archive-proof.json`).
+- Native saved tar is1,894,400 B /153 files, SHA256
+  `46123815f812bdb6c8f2884fb686b0824cf37e9ed32bfd51853c5585ad322b81`.
+  It differs from both local gzip and decompressed local tar; raw archive equality is not proven.
+  Official full source helper exited0 with exact source/remote HEAD and clean checkout, preserving
+  all legacy source assets: gzip49,844,059 B, SHA256
+  `129e2a42d27f3160280a9e2fc14a50774e5db16851cd771dde067c402f52a653`.
+- Fresh Aside delta QA PASS: immutable GET404/no-store; home Enter→exact Person; client2,383
+  Claims/36 Sources/12 relationships/2 graph edges; relationship disclosure and both endpoint
+  Claims with CLAIM/SUPPORT; Person and Organization Source keyboard navigation visible after
+  readiness. Direct largest Person15.641 s PASS. People1,142 unique links, Organizations387,
+  sampled Organization410 Claims/2 Sources, Gukgam1,731 witness rows/2,957 main anchors and
+  query 이10 shown results. Viewport1440×900 /scrollWidth1425 on measured pages.
+- `followup/browser/public-v6-home.png` was captured and actually opened: home viewport visual
+  PASS only. Largest/full-page and broader visual suite NOT_RUN; native390 USER_DEFERRED.
+  Browser POST NOT_RUN under installed Aside GET/HEAD-only fetch contract; hosted service POST
+  PASS is separate. Empty errors arrays without listeners do not prove absence; only direct and
+  Person listener intervals had no observed pageerrors. Initial selector/API/receipt runner
+  errors and corrected reused v5 metadata remain in the QA packet, not product failures or hidden
+  PASS. Final source client hashes differ, so historical v5 blanket QA is not reused.
+- Current evidence class remains CURRENT_FRONTEND_PUBLIC_API; producer runtime/freshness UNKNOWN,
+  capture-window consistency UNVERIFIED. CURRENT_PRODUCER_FULL_CHAIN NOT_VERIFIED, apply NOT_RUN.
+  M4/M5 BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION, M6 PLANNED; full contract incomplete.
+  Original Windows/Mac/release worktrees and PR204 preserved; no GitHub push/merge. Tool-policy-denied
+  original staging cleanup remains blocked and was not retried; generated fixtures/residue retained.
