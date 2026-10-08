@@ -109,7 +109,7 @@ export default function OntologyLocalGraph({
               )}
               {firstSource && (
                 <Link className="ontology-source-link" href={`#source-${firstSource}`}>
-                  {sourceTitles[firstSource] ?? "Evidence source"} <span aria-hidden="true">↓</span>
+                  {sourceTitles[firstSource] ?? "출처"}
                 </Link>
               )}
             </article>
@@ -118,11 +118,11 @@ export default function OntologyLocalGraph({
       </div>
 
       {graph.edges.length > visibleEdges.length && (
-        <p className="ontology-limit-note">시각화는 읽기 쉬운 local graph를 위해 처음 {visibleEdges.length}개 연결만 그립니다. 아래 텍스트 목록에는 현재 공개 edge 전체를 유지합니다.</p>
+        <p className="ontology-limit-note">그림은 읽기 쉽도록 처음 {visibleEdges.length}개 연결만 그립니다. 아래 목록에는 공개된 연결이 모두 있습니다.</p>
       )}
       {graph.nodes.some((node) => node.kind === "SOURCE_LISTED_ROLE_HOLDER") && (
         <p className="ontology-limit-note">
-          임원 노드는 공식 공시에 적힌 역할 보유자 기록이며 canonical Person이 아닙니다. 같은 이름도 자동으로 합치거나 Person 상세에 연결하지 않습니다.
+          임원은 공식 공시에 적힌 이름이며 인물 기록이 아닙니다. 같은 이름이어도 자동으로 합치거나 인물 페이지에 연결하지 않습니다.
         </p>
       )}
       <p className="ontology-limit-note">표시된 연결은 공개 기록의 Claim/Evidence 관계이며 친분, 영향력 또는 동기를 의미하지 않습니다.</p>

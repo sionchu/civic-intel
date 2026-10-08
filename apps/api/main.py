@@ -4,10 +4,11 @@ import logging
 import re
 import secrets
 from contextlib import asynccontextmanager
+from typing import Annotated
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -52,6 +53,18 @@ from packages.rendering.profile_projection import (
     PEOPLE_DISCOVERY_PREDICATES,
     build_people_discovery_projection,
     build_profile_projection,
+)
+from packages.rendering.relationship_graph import (
+    compare_payload,
+    load_relationship_graph,
+    person_relationships_payload,
+    rules_payload,
+)
+from packages.rendering.relationship_projection import (
+    BILL_CONTRACT,
+    BILL_PREDICATE,
+    cosponsorship_pairs,
+    shortest_evidence_path,
 )
 from packages.verification.assembly_plenary_votes import ASSEMBLY_PLENARY_VOTE_PREDICATE
 from packages.verification.claims import validate_claim_publication
@@ -754,6 +767,72 @@ def create_app(
     def relationships(person_id: UUID) -> list[dict]:
         person_or_404(person_id, public=True)
         return target.relationships(person_id)
+
+    def relationship_inputs():
+        return load_relationship_graph(target)
+
+    def bill_pairs(person_id: UUID):
+        return cosponsorship_pairs(
+            person_id, target.published_bill_participants(person_id, BILL_PREDICATE, BILL_CONTRACT)
+        )
+
+    @app.get("/relationships/rules")
+    def relationship_rules() -> dict:
+        return rules_payload(relationship_inputs())
+
+    @app.get("/relationships/people/{person_id}")
+    def person_relationship_graph(
+        person_id: UUID,
+        layer: Annotated[list[str] | None, Query()] = None,
+        relation_type: Annotated[list[str] | None, Query()] = None,
+        include_candidates: bool = False,
+        limit_per_via: Annotated[int, Query(ge=1, le=300)] = 50,
+    ) -> dict:
+        person_or_404(person_id, public=True)
+        return person_relationships_payload(
+            relationship_inputs(),
+            person_id,
+            layers=layer,
+            relation_types=relation_type,
+            include_candidates=include_candidates,
+            cosponsorship=bill_pairs(person_id),
+            limit_per_via=limit_per_via,
+        )
+
+    @app.get("/relationships/compare")
+    def compare_people(a: UUID, b: UUID, include_candidates: bool = False) -> dict:
+        if a == b:
+            raise PublicApiError(422, "INVALID_INPUT", "Two different people are required.")
+        person_or_404(a, public=True)
+        person_or_404(b, public=True)
+        return compare_payload(
+            relationship_inputs(), a, b,
+            include_candidates=include_candidates, cosponsorship=bill_pairs(a),
+        )
+
+    @app.get("/relationships/path")
+    def relationship_path(
+        from_: Annotated[UUID, Query(alias="from")],
+        to: UUID,
+        include: Annotated[list[str] | None, Query()] = None,
+        max_edges: Annotated[int, Query(ge=1, le=10)] = 8,
+    ) -> dict:
+        person_or_404(from_, public=True)
+        person_or_404(to, public=True)
+        inputs = relationship_inputs()
+        path = shortest_evidence_path(
+            from_, to, inputs.affiliations,
+            organization_links=inputs.organization_links,
+            organization_labels={key: value.name for key, value in inputs.organizations.items()},
+            include_kinds=include,
+            max_edges=max_edges,
+        )
+        if path is None:
+            return {
+                "nodes": [], "edges": [], "source_claim_ids": [], "path_length": None,
+                "result": "NO_EVIDENCE_PATH_WITHIN_COLLECTED_SCOPE",
+            }
+        return path
 
     @app.get("/people/{person_id}/assets")
     def assets(person_id: UUID) -> list:

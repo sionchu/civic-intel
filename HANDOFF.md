@@ -1,5 +1,46 @@
 # HANDOFF
 
+## Current state — 2026-10-07 evening (official careers: former members, NEC, OpenDART master)
+
+PR #205 merged (`1ecb06b`) and deployed on the Mac API (`/relationships/*` live). Branch
+`feat/evidence-graph-official-careers` adds three owner-approved lanes, applied to canonical after
+backups (`pre-former-members-20261007-175354.dump`, `pre-official-careers-20261007-193413.dump`):
+
+- former members (역대 의원이력 17–22대): 1,348 term rows → 638 AUTO_CREATE People by `MONA_CD`
+  (219 same-name collisions sent to identity review, never merged), 993 `ASSEMBLY_HISTORICAL_TERM`
+  FACTs; public People 504 → 1,142;
+- NEC Assembly candidates 2004–2024 (12 scopes, 7,275 unique `huboid`; provider `totalCount`
+  counts repeated rows): education/career/occupation CLAIMs for 287 current members (exact name +
+  birth date) and 934 former-member terms (exact name + party + election); 3,992 Claims;
+- OpenDART corporation master: 119,558 filers as a company-name registry (no Organization/Claim).
+
+Claims 804,621 → 809,603. Current members with a registry-bound affiliation: education 96.3%,
+government body 53.8%, campaign 16.4%, public institution 9.0%, business 6.7%. Collector keys now
+live in the Mac `acquisition.env` (an unrelated OpenAI key pasted with them was exposed in a
+session log; owner asked to rotate it).
+
+## Current state — 2026-10-07 (Evidence Graph relationship layer)
+
+Branch `feat/evidence-graph-relations` (base `f91f19b`) adds the read-time relationship projection
+([EVIDENCE_GRAPH](docs/architecture/EVIDENCE_GRAPH.md)): code-keyed `ASSEMBLY_COMMITTEE_MEMBERSHIP`
+Claims, the member-profile biography lane (`ASSEMBLY_BIOGRAPHY_EDUCATION/CAREER`, attributed CLAIM),
+exact registry bindings (MOIS codes, ALIO, OpenDART, reviewed NEC election table), versioned
+derivation rules incl. revolving-door transitions, `/relationships/{people/{id},compare,path,rules}`
+and the read-only `workers/relationship_coverage.py` audit. No schema change (rev `0008`).
+
+Canonical apply (owner-approved 2026-10-07, Mac PostgreSQL): backup
+`civic-intel-serve/backups/pre-evidence-graph-20261007-080654.dump`; 477 membership, 240,490
+bill-participation and 561 + 4,292 biography Claims; Claims 558,801 → 804,621; log
+`civic-intel-serve/logs/evidence-graph-apply-20261007-080654/`. Owner approved public display of
+verbatim biography lines. Measured result:
+[EVIDENCE_GRAPH_STATUS_2026-10-07](docs/research/EVIDENCE_GRAPH_STATUS_2026-10-07.md).
+
+Not yet done: the Mac API still serves master (`/relationships/*` needs this branch merged and
+deployed); Sites snapshot unchanged (owned by the Sites thread). Blocked on collector credentials
+the owner must add to `civic-intel-serve/acquisition.env`: `DART_API_KEY` (unlisted-company master,
+ownership `elestock`, compensation) and `NEC_API_KEY` (National Assembly candidate careers). Former
+members (historical member API) and MPM officials need a Person-creation decision before any lane.
+
 ## Current state — 2026-10-06 (person profile section producers)
 
 Merged #200, #201 and #202 (master `0143c23`). Every Person profile section's upstream producer is

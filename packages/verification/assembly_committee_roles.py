@@ -1,9 +1,15 @@
-"""Committee chair/secretary Claims from the official Assembly committee-member list.
+"""Committee Claims from the official Assembly committee-member list.
 
-The list states, per committee and ``MONA_CD``, the role text 위원장/간사/위원. Only the two
-roles that carry a committee office are published as Claims; plain membership is already in the
-current-roster ``ASSEMBLY_COMMITTEES`` Claim. The role text is copied verbatim and no authority is
-derived from it. The list has no start/end date, so the Claim is valid from collection time.
+The list states, per committee (``DEPT_CD``) and ``MONA_CD``, the role text 위원장/간사/위원.
+Two Claim lanes read the same observations:
+
+- ``ASSEMBLY_COMMITTEE_ROLE``: only the two roles that carry a committee office (위원장, 간사);
+- ``ASSEMBLY_COMMITTEE_MEMBERSHIP``: every row, keyed by the official committee code. It is the
+  code-keyed membership fact that relation derivation binds on; the roster's comma-separated
+  ``ASSEMBLY_COMMITTEES`` text stays a display Claim and is never joined across People by name.
+
+The role text is copied verbatim and no authority is derived from it. The list has no start/end
+date, so the Claim is valid from collection time.
 """
 
 from __future__ import annotations
@@ -42,8 +48,12 @@ ASSEMBLY_COMMITTEE_MEMBERSHIP_SOURCE_CONTRACT = "assembly_committee_member_list_
 ASSEMBLY_COMMITTEE_MEMBERSHIP_SEMANTICS = "official_committee_member_list_row_as_of_collection"
 ASSEMBLY_COMMITTEE_ROLE_PREDICATE = "ASSEMBLY_COMMITTEE_ROLE"
 ASSEMBLY_COMMITTEE_ROLE_SOURCE_CONTRACT = "assembly_committee_member_list_role"
+ASSEMBLY_COMMITTEE_MEMBERSHIP_PREDICATE = "ASSEMBLY_COMMITTEE_MEMBERSHIP"
+ASSEMBLY_COMMITTEE_MEMBERSHIP_CLAIM_CONTRACT = "assembly_committee_member_list_membership"
 PUBLISHED_COMMITTEE_ROLES = frozenset({"위원장", "간사"})
+LISTED_COMMITTEE_ROLES = frozenset({"위원장", "간사", "위원"})
 _COMMITTEE_ROLE_CLAIM_NAMESPACE = UUID("6d0f3b8e-4c5a-4f1e-9b7d-2a8c1e5f9d31")
+_COMMITTEE_MEMBERSHIP_CLAIM_NAMESPACE = UUID("8a51c0d2-6b3e-4f7a-9c18-3d2e7f4b5a60")
 
 
 class AssemblyCommitteeRoleError(ValueError):
@@ -62,6 +72,31 @@ def _role_claim_matches_observation(claim: Claim, observation: FeederObservation
         and claim.object_text
         == f"{normalized.get('committee_name')} {normalized.get('role_published')}"
     )
+
+
+def _membership_claim_matches_observation(claim: Claim, observation: FeederObservation) -> bool:
+    normalized = observation.normalized
+    return (
+        f"{claim.qualifiers.get('committee_code')}:{claim.qualifiers.get('provider_person_key')}"
+        == observation.provider_record_key
+        and claim.qualifiers.get("committee_code") == normalized.get("committee_code")
+        and claim.qualifiers.get("committee_name") == normalized.get("committee_name")
+        and claim.qualifiers.get("committee_role") == normalized.get("role_published")
+        and claim.qualifiers.get("committee_role") in LISTED_COMMITTEE_ROLES
+        and claim.object_text == normalized.get("committee_name")
+    )
+
+
+ASSEMBLY_COMMITTEE_MEMBERSHIP_LANE = AssemblyMemberClaimLane(
+    feeder=ASSEMBLY_COMMITTEE_MEMBERSHIP_FEEDER,
+    semantic_scope=ASSEMBLY_COMMITTEE_MEMBERSHIP_SEMANTIC_SCOPE,
+    predicate=ASSEMBLY_COMMITTEE_MEMBERSHIP_PREDICATE,
+    source_contract=ASSEMBLY_COMMITTEE_MEMBERSHIP_CLAIM_CONTRACT,
+    logical_key_qualifiers=("committee_code",),
+    claim_matches_observation=_membership_claim_matches_observation,
+    error=AssemblyCommitteeRoleError,
+    label="Assembly committee membership",
+)
 
 
 ASSEMBLY_COMMITTEE_ROLE_LANE = AssemblyMemberClaimLane(
@@ -95,8 +130,9 @@ def build_assembly_committee_role_bundle(
     *,
     source: Source,
     policy: SourcePolicy,
+    membership: bool = False,
 ) -> AssemblyCommitteeRoleBundle:
-    """Build one committee-office Claim for an exact current-roster MONA_CD."""
+    """Build one committee-office (default) or code-keyed membership Claim for an exact MONA_CD."""
 
     if person.identity_status != IdentityStatus.RESOLVED:
         raise AssemblyCommitteeRoleError("Assembly committee role requires a resolved Person")
@@ -118,12 +154,21 @@ def build_assembly_committee_role_bundle(
     role = _text(normalized, "role_published")
     if observation.provider_record_key != f"{committee_code}:{member_code}":
         raise AssemblyCommitteeRoleError("committee-member key does not match its codes")
-    if role not in PUBLISHED_COMMITTEE_ROLES:
-        raise AssemblyCommitteeRoleError("committee role is not a published committee office")
+    if membership:
+        if role not in LISTED_COMMITTEE_ROLES:
+            raise AssemblyCommitteeRoleError("committee role is not a listed committee role")
+        namespace = _COMMITTEE_MEMBERSHIP_CLAIM_NAMESPACE
+        predicate = ASSEMBLY_COMMITTEE_MEMBERSHIP_PREDICATE
+        contract, object_text = ASSEMBLY_COMMITTEE_MEMBERSHIP_CLAIM_CONTRACT, committee_name
+    else:
+        if role not in PUBLISHED_COMMITTEE_ROLES:
+            raise AssemblyCommitteeRoleError("committee role is not a published committee office")
+        namespace, predicate = _COMMITTEE_ROLE_CLAIM_NAMESPACE, ASSEMBLY_COMMITTEE_ROLE_PREDICATE
+        contract, object_text = ASSEMBLY_COMMITTEE_ROLE_SOURCE_CONTRACT, f"{committee_name} {role}"
 
     claim = Claim(
         id=uuid5(
-            _COMMITTEE_ROLE_CLAIM_NAMESPACE,
+            namespace,
             "|".join((str(person.id), observation.provider_record_key, observation.content_hash)),
         ),
         person_id=person.id,
@@ -132,10 +177,10 @@ def build_assembly_committee_role_bundle(
             f"{_as(role)} 기재되어 있다."
         ),
         subject=person.canonical_name,
-        predicate=ASSEMBLY_COMMITTEE_ROLE_PREDICATE,
-        object_text=f"{committee_name} {role}",
+        predicate=predicate,
+        object_text=object_text,
         qualifiers={
-            "source_contract": ASSEMBLY_COMMITTEE_ROLE_SOURCE_CONTRACT,
+            "source_contract": contract,
             "source_scope": observation.scope_key,
             "semantic_scope": observation.semantic_scope,
             "provider_record_key": observation.provider_record_key,
@@ -247,13 +292,15 @@ class AssemblyCommitteeRolePublisher:
         return run.id, tuple(by_key[key] for key in sorted(by_key))
 
     def publish_latest_successful(
-        self, *, dry_run: bool = False
+        self, *, dry_run: bool = False, memberships: bool = False
     ) -> AssemblyCommitteeRolePublicationResult:
+        """Publish office Claims, or with ``memberships`` every row's code-keyed membership."""
+
+        lane = ASSEMBLY_COMMITTEE_MEMBERSHIP_LANE if memberships else ASSEMBLY_COMMITTEE_ROLE_LANE
+        listed = LISTED_COMMITTEE_ROLES if memberships else PUBLISHED_COMMITTEE_ROLES
         run_id, observations = self._latest_successful_observations()
         offices = [
-            item
-            for item in observations
-            if item.normalized.get("role_published") in PUBLISHED_COMMITTEE_ROLES
+            item for item in observations if item.normalized.get("role_published") in listed
         ]
         contexts = self.repository.assembly_legislative_source_contexts(
             [item.id for item in offices]
@@ -271,7 +318,7 @@ class AssemblyCommitteeRolePublisher:
                 continue
             source, policy = context
             bundle = build_assembly_committee_role_bundle(
-                person, observation, source=source, policy=policy
+                person, observation, source=source, policy=policy, membership=memberships
             )
             pending.append((person, observation, bundle.claims, bundle.evidence))
 
@@ -280,26 +327,23 @@ class AssemblyCommitteeRolePublisher:
         current_claims = [
             claim
             for claim in self.repository.claims(published_only=True, current_only=True)
-            if claim.predicate == ASSEMBLY_COMMITTEE_ROLE_PREDICATE
+            if claim.predicate == lane.predicate
         ]
         existing_before = {claim.id for claim in current_claims}
         unchanged = len(existing_before & requested_ids)
         current_keys = {
-            ASSEMBLY_COMMITTEE_ROLE_LANE.logical_key(str(person.id), claims[0].qualifiers)
+            lane.logical_key(str(person.id), claims[0].qualifiers)
             for person, _, claims, _ in pending
         }
         stale = tuple(
             sorted(
                 claim.id
                 for claim in current_claims
-                if ASSEMBLY_COMMITTEE_ROLE_LANE.logical_key(str(claim.person_id), claim.qualifiers)
-                not in current_keys
+                if lane.logical_key(str(claim.person_id), claim.qualifiers) not in current_keys
             )
         )
         if not dry_run:
-            self.repository.import_assembly_member_claims_batch(
-                pending, ASSEMBLY_COMMITTEE_ROLE_LANE
-            )
+            self.repository.import_assembly_member_claims_batch(pending, lane)
         return AssemblyCommitteeRolePublicationResult(
             run_id=run_id,
             observations_considered=len(observations),

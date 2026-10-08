@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -39,6 +40,7 @@ from packages.domain.db import (
     FeederObservationRow,
     IdentityReviewItemRow,
     OrganizationRow,
+    PersonAliasRow,
     PersonObservationLinkRow,
     PersonRow,
     RelationshipRow,
@@ -1907,8 +1909,8 @@ class SqlAlchemyRepository:
                 or claim.organization_id is not None
                 or claim.predicate != lane.predicate
                 or claim.publication_status != PublicationStatus.PUBLISHED
-                or claim.epistemic_status != EpistemicStatus.FACT
-                or not claim.asserted_as_true
+                or claim.epistemic_status != lane.epistemic_status
+                or claim.asserted_as_true != (lane.epistemic_status == EpistemicStatus.FACT)
                 or claim.qualifiers.get("source_contract") != lane.source_contract
                 or claim.qualifiers.get("source_scope") != observation.scope_key
                 or claim.qualifiers.get("semantic_scope") != observation.semantic_scope
@@ -1994,7 +1996,7 @@ class SqlAlchemyRepository:
         current_rows = list(
             session.scalars(
                 select(ClaimRow).where(
-                    ClaimRow.person_id.in_([str(person.id) for person, *_ in prepared]),
+                    ClaimRow.person_id.in_(sorted({str(person.id) for person, *_ in prepared})),
                     ClaimRow.superseded_at.is_(None),
                 )
             )
@@ -3561,10 +3563,12 @@ class SqlAlchemyRepository:
             evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {
                 claim_id: [] for claim_id in claims_by_id
             }
-            if claims_by_id:
+            claim_keys = [str(item) for item in claims_by_id]
+            # Chunked: PostgreSQL caps one statement at 65,535 bind parameters.
+            for start in range(0, len(claim_keys), 10000):
                 evidence_rows = session.scalars(
                     select(ClaimEvidenceRow)
-                    .where(ClaimEvidenceRow.claim_id.in_([str(item) for item in claims_by_id]))
+                    .where(ClaimEvidenceRow.claim_id.in_(claim_keys[start : start + 10000]))
                     .order_by(ClaimEvidenceRow.claim_id, ClaimEvidenceRow.id)
                 )
                 for evidence_row in evidence_rows:
@@ -3628,10 +3632,12 @@ class SqlAlchemyRepository:
             evidence_by_claim: dict[UUID, list[ClaimEvidence]] = {
                 claim_id: [] for claim_id in claims_by_id
             }
-            if claims_by_id:
+            claim_keys = [str(item) for item in claims_by_id]
+            # Chunked: PostgreSQL caps one statement at 65,535 bind parameters.
+            for start in range(0, len(claim_keys), 10000):
                 evidence_rows = session.scalars(
                     select(ClaimEvidenceRow)
-                    .where(ClaimEvidenceRow.claim_id.in_([str(item) for item in claims_by_id]))
+                    .where(ClaimEvidenceRow.claim_id.in_(claim_keys[start : start + 10000]))
                     .order_by(ClaimEvidenceRow.claim_id, ClaimEvidenceRow.id)
                 )
                 for evidence_row in evidence_rows:
@@ -3795,6 +3801,504 @@ class SqlAlchemyRepository:
         with self.sessions() as session:
             items = [self._policy(row) for row in session.scalars(statement)]
             return {item.id: item for item in items}
+
+    def evidence_run_ids(self, evidence: Iterable[ClaimEvidence]) -> dict[UUID, UUID]:
+        """Map ClaimEvidence id → SourceRun id of its exact FeederObservation (if any)."""
+
+        by_observation: dict[str, list[UUID]] = {}
+        for item in evidence:
+            if item.feeder_observation_id is not None:
+                by_observation.setdefault(str(item.feeder_observation_id), []).append(item.id)
+        result: dict[UUID, UUID] = {}
+        keys = sorted(by_observation)
+        with self.sessions() as session:
+            for start in range(0, len(keys), 1000):
+                rows = session.execute(
+                    select(FeederObservationRow.id, FeederObservationRow.run_id).where(
+                        FeederObservationRow.id.in_(keys[start : start + 1000])
+                    )
+                )
+                for observation_id, run_id in rows:
+                    for evidence_id in by_observation[observation_id]:
+                        result[evidence_id] = UUID(run_id)
+        return result
+
+    def organization_registry_rows(self) -> list[tuple[str, str, str, str | None]]:
+        """Official names already held, as (name, kind, provider key, Organization id).
+
+        kind is ``ALIO_INSTITUTION`` (current canonical Organization with an ALIO classification
+        Claim), ``OPENDART_CORP`` (listed-company master name from executive observations) or
+        ``MOIS:{type_big}`` (MOIS standard code representative institution, not stopped).
+        Read-only; callers decide binding precedence.
+        """
+
+        rows: list[tuple[str, str, str, str | None]] = []
+        normalized = FeederObservationRow.normalized_json
+        with self.sessions() as session:
+            for organization_id, name in session.execute(
+                select(OrganizationRow.id, OrganizationRow.name)
+                .join(ClaimRow, ClaimRow.organization_id == OrganizationRow.id)
+                .where(
+                    OrganizationRow.superseded_at.is_(None),
+                    ClaimRow.predicate == "ALIO_INSTITUTION_CLASSIFICATION",
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                )
+                .distinct()
+            ):
+                rows.append((str(name), "ALIO_INSTITUTION", str(organization_id), str(organization_id)))
+            for corp_code, corp_name in session.execute(
+                select(
+                    normalized["corp_code"].as_string(), normalized["corp_name"].as_string()
+                )
+                .where(FeederObservationRow.feeder == "opendart_disclosed_executives")
+                .distinct()
+            ):
+                if corp_code and corp_name:
+                    rows.append((str(corp_name), "OPENDART_CORP", str(corp_code), None))
+            # Full corporation-code master (listed and unlisted filers), when collected.
+            for corp_code, corp_name in session.execute(
+                select(
+                    normalized["corp_code"].as_string(), normalized["corp_name"].as_string()
+                ).where(FeederObservationRow.feeder == "opendart_corp_master")
+            ):
+                if corp_code and corp_name:
+                    rows.append((str(corp_name), "OPENDART_CORP", str(corp_code), None))
+            for org_code, full_name, lowest_name, type_big, representative in session.execute(
+                select(
+                    normalized["org_code"].as_string(),
+                    normalized["full_name"].as_string(),
+                    normalized["lowest_name"].as_string(),
+                    normalized["type_big"].as_string(),
+                    normalized["representative_org_code"].as_string(),
+                ).where(
+                    FeederObservationRow.feeder == "mois_standard_organization_codes",
+                    normalized["stop_selector"].as_string() == "0",
+                )
+            ):
+                if not org_code or not full_name:
+                    continue
+                if org_code == representative:
+                    rows.append((str(full_name), f"MOIS:{type_big or ''}", str(org_code), None))
+                elif lowest_name:
+                    # A subordinate unit (court, prosecutors' office, regional agency) by its own name.
+                    rows.append(
+                        (str(lowest_name), f"MOIS_UNIT:{type_big or ''}", str(org_code), None)
+                    )
+        return rows
+
+    def person_ids_linked_to_feeder(self, feeder: str) -> set[UUID]:
+        statement = (
+            select(PersonObservationLinkRow.person_id)
+            .join(
+                FeederObservationRow,
+                FeederObservationRow.id == PersonObservationLinkRow.observation_id,
+            )
+            .where(
+                FeederObservationRow.feeder == feeder,
+                PersonObservationLinkRow.superseded_at.is_(None),
+            )
+            .distinct()
+        )
+        with self.sessions() as session:
+            return {UUID(str(item)) for item in session.scalars(statement)}
+
+    def current_person_ids_by_name(self, names: Iterable[str]) -> dict[str, list[UUID]]:
+        keys = sorted(set(names))
+        result: dict[str, list[UUID]] = {}
+        with self.sessions() as session:
+            for start in range(0, len(keys), 1000):
+                for person_id, name in session.execute(
+                    select(PersonRow.id, PersonRow.canonical_name).where(
+                        PersonRow.canonical_name.in_(keys[start : start + 1000]),
+                        PersonRow.superseded_at.is_(None),
+                    )
+                ):
+                    result.setdefault(str(name), []).append(UUID(str(person_id)))
+        return result
+
+    def apply_former_member_plans(self, plans: Sequence[Any]) -> None:
+        """Atomically create/link former-member People, term Claims and review items (idempotent).
+
+        Each plan comes from ``AssemblyFormerMemberPublisher.plan``; ids are deterministic, so a
+        re-run adds nothing. Existing rows are never modified.
+        """
+
+        from packages.verification.assembly_former_members import link_for
+
+        self.assert_ready()
+        with self.sessions() as session:
+            try:
+                for plan in plans:
+                    if plan.review is not None:
+                        if session.get(IdentityReviewItemRow, str(plan.review.id)) is None:
+                            review = plan.review
+                            session.add(
+                                IdentityReviewItemRow(
+                                    id=str(review.id),
+                                    observation_id=str(review.observation_id),
+                                    candidate_person_id=(
+                                        str(review.candidate_person_id)
+                                        if review.candidate_person_id
+                                        else None
+                                    ),
+                                    reason_code=review.reason_code,
+                                    details_json=review.details,
+                                    status=review.status.value,
+                                    created_at=review.created_at,
+                                    resolved_at=None,
+                                    resolution_note=None,
+                                )
+                            )
+                        continue
+                    person = plan.person
+                    if session.get(PersonRow, str(person.id)) is None:
+                        if plan.action != MaterializationAction.AUTO_CREATE:
+                            raise MaterializationError("former-member AUTO_LINK target is missing")
+                        session.add(
+                            PersonRow(
+                                id=str(person.id),
+                                canonical_name=person.canonical_name,
+                                birth_date=person.birth_date,
+                                identity_status=person.identity_status.value,
+                                **self._temporal(person),
+                            )
+                        )
+                        session.flush()
+                    if plan.alias is not None and session.get(PersonAliasRow, str(plan.alias.id)) is None:
+                        session.add(
+                            PersonAliasRow(
+                                id=str(plan.alias.id),
+                                person_id=str(plan.alias.person_id),
+                                name=plan.alias.name,
+                                **self._temporal(plan.alias),
+                            )
+                        )
+                    for observation in plan.observations:
+                        link = link_for(plan, observation)
+                        if session.get(PersonObservationLinkRow, str(link.id)) is None:
+                            session.add(
+                                PersonObservationLinkRow(
+                                    id=str(link.id),
+                                    person_id=str(link.person_id),
+                                    observation_id=str(link.observation_id),
+                                    action=link.action.value,
+                                    decision_class=link.decision_class.value,
+                                    linked_at=link.linked_at,
+                                    superseded_at=None,
+                                    review_item_id=None,
+                                )
+                            )
+                    for claim, evidence in plan.claims:
+                        if session.get(ClaimRow, str(claim.id)) is not None:
+                            continue
+                        session.add(
+                            ClaimRow(
+                                id=str(claim.id),
+                                person_id=str(claim.person_id),
+                                organization_id=None,
+                                proposition=claim.proposition,
+                                subject=claim.subject,
+                                predicate=claim.predicate,
+                                object_text=claim.object_text,
+                                qualifiers=claim.qualifiers,
+                                epistemic_status=claim.epistemic_status.value,
+                                publication_status=claim.publication_status.value,
+                                asserted_as_true=claim.asserted_as_true,
+                                resolution_note=claim.resolution_note,
+                                **self._temporal(claim),
+                            )
+                        )
+                        session.flush()
+                        session.add(
+                            ClaimEvidenceRow(
+                                id=str(evidence.id),
+                                claim_id=str(evidence.claim_id),
+                                source_id=str(evidence.source_id),
+                                snapshot_id=str(evidence.snapshot_id),
+                                feeder_observation_id=str(evidence.feeder_observation_id),
+                                stance=evidence.stance.value,
+                                excerpt=evidence.excerpt,
+                            )
+                        )
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
+
+    def dart_link_people(self) -> list[Any]:
+        """People an OpenDART row may be compared with, each with its known birth date.
+
+        MEMBER: current roster (Person birth date). FORMER: former members whose NEC candidacy was
+        matched exactly (birth date from that NEC observation). ALIO: published ALIO role People
+        with their institution names (no birth date).
+        """
+
+        from packages.verification.opendart_constellation_links import KnownPerson
+
+        known: list[Any] = [
+            KnownPerson(person=person, birth_date=person.birth_date, kind="MEMBER")
+            for person in self.current_roster_people()
+        ]
+        with self.sessions() as session:
+            births: dict[str, set[str]] = defaultdict(set)
+            former_rows: dict[str, PersonRow] = {}
+            for item in session.execute(
+                select(PersonRow, FeederObservationRow.normalized_json["birth_date"].as_string())
+                .join(ClaimRow, ClaimRow.person_id == PersonRow.id)
+                .join(ClaimEvidenceRow, ClaimEvidenceRow.claim_id == ClaimRow.id)
+                .join(
+                    FeederObservationRow,
+                    FeederObservationRow.id == ClaimEvidenceRow.feeder_observation_id,
+                )
+                .where(
+                    ClaimRow.predicate.in_(["NEC_CANDIDATE_EDUCATION", "NEC_CANDIDATE_CAREER"]),
+                    ClaimRow.qualifiers["identity_basis"].as_string()
+                    == "EXACT_NAME_PARTY_AND_ELECTION_OF_TERM",
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                    PersonRow.superseded_at.is_(None),
+                )
+            ):
+                person_row: PersonRow = item[0]
+                birth = item[1]
+                former_rows[person_row.id] = person_row
+                if birth:
+                    births[person_row.id].add(str(birth))
+            for person_id, row in former_rows.items():
+                values = births.get(person_id, set())
+                if len(values) == 1:  # conflicting NEC birth dates: no birth anchor
+                    known.append(
+                        KnownPerson(
+                            person=self._person(row),
+                            birth_date=date.fromisoformat(next(iter(values))),
+                            kind="FORMER",
+                        )
+                    )
+            institutions: dict[str, set[str]] = defaultdict(set)
+            alio_rows: dict[str, PersonRow] = {}
+            for person_row, organization_name in session.execute(
+                select(PersonRow, OrganizationRow.name)
+                .join(ClaimRow, ClaimRow.person_id == PersonRow.id)
+                .join(
+                    OrganizationRow,
+                    OrganizationRow.id == ClaimRow.qualifiers["organization_id"].as_string(),
+                )
+                .where(
+                    ClaimRow.predicate == PERSON_ROLE_PREDICATE,
+                    ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                    ClaimRow.superseded_at.is_(None),
+                    PersonRow.superseded_at.is_(None),
+                    PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                )
+            ):
+                alio_rows[person_row.id] = person_row
+                institutions[person_row.id].add(str(organization_name))
+            for person_id, row in alio_rows.items():
+                known.append(
+                    KnownPerson(
+                        person=self._person(row),
+                        birth_date=row.birth_date,
+                        kind="ALIO",
+                        institutions=tuple(sorted(institutions[person_id])),
+                    )
+                )
+        return known
+
+    def opendart_linked_observation_ids(self) -> set[str]:
+        with self.sessions() as session:
+            values: list[object] = list(
+                session.execute(
+                    select(ClaimRow.qualifiers["source_observation_id"].as_string()).where(
+                        ClaimRow.predicate == "OPENDART_DISCLOSED_EXECUTIVE_ROLE",
+                        ClaimRow.superseded_at.is_(None),
+                    )
+                ).scalars()
+            )
+        return {str(value) for value in values if value}
+
+    def feeder_observations_by_feeder(self, feeder: str) -> list[FeederObservation]:
+        with self.sessions() as session:
+            return [
+                self._observation(row)
+                for row in session.scalars(
+                    select(FeederObservationRow)
+                    .where(FeederObservationRow.feeder == feeder)
+                    .order_by(FeederObservationRow.id)
+                )
+            ]
+
+    def insert_identity_review_items(self, items: Sequence[IdentityReviewItem]) -> int:
+        inserted = 0
+        with self.sessions() as session:
+            for review in items:
+                if session.get(IdentityReviewItemRow, str(review.id)) is not None:
+                    continue
+                session.add(
+                    IdentityReviewItemRow(
+                        id=str(review.id),
+                        observation_id=str(review.observation_id),
+                        candidate_person_id=(
+                            str(review.candidate_person_id) if review.candidate_person_id else None
+                        ),
+                        reason_code=review.reason_code,
+                        details_json=review.details,
+                        status=review.status.value,
+                        created_at=review.created_at,
+                        resolved_at=None,
+                        resolution_note=None,
+                    )
+                )
+                inserted += 1
+            session.commit()
+        return inserted
+
+    def current_roster_people(self) -> list[Person]:
+        """Current RESOLVED People linked to a current Assembly-roster observation."""
+
+        statement = (
+            select(PersonRow)
+            .join(PersonObservationLinkRow, PersonObservationLinkRow.person_id == PersonRow.id)
+            .join(
+                FeederObservationRow,
+                FeederObservationRow.id == PersonObservationLinkRow.observation_id,
+            )
+            .where(
+                FeederObservationRow.feeder == ASSEMBLY_BASE_PROFILE_FEEDER,
+                FeederObservationRow.scope_key == ASSEMBLY_BASE_PROFILE_SCOPE,
+                PersonObservationLinkRow.superseded_at.is_(None),
+                PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                PersonRow.superseded_at.is_(None),
+            )
+            .distinct()
+        )
+        with self.sessions() as session:
+            return [self._person(row) for row in session.scalars(statement)]
+
+    def published_historical_terms(self) -> list[tuple[Person, Claim]]:
+        statement = (
+            select(PersonRow, ClaimRow)
+            .join(ClaimRow, ClaimRow.person_id == PersonRow.id)
+            .where(
+                ClaimRow.predicate == "ASSEMBLY_HISTORICAL_TERM",
+                ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+                ClaimRow.superseded_at.is_(None),
+                PersonRow.identity_status == IdentityStatus.RESOLVED.value,
+                PersonRow.superseded_at.is_(None),
+            )
+        )
+        with self.sessions() as session:
+            return [(self._person(p), self._claim(c)) for p, c in session.execute(statement)]
+
+    def insert_attributed_person_claims(
+        self, items: Sequence[tuple[Claim, ClaimEvidence]]
+    ) -> int:
+        """Insert gate-checked Person Claims and their Evidence; existing ids are left untouched."""
+
+        self.assert_ready()
+        inserted = 0
+        with self.sessions() as session:
+            try:
+                for claim, evidence in items:
+                    if claim.person_id is None or session.get(ClaimRow, str(claim.id)) is not None:
+                        continue
+                    session.add(
+                        ClaimRow(
+                            id=str(claim.id),
+                            person_id=str(claim.person_id),
+                            organization_id=None,
+                            proposition=claim.proposition,
+                            subject=claim.subject,
+                            predicate=claim.predicate,
+                            object_text=claim.object_text,
+                            qualifiers=claim.qualifiers,
+                            epistemic_status=claim.epistemic_status.value,
+                            publication_status=claim.publication_status.value,
+                            asserted_as_true=claim.asserted_as_true,
+                            resolution_note=claim.resolution_note,
+                            **self._temporal(claim),
+                        )
+                    )
+                    session.flush()
+                    session.add(
+                        ClaimEvidenceRow(
+                            id=str(evidence.id),
+                            claim_id=str(evidence.claim_id),
+                            source_id=str(evidence.source_id),
+                            snapshot_id=str(evidence.snapshot_id) if evidence.snapshot_id else None,
+                            feeder_observation_id=(
+                                str(evidence.feeder_observation_id)
+                                if evidence.feeder_observation_id
+                                else None
+                            ),
+                            stance=evidence.stance.value,
+                            excerpt=evidence.excerpt,
+                        )
+                    )
+                    inserted += 1
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
+        return inserted
+
+    def current_claims_by_ids(self, claim_ids: Iterable[UUID]) -> dict[UUID, Claim]:
+        keys = sorted({str(item) for item in claim_ids})
+        result: dict[UUID, Claim] = {}
+        with self.sessions() as session:
+            for start in range(0, len(keys), 1000):
+                for row in session.scalars(
+                    select(ClaimRow).where(
+                        ClaimRow.id.in_(keys[start : start + 1000]),
+                        ClaimRow.superseded_at.is_(None),
+                    )
+                ):
+                    result[UUID(row.id)] = self._claim(row)
+        return result
+
+    def published_bill_participants(
+        self, person_id: UUID, predicate: str, source_contract: str
+    ) -> dict[str, list[tuple[UUID, UUID]]]:
+        """BILL_ID → [(Person id, Claim id)] for every published current participation Claim
+        sharing a bill with ``person_id``. Only Claims with SUPPORT evidence are returned."""
+
+        bill_id = ClaimRow.qualifiers["bill_id"].as_string()
+        supported = (
+            select(ClaimEvidenceRow.id)
+            .where(
+                ClaimEvidenceRow.claim_id == ClaimRow.id,
+                ClaimEvidenceRow.stance == EvidenceStance.SUPPORT.value,
+            )
+            .exists()
+        )
+        conditions = (
+            ClaimRow.predicate == predicate,
+            ClaimRow.publication_status == PublicationStatus.PUBLISHED.value,
+            ClaimRow.superseded_at.is_(None),
+            ClaimRow.qualifiers["source_contract"].as_string() == source_contract,
+            supported,
+        )
+        with self.sessions() as session:
+            own_rows: list[object] = list(
+                session.execute(
+                    select(bill_id).where(ClaimRow.person_id == str(person_id), *conditions)
+                ).scalars()
+            )
+            own = sorted({str(value) for value in own_rows if value})
+            result: dict[str, list[tuple[UUID, UUID]]] = {}
+            for start in range(0, len(own), 1000):
+                rows = session.execute(
+                    select(bill_id, ClaimRow.person_id, ClaimRow.id).where(
+                        bill_id.in_(own[start : start + 1000]),
+                        ClaimRow.person_id.is_not(None),
+                        *conditions,
+                    )
+                )
+                for bill, other_person, claim_id in rows:
+                    result.setdefault(str(bill), []).append(
+                        (UUID(str(other_person)), UUID(str(claim_id)))
+                    )
+        return result
 
     def relationships(self, person_id: UUID) -> list[dict]:
         with self.sessions() as session:

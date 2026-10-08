@@ -340,10 +340,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Publish 위원장/간사 Claims from the latest successful member-list enumeration.",
     )
+    mode.add_argument(
+        "--publish-memberships",
+        action="store_true",
+        help="Publish one code-keyed membership Claim per row of the latest successful list.",
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="With --publish-roles: build and validate every Claim without writing.",
+        help="With --publish-roles/--publish-memberships: validate every Claim without writing.",
     )
     parser.add_argument("--page-index", type=int, default=1)
     parser.add_argument("--page-size", type=int, default=100)
@@ -382,13 +387,16 @@ def _publish_roles(args: argparse.Namespace, parser: argparse.ArgumentParser) ->
     try:
         result = AssemblyCommitteeRolePublisher(
             SqlAlchemyRepository(args.database_url)
-        ).publish_latest_successful(dry_run=args.dry_run)
+        ).publish_latest_successful(
+            dry_run=args.dry_run, memberships=args.publish_memberships
+        )
     except (AssemblyCommitteeRoleError, PolicyDenied, ValueError) as exc:
         parser.error(str(exc))
     print(
         json.dumps(
             {
                 "dry_run": args.dry_run,
+                "lane": "memberships" if args.publish_memberships else "roles",
                 "run_id": str(result.run_id),
                 "observations_considered": result.observations_considered,
                 "office_rows": result.office_rows,
@@ -408,11 +416,11 @@ def _publish_roles(args: argparse.Namespace, parser: argparse.ArgumentParser) ->
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.dry_run and not args.publish_roles:
-        parser.error("--dry-run applies only to --publish-roles")
+    if args.dry_run and not (args.publish_roles or args.publish_memberships):
+        parser.error("--dry-run applies only to --publish-roles or --publish-memberships")
     if args.enumerate_members:
         return _enumerate_members(args, parser)
-    if args.publish_roles:
+    if args.publish_roles or args.publish_memberships:
         return _publish_roles(args, parser)
     page_index = 1 if args.sample else args.page_index
     page_size = 5 if args.sample else args.page_size

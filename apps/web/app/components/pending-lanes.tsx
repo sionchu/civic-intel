@@ -10,7 +10,7 @@ export default function PendingLanes({
     <p className="pending-lanes" role="status">
       <strong>{title}</strong>
       <span>{lanes.join(" · ")}</span>
-      <small>{detail ?? "소스 레인 미개통 — 기록이 없다는 뜻이 아니라 아직 연결된 출처가 없다는 뜻입니다."}</small>
+      {detail && <small>{detail}</small>}
     </p>
   );
 }

@@ -15,7 +15,7 @@ test("profile renders section coverage and evidence traceability", async () => {
   assert.match(page, /method_version/);
   assert.match(page, /correction_semantics/);
   assert.match(page, /UNKNOWN/);
-  assert.match(page, /Evidence & audit/);
+  assert.match(page, /이 프로필의 출처/);
 });
 
 test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", async () => {
@@ -40,8 +40,7 @@ test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", 
   assert.match(profile, /Wikimedia Commons/);
   assert.match(profile, /portrait\.license_url/);
   assert.doesNotMatch(profile, /src=\{portrait\.source_original_url\}/);
-  assert.match(profile, /profile-stamp/);
-  assert.match(roster, /className="row-avatar"/);
+  assert.doesNotMatch(profile + roster, /profile-stamp|row-avatar/);
   assert.doesNotMatch(roster, /portrait/);
 });
 
@@ -89,13 +88,11 @@ test("Visual System v2 keeps Home editorial and People content-first", async () 
   const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
 
-  assert.match(home, /이력과 근거/);
+  assert.match(home, /국정감사 인물 기록 검색/);
   assert.match(home, /action="\/people"/);
-  assert.match(home, /인물 구분/);
-  assert.match(home, /근거/);
-  assert.match(home, /출처와 기준일/);
+  assert.match(home, /공식 기록으로 확인된 내용만/);
   assert.doesNotMatch(home, /<RosterGrid|hero-panel|signal-strip/);
-  assert.match(people, /명의 공개 기록/);
+  assert.match(people, /인물 목록 \{peopleResult\.data\.length\}명/);
   assert.doesNotMatch(people, /profile-stamp/);
   assert.match(roster, /className="roster-row"/);
   assert.match(roster, /className="row-proof"/);
@@ -138,7 +135,7 @@ test("organization page consumes the existing direct-ID evidence contract", asyn
   const data = await readFile(new URL("../app/data.ts", import.meta.url), "utf8");
   assert.match(page, /getOrganization\(id\)/);
   assert.match(page, /getOrganizationMoney\(id\)/);
-  assert.match(page, /Published claims/);
+  assert.match(page, /핵심 기록/);
   assert.match(page, /DERIVED · MONEY/);
   assert.match(page, /moneyResult\.error/);
   assert.match(page, /ReadState/);
@@ -200,10 +197,10 @@ test("Gukgam 2026 is an event surface inside Civic Intel, not a parallel product
   const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
   assert.match(layout, /href="\/gukgam\/2026"/);
   assert.match(home, /국감 일정/);
-  assert.match(page, /모두의국감 \/ 2026 국정감사/);
+  assert.match(page, /<h1>국감 2026<\/h1>/);
   assert.match(page, /getPeople/);
   assert.match(page, /getOrganizations/);
-  assert.match(page, /검증된 만큼만/);
+  assert.match(page, /증인·참고인 명단/);
   assert.doesNotMatch(page, /오늘의 국감|공격 의원|옹호 의원|인맥|친분|배후/);
 });
 
@@ -235,7 +232,6 @@ test("Gukgam search filters existing public records without creating identity ma
   assert.match(search, /organization\.name/);
   assert.match(search, /href=\{"\/people\/" \+ person\.id\}/);
   assert.match(search, /href=\{"\/organizations\/" \+ organization\.id\}/);
-  assert.match(search, /새로운 identity 연결을 만들지 않습니다/);
   assert.doesNotMatch(search, /fetch\(|axios|confidence|probability|score|rank/i);
 });
 
@@ -247,13 +243,11 @@ test("Organization detail renders source-listed executive ontology without Perso
   const types = await readFile(new URL("../app/types.ts", import.meta.url), "utf8");
   assert.match(page, /getOrganizationOntology/);
   assert.match(page, /OntologyLocalGraph/);
-  assert.match(page, /source-listed record/);
-  assert.match(page, /canonical Person으로 자동 연결하지 않습니다/);
   assert.match(data, /\/ontology\/organizations\/\$\{id\}/);
   assert.match(types, /SOURCE_LISTED_ROLE_HOLDER/);
   assert.match(types, /LISTS_EXECUTIVE/);
   assert.match(graph, /공식 공시상 임원/);
-  assert.match(graph, /canonical Person이 아닙니다/);
+  assert.match(graph, /인물 기록이 아닙니다/);
   assert.doesNotMatch(graph, /href=.*people.*target|confidence|probability|score/i);
 });
 
@@ -359,8 +353,8 @@ test("Gukgam published targets stay Claim-backed and separate from review candid
   assert.match(page, /getGukgamTargets/);
   assert.match(page, /공개된 피감대상/);
   assert.match(page, /전체 감사대상 목록이 아닙니다/);
-  assert.match(page, /이 일정의 Claim \/ Evidence 보기/);
-  assert.match(page, /Claim \/ Evidence audit trace/);
+  assert.match(page, /이 일정의 근거 보기/);
+  assert.match(page, /Claim·Evidence 확인 경로/);
   assert.match(page, /organizations\/\$\{item\.organization\.id\}#claim-\$\{item\.claim_id\}/);
   assert.match(data, /getJson\("\/gukgam\/2026\/targets"\)/);
   assert.match(types, /PUBLIC_CLAIM_BACKED_GUKGAM_AUDIT_TARGETS_V1/);
@@ -460,8 +454,8 @@ test("Gukgam schedule keeps scope limits and evidence links visible", async () =
   const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
   const schedule = await readFile(new URL("../app/gukgam/2026/schedule.ts", import.meta.url), "utf8");
   assert.match(page, /groupByDateAndCommittee\(targetItems, today\)/);
-  assert.match(page, /감사가 없다는 뜻이 아닙니다/);
-  assert.match(page, /계획 사실/);
+  assert.match(page, /전체 감사대상 목록이 아닙니다/);
+  assert.match(page, /계획서상 일정/);
   assert.match(page, /오늘 \(KST\)/);
   assert.match(page, /근거 계획서 공개일/);
   const kst = await readFile(new URL("../app/components/kst-schedule.tsx", import.meta.url), "utf8");
@@ -494,9 +488,7 @@ test("Gukgam committee members stay Claim-backed, roster-scoped and unranked", a
   assert.match(page, /감사 위원 \{committeeByName\.get\(committee\.committee\)!\.member_count\}명/);
   assert.match(page, /위원회별 감사 위원/);
   assert.match(page, /id=\{committeeAnchor\(committee\.committee_name\)\}/);
-  assert.match(page, /감사 당일 출석이 아닙니다/);
-  assert.match(page, /질의했다는 뜻도 아닙니다/);
-  assert.match(page, /합치지 않아/);
+  assert.match(page, /국회 명부 기준 위원입니다/);
   assert.match(members, /감사 위원/);
   assert.match(members, /href=\{`\/people\/\$\{member\.person\.id\}`\}/);
   assert.match(members, /href=\{`\/people\/\$\{member\.person\.id\}#claim-\$\{member\.claim_id\}`\}/);
@@ -541,8 +533,7 @@ test("Organization detail shows the 2026 Gukgam section without linking executiv
   assert.match(page, /id="gukgam-2026"/);
   assert.match(page, /2026 국정감사/);
   assert.match(page, /<CommitteeMembers committee=\{committee\} \/>/);
-  assert.match(page, /href="#executives"/);
-  assert.match(page, /자동으로 연결하지 않습니다/);
+  assert.match(page, /#executives/);
   assert.match(page, /gukgamItems\.length > 0/);
   assert.doesNotMatch(page, /href=\{`\/people\/\$\{(claim|qualifiers)/);
 });
@@ -616,14 +607,12 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   const org = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(person, /getGukgamTargets\(\)/);
   assert.match(person, /id="gukgam-2026"/);
-  assert.match(person, /위원회 소속 기록이며 해당 기관 질의 여부를 뜻하지 않습니다/);
   assert.match(person, /\/gukgam\/2026#audit-\$\{date\}/);
   assert.match(person, /\/organizations\/\$\{organization\.id\}/);
   assert.match(person, /memberCommittees\.length > 0/);
   assert.match(person, /section\.entries\.length === 0/);
   assert.match(person, /section\.entries\.length === 0 \? null/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
-  assert.match(lanes, /소스 레인 미개통/);
   // Empty profile sections are grouped by the projection reason instead of one "not collected" line.
   for (const reason of ["SOURCE_NOT_COLLECTED", "INSUFFICIENT_EVIDENCE", "DERIVATION_NOT_AVAILABLE", "NOT_APPLICABLE"]) {
     assert.match(person, new RegExp(`reason: "${reason}"`));
@@ -645,7 +634,7 @@ test("evidence panel and fact box keep status chips readable and avoid unsupport
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
   const panel = await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
   const factBox = await readFile(new URL("../app/components/fact-box.tsx", import.meta.url), "utf8");
-  assert.match(styles, /\.evidence-panel \.status, \.fact-table \.status[^{]*\{ font-size: 11px; \}/);
+  assert.match(styles, /\.evidence-panel \.status, \.fact-table \.status[^{]*\{ font-size: 13px; \}/);
   assert.match(styles, /\.evidence-panel:target/);
   assert.doesNotMatch(panel + factBox, /confidence|faction|influence|probability|score|rank/i);
 });
@@ -690,10 +679,9 @@ test("모두의국감 public brand replaces developer-facing names without renam
   assert.match(people, /params\.q\.slice\(0, 80\)/);
   assert.match(roster, /useQueryState\(initialQuery\)/);
   // Scope language stays bounded and the schedule copy is source-gated.
-  assert.match(home, /모든 국감 참여자나 전체 증인 명단이 아닙니다/);
-  assert.match(home, /동명이인과 미확인 관계는 자동으로 합치지 않습니다/);
+  assert.match(home, /모든 국감 참여자나 전체 증인 명단은 아닙니다/);
   const kst = await read("../app/components/kst-schedule.tsx");
-  assert.match(kst, /현재 공개 기준에서 오늘 표시할 일정이 없습니다/);
+  assert.match(kst, /오늘은 공개된 감사 일정이 없습니다/);
   assert.doesNotMatch(home, /모든 공직자|완전한 이력|전체 국감 참여자/);
   // Internal API/env naming is unchanged by the public rename.
   assert.match(data, /CIVIC_API_URL/);
@@ -742,13 +730,13 @@ test("Official 국감 witness lists are shown and searchable as source text, nev
   assert.match(gukgam, /<GukgamWitnesses \/>/);
   assert.match(gukgam, /href="#gukgam-witnesses-title"/);
   assert.match(witnesses, /id=\{`witness-\$\{item\.claim_id\}`\}/);
-  assert.match(witnesses, /전체 증인 명단이 아닙니다/);
+  assert.match(witnesses, /전체 명단이 아니며/);
   assert.doesNotMatch(witnesses, /projection\.limitations/);
   assert.match(people, /getGukgamWitnesses\(\)/);
   assert.match(people, /witnesses=\{witnesses\}/);
   assert.match(roster, /export type WitnessListing/);
   assert.match(roster, /href=\{`\/gukgam\/2026#witness-\$\{row\.claimId\}`\}/);
-  assert.match(roster, /인물 기록과 자동으로 연결하지 않으며, 동명이인일 수 있습니다/);
+  assert.match(roster, /같은 사람인지는 확인하지 않았습니다/);
   // A witness row never links to a Person page and carries no Person identifier.
   const section = roster.slice(roster.indexOf("witness-matches"));
   assert.doesNotMatch(section, /\/people\/|person\.id|person_id/);
@@ -781,6 +769,35 @@ test("Sites snapshot fits the 256 MiB limit by dropping only never-requested dup
   assert.match(script, /has no sibling index\.txt; refusing to drop it/);
 });
 
+
+test("public design floor: readable sizes, 48px controls, Korean labels, status not by color alone", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const css = (await read("../app/styles.css")) + (await read("../app/components/gukgam-witnesses.css"));
+  for (const match of css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)) {
+    assert.ok(Number(match[1]) >= 13, `font-size ${match[1]}px is below the 13px floor`);
+  }
+  assert.doesNotMatch(css, /text-transform:\s*uppercase/);
+  assert.match(css, /body \{[^}]*font: 17px\/1\.65/);
+  assert.match(css, /body \{[^}]*font-variant-numeric: tabular-nums/);
+  assert.match(css, /--color-ink-muted: #5c6862/);
+  assert.match(css, /\.status:is\([^)]*\.FACT[^)]*\)::before \{ content: "✓"/);
+  assert.match(css, /\.status:is\([^)]*\.UNKNOWN[^)]*\)::before \{ content: "\?"/);
+  assert.doesNotMatch(css, /eyebrow-mark|row-index/);
+  const pages = await Promise.all([
+    "../app/page.tsx", "../app/gukgam/2026/page.tsx", "../app/people/[id]/page.tsx",
+    "../app/organizations/[id]/page.tsx", "../app/organizations/page.tsx", "../app/components/roster-grid.tsx",
+    "../app/people/page.tsx", "../app/people/loading.tsx", "../app/components/gukgam-search.tsx",
+  ].map(read));
+  for (const page of pages) {
+    assert.doesNotMatch(page, /<em>|eyebrow-mark|row-index|Evidence & audit|Published claims|Methodology & coverage/);
+    // Plain public layout: no label-above-heading eyebrows, decorative avatars, arrow badges or KPI tiles.
+    assert.doesNotMatch(page, /className="eyebrow"|row-avatar|organization-avatar|gukgam-search-avatar|row-arrow|profile-stamp|entry-index|coverage-strip|signal-strip/);
+  }
+  // One sans family, flat surfaces, no gradients on cards.
+  assert.doesNotMatch(css, /Serif|Georgia|Batang/);
+  assert.match(css, /--shadow-card: none/);
+  assert.doesNotMatch(css, /linear-gradient\(145deg/);
+});
 
 test("Sites snapshot fails instead of freezing a temporary read failure into a page", async () => {
   const script = await readFile(new URL("../scripts/build-sites-snapshot.mjs", import.meta.url), "utf8");

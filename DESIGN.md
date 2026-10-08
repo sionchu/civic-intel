@@ -4,7 +4,8 @@
 
 Civic Intel is a Korean-first public-record directory. The interface should help a reader move
 from a person to the record behind a claim without turning a source into a verdict, score or
-social feed. The visual tone is quiet, editorial, precise and content-first.
+social feed. The visual tone is plain, precise and content-first, closer to a public-service
+page (GOV.UK Frontend, TheyWorkForYou) than to a product landing page.
 
 ## Design principles
 
@@ -22,8 +23,8 @@ social feed. The visual tone is quiet, editorial, precise and content-first.
 - Use whitespace, thin dividers and type to establish hierarchy. Use color for semantic feedback
   only, with one restrained civic accent.
 - Prefer flat editorial rows and grouped fields over galleries, dashboards or nested cards.
-- Explain what is visible, where it comes from and how it was checked without leading with
-  implementation vocabulary.
+- Say what is shown in as few words as possible. The record, its status chip and its source link
+  carry the explanation; prose does not repeat it.
 
 External design references may inform this grammar, but they do not override product behavior,
 evidence rules, accessibility or existing component conventions. No external brand assets, copy,
@@ -35,7 +36,7 @@ fonts, icons, screenshots or proprietary tokens are part of this system.
 
 The light theme uses these roles in `apps/web/app/styles.css`:
 
-- `--color-canvas`: warm page background.
+- `--color-canvas`: neutral cool-gray page background; `--color-surface` is white.
 - `--color-surface` / `--color-surface-muted`: primary and secondary panels.
 - `--color-ink` / `--color-ink-muted`: primary and supporting text.
 - `--color-line` / `--color-line-strong`: quiet and emphasized borders.
@@ -44,16 +45,31 @@ The light theme uses these roles in `apps/web/app/styles.css`:
 - `--color-danger` / `--color-danger-soft`: refute, conflict and service-failure states.
 - `--color-focus`: keyboard focus ring.
 
+Text tokens meet WCAG AA (4.5:1) on every surface they are used on: `--color-ink-muted` `#5c6862`
+is ≥4.9:1 on canvas, surface and surface-muted, and `--color-warning` `#8c5800` is ≥5.0:1 on the
+same set. Placeholders use `--color-ink-muted`, never a lighter gray. Input and select borders use
+`--color-line-strong` `#7d8791` (≥3.3:1, the WCAG non-text minimum is 3:1). Re-check this table whenever a
+token changes.
+
 Status colors are semantic only: green is not a confidence score, amber is not a risk score and
 red is not a wrongdoing claim. `UNKNOWN` is a neutral unresolved evidence state, not an error;
 transport failure and source conflict use distinct feedback treatment and language.
 
 ### Typography
 
-Use a system sans stack with Korean-safe fallbacks for body text, controls and dense evidence
-metadata. Use a Korean-safe serif fallback stack for display headings and names. Body copy stays
-between 15px and 18px with generous line height. Uppercase tracking is reserved for small route
-labels, not primary content.
+Use one Korean-safe sans stack for everything: headings, names, body text, controls and dense
+evidence metadata. Do not mix in a serif display face. Size floors follow
+the KRDS numeric scale (principles only; no KRDS assets or government identity):
+
+- No text below 13px anywhere, including chips, micro labels and table metadata.
+- Body copy is 17px with 1.65 line height; supporting copy 15px; dense metadata 13px.
+- Page `h1` is capped at `clamp(…, …, 3.75rem)` (60px); section headings at 2.5rem (40px).
+- Letter spacing stays between -0.02em and 0.01em; no `text-transform: uppercase`.
+- Numbers use `font-variant-numeric: tabular-nums` (set on `body`) and `Intl.NumberFormat("ko-KR")`.
+
+Public labels and summaries are Korean, and readers see Korean predicate labels
+(`apps/web/app/predicate-labels.ts`) instead of predicate codes such as `NOMINATED_AS`. Domain status codes (`FACT`, `UNKNOWN` …) and the
+data-model names `Claim`/`Evidence` stay verbatim because they are the published contract.
 
 ### Spacing scale
 
@@ -63,15 +79,16 @@ breakpoint requires one.
 
 ### Layout and containers
 
-The content container is capped at 1180px with fluid 20–48px gutters. Home uses a two-column
-introduction that collapses to one column. People uses a readable directory column with flat
+The content container is capped at 1180px with fluid 20–48px gutters. Home opens with one short
+heading, the search form, and then real records (today's 국감 schedule and the person list) in two
+columns that collapse to one; no hero sentence with empty space beside it. People uses a readable directory column with flat
 editorial rows and one mobile column. Profile pages keep their narrow index beside a readable
 content column and reflow below 820px. Long Korean values and identifiers wrap instead of clip.
 
 ### Borders, radii, shadows and surfaces
 
-The default surface uses a 1px border and no shadow. Rounded corners are limited to controls,
-groups, avatars and feedback panels. Functional elevation may be used sparingly for an explicit
+The default surface uses a 1px border and no shadow (`--shadow-card: none`). Corners are 4–6px
+and limited to controls, groups and feedback panels. Functional elevation may be used sparingly for an explicit
 interactive surface. Avoid glass effects, heavy gradients and decorative depth that could make
 source status feel more authoritative than the evidence.
 
@@ -79,8 +96,9 @@ source status feel more authoritative than the evidence.
 
 ### Records and panels
 
-Roster records are flat clickable rows with canonical name, evidenced role, available profile
-fields, evidence/as-of metadata and a clear profile link. Profile claims and sources are separate
+Roster records are flat rows: the canonical name as an underlined link, one line of the evidenced
+role/party/district/committee values that exist (missing values are omitted, not repeated as
+"정보 없음"), and evidence/as-of metadata. No initial avatars or arrow badges. Profile claims and sources are separate
 panels. Public review displays remain read-only. The explicitly enabled private admin workspace uses
 selected-record review, before/after previews, final confirmation and server-acknowledged receipts.
 Operational IDs and full audit details remain expandable; mutation success is never optimistic.
@@ -90,8 +108,8 @@ Operational IDs and full audit details remain expandable; mutation success is ne
 Portraits are an optional Person-detail presentation asset only. A portrait is displayed only
 after an individual file-level rights review and an exact binding to a resolved canonical Person
 ID; the visible creator, source-file and license links remain beside the image. The local copy
-keeps the reviewed aspect ratio without an additional crop and falls back to the existing
-initials/CI stamp when the review is absent or withdrawn. Portrait coverage has no semantic
+keeps the reviewed aspect ratio without an additional crop and shows nothing in its place when
+the review is absent or withdrawn. Portrait coverage has no semantic
 meaning, is not used by directory search, and never comes from face recognition, a generated
 likeness or a name-only match.
 
@@ -111,6 +129,9 @@ and snapshot references stay behind `details` disclosure.
 
 Use the existing domain labels verbatim: `FACT`, `CLAIM`, `INFERENCE`, `HYPOTHESIS`, `UNKNOWN`,
 `AVAILABLE`, `PARTIAL`, `RESOLVED`, `REVIEW_REQUIRED`, `HARD_CONFLICT` and `SOURCE CONFLICT`.
+Status never relies on color alone: `.status` chips also carry a decorative shape (✓ resolved or
+supported, ◇ claim/review/partial, ? unknown or unresolved, ! conflict or service failure) with empty
+alt text, so the text label remains the accessible name.
 Empty states explain what is absent without implying a negative fact.
 
 Public reads distinguish an empty eligible result, a missing public record, insufficient comparison
@@ -134,7 +155,8 @@ removing transforms and smooth scrolling.
 
 At narrow widths, cards become one column, the profile index becomes a normal flow panel and
 metadata wraps instead of clipping. The page includes a skip link, a Korean document language,
-semantic headings/landmarks, labelled search, visible focus and touch targets of at least 44px.
+semantic headings/landmarks, labelled search, visible focus and touch targets of at least 44px;
+search inputs, selects and primary filter buttons are 48px tall.
 
 ## Do / Don't
 
@@ -142,6 +164,18 @@ semantic headings/landmarks, labelled search, visible focus and touch targets of
 - Do keep source and policy context one interaction away from a claim.
 - Don't add scores, rankings, inferred affiliations or unsupported asset/vote dashboards.
 - Don't turn a provider row, name or review item into a canonical Person control.
+- Don't put a small colored label (eyebrow) above every heading, and don't pair each heading with a
+  right-aligned gray paragraph. A heading is followed by at most one short line under it.
+- Don't add decorative ordinal numbers (01/02/03), italic or colored accent words in headings,
+  initial-letter avatars, circular arrow badges, KPI tiles or "where to start" card grids.
+- Don't use English uppercase eyebrows or labels on public pages.
+- Don't add reassurance or disclaimer prose ("근거와 출처와 함께…", "없다는 뜻이 아니라…",
+  "자동으로 합치지 않습니다", footer promises). Home carries one scope line. A short factual note is
+  kept only where a misreading could harm someone, such as witness lists being 출석 요구, not a
+  finding of wrongdoing.
+- Don't use the KRDS government masthead, identifier, emblem or any government-site styling; this
+  is not a government service.
+- Don't copy third-party design-system assets (fonts, icons, tokens) without a license that allows it.
 
 ## Implementation notes
 
