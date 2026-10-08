@@ -122,63 +122,45 @@ export function summarizeRelationships(
   return { limitations: payload.limitations, groups, cosponsors };
 }
 
-function RelationDetail({ relation }: { relation: Relation }) {
-  return (
-    <li className="relationship-relation">
-      <span>{RELATION_TYPES[relation.type] ?? relation.type}</span>
-      <small>{relation.type} · DERIVED · {relation.rule}</small>
-      <small>{OVERLAP[relation.overlap] ?? relation.overlap} · {relation.basis}</small>
-      <small>본인 {relation.ownPeriod} · 상대 {relation.otherPeriod}</small>
-      <details className="audit-details">
-        <summary>Claim·Evidence·Source</summary>
-        <small>Claim {relation.claimIds.join(", ") || "없음"}</small>
-        <small>Evidence {relation.evidenceIds.join(", ") || "없음"}</small>
-        <small>Source {relation.sourceIds.map((id, index) => (
-          <span key={id}>{index > 0 ? ", " : ""}<a href={`#source-${id}`}>{id}</a></span>
-        ))}</small>
-      </details>
-    </li>
-  );
-}
+const unique = (values: string[]) => [...new Set(values)];
+const PREVIEW_NAMES = 12;
+const PREVIEW_CLAIMS = 20;
 
-function CounterpartRow({ item }: { item: Counterpart }) {
-  return (
-    <li className="relationship-person">
-      <Link href={`/people/${item.id}`}>{item.name}</Link>
-      <ul>{item.relations.map((relation, index) => <RelationDetail key={`${item.id}-${index}`} relation={relation} />)}</ul>
-    </li>
-  );
-}
-
+// Compact on purpose: every person page is a static file under the Sites bundle cap, so a group
+// shows its relation types, rules, timing basis and the first names; per-relation detail stays in
+// the API and on each counterpart's own page.
 export default function RelationshipSummary({ limitations, groups, cosponsors }: RelationshipSummaryProps) {
   return (
     <>
       <ul className="relationship-limitations">{limitations.map((item, index) => <li key={index}>{item}</li>)}</ul>
       {groups.map((group, index) => {
-        const preview = group.publicOthers.slice(0, 12);
-        const remaining = group.publicOthers.slice(12);
+        const relations = group.publicOthers.flatMap((item) => item.relations);
+        const types = unique(relations.map((relation) => RELATION_TYPES[relation.type] ?? relation.type));
+        const rules = unique(relations.map((relation) => relation.rule));
+        const overlaps = unique(relations.map((relation) => OVERLAP[relation.overlap] ?? relation.overlap));
+        const claimIds = unique(relations.flatMap((relation) => relation.claimIds));
+        const preview = group.publicOthers.slice(0, PREVIEW_NAMES);
+        const hiddenNames = group.publicOthers.length - preview.length;
         return (
           <div className="relationship-group" key={`${group.label}-${group.layer}-${index}`}>
             <h3>{group.label} <span>· {group.layer}</span></h3>
             <p className="relationship-count">
               반환된 관계 {group.returnedRelations.toLocaleString("ko-KR")}건
               {group.totalRelations > group.returnedRelations && ` / 전체 ${group.totalRelations.toLocaleString("ko-KR")}건`}
-              {` · 확인된 다른 사람 ${group.distinctOthers.toLocaleString("ko-KR")}명`}
-              {` · 공개 명단 이름 ${group.publicOthers.length.toLocaleString("ko-KR")}명 중 ${preview.length}명 표시`}
+              {` · 다른 사람 ${group.distinctOthers.toLocaleString("ko-KR")}명(공개 인물 ${group.publicOthers.length.toLocaleString("ko-KR")}명)`}
             </p>
-            <ul className="relationship-people">{preview.map((item) => <CounterpartRow key={item.id} item={item} />)}</ul>
-            {remaining.length > 0 && (
-              <details className="relationship-more">
-                <summary>나머지 공개 명단 {remaining.length.toLocaleString("ko-KR")}명 보기</summary>
-                {/* Names only: per-relation audit details stay on the 12 shown above and on each
-                    person's own page, keeping static pages within the Sites bundle cap. */}
-                <ul className="relationship-names">{remaining.map((item) => (
-                  <li key={item.id}><Link href={`/people/${item.id}`}>{item.name}</Link></li>
-                ))}</ul>
+            {types.length > 0 && <p className="relationship-count">{types.join(" · ")} · DERIVED · {rules.join(", ")} · {overlaps.join(" · ")}</p>}
+            <ul className="relationship-names">{preview.map((item) => (
+              <li key={item.id}><Link href={`/people/${item.id}`}>{item.name}</Link></li>
+            ))}{hiddenNames > 0 && <li>외 {hiddenNames.toLocaleString("ko-KR")}명</li>}</ul>
+            {claimIds.length > 0 && (
+              <details className="audit-details">
+                <summary>근거 Claim {claimIds.length.toLocaleString("ko-KR")}개{claimIds.length > PREVIEW_CLAIMS ? ` 중 ${PREVIEW_CLAIMS}개` : ""}</summary>
+                <small>{claimIds.slice(0, PREVIEW_CLAIMS).join(", ")}</small>
               </details>
             )}
             {group.totalRelations > group.returnedRelations && (
-              <p className="relationship-count">API의 그룹당 최대 300건 제한으로 전체 관계 명단은 이 응답에서 확인할 수 없습니다.</p>
+              <p className="relationship-count">관계 API가 그룹당 최대 300건을 반환해 전체 명단은 이 화면에 없습니다.</p>
             )}
           </div>
         );
@@ -186,13 +168,11 @@ export default function RelationshipSummary({ limitations, groups, cosponsors }:
       {cosponsors.length > 0 && (
         <div className="relationship-group">
           <h3>공동발의</h3>
-          <p className="relationship-count">공개 명단에서 확인된 상위 {cosponsors.length}명</p>
+          <p className="relationship-count">공개 인물 중 공동발의가 많은 상위 {cosponsors.length}명 · {unique(cosponsors.map((item) => item.type)).join(", ")} · DERIVED · {unique(cosponsors.map((item) => item.rule)).join(", ")}</p>
           <ol className="relationship-cosponsors">{cosponsors.map((item) => (
             <li key={item.id}>
               <Link href={`/people/${item.id}`}>{item.name}</Link>
               <span>공동발의 {item.bills.toLocaleString("ko-KR")}건</span>
-              <small>{item.type} · DERIVED · {item.rule}</small>
-              <details className="audit-details"><summary>근거 Claim</summary><small>{item.claimIds.join(", ")}</small></details>
             </li>
           ))}</ol>
         </div>

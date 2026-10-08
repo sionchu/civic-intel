@@ -868,15 +868,15 @@ test("Person relationship summary uses public derived records and serializes onl
   assert.match(summary, /limitations: payload\.limitations/);
   assert.match(summary, /status === "DERIVED"/);
   assert.match(summary, /publicNames\.get\(otherId\)/);
-  assert.match(summary, /\.slice\(0, 12\)/);
-  assert.match(summary, /\.slice\(12\)/);
+  assert.match(summary, /const PREVIEW_NAMES = 12;/);
+  assert.match(summary, /외 \{hiddenNames/);
   assert.match(summary, /\.slice\(0, 10\)/);
   assert.match(summary, /group\.relation_count/);
   assert.match(summary, /group\.returnedRelations/);
   assert.match(summary, /relation\.temporal\.basis/);
   assert.match(summary, /relation\.evidence_ids/);
   assert.match(summary, /relation\.source_ids/);
-  assert.match(summary, /DERIVED · \{relation\.rule\}/);
+  assert.match(summary, /DERIVED · \{rules\.join/);
   assert.doesNotMatch(summary, /counterpart\.name|scores|\/admin/);
   assert.doesNotMatch(types, /scores:|counterpart:|include_candidates:/);
   assert.match(snapshot, /FORBIDDEN_TOKENS/);
