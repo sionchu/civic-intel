@@ -31,6 +31,12 @@ export type ReviewedPortrait = {
   review_status: "ELIGIBLE" | "WITHDRAWN" | "REVIEW_REQUIRED";
 };
 
+export function portraitSourceLabel(portrait: ReviewedPortrait): string {
+  return portrait.source_kind === "WIKIMEDIA_COMMONS_REVIEWED"
+    ? "Wikimedia Commons"
+    : portrait.source_kind;
+}
+
 type PortraitManifest = {
   version: 1;
   portraits: ReviewedPortrait[];

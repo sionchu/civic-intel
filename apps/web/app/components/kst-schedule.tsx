@@ -66,6 +66,7 @@ export function NextAuditAction({ serverToday, dates }: { serverToday: string; d
 export function AuditDateIndex({ serverToday, days }: { serverToday: string; days: ScheduleDay[] }) {
   const today = useKstToday(serverToday);
   const nextDate = nextDateOf(days.map((day) => day.date), today);
+  const maxCount = Math.max(1, ...days.map((day) => day.count));
   return (
     <nav className="gukgam-date-index" aria-label="감사일별 이동">
       <ol>
@@ -79,6 +80,9 @@ export function AuditDateIndex({ serverToday, days }: { serverToday: string; day
                   {relation === "today" ? "오늘 · " : day.date === nextDate ? "다음 · " : ""}
                   {day.count}건
                 </small>
+                <span className="gukgam-date-track" role="img" aria-label={`감사 ${new Intl.NumberFormat("ko-KR").format(day.count)}건`}>
+                  <span className="gukgam-date-bar" style={{ width: `${day.count / maxCount * 100}%` }} />
+                </span>
               </a>
             </li>
           );

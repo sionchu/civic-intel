@@ -4,14 +4,16 @@ import { notFound } from "next/navigation";
 
 import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getSource } from "../../data";
 import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
+import CareerTermStrip from "../../components/career-term-strip";
 import FactBox, { type FactRow } from "../../components/fact-box";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
 import PendingLanes from "../../components/pending-lanes";
 import ReadState from "../../components/read-state";
+import ReviewedPortraitImage from "../../components/reviewed-portrait";
 import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
-import { getReviewedPortrait } from "../../portrait";
+import { getReviewedPortrait, portraitSourceLabel } from "../../portrait";
 import { predicateLabel } from "../../predicate-labels";
 import { buildPageMetadata } from "../../site-metadata";
 import type { Claim, ProfileEntry, ProfileSectionReason } from "../../types";
@@ -263,7 +265,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     }
 
     return (
-      <article className="claim" key={entry.id}>
+      <article className="claim" key={entry.id} id={entry.claim_id ? `claim-${entry.claim_id}` : undefined}>
         <div className="claim-heading">
           <span className="claim-kind">{entry.kind}</span>
           {entry.epistemic_status && <span className={`status ${entry.epistemic_status}`}>{entry.epistemic_status}</span>}
@@ -295,16 +297,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
         {portrait ? (
-          <figure className="profile-portrait">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <figure className="profile-portrait" style={{ maxWidth: portrait.source_width }}>
+            <ReviewedPortraitImage
               src={portrait.local_path}
               width={portrait.source_width}
               height={portrait.source_height}
               alt={`${person.canonical_name} 공개 사진`}
             />
             <figcaption className="portrait-credit">
-              <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · Wikimedia Commons</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
+              <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · {portraitSourceLabel(portrait)}</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
               <details className="audit-details">
                 <summary>사진 출처 정보</summary>
                 <small>
@@ -438,6 +439,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </div>
             {profile ? (
               <>
+                <CareerTermStrip entries={[
+                  ...(profile.sections.find((section) => section.id === "career_timeline")?.entries ?? []),
+                  ...(profile.sections.find((section) => section.id === "current_role")?.entries ?? []),
+                ]} claims={publishedClaims} />
                 {emptyLaneGroups.map((group) => (
                   <PendingLanes key={group.reason} title={group.title} lanes={group.lanes} detail={group.detail} />
                 ))}

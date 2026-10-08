@@ -8,10 +8,12 @@ authority or a source of canonical Person records.
 Every asset requires an individual source file page, creator, license, attribution text,
 revision timestamp, dimensions, byte size and SHA-1 review. `review_status` must remain
 `ELIGIBLE` for the web to display the local asset. A changed revision, withdrawal, deletion or
-rights change requires a new review before publication; an asset is removed or rendered with
-the existing initials fallback while that review is pending.
+rights change requires a new review before publication. The web renders only `ELIGIBLE`
+entries for an exact resolved Person ID; an absent or withdrawn entry leaves no portrait.
 
 The web serves the local reviewed copy at runtime. It does not fetch a remote portrait URL,
 search Commons automatically, infer identity from a face, generate a likeness, or use a
 portrait in directory search and filtering. Individual licensing terms govern each file;
-the current pilot's attribution and license links are visible beside the image.
+the current pilot's attribution and license links are visible beside the image. The image
+uses its manifest dimensions and original aspect ratio, capped at its source width. If a
+local image fails to load, a same-size neutral box replaces it without a broken-image icon.

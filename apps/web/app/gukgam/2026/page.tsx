@@ -55,6 +55,10 @@ export default async function Gukgam2026Page({
   const organizationCount = organizationsResult.state === "success" ? organizationsResult.data.length : null;
 
   const committees = committeesResult.state === "success" ? committeesResult.data.committees : [];
+  const maxCommitteeTargets = Math.max(1, ...committees
+    .filter((committee) => committee.target_claim_coverage === "PUBLISHED")
+    .map((committee) => committee.target_count));
+  const numberFormat = new Intl.NumberFormat("ko-KR");
   const committeeByName = new Map(committees.map((committee) => [committee.committee_name, committee]));
   const today = seoulDate(new Date());
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
@@ -221,6 +225,14 @@ export default async function Gukgam2026Page({
                       {" · "}위원 {committee.member_count}명
                     </span>
                   </div>
+                  {committee.target_claim_coverage === "PUBLISHED" && (
+                    <div className="committee-target-graphic" role="img" aria-label={`${committee.committee_name} 피감대상 ${numberFormat.format(committee.target_count)}건`}>
+                      <span className="committee-target-track" aria-hidden="true">
+                        <span className="committee-target-bar" style={{ width: `${committee.target_count / maxCommitteeTargets * 100}%` }} />
+                      </span>
+                      <span>{numberFormat.format(committee.target_count)}건</span>
+                    </div>
+                  )}
                   {committee.target_claim_coverage === "NOT_YET_PUBLISHED" && (
                     <p className="committee-targets-pending" role="note">
                       피감대상 공개 기록 준비 중 — 위원 명단만 표시

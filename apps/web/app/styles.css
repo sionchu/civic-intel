@@ -240,8 +240,10 @@ main { flex: 1; }
 .profile-header h1, .review-header h1 { margin: 0; font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.25; }
 .profile-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 17px; }
 .profile-lede { max-width: 56ch; margin: 22px 0 0; color: var(--color-ink-muted); font-size: 15px; }
-.profile-portrait { display: grid; width: min(180px, 30vw); gap: 8px; margin: 0; }
-.profile-portrait img { display: block; width: 100%; height: auto; aspect-ratio: 400 / 534; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); }
+.profile-header > div { min-width: 0; }
+.profile-portrait { display: grid; flex: 0 0 auto; width: min(260px, 32vw); gap: 8px; margin: 0; }
+.profile-portrait-image { display: block; width: 100%; height: auto; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); }
+.profile-portrait-unavailable { background: var(--color-surface-muted); }
 .portrait-credit { color: var(--color-ink-muted); font-size: 13px; line-height: 1.45; text-align: right; overflow-wrap: anywhere; }
 .portrait-credit a { color: var(--color-ink); text-decoration-color: var(--color-line-strong); text-underline-offset: 3px; }
 .portrait-credit a:hover { color: var(--color-accent); }
@@ -360,7 +362,7 @@ main { flex: 1; }
   .roster-row, .organization-row { grid-template-columns: 1fr; padding: 12px 0; }
   .profile-sections, .source-grid, .review-grid, .organization-claim-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .profile-layout { grid-template-columns: 1fr; }.profile-index { position: static; }.profile-index ol { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
-  .profile-index li a { grid-template-columns: 23px minmax(0, 1fr); }.profile-header, .people-header, .review-header { align-items: start; flex-direction: column; }.review-lock { justify-items: start; text-align: left; }.profile-portrait { width: min(180px, 42vw); }.portrait-credit { text-align: left; }.review-lock { min-width: 0; }
+  .profile-index li a { grid-template-columns: 23px minmax(0, 1fr); }.profile-header, .people-header, .review-header { align-items: start; flex-direction: column; }.review-lock { justify-items: start; text-align: left; }.profile-portrait { width: min(220px, 56vw); max-width: 100%; }.portrait-credit { text-align: left; }.review-lock { min-width: 0; }
 }
 @media (max-width: 600px) {
   .header-inner { min-height: 68px; }.global-nav { gap: 12px; }.nav-status { display: none; }
@@ -608,6 +610,9 @@ main { flex: 1; }
 .gukgam-date-index ol { display: flex; gap: 8px; margin: 0; padding: 0 0 4px; overflow-x: auto; list-style: none; scrollbar-width: thin; }
 .gukgam-date-index a { display: grid; min-width: 96px; min-height: 44px; gap: 2px; padding: 8px 12px; border: 1px solid var(--color-line); border-radius: 6px; color: var(--color-ink); font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; }
 .gukgam-date-index small { color: var(--color-ink-muted); font-size: 13px; font-weight: 500; }
+.gukgam-date-track, .committee-target-track, .career-term-track { display: block; overflow: hidden; background: var(--color-surface-muted); }
+.gukgam-date-track { height: 4px; margin-top: 4px; }
+.gukgam-date-bar, .committee-target-bar, .career-term-bar { display: block; height: 100%; background: var(--color-ink-muted); }
 .gukgam-date-index .past a { color: var(--color-ink-muted); }
 .gukgam-date-index a[aria-current="date"] { border-color: var(--color-accent); background: var(--color-accent-soft); }
 .gukgam-date-index a:hover { border-color: var(--color-line-strong); }
@@ -660,6 +665,18 @@ main { flex: 1; }
 .committee-index-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
 .committee-index-heading h3 { margin: 0; font-size: 20px; letter-spacing: -.02em; overflow-wrap: anywhere; }
 .committee-index-heading span { color: var(--color-ink-muted); font-size: 13px; font-weight: 700; }
+.committee-target-graphic { display: flex; align-items: center; gap: 12px; max-width: 400px; margin-top: 8px; color: var(--color-ink-muted); font-size: 13px; }
+.committee-target-track { flex: 1; height: 8px; }
+.committee-target-graphic > span:last-child { white-space: nowrap; }
+.career-term-strip { margin: 16px 0 24px; padding: 12px 0; border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); }
+.career-term-axis { display: flex; justify-content: space-between; color: var(--color-ink-muted); font-size: 13px; }
+.career-term-rows, .career-term-undated { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
+.career-term-rows a { display: grid; grid-template-columns: minmax(0, 1fr) minmax(80px, 1fr); align-items: center; gap: 4px 12px; min-height: 44px; color: var(--color-ink); font-size: 13px; }
+.career-term-label, .career-term-dates { overflow-wrap: anywhere; }
+.career-term-track { position: relative; height: 10px; }
+.career-term-bar { position: absolute; top: 0; }
+.career-term-dates { grid-column: 2; color: var(--color-ink-muted); }
+.career-term-undated { color: var(--color-ink-muted); font-size: 13px; }
 .organization-gukgam-rows { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-line-strong); }
 .organization-gukgam-rows li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 12px 0; border-bottom: 1px solid var(--color-line); }
 .organization-gukgam-rows li > span:not(.status) { min-width: 0; overflow-wrap: anywhere; }

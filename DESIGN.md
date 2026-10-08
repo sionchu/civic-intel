@@ -108,8 +108,10 @@ Operational IDs and full audit details remain expandable; mutation success is ne
 Portraits are an optional Person-detail presentation asset only. A portrait is displayed only
 after an individual file-level rights review and an exact binding to a resolved canonical Person
 ID; the visible creator, source-file and license links remain beside the image. The local copy
-keeps the reviewed aspect ratio without an additional crop and shows nothing in its place when
-the review is absent or withdrawn. Portrait coverage has no semantic
+keeps the manifest's source-width/source-height aspect ratio without an additional crop and
+never displays wider than the source width. An absent or withdrawn review shows no portrait;
+an image load failure leaves a same-size neutral box without a broken-image icon. Portrait
+coverage has no semantic
 meaning, is not used by directory search, and never comes from face recognition, a generated
 likeness or a name-only match.
 

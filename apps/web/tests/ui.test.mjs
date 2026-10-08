@@ -3,6 +3,30 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("reviewed portrait uses manifest dimensions and a stable failure box", async () => {
+  const page = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
+  const image = await readFile(new URL("../app/components/reviewed-portrait.tsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
+  assert.match(page, /width=\{portrait\.source_width\}/);
+  assert.match(page, /height=\{portrait\.source_height\}/);
+  assert.match(page, /maxWidth: portrait\.source_width/);
+  assert.match(image, /aspectRatio: `\$\{width\} \/ \$\{height\}`/);
+  assert.match(image, /onError=\{\(\) => setFailed\(true\)\}/);
+  assert.match(image, /profile-portrait-unavailable/);
+  assert.doesNotMatch(css, /aspect-ratio:\s*400\s*\/\s*534/);
+});
+
+test("career term bars require both dates and schedule bars use projected count", async () => {
+  const strip = await readFile(new URL("../app/components/career-term-strip.tsx", import.meta.url), "utf8");
+  const schedule = await readFile(new URL("../app/components/kst-schedule.tsx", import.meta.url), "utf8");
+  assert.match(strip, /term\.start !== null && term\.end !== null && term\.end >= term\.start/);
+  assert.match(strip, /undated = terms\.filter/);
+  assert.match(strip, /claim\.qualifiers\.term_start/);
+  assert.match(strip, /claim\.qualifiers\.term_end/);
+  assert.match(schedule, /day\.count \/ maxCount \* 100/);
+  assert.match(schedule, /gukgam-date-bar/);
+});
+
 test("profile renders section coverage and evidence traceability", async () => {
   const page = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(page, /profile\.sections\.map/);
@@ -37,7 +61,8 @@ test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", 
   assert.match(profile, /getReviewedPortrait\(person\)/);
   assert.match(profile, /src=\{portrait\.local_path\}/);
   assert.match(profile, /alt=\{`\$\{person\.canonical_name\} 공개 사진`\}/);
-  assert.match(profile, /Wikimedia Commons/);
+  assert.match(profile, /portraitSourceLabel\(portrait\)/);
+  assert.match(loader, /Wikimedia Commons/);
   assert.match(profile, /portrait\.license_url/);
   assert.doesNotMatch(profile, /src=\{portrait\.source_original_url\}/);
   assert.doesNotMatch(profile + roster, /profile-stamp|row-avatar/);

@@ -1132,6 +1132,9 @@ def build_profile_projection(
                 note=(
                     "명시적 날짜가 있는 reviewed career Claim만 시간순으로 표시합니다."
                     if assembly_career_entries
+                    else "날짜가 확인된 과거 임기·경력 Claim이 없습니다. 날짜 없이 기재된 학력·경력은 "
+                    "'학력·경력 기재 사항'에 있습니다."
+                    if background_entries
                     else "현재 roster는 현직 상태만 나타내며, 과거 경력 전체를 의미하지 않습니다."
                 ),
                 reason=SOURCE_NOT_COLLECTED,
