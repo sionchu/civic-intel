@@ -212,16 +212,52 @@ implementation receipt above remains historical. This follow-up changes no produ
   `6594e56b02f3e90d114d1e0db622451911f5608402ac618bb33cf52f221cf526`, load SQL SHA-256
   `f38499a1cce7c3422b1476e71f071610bfa86c3b611fa1ba7e9e7736dfe0e26d`. It omits this candidate's
   bounded relationship paths and is not reused as current acceptance.
-- **RUNNING**: only the current exporter, public-boundary and relationship-path modules were
+- **PASS (capture and exact transfer)**: only the current exporter, public-boundary and relationship-path modules were
   copied into isolated `/Users/lee/Projects/civic-intel-full-goal-qa-20261008`. LF-normalized
   SHA-256 values match the current code input; see `exporter-source-receipt.json`. Command:
   `node apps/web/scripts/export-public-projection.mjs --api http://127.0.0.1:8100 --out projection
   --concurrency 2`. Capture began **2026-10-08T09:12:58.325150Z**. It uses no DB credential,
   source collector, canonical write or operating-service reconfiguration. The exporter writes
-  only after all public reads complete; no inferred progress percentage is reported.
+  only after all public reads complete. It finished at **2026-10-08T09:38:47.087Z** with
+  1,142 People, 387 Organizations, 578 Sources, 5,170 paths and 386 contract-valid money 4xx.
+  Snapshot `ps-65e086d2eb00c3c5` has semantic SHA-256
+  `65e086d2eb00c3c51a1b18042cfdd75fb4494fb77f2304702cca577f834ca1cc`.
+  The post-capture roster matched captured bytes; all 4,028 legacy common tuples were unchanged,
+  and 1,142 bounded relationship paths were added. This is still not atomic capture evidence.
+  Original manifest SHA-256 is `439b83094ae1451f671399f34869ca69e024a1b20e2bf36b882eb3ad9f8f781f`;
+  original load is 224,391,271 B, SHA-256
+  `b9c2f047eeb96516f10f4f6d725d2d410ed517f0b07363a9460b79287d227ef1`.
+  A first positive-offset file transport produced mismatched bytes and was rejected before SQL
+  execution. Offset-zero transport of 76 immutable, individually hashed chunks recovered exact
+  original bytes. Both failure and recovery receipts are preserved in `real-public-capture/`.
+  Canonical local replay/export reproduces all 5,170 `(path,status,SHA-256,JSON bytes)` tuples.
+  Platform compression differs: original 7,514 parts / 110,765,264 gzip B; local 7,449 parts /
+  108,552,232 gzip B. `real-reexport-parity.json` preserves separate file hashes. Full original
+  and local response decoding/hash, public-boundary scan and captured Source-reference closure
+  passed. Local lifecycle/browser acceptance remains in progress.
+- `real-d1-staged-state.json` and `real-d1-staged-integrity.json`: canonical local Wrangler load
+  exited 0; real data is STAGED while the synthetic pointer remains ACTIVE. Every 5,170 decoded
+  response / 7,449 stored part and captured Source-reference closure passed. The first ignored
+  verifier assumed ACTIVE; its failed log is retained, and the explicit STAGED verifier passed.
+  Canonical exact-byte activation SQL exited 0; `real-d1-active-state.json` records real ACTIVE
+  and synthetic PREVIOUS, retaining rollback target. Wrangler's character-wise quoted-blob SQL
+  splitter consumed about 13 minutes before load completion; this is a measured throughput
+  limitation, not a data correctness failure. No parser or persistence workaround was added.
+- `real-worker-growth.json`: the same actual runtime artifact remains 150 files / **1,749,739 B**,
+  tree SHA-256 `c4744769a26d7667629a75135c62bd604003fd7a0d0c26fb9aa3fb74ae6c750a`,
+  **0 B growth** from 13 to 1,142 People. This runtime measure includes four preview scratch
+  files and is separate from the clean 146-file / 1,744,138 B build receipt.
+- Failed temporary transfer chunks remain preserved: the guarded PowerShell cleanup command
+  was rejected before execution with `blocked by policy`, without a more specific reason.
+  Cleanup is **NOT_RUN**; no alternate command or transport was attempted.
+- Largest-page pre-fix Aside QA found a Source title behind the sticky header after settled
+  anchor navigation. The canonical `.source` now uses the existing **104px** anchor offset,
+  matching evidence panels and profile sections. `source-anchor-ui-tests.log`: 50 passed;
+  `source-anchor-lint.log`: exit 0. New clean build and targeted Aside recheck remain pending.
+  The old `cd8cdcc` candidate and pre-fix browser receipts remain historical evidence.
 - Dataset acceptance is **CURRENT_FRONTEND_PUBLIC_API**. Upstream API runtime revision is
   **UNKNOWN**, and consistency is **UNVERIFIED_CAPTURE_WINDOW** (not a DB transaction).
-  Current candidate producer runtime is **NOT_DEPLOYED / NOT_VERIFIED**. Public Source-reference
+  Current candidate producer runtime is **NOT_VERIFIED / NOT_APPLIED_BY_THIS_TASK**. Public Source-reference
   closure and token scanning do not independently revalidate rights or canonical publication.
   **CURRENT_PRODUCER_FULL_CHAIN** remains separate missing evidence; public DTOs intentionally
   omit canonical SourcePolicy and cannot safely reconstruct that gate.
@@ -234,8 +270,9 @@ implementation receipt above remains historical. This follow-up changes no produ
   `46f16ce27199a761bb472cb0f68a763a3afa16db`; local integrity does not refresh remote rights.
 
 All new paths in this checkpoint are relative to ignored `dist/full-goal-evidence/followup/`.
-Real full-transfer/hash/Source closure, local real activation, largest-page browser comparison
-and final cleanup remain pending this running capture; no real-data PASS is claimed yet.
+Real full-transfer/hash/Source-reference closure and exact replay-export tuple parity passed.
+Local real activation, largest-page browser comparison and final cleanup remain pending;
+capture integrity PASS is not complete frontend or producer-chain acceptance.
 
 ### Hosted writer and approval boundary
 

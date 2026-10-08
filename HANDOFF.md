@@ -5,8 +5,12 @@
 Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
 browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current
 desktop synthetic graph/Claim/Source flows passed. Native 390px is `USER_DEFERRED`. A new
-isolated, read-only Mac public API export with bounded relationships is running; no real-data
-acceptance is claimed until its transfer/hash/Source closure and largest-page comparison finish.
+isolated, read-only Mac public API export with bounded relationships finished: 1,142 People /
+387 Organizations / 578 Sources / 5,170 paths, snapshot `ps-65e086d2eb00c3c5`. Exact transfer,
+all response hashes, captured Source-reference closure and local replay/export tuple parity
+passed. Local D1 import and largest-page browser comparison remain in progress. Rejected
+positive-offset transfer was recovered with 76 exact hashed chunks before any SQL execution.
+Tool policy rejected failed-temporary-chunk cleanup (`blocked by policy`); cleanup is NOT_RUN.
 See the active plan's follow-up checkpoint and ignored `dist/full-goal-evidence/followup/`.
 This is current-frontend/public-API QA, not deployment of the candidate producer or hosted Sites.
 

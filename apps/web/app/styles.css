@@ -318,7 +318,7 @@ main { flex: 1; }
 .audit-details small { margin-top: 8px; padding: 10px; border-radius: 8px; background: var(--color-surface-muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; line-height: 1.65; }
 .source-library { margin-top: 106px; padding-top: 56px; border-top: 1px solid var(--color-line); }
 .source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.source { min-width: 0; padding: 22px; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-card); }
+.source { min-width: 0; scroll-margin-top: 104px; padding: 22px; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-card); }
 .source h3 { margin: 18px 0 8px; font-size: 19px; letter-spacing: -.02em; line-height: 1.3; overflow-wrap: anywhere; }
 .source h3 a { color: var(--color-ink); text-decoration: none; }.source h3 a:hover { color: var(--color-accent); }
 .source-meta, .source-license { margin: 0; color: var(--color-ink-muted); font-size: 13px; overflow-wrap: anywhere; }.source-license { margin-top: 8px; font-size: 13px; }
