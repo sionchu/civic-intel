@@ -8,7 +8,15 @@ desktop synthetic graph/Claim/Source flows passed. Native 390px is `USER_DEFERRE
 isolated, read-only Mac public API export with bounded relationships finished: 1,142 People /
 387 Organizations / 578 Sources / 5,170 paths, snapshot `ps-65e086d2eb00c3c5`. Exact transfer,
 all response hashes, captured Source-reference closure and local replay/export tuple parity
-passed. Local D1 import and largest-page browser comparison remain in progress. Rejected
+passed. Local D1 load/exact validation/activation and full ACTIVE decoding passed; real data is
+ACTIVE and synthetic PREVIOUS before the exercised rollback. Clean Source-anchor fix candidate
+`145348b` passed UI50, lint, Worker/Next builds and standalone checks. Post-fix largest-page
+SSR/Worker content parity, Source geometry, relationship Claim paths, roster1142 and homeEnter
+passed; real screenshots remain NOT_COMPLETED. Rollback restored synthetic ACTIVE and real
+PREVIOUS with both full integrity checks PASS; canonical PREVIOUS restore returned real ACTIVE
+with all5,170 response hashes/7,449parts and final runtime retention PASS. An initial activate
+retry was a no-op because it requires STAGED; the failed ACTIVE postcondition is preserved as a
+lead recipe error. All owned preview ports are stopped. Rejected
 positive-offset transfer was recovered with 76 exact hashed chunks before any SQL execution.
 Tool policy rejected failed-temporary-chunk cleanup (`blocked by policy`); cleanup is NOT_RUN.
 See the active plan's follow-up checkpoint and ignored `dist/full-goal-evidence/followup/`.

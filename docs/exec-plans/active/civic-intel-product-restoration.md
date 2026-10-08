@@ -1,6 +1,7 @@
 # Civic Intel product restoration
 
-Status: LOCAL_CODE_DONE / TEST_PASS / BROWSER_PARTIAL / HOSTED_NOT_RUN. Owner: MAIN,
+Status: LOCAL_CODE_DONE / TEST_PASS / REAL_PUBLIC_API_CONTENT_PASS / BROWSER_PARTIAL / HOSTED_NOT_RUN.
+Implementation owner: MAIN; 2026-10-08 follow-up execution/integration owner: GPT-6.1 Sol,
 2026-10-08. The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
 
@@ -41,9 +42,9 @@ authorized. No operational service or other worktree is modified.
 | Milestone | Work and acceptance | Current state |
 |---|---|---|
 | M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; Sites D1 bindings empty; branch states rechecked |
-| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | Local Worker build and pinned 50-path DTO parity PASS; native 390px blocked, real largest-page comparison NOT_RUN, hosted writes not authorized |
+| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 real public-API response hashes/Source-reference closure, largest Person/Org SSR–Worker content parity and local rollback round trip PASS; real visual NOT_COMPLETED, native390 USER_DEFERRED, hosted NOT_RUN |
 | M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; local verification and Aside acceptance below |
-| M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; API→D1 50/50 DTO equality on pinned synthetic QA; operational apply NOT_RUN |
+| M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; synthetic50/50 and existing real public API5,170/5,170 DTO parity incl1,142relationship paths PASS; real browser both Claim endpoints PASS; CURRENT_PRODUCER_FULL_CHAIN missing, operational apply NOT_RUN |
 | M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Existing one-photo contract hardened and tested; actual coverage expansion BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
 | M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | L1 privacy hardening tested; actual packet and money slice BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
 | M6 | Further change/comparison/issues, API/MCP and community with scoped methods/rights | PLANNED, not advertised as live |
@@ -184,7 +185,8 @@ labels its data **DISPOSABLE_SYNTHETIC_QA_NOT_OPERATIONAL_OR_PUBLICATION_APPROVA
 
 The owner assigned execution/integration, browser QA and readiness work to actual
 `gpt-6.1-sol` agents; root Astra orchestrates and adjudicates scope only. The prior MAIN
-implementation receipt above remains historical. This follow-up changes no product behavior.
+implementation receipt above remains historical. This follow-up verifies real public data and
+fixes the measured Source anchor offset; producer semantics and persistence schema are unchanged.
 
 - Clean code input `cd8cdcc610f09717765b02f1cca8b5f87332dfa2`, web tree
   `b2f51ffb3741619a1068be11d6e5a406d8394081`. `worker-clean-head-build.log` records strict
@@ -199,8 +201,10 @@ implementation receipt above remains historical. This follow-up changes no produ
   11.21 CLI selected by `npm_execpath`. Lock hash remains the prior `ce7c5609...361c`.
 - `next-clean-head-build.log`: current Next production build and standalone preparation PASS;
   standalone contract check PASS. `storage-clean-head-tests.log`: **7 passed, 0 skipped**.
-  Full `make verify` is **NOT_RERUN**: no behavior/schema changes occurred; its prior result
-  above is not relabeled as a fresh full run.
+  Full `make verify` is **NOT_RERUN**: the initial capture/build checkpoint changed no product
+  behavior; the later Source-anchor fix is CSS-only and passed the 50 affected UI regressions,
+  lint, both fresh production builds and targeted Aside checks. Backend contracts, schema and
+  producer logic are unchanged. The prior full result above is not relabeled as a fresh full run.
 - `browser/synthetic-acceptance.md` records current desktop relationship disclosure, keyboard
   Enter, both endpoint Claims, Source cards/policy, direct graph with complete accessible list,
   and Worker/Next main-text/href/ID parity PASS on `ps-5cb225217ae02703`. Two viewport screenshots
@@ -234,7 +238,7 @@ implementation receipt above remains historical. This follow-up changes no produ
   Platform compression differs: original 7,514 parts / 110,765,264 gzip B; local 7,449 parts /
   108,552,232 gzip B. `real-reexport-parity.json` preserves separate file hashes. Full original
   and local response decoding/hash, public-boundary scan and captured Source-reference closure
-  passed. Local lifecycle/browser acceptance remains in progress.
+  passed. Final browser content/behavior acceptance and local lifecycle are recorded below.
 - `real-d1-staged-state.json` and `real-d1-staged-integrity.json`: canonical local Wrangler load
   exited 0; real data is STAGED while the synthetic pointer remains ACTIVE. Every 5,170 decoded
   response / 7,449 stored part and captured Source-reference closure passed. The first ignored
@@ -253,7 +257,29 @@ implementation receipt above remains historical. This follow-up changes no produ
 - Largest-page pre-fix Aside QA found a Source title behind the sticky header after settled
   anchor navigation. The canonical `.source` now uses the existing **104px** anchor offset,
   matching evidence panels and profile sections. `source-anchor-ui-tests.log`: 50 passed;
-  `source-anchor-lint.log`: exit 0. New clean build and targeted Aside recheck remain pending.
+  `source-anchor-lint.log`: exit 0. Fresh clean code **145348b39669d4ace75901dfb4dba1dd2afb50db**,
+  web tree `c7da9663dc195bf567b7336939ceffc6a86d0f0e`, passed Worker strict-ci/typecheck/build and
+  Next production build/standalone checks. Final clean Worker is **146 files / 1,744,186 B**;
+  actual preview runtime is **150 files / 1,749,787 B**, tree SHA-256
+  `6723db29c03fb4a3d7ce47d18fc0645d583d01f34d1f6c5b6e49be5546afde19`.
+  Generated source ZIP is **91 files / 262,639 B**, SHA-256
+  `3940bcd91009ae12f784569d73cb481e3d4f925352b0004b92b8fc2dd0633625`.
+  `source-anchor-package-receipt.json` and `source-anchor-runtime-tree.json` preserve provenance;
+  this is a source package, not hosted deployment. D1 retained real ACTIVE after rebuild.
+  `browser/final-browser-acceptance.md` records post-fix native 1440x900 Aside content/behavior
+  **PASS**: complete main textContent/innerText/ordered hrefs/IDs match Worker and SSR for the
+  largest Person (7,083,370 JSON B) and Organization (894,831 JSON B). Person has 3,099,982 text
+  characters, 7,213 links, 2,383 Claim anchors, 36 Sources, two graph edges and 12 relationship
+  rows; Organization has 546,565 characters, 825 links and 410 Claims. IDs are unique, no dangling
+  same-page fragments or horizontal overflow were observed. Source titles are visible after
+  settled Person navigation on both ports and Organization keyboard navigation. Earlier Org
+  pointer navigation had the correct hash but offscreen target and remains **INCOMPLETE**.
+  Real Worker graph/list, both endpoint Claims with CLAIM/SUPPORT, roster 1,142 unique links,
+  and home name-search Enter returning the exact Person passed after actual readiness.
+  **Visual acceptance NOT_COMPLETED**: bounded real Person/Org and even small-home screenshots
+  timed out. Opened loading/synthetic screenshots are not current real visual acceptance.
+  This does not establish an independent performance acceptance or a screenshot-related product
+  defect. No further unchanged-input capture retries or speculative pagination refactor occurred.
   The old `cd8cdcc` candidate and pre-fix browser receipts remain historical evidence.
 - Dataset acceptance is **CURRENT_FRONTEND_PUBLIC_API**. Upstream API runtime revision is
   **UNKNOWN**, and consistency is **UNVERIFIED_CAPTURE_WINDOW** (not a DB transaction).
@@ -271,8 +297,21 @@ implementation receipt above remains historical. This follow-up changes no produ
 
 All new paths in this checkpoint are relative to ignored `dist/full-goal-evidence/followup/`.
 Real full-transfer/hash/Source-reference closure and exact replay-export tuple parity passed.
-Local real activation, largest-page browser comparison and final cleanup remain pending;
-capture integrity PASS is not complete frontend or producer-chain acceptance.
+Local real activation and full ACTIVE decoding passed; post-fix largest-page content/behavior
+comparison passed with visual limits above. Real pointer rollback restored synthetic ACTIVE
+and retained real PREVIOUS; both decoded integrity checks passed. A retry of `activate.sql`
+exited 0 but left PREVIOUS untouched because its guard requires STAGED. The actual ACTIVE
+postcondition correctly failed; `real-d1-reactivation-noop-receipt.json` preserves this lead
+recipe error. Canonical real `rollback.sql` then exited 0 and restored real ACTIVE with synthetic
+PREVIOUS. `real-d1-restored-final-state.json`, `real-d1-restored-final-integrity.json` and
+`real-d1-restored-final-runtime-retention.json` prove **PASS** for the complete round trip,
+5,170 exact response hashes / 7,449 parts, 578 captured Source-reference closure, and unchanged
+150-file / 1,749,787 B final runtime. The restore SQL state guard and SHA were checked against
+actual ACTIVE/PREVIOUS states (`real-d1-restore-transition-precondition.json`). No product or
+SQL-library change was made. Owned previews on 8127/3137/8797 are stopped and all browser task
+tabs closed. Original Windows and Mac checkout changes are preserved. Temporary cleanup is
+NOT_RUN_TOOL_POLICY_DENIAL. `followup-acceptance-receipt.json` consolidates these evidence classes.
+Capture integrity PASS is not complete frontend or producer-chain acceptance.
 
 ### Hosted writer and approval boundary
 
@@ -298,7 +337,10 @@ restrictions remain in force; do not use AI to manufacture human review.
 
 The owner explicitly deferred native 390px on 2026-10-08 (`USER_DEFERRED`); the current Aside
 capability limitation remains recorded and does not block the authorized desktop follow-up.
-Complete the real largest-page comparison against this candidate's pinned public API capture.
-Resolve an actual supported owner-private hosted writer before preparing a concrete DB/Sites
-cutover approval. M4/M5 needs the owner-approved rights/identity/publication packet described
-above; until then, do not claim actual photo coverage expansion or a live personal-assets slice.
+Next task only: obtain and read-only verify an actual supported **owner-private hosted D1 bulk
+writer contract**, using `readiness/owner-review-packet.md` and the pinned source/snapshot
+receipts. The provider must identify owner scope, authorization, size/transaction limits,
+idempotency/resume, exact validation/atomic activation receipts and rollback before a concrete
+hosted-write approval can be requested. No hosted cutover is authorized by this completed local
+follow-up. Producer full-chain, real visual capture and M4/M5 rights/identity/publication remain
+the explicit acceptance gaps above; native390 remains USER_DEFERRED.
