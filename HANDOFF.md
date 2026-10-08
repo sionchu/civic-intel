@@ -3860,3 +3860,15 @@ do not auto-create Organizations from exact names and do not merge these two app
 원본 Git blob API 패키지는 173파일, gzip 438,113바이트, SHA256 `8a7eb1d63f76a50afb7069a668e4b47b1f70e223aeeba90c1978a3bafa87060c`다. 근거는 `dist/full-goal-evidence/producer-full-chain/producer-d67a42d-exact-source.json`이다. 실제 전송 시 원격 Mac이 offline(last seen 41분 전)을 반환하여 전송은 수행되지 않았다. 원격 raw-byte 검증·격리 API 실행·최신 전체 공개 export·실제 hosted 예산/메모리 검증은 NOT_RUN_DEVICE_OFFLINE이다. 다음 실행은 Mac 연결이 복구된 뒤 같은 exact artifact를 전송하여 바이트 대조와 read-only candidate를 검증하고 전체 export를 수행하는 것이다.
 
 운영 API 339363f/8100과 공개 Site v6는 그대로다. canonical 정책 등록·수집·인물 연결·publication과 운영 API 전환은 미실행이며 이전 f5/e575 승인 대상을 재사용하지 않는다. 새 뉴스·자산·주택 운영 기록은 0이며 staged 경로 연결을 실제 수집 완료로 표시하지 않는다. hosted writer 보안 경계와 no-cleanup 제약은 유지한다.
+
+
+### 2026-10-09 공개 전달 준비의 최종 실행 한계
+
+제품 source `d67a42d87315dd08c06502d58884630d6cf17280`과 API runtime 173파일/SHA256 `8a7eb1d63f76a50afb7069a668e4b47b1f70e223aeeba90c1978a3bafa87060c`는 그대로 고정한다. 제품 전체 make verify 및 Next standalone PASS와 아래 배포 준비 실행 결과는 별개다.
+
+- 정확한 frontend Git blob 준비: 105파일, 2,461,610바이트, mismatch 0 PASS. 첫 source archive의 103개 newline mismatch는 FAIL 근거로 보존하고 빌드에 사용하지 않았다.
+- 공식 Site builder 세션 3453과 29126은 모두 install:ci의 child cmd/Node 해석 실패로 exit 1 RUNNER_FAIL이다. process-local absolute Node/PATH 보완도 해결하지 못했다. generated lock SHA256은 `3a4a7b8320f197397ab7d4116e526fb7d3364e2f33803513fd1fcef3cd3625e3`이다. Worker compile/typecheck는 NOT_RUN_INSTALL_FAILED이며 제품 build PASS로 대체하지 않는다. EBUSY/EPERM 잔여 파일은 보존했고 삭제 재시도·비공식 helper patch·ignore-scripts·shim·전역 환경 변경은 하지 않았다.
+- 공식 prepare-site-build.cjs는 이미 생성된 dist를 포장하는 도구이며 현재 install 실패의 복구 진입점이 아니다. 추가 실행은 하지 않았다. 원격 연결이 복구된 뒤 같은 exact source를 지원되는 Mac runtime에서 빌드하는 후속 경로는 아직 미실행이다.
+- Mac device 상태만 bounded 1회 재조회한 결과 OFFLINE/last seen 44분이다. 정확한 원격 전송·runtime 검증·fresh full export·hosted 크기/메모리·save/deploy는 NOT_RUN이다. operating API/DB/public Site v6는 변경하지 않았다.
+
+배포 준비 근거: `dist/full-goal-evidence/public-deployment/local-d67a42d-build-verification.json`, `local-d67a42d-release-review.md`, `local-d67a42d-source-provenance.json`; 연결 근거: `dist/full-goal-evidence/producer-full-chain/mac-device-status-bounded-recheck.json`. 새 source policy/canonical 적용·API 전환·hosted writer 보안 변경은 여전히 별도 구체 검토 대상이며 실행되지 않았다.
