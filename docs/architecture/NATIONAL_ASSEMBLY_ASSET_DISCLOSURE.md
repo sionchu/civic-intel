@@ -1,5 +1,62 @@
 # National Assembly asset disclosure source gate
 
+## PETI public factual totals — 2026-10-09: LOCAL_STAGED
+
+The official PETI public search (`https://www.peti.go.kr/peOptpListVie.do`) opens a
+public HTML detail route (`https://www.peti.go.kr/peoptp/openPeOptpListVieDtlPop.do`).
+Bounded Aside review found one selected National Assembly record and verified the
+printed total columns: 종전가액(천원), 증가액(실거래가격), 감소액(실거래가격),
+현재가액(천원). This is a public declared total, not personal self-only or market
+wealth. The inspected report-type label was unavailable and remains UNKNOWN.
+
+Public factual metadata is assessed separately from PDF/media redistribution:
+[Public Service Ethics Act Article 10](https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1024570355)
+and [Copyright Act Article 7](https://www.law.go.kr/LSW/lsSideInfoP.do?docCls=jo&joBrNo=00&joNo=0007&lsiSeq=283335&urlMode=lsScJoRltInfoR)
+provide the reviewed public-disclosure/legal basis. No blanket PDF/photo reuse
+licence or individual consent requirement is inferred for these factual fields.
+The Assembly Gazette robots, AI and human-transcription constraints below remain
+specific to that separate source route.
+
+`build_peti_asset_capture` in the existing asset importer takes an explicit supplied
+SourcePolicy before reading fields. It requires STORE_METADATA, the PETI domain,
+BROWSER provenance, disabled FETCH, no fulltext storage and no excerpt display.
+FETCH is transport-neutral: this function is supplied-receipt staging, not a browser
+or HTTP collector. It does not create a policy, infer a commercial-use restriction,
+assert a copyright licence, fetch a page, or write to a database.
+
+The closed receipt permits only exact public routes, disclosure/registration dates,
+National Assembly institution/office, printed public name, verified total column
+labels, exact transport-safe integer amounts in THOUSAND_KRW, an explicitly visible
+report label or UNKNOWN, and PRINTED_PUBLIC_DISCLOSURE_TOTAL_NOT_SELF_ONLY scope.
+Prior + increase - decrease must equal current. A printed zero or signed total is
+preserved; absence is never zero. Raw DOM/body/PDF, session-bearing URLs, family
+rows, addresses, asset items and HUMAN_REVIEWED flags are prohibited fields.
+
+The canonical Source is the public detail route, reused across records to preserve
+unique Source URLs; its route publication time is unknown. SourceSnapshot stores
+only the sanitized receipt and its deterministic metadata hash. FeederObservation
+uses `peti_public_declared_total`, references that exact snapshot, and retains the
+same allowed normalized fields. Record disclosure date is metadata, not an invented
+Source publication timestamp. No second raw store or table is introduced.
+
+The deterministic record key hashes disclosure date, registration date, institution,
+office and printed name. It is a public selector locator, **not** an authoritative
+Person identifier. Observation identity hints remain empty. Names or a single search
+match cannot authorize automatic creation, linkage or merge.
+
+`build_peti_asset_total_claim` requires a supplied current resolved canonical Person,
+an exact existing active REVIEWED_LINK and its resolved review. It never manufactures
+a reviewer/link or merges Persons, and defaults the returned Claim to DRAFT. The
+existing asset reader dispatches `peti_public_declared_total_metadata_v1` through the
+same publication gate and Evidence/Source/Policy lineage; exact Claim text, integer
+amounts, unknown report type, snapshot metadata hashes and reviewed linkage are
+checked. A different immutable sibling version blocks output until explicit review.
+
+This milestone is local staging and deterministic fixture verification. No canonical
+PETI policy/record/link was written, no real PETI Claim was published, and no operational
+asset coverage or deployed service result is claimed. Sanitized source-review evidence
+is in `dist/full-goal-evidence/followup/readiness/peti-headline-review.json`.
+
 ## Decision — 2026-10-05: L1 CONTRACT_STAGED (human-assisted Gazette packet path)
 
 **L1 CONTRACT_STAGED; human-assisted reviewed-packet path; no real packet imported yet.**
@@ -441,7 +498,7 @@ A later L3 ExecPlan must prove unfiltered bounded enumeration, transactional
 snapshot/observation commit before checkpoints, resume, idempotency, corrected-release handling,
 privacy, publication gates and full DoD using the existing foundation.
 
-## Subsequent lanes — documentation only
+## Historical subsequent-lane audit — original documentation-only scope
 
 | Candidate | Evidence and limits | Independent future gate |
 |---|---|---|
@@ -451,4 +508,48 @@ privacy, publication gates and full DoD using the existing foundation.
 | Local-council discipline | [Docs](https://docs.openwatch.kr/data/local-council/disciplinaries): FOI plus curator media context; current directory's 8th link aliases 7th | Separate official sanction from curated allegation; appeals/reversals and term completeness |
 | Political-contribution aggregate enrichment | [Docs](https://docs.openwatch.kr/data/political-contributions/national-assembly): annual NEC-derived totals; docs end 2024, directory 2025 | Annual coverage, corrections and aggregate licensing; no ordinary donor rows or Person creation |
 
-No candidate in this table is promoted, fetched as a new runtime lane or implemented.
+This table records the original asset-source audit scope. It did not authorize those lanes.
+Subsequent actual roll-call ingestion and publication are governed separately by
+[Assembly roll-call vote feeder](ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md) and the current
+[feeder coverage inventory](FEEDER_SOURCE_COVERAGE.md); use those for current status.
+
+## PETI single-record operator entry
+
+`python -m workers.assembly_asset_import --peti-receipt RECEIPT.json
+--peti-policy POLICY.json` validates one supplied closed public-total selector receipt.
+The default is a no-write preview. PETI never accepts a Gazette PDF or Gazette rights flag.
+The database URL is read from `CIVIC_DATABASE_URL` (or the named `--database-env`), never
+passed in PETI command arguments. No network collection or automatic Person linkage occurs.
+
+Capture `--commit` requires an already stored SourcePolicy exactly equal to the explicit
+policy file. It commits the existing Source/Snapshot/Observation/checkpoint through the
+canonical repository. It cannot create or relax that policy. The capture receipt returns
+the exact observation IDs needed for the next operation.
+The repository repeats complete policy equality inside the same locked transaction:
+PostgreSQL locks the stored policy row; SQLite takes its existing immediate write lock.
+A policy revoked after CLI precheck blocks capture without advancing a checkpoint.
+Aware audit dates compare as UTC instants; unknown naive legacy dates retain wall-clock
+semantics rather than acquiring an inferred timezone.
+
+`--peti-operation link --command COMMAND.json` uses canonical `LINK_PERSON` preview/audit.
+The command must select one committed PETI observation, a current RESOLVED Person, and one
+published official Assembly roster Evidence, with identity basis
+`PUBLIC_DISCLOSURE_SOURCE_CONTEXT`. Genuine owner `human_verified: true` records identity
+review of this exact source context; it is not a copyright attestation for public facts.
+A command without that confirmation returns `OWNER_SOURCE_CONTEXT_REVIEW_PENDING` and
+does not construct a confirmed AdminCommand. This basis never permits MERGE or other feeders.
+The official provider key, normalized immutable hash, unique active Person link, completed
+full-roster checkpoint and successful run are revalidated. The resulting Claim is DRAFT.
+
+`--peti-operation publish --command COMMAND.json` is a separate canonical `PUBLISH` decision.
+It revalidates the reviewed link, source closure, printed-total reader, current official
+roster anchor and every bounded sibling observation version. Conflicting unpublished
+versions fail closed. It preserves CLAIM / asserted-as-true false and UNKNOWN report type.
+Reviewed admin commits require `--commit --actor OWNER --state-hash EXACT_PREVIEW_HASH`.
+Preview and commit use the existing transaction/audit/concurrency contract, with no new table.
+
+Operator stdout contains only IDs, hashes, counts and statuses. Optional `--preview-output`
+writes the full canonical preview to a new owner-local file; existing files are not overwritten.
+This separates owner review from AI transport when SourcePolicy.can_send_to_ai is false.
+All operational application and publication remain unexecuted until a concrete source-policy,
+identity and publication decision; disposable regression DBs do not establish live coverage.

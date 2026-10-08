@@ -1,6 +1,6 @@
 # Person profile section producers
 
-Updated on 2026-10-08 for the source-attributed career projection. This is the canonical inventory
+Updated on 2026-10-09 for the validated declared-asset projection. This is the canonical inventory
 of which upstream producer feeds each Person profile section rendered by
 `packages/rendering/profile_projection.py`.
 A section label in the UI is not evidence that a collection pipeline exists.
@@ -27,6 +27,15 @@ committee member-list lane ([feeder](ASSEMBLY_COMMITTEE_ROSTER_FEEDER.md)), once
 ([feeder](ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md#vote-claims-separate-publication-step)); the section is
 emitted only when such Claims exist. Repeated patterns stay eligibility-only: vote Claims are not
 turned into alignment or party-line patterns.
+
+Both profile paths include `public_declared_assets`. The API passes only rows from the same
+bounded immutable-source validator used by `/people/{id}/assets`; generic asset Claims are
+excluded from fallback profile entries. The section preserves the original Claim, supporting
+Evidence and Source IDs, CLAIM status, integer THOUSAND_KRW amount, printed-total scope and
+source-stated dates/report type. An UNKNOWN report type stays UNKNOWN; absence is not zero.
+This is a projection of Gazette reviewed-packet or PETI public factual metadata, not a new
+AssetDisclosure row. `asset_disclosure_ids` remains empty unless canonical AssetDisclosure
+records exist. Local synthetic tests do not establish operational ingestion/publication.
 
 | Section | Renderer input | Current producer | Lane | State | Missing step |
 |---|---|---|---|---|---|

@@ -347,6 +347,7 @@ def test_ha_jungwoo_profile_projection_preserves_enrichment_semantics(
         "controversies",
         "hearing_questions",
         "forecast",
+        "public_declared_assets",
         "limitations",
     ]
     assert sections["identity"]["status"] == "AVAILABLE"

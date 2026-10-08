@@ -336,9 +336,9 @@ def create_app(
         item = person_or_404(person_id, public=True)
         # Two bounded reads instead of one Evidence query per Claim: Assembly members carry
         # thousands of vote Claims.
-        claims_context, evidence_context = target.published_person_claim_contexts(
-            [person_id]
-        ).get(person_id, ((), {}))
+        claims_context, evidence_context = target.published_person_claim_contexts([person_id]).get(
+            person_id, ((), {})
+        )
         published_claims = list(claims_context)
         evidence_by_claim = {
             claim.id: list(evidence_context.get(claim.id, ())) for claim in published_claims
@@ -360,6 +360,7 @@ def create_app(
             decision_episodes,
             sources=source_map,
             policies=policy_map,
+            declared_assets=validated_person_assets(item, person_id),
         )
         # Vote Claims number in the thousands per member; only those the profile renders are
         # embedded, while the profile note carries the whole-record counts.
@@ -372,8 +373,11 @@ def create_app(
         person_claims = [
             claim_payload(claim, evidence_by_claim[claim.id])
             for claim in published_claims
-            if claim.predicate != ASSEMBLY_PLENARY_VOTE_PREDICATE
-            or str(claim.id) in rendered_claim_ids
+            if (
+                claim.predicate
+                not in {ASSEMBLY_PLENARY_VOTE_PREDICATE, ASSEMBLY_ASSET_TOTAL_PREDICATE}
+                or str(claim.id) in rendered_claim_ids
+            )
         ]
         return item.model_dump(mode="json") | {
             "claims": person_claims,
@@ -839,25 +843,25 @@ def create_app(
             }
         return path
 
-    @app.get("/people/{person_id}/assets")
-    def assets(person_id: UUID, response: Response) -> list:
-        person = person_or_404(person_id, public=True)
+    def validated_person_assets(person, person_id: UUID) -> list[dict]:
         claims, evidence = target.published_person_claim_contexts(
             [person_id], predicates=(ASSEMBLY_ASSET_TOTAL_PREDICATE,)
-        ).get(
-            person_id, ((), {})
-        )
+        ).get(person_id, ((), {}))
         observation_ids = {
             item.feeder_observation_id
-            for items in evidence.values() for item in items
+            for items in evidence.values()
+            for item in items
             if item.feeder_observation_id is not None
         }
         contexts = target.feeder_observation_contexts(observation_ids)
         active_person_ids = target.active_person_ids_by_observation(list(observation_ids))
-        if any(active_person_ids.get(key, frozenset()) != frozenset({person_id})
-               for key in observation_ids):
-            raise PublicApiError(503, "SERVICE_UNAVAILABLE",
-                                 "The public data service is temporarily unavailable.")
+        if any(
+            active_person_ids.get(key, frozenset()) != frozenset({person_id})
+            for key in observation_ids
+        ):
+            raise PublicApiError(
+                503, "SERVICE_UNAVAILABLE", "The public data service is temporarily unavailable."
+            )
         observations = {key: value[0] for key, value in contexts.items()}
         for observation in tuple(observations.values()):
             for sibling in target.feeder_observations(
@@ -866,23 +870,34 @@ def create_app(
                 observations[sibling.id] = sibling
         try:
             rows = build_assembly_declared_assets_from_claims(
-                person, claims, evidence,
+                person,
+                claims,
+                evidence,
                 observations=observations,
                 snapshots={value[1].id: value[1] for value in contexts.values()},
                 sources={value[2].id: value[2] for value in contexts.values()},
                 policies={value[3].id: value[3] for value in contexts.values()},
                 links=target.person_observation_links(person_id),
             )
-            response.headers["X-Civic-Asset-Coverage"] = (
-                "PUBLISHED_DECLARED_TOTALS" if rows else "NO_PUBLISHED_ASSET_CLAIMS"
-            )
             return rows
         except AssetSourceVersionConflict as exc:
-            raise PublicApiError(409, "SOURCE_VERSION_CONFLICT",
-                                 "Conflicting source versions prevent this disclosure.") from exc
+            raise PublicApiError(
+                409,
+                "SOURCE_VERSION_CONFLICT",
+                "Conflicting source versions prevent this disclosure.",
+            ) from exc
         except ValueError as exc:
-            raise PublicApiError(503, "SERVICE_UNAVAILABLE",
-                                 "The public data service is temporarily unavailable.") from exc
+            raise PublicApiError(
+                503, "SERVICE_UNAVAILABLE", "The public data service is temporarily unavailable."
+            ) from exc
+
+    @app.get("/people/{person_id}/assets")
+    def assets(person_id: UUID, response: Response) -> list:
+        rows = validated_person_assets(person_or_404(person_id, public=True), person_id)
+        response.headers["X-Civic-Asset-Coverage"] = (
+            "PUBLISHED_DECLARED_TOTALS" if rows else "NO_PUBLISHED_ASSET_CLAIMS"
+        )
+        return rows
 
     @app.get("/sources/{source_id}")
     def get_source(source_id: UUID) -> dict:

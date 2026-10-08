@@ -251,6 +251,10 @@ main { flex: 1; }
 .profile-lede { max-width: 56ch; margin: 22px 0 0; color: var(--color-ink-muted); font-size: 15px; }
 .profile-portrait { display: grid; width: min(180px, 30vw); gap: 8px; margin: 0; }
 .profile-portrait img { display: block; width: 100%; height: auto; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); }
+.vote-filters { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+.vote-filters label { display: grid; gap: 8px; flex: 1 1 220px; color: var(--color-ink-muted); font-size: 13px; }
+.vote-filters input, .vote-filters select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink); font: inherit; }
+.load-more { min-height: 44px; padding: 10px 16px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink); font: inherit; cursor: pointer; }
 .portrait-credit { color: var(--color-ink-muted); font-size: 13px; line-height: 1.45; text-align: right; overflow-wrap: anywhere; }
 .portrait-credit a { color: var(--color-ink); text-decoration-color: var(--color-line-strong); text-underline-offset: 3px; }
 .portrait-credit a:hover { color: var(--color-accent); }

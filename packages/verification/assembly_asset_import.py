@@ -1,18 +1,20 @@
-"""Bind a human-reviewed Assembly asset-disclosure packet to its exact Gazette PDF bytes.
+"""Stage bounded official declared-asset metadata with exact canonical provenance.
 
-Writes nothing itself: the worker commits the capture through the shared
-`commit_source_page` seam (Source / SourceSnapshot / FeederObservation only). No Person,
-AssetDisclosure, Claim or identity link is created; observations deliberately carry no
-`canonical_name`, so the generic materializer refuses them.
+Writes nothing itself. The Gazette worker uses the shared `commit_source_page`
+seam; PETI accepts supplied scoped public metadata without a collector. Pure Claim
+builders require an existing reviewed linkage and default to DRAFT. No Person,
+AssetDisclosure or identity link is created. Observations carry no `canonical_name`,
+so the generic materializer refuses automatic identity materialization.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Iterable
+import re
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta, timezone
 from uuid import UUID, uuid5
 
 from packages.connectors.assembly_asset_packet import (
@@ -60,6 +62,14 @@ TOTALS_SCOPE = "PRINTED_MEMBER_TOTAL_INCLUDES_REPORTED_RELATIVES"
 LINK_MODE = "REVIEW_ONLY_NO_AUTO_LINK"
 AUTHORITY = "OFFICIAL_NATIONAL_ASSEMBLY_GAZETTE"
 ASSEMBLY_ASSET_TOTAL_PREDICATE = "ASSEMBLY_DECLARED_ASSET_TOTAL"
+PETI_ASSET_SOURCE_CONTRACT = "peti_public_declared_total_metadata_v1"
+PETI_ASSET_FEEDER = "peti_public_declared_total"
+PETI_ASSET_TOTALS_SCOPE = "PRINTED_PUBLIC_DISCLOSURE_TOTAL_NOT_SELF_ONLY"
+PETI_ASSET_PAGE = "https://www.peti.go.kr/peOptpListVie.do"
+PETI_ASSET_DETAIL = "https://www.peti.go.kr/peoptp/openPeOptpListVieDtlPop.do"
+PETI_TOTAL_HEADERS = (
+    "종전가액(천원)", "증가액(실거래가격)", "감소액(실거래가격)", "현재가액(천원)",
+)
 _POLICY_NAMESPACE = UUID("3f6c1d0e-8a51-4c43-9e0f-2b7f5a9d6c14")
 _KST = timezone(timedelta(hours=9))
 
@@ -117,6 +127,161 @@ def assembly_asset_observation_hash(normalized: dict[str, object]) -> str:
             "utf-8"
         )
     ).hexdigest()
+
+
+def require_peti_asset_metadata_policy(policy: SourcePolicy) -> None:
+    """Supplied metadata staging only. FETCH is transport-neutral and stays disabled."""
+    require_policy(policy, PolicyAction.STORE_METADATA)
+    if (policy.domain != "www.peti.go.kr"
+            or policy.collection_mode != SourceCollectionMode.BROWSER
+            or policy.can_fetch or policy.can_store_fulltext or policy.can_show_excerpt):
+        raise PolicyDenied("PETI total staging requires its bounded metadata-only policy")
+
+
+def normalize_peti_asset_receipt(
+    raw: Mapping[str, object], *, policy: SourcePolicy,
+) -> dict[str, object]:
+    """Normalize supplied public fields; never fetch, ingest private rows or attest review."""
+    require_peti_asset_metadata_policy(policy)
+    keys = {"source_page_url", "detail_route", "publication_date", "registration_date",
+            "institution", "office", "printed_name", "column_headers", "amount_unit",
+            "prior_value", "increase", "decrease", "current_value", "report_type",
+            "report_type_label", "declared_totals_scope"}
+    if set(raw) != keys:
+        raise AssemblyAssetImportError("PETI total receipt has missing or prohibited fields")
+    if (raw["source_page_url"] != PETI_ASSET_PAGE or raw["detail_route"] != PETI_ASSET_DETAIL
+            or raw["institution"] != "국회" or raw["office"] != "국회의원"
+            or raw["column_headers"] != list(PETI_TOTAL_HEADERS)
+            or raw["amount_unit"] != AMOUNT_UNIT
+            or raw["declared_totals_scope"] != PETI_ASSET_TOTALS_SCOPE):
+        raise AssemblyAssetImportError("PETI source, scope, headers or unit is inconsistent")
+    name = raw["printed_name"]
+    if not isinstance(name, str) or not re.fullmatch(r"[가-힣A-Za-z·. -]{2,80}", name):
+        raise AssemblyAssetImportError("PETI public printed name is malformed")
+    dates = {}
+    for field in ("publication_date", "registration_date"):
+        value = raw[field]
+        if not isinstance(value, str):
+            raise AssemblyAssetImportError("PETI public date is malformed")
+        try:
+            dates[field] = date.fromisoformat(value)
+        except ValueError:
+            raise AssemblyAssetImportError("PETI public date is malformed") from None
+        if dates[field].isoformat() != value:
+            raise AssemblyAssetImportError("PETI public date must be exact ISO date")
+    if dates["registration_date"] > dates["publication_date"]:
+        raise AssemblyAssetImportError("PETI registration date follows disclosure date")
+    amounts: dict[str, int] = {}
+    for field in ("prior_value", "increase", "decrease", "current_value"):
+        value = raw[field]
+        if isinstance(value, bool) or not isinstance(value, int) or abs(value) > 2**53 - 1:
+            raise AssemblyAssetImportError("PETI total requires exact transport-safe integers")
+        if field in {"increase", "decrease"} and value < 0:
+            raise AssemblyAssetImportError("PETI total changes must preserve printed column signs")
+        amounts[field] = value
+    if amounts["prior_value"] + amounts["increase"] - amounts["decrease"] != amounts["current_value"]:
+        raise AssemblyAssetImportError("PETI printed total arithmetic differs")
+    report = raw["report_type"]
+    if report == "UNKNOWN":
+        if raw["report_type_label"] is not None:
+            raise AssemblyAssetImportError("PETI unknown report type cannot invent a label")
+    elif (not isinstance(report, str) or report not in {"정기", "수시", "등록신고", "변동신고"}
+          or raw["report_type_label"] != report):
+        raise AssemblyAssetImportError("PETI report type requires its exact visible public label")
+    return dict(raw)
+
+
+def peti_asset_record_key(normalized: Mapping[str, object]) -> str:
+    """A deterministic public selector locator, never an authoritative Person identifier."""
+    selector = {key: normalized[key] for key in (
+        "publication_date", "registration_date", "institution", "office", "printed_name",
+    )}
+    return "peti:" + assembly_asset_observation_hash(selector)
+
+
+def build_peti_asset_capture(
+    raw: Mapping[str, object], *, policy: SourcePolicy, run_id: UUID,
+) -> tuple[Source, SourceSnapshot, FeederObservation]:
+    normalized = normalize_peti_asset_receipt(raw, policy=policy)
+    record_key = peti_asset_record_key(normalized)
+    content_hash = assembly_asset_observation_hash(normalized)
+    source = Source(id=uuid5(_POLICY_NAMESPACE, PETI_ASSET_DETAIL), url=PETI_ASSET_DETAIL,
+        title="PETI 국회 공개 재산신고 총계 조회", publisher="공직윤리시스템",
+        published_at=None, policy_id=policy.id)
+    snapshot = SourceSnapshot(source_id=source.id, content_hash=content_hash,
+        metadata={"source_contract": PETI_ASSET_SOURCE_CONTRACT,
+                  "capture_mode": "SUPPLIED_SCOPED_PUBLIC_METADATA", "receipt": normalized},
+        fulltext=None)
+    observation = FeederObservation(feeder=PETI_ASSET_FEEDER,
+        scope_key=f"peti:{normalized['publication_date']}:selected-public-records",
+        provider_record_key=record_key, snapshot_id=snapshot.id, run_id=run_id,
+        semantic_scope=ASSEMBLY_ASSET_SEMANTIC_SCOPE, identity_hints={},
+        normalized=normalized, content_hash=content_hash)
+    return source, snapshot, observation
+
+
+def _require_reviewed_asset_subject(
+    person: Person, observation: FeederObservation, link: PersonObservationLink,
+    review: IdentityReviewItem,
+) -> None:
+    if (person.identity_status != IdentityStatus.RESOLVED or person.superseded_at is not None
+            or link.person_id != person.id or link.observation_id != observation.id
+            or link.superseded_at is not None or link.action != MaterializationAction.REVIEWED_LINK
+            or link.review_item_id != review.id or review.status != IdentityReviewStatus.RESOLVED
+            or review.observation_id != observation.id or review.candidate_person_id != person.id
+            or not review.resolution_note):
+        raise AssemblyAssetImportError("asset total requires an exact resolved reviewed Person link")
+
+
+def build_peti_asset_total_claim(
+    source: Source, snapshot: SourceSnapshot, observation: FeederObservation, *,
+    policy: SourcePolicy, person: Person, link: PersonObservationLink,
+    review: IdentityReviewItem, publication_approved: bool = False,
+) -> tuple[Claim, ClaimEvidence]:
+    normalized = normalize_peti_asset_receipt(observation.normalized, policy=policy)
+    if (source.policy_id != policy.id or str(source.url) != PETI_ASSET_DETAIL
+            or snapshot.source_id != source.id or snapshot.fulltext is not None
+            or snapshot.metadata != {"source_contract": PETI_ASSET_SOURCE_CONTRACT,
+                                    "capture_mode": "SUPPLIED_SCOPED_PUBLIC_METADATA",
+                                    "receipt": normalized}
+            or snapshot.content_hash != assembly_asset_observation_hash(normalized)
+            or observation.snapshot_id != snapshot.id
+            or observation.content_hash != snapshot.content_hash
+            or observation.feeder != PETI_ASSET_FEEDER
+            or observation.semantic_scope != ASSEMBLY_ASSET_SEMANTIC_SCOPE
+            or observation.scope_key != f"peti:{normalized['publication_date']}:selected-public-records"
+            or observation.identity_hints
+            or observation.provider_record_key != peti_asset_record_key(normalized)):
+        raise AssemblyAssetImportError("PETI total immutable metadata provenance differs")
+    _require_reviewed_asset_subject(person, observation, link, review)
+    amount = normalized["current_value"]
+    claim_id = uuid5(_POLICY_NAMESPACE, "|".join((str(person.id),
+        ASSEMBLY_ASSET_TOTAL_PREDICATE, observation.provider_record_key, observation.content_hash)))
+    claim = Claim(id=claim_id, person_id=person.id, subject=person.canonical_name,
+        proposition=f"{person.canonical_name}의 공개 재산신고 총계는 {amount:,}천원이다.",
+        predicate=ASSEMBLY_ASSET_TOTAL_PREDICATE, object_text=f"{amount:,}천원",
+        qualifiers={"source_contract": PETI_ASSET_SOURCE_CONTRACT,
+            "provider_record_key": observation.provider_record_key,
+            "immutable_observation_hash": observation.content_hash,
+            "review_item_id": str(review.id), "identity_basis": "REVIEWED_SOURCE_CONTEXT",
+            "amount_thousand_krw": str(amount), "amount_unit": AMOUNT_UNIT,
+            "value_semantics": VALUE_SEMANTICS, "declared_totals_scope": PETI_ASSET_TOTALS_SCOPE,
+            "publication_date": str(normalized["publication_date"]),
+            "registration_date": str(normalized["registration_date"]),
+            "report_type": str(normalized["report_type"])},
+        epistemic_status=EpistemicStatus.CLAIM, asserted_as_true=False,
+        publication_status=PublicationStatus.PUBLISHED if publication_approved else PublicationStatus.DRAFT,
+        valid_from=datetime.combine(date.fromisoformat(str(normalized["publication_date"])),
+                                    time(), tzinfo=_KST),
+        recorded_at=observation.recorded_at)
+    evidence = ClaimEvidence(id=uuid5(claim.id, str(observation.id)), claim_id=claim.id,
+        source_id=source.id, snapshot_id=snapshot.id, feeder_observation_id=observation.id,
+        stance=EvidenceStance.SUPPORT, excerpt=None)
+    if publication_approved and not validate_claim_publication(
+        claim, person, [evidence], {source.id: source}, {policy.id: policy},
+    ).publishable:
+        raise AssemblyAssetImportError("PETI total publication gate rejected the claim")
+    return claim, evidence
 
 
 @dataclass(frozen=True)
@@ -349,13 +514,7 @@ def build_assembly_asset_total_claim(
             or observation.snapshot_id != capture.snapshot.id
             or observation.normalized.get("record_kind") != RECORD_KIND_MEMBER_TOTAL):
         raise AssemblyAssetImportError("asset total observation does not match reviewed capture")
-    if (person.identity_status != IdentityStatus.RESOLVED or person.superseded_at is not None
-            or link.person_id != person.id or link.observation_id != observation.id
-            or link.superseded_at is not None or link.action != MaterializationAction.REVIEWED_LINK
-            or link.review_item_id != review.id or review.status != IdentityReviewStatus.RESOLVED
-            or review.observation_id != observation.id or review.candidate_person_id != person.id
-            or not review.resolution_note):
-        raise AssemblyAssetImportError("asset total requires an exact resolved reviewed Person link")
+    _require_reviewed_asset_subject(person, observation, link, review)
     code = observation.normalized.get("reviewer_stated_mona_cd")
     if not code or code != official_member_code:
         raise AssemblyAssetImportError("asset total requires the exact canonical Assembly code")

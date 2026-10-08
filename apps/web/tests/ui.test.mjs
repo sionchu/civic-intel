@@ -643,7 +643,7 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   assert.match(person, /\/organizations\/\$\{organization\.id\}/);
   assert.match(person, /memberCommittees\.length > 0/);
   assert.match(person, /section\.entries\.length === 0/);
-  assert.match(person, /section\.entries\.length === 0 \? null/);
+  assert.match(person, /section\.entries\.length === 0 && section\.id !== "public_declared_assets"/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
   // Empty profile sections are grouped by the projection reason instead of one "not collected" line.
   for (const reason of ["SOURCE_NOT_COLLECTED", "INSUFFICIENT_EVIDENCE", "DERIVATION_NOT_AVAILABLE", "NOT_APPLICABLE"]) {
@@ -842,7 +842,7 @@ test("Plenary votes render as compact rows with the evidence trace one disclosur
   const person = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(person, /entry\.details\.action === "PLENARY_ROLL_CALL_VOTE"/);
   assert.match(person, /<ol className="vote-rows">/);
-  assert.match(person, /<details className="audit-details vote-trace">/);
+  assert.match(person, /<details className="(?=[^"]*\baudit-details\b)(?=[^"]*\bvote-trace\b)(?=[^"]*\bevidence-disclosure\b)[^"]*">/);
   assert.match(person, /FeederObservation \{trace\?\.feeder_observation_id/);
 });
 

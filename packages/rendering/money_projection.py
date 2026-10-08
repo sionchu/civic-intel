@@ -39,11 +39,17 @@ from packages.verification.assembly_asset_import import (
     ASSEMBLY_ASSET_SEMANTIC_SCOPE,
     ASSEMBLY_ASSET_SOURCE_CONTRACT,
     ASSEMBLY_ASSET_TOTAL_PREDICATE,
+    PETI_ASSET_DETAIL,
+    PETI_ASSET_FEEDER,
+    PETI_ASSET_SOURCE_CONTRACT,
+    PETI_ASSET_TOTALS_SCOPE,
     RECORD_KIND_MEMBER_TOTAL,
     TOTALS_SCOPE,
     VALUE_SEMANTICS,
     assembly_asset_observation_hash,
     effective_gazette_policy,
+    normalize_peti_asset_receipt,
+    peti_asset_record_key,
 )
 from packages.verification.claims import validate_claim_publication
 
@@ -51,10 +57,68 @@ MONEY_METHOD_VERSION = "money.alio-head-expense-yoy.v1"
 MONEY_FEEDER = "alio_institution_head_business_expense"
 MONEY_SEMANTIC_SCOPE = "institutional_head_business_expense_annual_disclosure"
 PERSON_ASSET_METHOD_VERSION = "money.assembly-declared-total.v1"
+PETI_ASSET_METHOD_VERSION = "money.peti-declared-total.v1"
 
 
 class AssetSourceVersionConflict(ValueError):
-    """Published Gazette versions conflict; no implicit latest-version precedence."""
+    """Immutable disclosure versions conflict; no implicit latest-version precedence."""
+
+
+def _peti_asset_row(
+    person: Person, claim: Claim, proof: ClaimEvidence, observation: FeederObservation,
+    snapshot: SourceSnapshot, source: Source, policy: SourcePolicy,
+    observations: Mapping[UUID, FeederObservation], links: Sequence[PersonObservationLink],
+) -> dict[str, Any]:
+    normalized = normalize_peti_asset_receipt(observation.normalized, policy=policy)
+    record_key = peti_asset_record_key(normalized)
+    content_hash = assembly_asset_observation_hash(normalized)
+    if (source.policy_id != policy.id or str(source.url) != PETI_ASSET_DETAIL
+            or snapshot.source_id != source.id or snapshot.fulltext is not None
+            or observation.snapshot_id != snapshot.id
+            or proof.snapshot_id != snapshot.id or proof.source_id != source.id
+            or observation.feeder != PETI_ASSET_FEEDER
+            or observation.semantic_scope != ASSEMBLY_ASSET_SEMANTIC_SCOPE
+            or observation.scope_key != f"peti:{normalized['publication_date']}:selected-public-records"
+            or observation.provider_record_key != record_key or observation.identity_hints
+            or snapshot.content_hash != content_hash or observation.content_hash != content_hash
+            or snapshot.metadata != {"source_contract": PETI_ASSET_SOURCE_CONTRACT,
+                "capture_mode": "SUPPLIED_SCOPED_PUBLIC_METADATA", "receipt": normalized}):
+        raise ValueError("PETI total immutable metadata provenance differs")
+    siblings = {item.content_hash for item in observations.values()
+        if item.feeder == observation.feeder and item.scope_key == observation.scope_key
+        and item.provider_record_key == record_key}
+    if siblings != {content_hash}:
+        raise AssetSourceVersionConflict("corrected PETI record requires explicit review")
+    matching = [link for link in links if link.observation_id == observation.id
+                and link.superseded_at is None]
+    if (len(matching) != 1 or matching[0].person_id != person.id
+            or matching[0].action != MaterializationAction.REVIEWED_LINK
+            or matching[0].review_item_id is None
+            or str(matching[0].review_item_id) != claim.qualifiers.get("review_item_id")
+            or person.superseded_at is not None or claim.subject != person.canonical_name):
+        raise ValueError("PETI total exact reviewed Person linkage is unavailable")
+    amount = normalized["current_value"]
+    expected = {"provider_record_key": record_key, "immutable_observation_hash": content_hash,
+        "identity_basis": "REVIEWED_SOURCE_CONTEXT", "amount_thousand_krw": str(amount),
+        "amount_unit": AMOUNT_UNIT, "value_semantics": VALUE_SEMANTICS,
+        "declared_totals_scope": PETI_ASSET_TOTALS_SCOPE,
+        "publication_date": normalized["publication_date"],
+        "registration_date": normalized["registration_date"], "report_type": normalized["report_type"]}
+    if (any(claim.qualifiers.get(key) != value for key, value in expected.items())
+            or claim.object_text != f"{amount:,}천원"
+            or claim.proposition != f"{person.canonical_name}의 공개 재산신고 총계는 {amount:,}천원이다."):
+        raise ValueError("PETI Claim differs from its public declared total")
+    return {"claim_id": str(claim.id), "person_id": str(person.id),
+        "method_version": PETI_ASSET_METHOD_VERSION, "epistemic_status": claim.epistemic_status.value,
+        "asserted_as_true": claim.asserted_as_true, "amount_thousand_krw": amount,
+        "amount_unit": AMOUNT_UNIT, "value_semantics": VALUE_SEMANTICS,
+        "declared_totals_scope": PETI_ASSET_TOTALS_SCOPE,
+        "publication_date": normalized["publication_date"],
+        "registration_date": normalized["registration_date"], "report_type": normalized["report_type"],
+        "locator": {key: normalized[key] for key in (
+            "publication_date", "registration_date", "institution", "office", "printed_name")},
+        "evidence_id": str(proof.id), "source_id": str(source.id), "snapshot_id": str(snapshot.id),
+        "observation_id": str(observation.id)}
 
 
 def build_assembly_declared_assets_from_claims(
@@ -74,7 +138,9 @@ def build_assembly_declared_assets_from_claims(
     detail, market-wealth interpretation or zero inference is manufactured.
     """
     selected = [claim for claim in claims if claim.predicate == ASSEMBLY_ASSET_TOTAL_PREDICATE
-                and claim.qualifiers.get("source_contract") == ASSEMBLY_ASSET_SOURCE_CONTRACT
+                and claim.qualifiers.get("source_contract") in {
+                    ASSEMBLY_ASSET_SOURCE_CONTRACT, PETI_ASSET_SOURCE_CONTRACT,
+                }
                 and claim.publication_status == PublicationStatus.PUBLISHED
                 and claim.superseded_at is None]
     rows: list[dict[str, Any]] = []
@@ -97,6 +163,10 @@ def build_assembly_declared_assets_from_claims(
         policy = policies.get(source.policy_id)
         if policy is None:
             raise ValueError("asset policy is unavailable")
+        if claim.qualifiers["source_contract"] == PETI_ASSET_SOURCE_CONTRACT:
+            rows.append(_peti_asset_row(person, claim, proof, observation, snapshot, source,
+                                       policy, observations, links))
+            continue
         effective_gazette_policy([policy])
         n = observation.normalized
         sibling_hashes = {

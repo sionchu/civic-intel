@@ -10,12 +10,13 @@ import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
 import PendingLanes from "../../components/pending-lanes";
 import PersonRelationshipsView from "../../components/person-relationships";
+import PersonVoteExplorer from "../../components/person-vote-explorer";
 import ReadState from "../../components/read-state";
 import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
 import { getReviewedPortrait } from "../../portrait";
 import { predicateLabel } from "../../predicate-labels";
-import { recentOfficialActivity, supportingActivityEvidence } from "../../person-activity";
+import { officialVoteRecords, recentOfficialActivity, supportingActivityEvidence } from "../../person-activity";
 import { buildPageMetadata } from "../../site-metadata";
 import type { Claim, ProfileEntry, ProfileSectionReason } from "../../types";
 
@@ -124,6 +125,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const claimById = new Map(claims.map((claim) => [claim.id, claim]));
   const publishedClaims = claims.filter((claim) => claim.publication_status === "PUBLISHED");
   const recentActivity = recentOfficialActivity(person, claims);
+  const votes = officialVoteRecords(person, claims);
   const factRows: FactRow[] = [
     ...FACT_PREDICATES.flatMap(([predicate, label]) =>
       publishedClaims.filter((claim) => claim.predicate === predicate).map((claim) => ({
@@ -133,6 +135,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   ];
   const career = profile?.sections.find((section) => section.id === "career_timeline");
   const limitations = profile?.sections.find((section) => section.id === "limitations");
+  const declaredAssets = profile?.sections.find((section) => section.id === "public_declared_assets");
   const representedClaims = new Set(profile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? []);
   const otherClaims = publishedClaims.filter((claim) => !representedClaims.has(claim.id));
 
@@ -231,7 +234,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               : String(entry.details.target)}
           </span>
           <span className="status AVAILABLE vote-value">{String(entry.details.outcome)}</span>
-          <details className="audit-details vote-trace">
+          <details className="audit-details vote-trace evidence-disclosure">
             <summary>근거</summary>
             <small>
               {source ? <a href={`#source-${source.id}`}>{source.title}</a> : "출처"} · {entry.epistemic_status}<br />
@@ -246,17 +249,35 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     }
 
     if (claim) {
+      const assetDetails = claim.predicate === "ASSEMBLY_DECLARED_ASSET_TOTAL" ? entry.details : null;
+      const assetAmount = assetDetails?.amount_unit === "THOUSAND_KRW" &&
+        ["assembly_asset_gazette_reviewed_packet_v1", "peti_public_declared_total_metadata_v1"].includes(String(assetDetails.source_contract)) &&
+        assetDetails.value_semantics === "DECLARED_VALUE_NOT_MARKET_WEALTH" &&
+        typeof assetDetails.amount_thousand_krw === "number" && Number.isSafeInteger(assetDetails.amount_thousand_krw)
+        ? assetDetails.amount_thousand_krw : null;
       return (
         <EvidencePanel
           key={entry.id}
           claim={claim}
           sourceById={sourceById}
           title={isLegislativeActivity ? activityTitle ?? entry.title : entry.title}
-          kind={isLegislativeActivity ? "OFFICIAL BILL RECORD" : entry.kind}
+          kind={assetDetails ? "신고재산" : isLegislativeActivity ? "OFFICIAL BILL RECORD" : entry.kind}
           sourceConflict={entry.source_conflict}
-          dateLabel={entry.details.career_semantics ? "기록 기준" : undefined}
+          dateLabel={assetDetails || entry.details.career_semantics ? "기록 기준" : undefined}
           claimAnchor={claimAnchor}
         >
+          {assetDetails && (
+            <>
+              <dl className="activity-facts">
+                <div><dt>공개 신고 총계</dt><dd>{assetAmount === null ? "금액·단위 확인 불가" : `${assetAmount.toLocaleString("ko-KR")}천원`}</dd></div>
+                <div><dt>공개일</dt><dd>{typeof assetDetails.publication_date === "string" ? assetDetails.publication_date : "미기재"}</dd></div>
+                <div><dt>등록일</dt><dd>{typeof assetDetails.registration_date === "string" ? assetDetails.registration_date : "미기재"}</dd></div>
+                <div><dt>신고유형</dt><dd>{typeof assetDetails.report_type === "string" && assetDetails.report_type !== "UNKNOWN" ? assetDetails.report_type : "UNKNOWN · 원자료에서 확인되지 않음"}</dd></div>
+                {typeof assetDetails.reporting_period_text === "string" && <div><dt>신고 기준 기간</dt><dd>{assetDetails.reporting_period_text}</dd></div>}
+              </dl>
+              <p className="section-note">공개 서식에 인쇄된 신고 총계입니다. 본인만의 재산, 현재 시장가치 또는 순자산으로 해석하지 않습니다.</p>
+            </>
+          )}
           {entry.details.career_semantics ? (
             <p className="person-career-period"><strong>{careerPeriodText(entry.details.career_period)}</strong><span>{careerAttribution(entry.details.career_semantics)}</span></p>
           ) : null}
@@ -342,6 +363,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               {factRows.length > 0 && <li><a href="#key-facts">핵심 기록</a></li>}
               {career && career.entries.length > 0 && <li><a href="#career">경력</a></li>}
               {recentActivity.items.length > 0 && <li><a href="#recent-activity">최근 공식 활동</a></li>}
+              {person.identity_status === "RESOLVED" && <li><a href="#vote-records">법안별 표결 기록</a></li>}
+              {declaredAssets && <li><a href="#section-public_declared_assets">신고재산</a></li>}
               {hasGukgam && <li><a href="#gukgam-2026">국정감사</a></li>}
               <li><a href="#records">기록</a></li>
               <li><a href="#official-connections">연결</a></li>
@@ -480,6 +503,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </section>
           )}
 
+          {person.identity_status === "RESOLVED" && <PersonVoteExplorer records={votes} />}
+
           <section className="person-section" id="records" aria-labelledby="records-title">
             <div className="section-intro">
               <h2 id="records-title">기록</h2>
@@ -487,13 +512,14 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             {profile ? (
               <>
                 <div className="profile-sections">
-                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || section.entries.length === 0 ? null : (
+                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || (section.entries.length === 0 && section.id !== "public_declared_assets") ? null : (
                     <section className="profile-section" key={section.id} id={`section-${section.id}`} aria-labelledby={`heading-${section.id}`}>
                       <div className="section-heading">
                         <div><h3 id={`heading-${section.id}`}>{section.label}</h3></div>
                         <span className={`status ${section.status}`}>{section.status}</span>
                       </div>
                       {section.note && <p className="section-note">{section.note}</p>}
+                      {section.id === "public_declared_assets" && section.entries.length === 0 && <p className="empty-note">이 인물에게 근거가 연결된 공개 신고재산 기록이 없습니다. 재산이 없거나 0원이라는 뜻은 아닙니다.</p>}
                       {section.entries.some(isPlenaryVote)
                         ? <ol className="vote-rows">{section.entries.map(renderEntry)}</ol>
                         : section.entries.map(renderEntry)}

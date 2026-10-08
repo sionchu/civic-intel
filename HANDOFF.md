@@ -61,12 +61,33 @@ Local asset reader, second eligible portrait, recent-official-activity UI and bo
 press metadata preparation are integrated. Final frozen-code `make verify` exited0: Python
 1,144 passed/3 skipped/6 warnings in492.05s, web90/90, Ruff/mypy153/Golden quality/lint/typecheck/
 Next standalone PASS. The superseded pre-correction run was interrupted, not PASS. New portrait
-source bytes were opened; actual rendered-image geometry evidence remains pending and screenshot
-visual acceptance is not claimed. Current local changes are not public deployment.
+source bytes were opened. Subsequent actual Aside DOM geometry verified Ahn400×534→180×239.625 and
+Lee4032×2268→180×102.125 (including borders), keyboard/licence and no horizontal overflow PASS;
+screenshot NOT_RUN. Receipt followup/browser/portrait-intrinsic-runtime.json. These local changes
+are not public deployment.
 
-Next action: prepare the isolated exact-commit private API candidate and finite read-only fresh
-export comparison before a separately approved operational service switch. PETI local factual
-total staging and grounded bill-vote exploration are the next source/UI slices. No canonical
+Isolated candidate64c11d3352571e03916ac476e311bee460ad9d6d now has raw Git169/169 file-byte proof,
+actual port8121 runtime bootstrap schema0008/default and current transaction read-only ON, and
+11 Person GETs200/154 exact Claim-linked career entries PASS. Five exporter helpers separately
+match raw Git. Finite fresh export and deterministic row verification PASS: snapshot
+ps-4e2dc7570a4484b3,5,170paths/7,526parts,4,784HTTP200/386HTTP422,936Persons/8,103unique
+career ClaimIDs all resolve in their Person DTO. Generated2026-10-09 04:31KST is projection capture,
+not refreshed source freshness. Embedded Git commit UNKNOWN (archive has no.git); raw-file
+external64c11d provenance is explicit. No SQL applied. Receipts:
+producer-full-chain/candidate-64c11d-exact-{source,startup,api-smoke}-receipt.json,
+candidate-64c11d-exporter-git-blobs.json and candidate-64c11d-exact-export-verification.json.
+
+Next local slice is in progress: PETI source-specific pure staging, shared validated /assets→
+Person public_declared_assets ProfileEntry, explicit printed-total UI, and bill-vote retrieval.
+Targeted API/profile/Person61 tests and UI12 tests PASS; actual UI uses synthetic static data for assets,
+not operational records. Existing canonical review/admin operation CLI is implemented: capture, actual owner LINK_PERSON
+review producing DRAFT, separate PUBLISH with source/identity checks; content-free stdout and
+optional owner-local full preview. The policy equality check is atomic inside page commit.
+Disposable canonical DB lifecycle→Person API→Source GET tests PASS; no production write.
+Intermediate full make verify exited2: Python1,208 passed/3 skipped/6 warnings in493.08s; Ruff/mypy153/Golden quality PASS, then web92/94 failed on two stale static assertions. Only those assertions were corrected; canonical web-verify subsequently exited0 with94/94, lint/typecheck/Next standalone PASS. The full runner remains FAIL; final full make verify follows the required policy-registration milestone. Canonical PETI policy count0 was observed read-only;
+explicit registration preview/commit is the next required local milestone, not a Golden/implicit
+creation workaround. Operational switch, exact identity review
+and canonical one-record materialization/publication are separate reviewable decisions. No canonical
 writes/merges or new publication decisions occurred.
 Recent bill/vote activity does not fulfill requested news/statements/tendencies; exact permitted
 news metadata, reviewed Person anchors and publishable statement text remain distinct inputs.

@@ -55,7 +55,37 @@ def section(profile: dict, section_id: str) -> dict:
     return next(item for item in profile["sections"] if item["id"] == section_id)
 
 
-def test_profile_projection_has_stable_fourteen_section_contract() -> None:
+def test_declared_asset_section_requires_validated_rows_and_exact_evidence() -> None:
+    from packages.verification.assembly_asset_import import ASSEMBLY_ASSET_TOTAL_PREDICATE
+
+    claim = nomination_claim().model_copy(update={
+        "predicate": ASSEMBLY_ASSET_TOTAL_PREDICATE,
+        "epistemic_status": EpistemicStatus.CLAIM,
+        "asserted_as_true": False,
+        "qualifiers": {"source_contract": "peti_public_declared_total_metadata_v1"},
+    })
+    proof = nomination_evidence()
+    row = {"claim_id": str(claim.id), "person_id": str(PERSON_ID),
+           "evidence_id": str(proof.id), "source_id": str(proof.source_id),
+           "amount_thousand_krw": 0, "amount_unit": "THOUSAND_KRW",
+           "publication_date": "2099-03-26", "report_type": "UNKNOWN"}
+    empty = build_profile_projection(person(), [claim], {claim.id: [proof]}, [], [])
+    assert section(empty, "public_declared_assets")["entries"] == []
+    assert not any(entry.get("claim_id") == str(claim.id)
+                   for lane in empty["sections"] for entry in lane["entries"])
+    profile = build_profile_projection(person(), [claim], {claim.id: [proof]}, [], [],
+                                       declared_assets=[row])
+    entry = section(profile, "public_declared_assets")["entries"][0]
+    assert entry["details"]["amount_thousand_krw"] == 0
+    assert entry["epistemic_status"] == "CLAIM"
+    assert entry["source_ids"] == [str(proof.source_id)]
+    assert entry["evidence_ids"] == [str(proof.id)]
+    with pytest.raises(ValueError):
+        build_profile_projection(person(), [claim], {claim.id: [proof]}, [], [],
+                                 declared_assets=[row | {"source_id": str(PERSON_ID)}])
+
+
+def test_profile_projection_has_stable_fifteen_section_contract() -> None:
     claim = nomination_claim()
     evidence = nomination_evidence()
     profile = build_profile_projection(
@@ -67,7 +97,7 @@ def test_profile_projection_has_stable_fourteen_section_contract() -> None:
     )
 
     assert profile["section_order"] == [item[0] for item in SECTION_DEFINITIONS]
-    assert len(profile["sections"]) == 14
+    assert len(profile["sections"]) == 15
     assert profile["semantics"] == "DERIVED_READ_MODEL_FROM_CANONICAL_EVIDENCE"
 
 
@@ -336,6 +366,7 @@ def test_assembly_profile_uses_role_aware_content_and_dated_career_only() -> Non
         "current_role",
         "career_timeline",
         "legislative_activity",
+        "public_declared_assets",
         "limitations",
     ]
     assert section(profile, "career_timeline")["entries"][0]["claim_id"] == str(historical.id)

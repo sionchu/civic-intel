@@ -72,8 +72,14 @@ class AdminCommand(BaseModel):
             if self.identity_basis not in {
                 "OFFICIAL_CAREER_CONTINUITY",
                 "OFFICIAL_BIOGRAPHY_CONTINUITY",
+                "PUBLIC_DISCLOSURE_SOURCE_CONTEXT",
             }:
                 raise ValueError("Choose the reviewed official continuity evidence basis")
+            if (
+                self.identity_basis == "PUBLIC_DISCLOSURE_SOURCE_CONTEXT"
+                and self.action != AdminAction.LINK_PERSON
+            ):
+                raise ValueError("Public disclosure review permits linkage only, never merge")
         elif self.target_person_id is not None or self.identity_basis is not None:
             raise ValueError("Unexpected target identity or bridge basis")
         if self.action in {AdminAction.CORRECT_CLAIM, AdminAction.RENAME_PERSON}:

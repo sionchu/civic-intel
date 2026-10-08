@@ -20,6 +20,7 @@ from packages.domain.enums import (
     PublicationStatus,
 )
 from packages.rendering.change_projection import build_source_neutral_change_trace
+from packages.verification.assembly_asset_import import ASSEMBLY_ASSET_TOTAL_PREDICATE
 from packages.verification.assembly_base_profile import (
     ASSEMBLY_BASE_PROFILE_FIELDS,
     ASSEMBLY_BASE_PROFILE_SCOPE,
@@ -72,6 +73,7 @@ SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("controversies", "논란 및 반론"),
     ("hearing_questions", "인사청문·검증 질문"),
     ("forecast", "전망과 시나리오"),
+    ("public_declared_assets", "공개 재산신고"),
     ("limitations", "한계 및 미확인"),
 )
 
@@ -81,6 +83,7 @@ ASSEMBLY_MEMBER_SECTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("career_timeline", "경력 타임라인"),
     ("legislative_activity", "입법 활동"),
     ("recent_changes", "최근 변화"),
+    ("public_declared_assets", "공개 재산신고"),
     ("limitations", "근거 범위와 한계"),
 )
 
@@ -1007,8 +1010,54 @@ def build_profile_projection(
     *,
     sources: Mapping[UUID, Source] | None = None,
     policies: Mapping[UUID, SourcePolicy] | None = None,
+    declared_assets: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     """Build a deterministic read model without creating new profile truth."""
+
+    asset_claims = {
+        str(claim.id): claim
+        for claim in claims
+        if claim.predicate == ASSEMBLY_ASSET_TOTAL_PREDICATE
+    }
+    asset_entries = []
+    for row in declared_assets:
+        claim = asset_claims.get(str(row.get("claim_id")))
+        if claim is None or str(row.get("person_id")) != str(person.id):
+            raise ValueError("Declared asset row does not belong to the profile")
+        proofs = evidence_by_claim.get(claim.id, ())
+        if (
+            person.identity_status != IdentityStatus.RESOLVED
+            or claim.person_id != person.id
+            or claim.publication_status != PublicationStatus.PUBLISHED
+            or not any(
+                str(proof.id) == row.get("evidence_id")
+                and proof.claim_id == claim.id
+                and str(proof.source_id) == row.get("source_id")
+                and proof.stance == EvidenceStance.SUPPORT
+                for proof in proofs
+            )
+        ):
+            raise ValueError("Declared asset row has no exact published profile evidence")
+        entry = _claim_entry(claim, evidence_by_claim)
+        entry["id"] = f"declared-assets:{claim.id}"
+        entry["title"] = "공개 재산신고 총계"
+        entry["date"] = row["publication_date"]
+        entry["details"] = (
+            entry["details"] | dict(row) | {"source_contract": claim.qualifiers["source_contract"]}
+        )
+        asset_entries.append(entry)
+    # Asset Claims are displayable only through the immutable source-validated reader.
+    claims = [claim for claim in claims if claim.predicate != ASSEMBLY_ASSET_TOTAL_PREDICATE]
+    asset_section = _section(
+        "public_declared_assets",
+        "공개 재산신고",
+        asset_entries,
+        status="AVAILABLE" if asset_entries else "UNKNOWN",
+        note="공개 신고서의 총계이며 본인만의 순자산으로 해석하지 않습니다."
+        if asset_entries
+        else "현재 공개된 재산신고 근거가 없습니다. 재산이 0이라는 뜻은 아닙니다.",
+        reason=None if asset_entries else SOURCE_NOT_COLLECTED,
+    )
 
     identity_entries: list[dict[str, Any]] = [
         {
@@ -1193,6 +1242,7 @@ def build_profile_projection(
                 )
             )
 
+        assembly_sections.append(asset_section)
         assembly_limitations: list[dict[str, Any]] = []
         for field_name, label in (
             ("party", "정당"),
@@ -1420,6 +1470,7 @@ def build_profile_projection(
         ),
     ]
 
+    sections.append(asset_section)
     limitations_entries: list[dict[str, Any]] = []
     for section in sections:
         reason = section["reason"]

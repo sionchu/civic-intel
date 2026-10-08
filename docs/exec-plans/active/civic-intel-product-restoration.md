@@ -27,8 +27,8 @@ Original Mac/Windows worktrees and their operational services remain preserved.
 
 The CI-FULL role bullets below describe the initial isolated-worktree baseline. Current
 2026-10-09 Sol owners share the integration checkout with exclusive file ownership: lead owns
-plan/HANDOFF/integration and read-only producer audit; rights owner owns asset importer/reader/API
-and portrait manifest/bytes; UI owner owns Person activity/styles/tests and the narrow press
+plan/HANDOFF/integration and read-only producer audit; rights owner owns asset importer/reader/admin operation/source documentation
+and portrait manifest/bytes; lead owns shared asset API/profile seam; UI owner owns Person activity/styles/tests and the narrow press
 connector. Bounded Aside public-source review/acquisition and read-only Mac API/canonical audit
 are authorized. Credentials remain transient; canonical writes/merges/publication decisions,
 production service switches and new rights attestations are not delegated implicitly.
@@ -58,8 +58,8 @@ production service switches and new rights attestations are not delegated implic
 | M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 exact public-response tuples/Source closure and local rollback PASS; v6 deployed, immutable maintenance POST404 PASS, largest Person fresh direct PASS (15.641 s, 2,383 Claims/36 Sources), current desktop delta and opened home viewport screenshot PASS; native390 USER_DEFERRED; historical v5 secret-removal gate FAIL retained |
 | M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; v6 deployed, fresh desktop home/Enter/discovery and home viewport visual PASS; wider/native390 limits below |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; prior transport/browser proofs PASS; actual canonical five-predicate full-chain 9,143 Claims PASS and bounded operational relationship output 71 Claims PASS; running producer still lacks candidate career projection, operational apply NOT_RUN |
-| M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; final full verification PASS, rendered image QA pending, public rollout NOT_RUN; Lee Jae-myung remains identity review |
-| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | Canonical local staged Claim/Evidence asset-total reader implemented; legacy reviewed-PDF route remains exact-packet gated. Public factual PETI route assessment in progress without generic individual consent gate; canonical asset observations/Claims currently absent, operational materialization NOT_RUN |
+| M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; final full verification PASS; subsequent Aside intrinsic geometry/keyboard PASS, screenshot NOT_RUN, public rollout NOT_RUN; Lee Jae-myung remains identity review |
+| M5 | Gazette packet privacy/rights/identity proof, then eligible money publication and read slice | Canonical local staged Claim/Evidence asset-total reader implemented; legacy reviewed-PDF route remains exact-packet gated. Public factual PETI pure staging/validated reader and Person delivery seam locally implemented; default-preview capture/link/publication implemented without generic individual consent gate; atomic policy checks and synthetic vertical delivery tested. Canonical PETI policy count0; explicit registration entry is the next required local milestone. Intermediate full runner FAIL on stale web assertions, completed Python1,208 and corrected web94 PASS; operational materialization NOT_RUN |
 | M6 | Further change/comparison/issues, API/MCP and community with scoped methods/rights | PLANNED, not advertised as live |
 
 M1 retains its storage-specific contract in [Sites storage split](sites-storage-split-v0.md).
@@ -80,6 +80,43 @@ This plan owns integration and product scope, not a second storage implementatio
 - Record code tests, browser proof, hosted preview, activation and deployment separately.
 
 ## Current checkpoint
+
+### Local follow-up in progress (2026-10-09; public v6 unchanged)
+
+Verified milestone `64c11d3352571e03916ac476e311bee460ad9d6d` passed full make verify
+(Python1,144/web90). Subsequent actual Aside portrait DOM geometry passed intrinsic ratios,
+keyboard/licence and no overflow; screenshots NOT_RUN. The exact isolated Mac candidate has
+169/169 raw Git file matches plus five separately pinned exporter helpers, runtime schema0008
+and default/current transaction read-only ON. Eleven Person GETs200 expose154 exact Claim-linked
+career entries. Finite exact export+row verification PASS:5,170paths/7,526parts,936Persons/8,103unique career
+ClaimIDs all resolve in their Person DTO, snapshotps-4e2dc7570a4484b3. Embeddedgit_commitUNKNOWN
+(archive has no.git), external64c11d raw-file pin preserved; no manifest field fabricated.
+Generated2026-10-09 04:31KST is projection capture, not source-freshness promotion.
+Operating8100 remains339363f,
+public v6 remains the2026-10-08 capture. Superseded normalized8120/export processes were stopped
+only after ownership checks and labelled INTERRUPTED_SUPERSEDED, not PASS.
+
+Next code slice is local and uncommitted: PETI pure metadata staging/validated reader, shared
+/assets validation feeding existing Person ProfileEntry `public_declared_assets`, printed-total
+UI and DERIVED bill-title/committee vote retrieval. Generic asset Claim fallback is excluded;
+`asset_disclosure_ids` stays empty because no AssetDisclosure rows are created. Targeted
+API/profile/Person61 tests pass; UI12 tests and actual synthetic-only asset DOM interaction pass.
+No real asset record, reviewed link or published Claim has been created operationally. Existing
+admin Plan/Preview/Commit seams implement default-preview PETI capture/link/publication operations
+with separate actual owner identity review and publication, not generic public-fact reuse consent.
+Atomic page-transaction policy equality rejects revoked/missing policies; PostgreSQL locking is
+code-reviewed, SQLite race/rollback exercised. Full owner previews stay local, stdout only safe
+statehash/IDs/counts. Intermediate full make verify exited2 after Python1,208 passed/3 skipped/6 warnings in493.08s and Ruff/mypy153/Golden quality PASS. Web92/94 failed on stale empty-section/class-string assertions; only tests were corrected. Subsequent canonical web-verify exited0:94/94 plus lint/typecheck/Next standalone PASS. The full runner is retained as FAIL; required final full verification follows policy-registration implementation. Read-only canonical PETI policy
+count0 confirms the separate registration entry prerequisite; root authorized its explicit
+preview/commit implementation after this frozen milestone commit, with no operational execution.
+
+Actual official Assembly press one-page FETCH/STORE_METADATA compatibility passed5 records on
+2026-10-08 (provider total10), content/key excluded from capture. Existing policy still has
+can_send_to_ai=false: AI-content use NOT_AUTHORIZED. The earlier receipt read into model context
+was unauthorized and is not proof of permitted analysis; preserved metadata stays local without
+further reading or identity derivation. See followup/browser/official-press-actual-acceptance.md.
+Per-Person linkage/publication NOT_RUN; no completed journalism or quoted-statement feed.
+
 
 The existing public Site now serves **v6 with maintenance immutably disabled** at
 `https://moduigukgam.leeje92.chatgpt.site`. Product source is
@@ -125,10 +162,10 @@ Evidence: `public-deployment/native-bootstrap-receipt.json`, `bootstrap-derived-
 | Person / organization discovery | Public v6 serves the pinned 1,142 People; largest-Person direct navigation PASS with 2,383 Claims/36 Sources | Source-backed brief, exploration and exact committee facets deployed; final desktop delta evidence below |
 | Legislative activity / votes | Existing published producers; static artifact grows with dense rendered records | Existing behavior retained; code-only Worker reused |
 | Party / historical scope | Current Assembly facets apply only to their source scope; historical party is not current membership | Korean predicate labels and scoped filter copy deployed; no name merges |
-| Career | Actual running producer339363f emits no candidate career-semantic entries in ten sampled Person GETs | Canonical9,143-Claim scoped full-chain PASS; candidate8,103 career entries verified in isolation; operational application NOT_RUN |
+| Career | Actual running producer339363f emits no candidate career-semantic entries in ten sampled Person GETs | Canonical9,143-Claim scoped full-chain PASS; exact64c11d read-only API and finite5,170-path export verify8,103 career ClaimIDs across936Persons; operating8100 application NOT_RUN |
 | Official relationships | API existed; frontend and exporter did not consume it | Bounded include_candidates=false query, both endpoint Claim links and Source closure deployed and freshly verified |
-| Portrait | Public v6 retains one eligible image | Second eligible Lee Jun-seok image locally acquired/reviewed with exact identity; final integrated verification/public rollout pending |
-| Personal declared assets | Actual canonical asset Claims/observations absent; running /assets=[] | Local staged Claim/Evidence and metadata-only asset reader implemented; legacy exact-PDF review gate retained, public factual PETI route assessed separately; operational materialization NOT_RUN |
+| Portrait | Public v6 retains one eligible image | Second eligible Lee Jun-seok image locally acquired/reviewed with exact identity;64c11d full verification and Aside intrinsic geometry PASS, public rollout NOT_RUN |
+| Personal declared assets | Actual canonical asset Claims/observations absent; running /assets=[] | Local PETI/Gazette source-specific staging and immutable asset reader feed existing Person profile/printed-total UI; legacy exact-PDF review applies only Gazette. Operation preview preparation/final integrated verification pending; operational materialization NOT_RUN |
 | Organization MONEY / other money | Existing institution comparison is distinct from personal wealth; no new compensation/ownership producer approved | Existing behavior retained; no zero or inferred personal wealth |
 | CHANGE / issues / community / API-MCP extensions | Source availability and methods vary; further product scope is not implemented | Existing CHANGE retained; additional work PLANNED (M6) |
 
@@ -563,7 +600,7 @@ gates. Historical raw-PDF transcription review is not a blanket public-metadata 
 Assets and portraits are being implemented in their existing canonical paths; their actual
 operational coverage stays pending their separate evidence and integrated verification.
 
-### Local extension milestone — final code verification PASS, 2026-10-09
+### Historical local extension milestone64c11d — final code verification PASS, 2026-10-09
 
 Person activity preserves the complete Claim anchor set while presenting eight source-dated
 official bill/vote entries. Final real Aside retained-DTO replay verified eight rows,2,383 unique
