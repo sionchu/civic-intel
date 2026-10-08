@@ -152,6 +152,7 @@ PLENARY_VOTE_DETAIL_KEYS = (
     "detail_url",
 )
 RECENT_PLENARY_VOTE_LIMIT = 10
+RECENT_LEGISLATIVE_ACTIVITY_LIMIT = 20
 SOURCE_RECORD_DETAIL_KEYS: dict[str, tuple[str, ...]] = {
     ASSEMBLY_PLENARY_VOTE_PREDICATE: PLENARY_VOTE_DETAIL_KEYS,
     LINKED_WITNESS_PREDICATE: LINKED_WITNESS_COPIED_QUALIFIERS,
@@ -703,7 +704,7 @@ def _assembly_dated_career_entries(
 def _assembly_activity_entries(
     claims: Sequence[Claim],
     evidence_by_claim: Mapping[UUID, Sequence[ClaimEvidence]],
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
     selected = [
         claim
         for claim in claims
@@ -711,15 +712,25 @@ def _assembly_activity_entries(
         and claim.qualifiers.get("source_contract") == ASSEMBLY_LEGISLATIVE_SOURCE_CONTRACT
         and claim.qualifiers.get("provider_identity_namespace") == "assembly_mona_cd"
     ]
+    counts = {
+        role: sum(1 for claim in selected if claim.qualifiers.get("participation_role") == role)
+        for role in ("REPRESENTATIVE_PROPOSER", "CO_PROPOSER")
+    }
     selected.sort(
         key=lambda item: (
-            item.qualifiers.get("proposed_date", ""),
             item.qualifiers.get("bill_id", ""),
             item.qualifiers.get("participation_role", ""),
             str(item.id),
         )
     )
-    return [_claim_entry(claim, evidence_by_claim) for claim in selected]
+    selected.sort(key=lambda item: item.qualifiers.get("proposed_date", ""), reverse=True)
+    return (
+        [
+            _claim_entry(claim, evidence_by_claim)
+            for claim in selected[:RECENT_LEGISLATIVE_ACTIVITY_LIMIT]
+        ],
+        counts,
+    )
 
 
 def _plenary_vote_episodes(
@@ -1052,7 +1063,9 @@ def build_profile_projection(
     source_record_sections = _source_record_sections(claims, evidence_by_claim)
     assembly_role_entries = _assembly_role_entries(claims, evidence_by_claim)
     assembly_career_entries = _assembly_dated_career_entries(claims, evidence_by_claim)
-    assembly_activity_entries = _assembly_activity_entries(claims, evidence_by_claim)
+    assembly_activity_entries, assembly_activity_counts = _assembly_activity_entries(
+        claims, evidence_by_claim
+    )
     committee_office_entries = _claim_entries_for(
         claims, evidence_by_claim, frozenset({ASSEMBLY_COMMITTEE_ROLE_PREDICATE})
     )
@@ -1156,7 +1169,11 @@ def build_profile_projection(
                 assembly_activity_entries,
                 status="AVAILABLE" if assembly_activity_entries else "UNKNOWN",
                 note=(
-                    "공식 의안정보의 정확한 MONA_CD 연결 Claim을 대표 발의와 공동 발의로 구분해 표시합니다."
+                    f"공식 의안정보 법안 참여 기록 {sum(assembly_activity_counts.values()):,}건("
+                    f"대표발의 {assembly_activity_counts['REPRESENTATIVE_PROPOSER']:,} · "
+                    f"공동발의 {assembly_activity_counts['CO_PROPOSER']:,}) 가운데 "
+                    f"최근 {len(assembly_activity_entries)}건입니다. "
+                    "정확한 MONA_CD 연결 Claim을 대표 발의와 공동 발의로 구분해 표시합니다."
                     if assembly_activity_entries
                     else "현재 published 법안 참여 Claim이 없습니다."
                 ),

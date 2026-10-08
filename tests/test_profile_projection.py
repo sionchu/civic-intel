@@ -9,6 +9,7 @@ from packages.domain.enums import (
     PublicationStatus,
 )
 from packages.rendering.profile_projection import (
+    RECENT_LEGISLATIVE_ACTIVITY_LIMIT,
     SECTION_DEFINITIONS,
     build_people_discovery_projection,
     build_profile_projection,
@@ -380,6 +381,53 @@ def _record_evidence(claim: Claim, number: int) -> ClaimEvidence:
         source_id=SOURCE_ID,
         stance=EvidenceStance.SUPPORT,
     )
+
+
+def test_assembly_activity_shows_recent_twenty_with_whole_record_role_counts() -> None:
+    owner = person()
+    claims = [
+        _record_claim(
+            owner,
+            500 + index,
+            "ASSEMBLY_BILL_PARTICIPATION",
+            f"법안 {index}",
+            {
+                "source_contract": "assembly_term_bill_participation",
+                "provider_identity_namespace": "assembly_mona_cd",
+                "bill_id": f"BILL-{index:03d}",
+                "proposed_date": f"2026-09-{22 if index == 22 else index + 1:02d}",
+                "participation_role": (
+                    "REPRESENTATIVE_PROPOSER" if index % 2 == 0 else "CO_PROPOSER"
+                ),
+            },
+            factual=True,
+        )
+        for index in range(23)
+    ]
+    evidence = {
+        claim.id: [_record_evidence(claim, 500 + index)]
+        for index, claim in enumerate(claims)
+    }
+
+    profile = build_profile_projection(owner, list(reversed(claims)), evidence, [], [])
+    activity = section(profile, "legislative_activity")
+
+    assert profile["profile_kind"] == "ASSEMBLY_MEMBER"
+    assert activity["status"] == "AVAILABLE"
+    assert len(activity["entries"]) == RECENT_LEGISLATIVE_ACTIVITY_LIMIT == 20
+    assert [entry["claim_id"] for entry in activity["entries"]] == [
+        str(claims[index].id) for index in [21, 22, *range(20, 2, -1)]
+    ]
+    assert activity["note"] == (
+        "공식 의안정보 법안 참여 기록 23건(대표발의 12 · 공동발의 11) 가운데 "
+        "최근 20건입니다. 정확한 MONA_CD 연결 Claim을 대표 발의와 공동 발의로 구분해 표시합니다."
+    )
+    for entry in activity["entries"]:
+        claim_id = UUID(entry["claim_id"])
+        [claim_evidence] = evidence[claim_id]
+        assert entry["evidence_ids"] == [str(claim_evidence.id)]
+        assert entry["evidence"][0]["id"] == str(claim_evidence.id)
+        assert entry["source_ids"] == [str(claim_evidence.source_id)]
 
 
 def test_assembly_background_records_keep_claim_status_and_exclude_heading() -> None:
