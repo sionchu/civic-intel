@@ -1,18 +1,13 @@
 # HANDOFF
 
-## Current local implementation — 2026-10-08
+## Current public delivery — 2026-10-08
 
-Public delivery implementation is in progress after the owner cancelled the provider
-inquiry and chose the existing public Site. Sol lead owns canonical code/integration;
-Rights Sol is the single native release operator, Astra orchestrates only. The bounded
-Worker-only authenticated writer, independent approved hash pin, D1 protocol state and
-empty/populated reversible migration have 13 narrow tests PASS. Initial actual local D1
-and exact-v3 static bootstrap asset checks passed. Full real bounded HTTP/D1 rehearsal passed (5,170/7,449/578, 664.05 s), and `make verify`
-passed (Python 1,116/3skip, web87 at that checkpoint). Final clean b2b59aa Worker/scanner, lint and web86 PASS; compiled actual D1 A/B restore, stale-CAS, corrupt-PREVIOUS and TEL_NO policy-negative checks PASS. Hosted save/deploy/binding/import/
-activation remain NOT_RUN.
-Current exact public v3 source is `bd059df163ce6dabc643e5dc806b2cd988414b3f`, with
-2,720 preserved assets / 238,690,338 B. Bootstrap is temporary; the final reader artifact
-must remain code-only. Current evidence and next sequence are in the existing active plan.
+PUBLIC_BOOTSTRAP_DEPLOYED / HOSTED_LOAD_IN_PROGRESS / FINAL_READER_NOT_RUN.
+Public v4 source5f713e2fd7325034f2c556ec9317a47964d5aede and deployment appgdep_6ac7a9b0981081918a0d85c86641e2c3 succeeded, same public audience and DB binding. Auth/schema/Aside continuity PASS. Hosted pinned load log last observed cursor1300/7449; VALIDATED/ACTIVE are not yet claimed. Rights Sol owns all native operations; Sol lead owns canonical integration, Astra orchestrates. Final reader is prepared (160files/1,789,762 B, no legacy static data), held until actual ACTIVE proof and root cutover signal.
+
+Code b2b59aa clean-build lint/web86/Worker/scanner and compiled actual D1 restore/corruption/CAS/TEL_NO tests PASS. Full make verify Python1116/3skip and web87 historical checkpoint PASS. Original-v3 Gitblob assets2720/238,611,871 B supersede CRLF checkout copies; actual public entity-byte baseline is one RSC route. Preserve-all source/derived archive provenance D/R0/mismatch0 PASS. Tool-denied cleanup was not retried; GNU tar errors and Git normalization are separate runner/provenance events. Local untracked .wrangler/ smoke residue is retained. Native390 USER_DEFERRED, screenshot NOT_RUN for bootstrap, full contract incomplete/M4-M5 blocked/M6 planned.
+
+Use the active plan for current exact receipts and next step. Older checkpoints below are historical.
 
 Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
 browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current

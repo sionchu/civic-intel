@@ -1,6 +1,6 @@
 # Civic Intel product restoration
 
-Status: LOCAL_PUBLIC_WRITER_IN_PROGRESS / PRIOR_REAL_CONTENT_PASS / BROWSER_PARTIAL / HOSTED_NOT_RUN.
+Status: PUBLIC_BOOTSTRAP_DEPLOYED / HOSTED_LOAD_IN_PROGRESS / FINAL_READER_NOT_RUN / FULL_CONTRACT_INCOMPLETE.
 Implementation owner: MAIN; 2026-10-08 follow-up execution/integration owner: GPT-6.1 Sol,
 2026-10-08. The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
@@ -43,8 +43,8 @@ Original Mac/Windows worktrees and their operational services remain preserved.
 
 | Milestone | Work and acceptance | Current state |
 |---|---|---|
-| M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; Sites D1 bindings empty; branch states rechecked |
-| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 real public-API response hashes/Source-reference closure, largest Person/Org SSR–Worker content parity and local rollback round trip PASS; real visual NOT_COMPLETED, native390 USER_DEFERRED, hosted NOT_RUN |
+| M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v4 has DB binding and schema; branch states preserved |
+| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 real public-API response hashes/Source-reference closure, largest Person/Org SSR–Worker content parity and local rollback round trip PASS; real visual NOT_COMPLETED, native390 USER_DEFERRED; public v4 bootstrap/continuity/auth PASS, hosted LOADING observed, final reader NOT_RUN |
 | M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | CODE_DONE; local verification and Aside acceptance below |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; synthetic50/50 and existing real public API5,170/5,170 DTO parity incl1,142relationship paths PASS; real browser both Claim endpoints PASS; CURRENT_PRODUCER_FULL_CHAIN missing, operational apply NOT_RUN |
 | M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Existing one-photo contract hardened and tested; actual coverage expansion BLOCKED_BY_RIGHTS/IDENTITY/PUBLICATION |
@@ -70,16 +70,17 @@ This plan owns integration and product scope, not a second storage implementatio
 
 ## Current checkpoint
 
-Integration keeps one public transport and existing profile producer. No new canonical schema,
-external publication, identity merge, operating DB write or collector was added. The only
-local data writes were disposable QA fixtures and Miniflare D1. Final verification is recorded
-below. This is a local review candidate, not an operational data refresh or release receipt.
+The existing public Site is now **v4 bootstrap deployed**, preserving its historical 504-person static UI while the authenticated writer loads the pinned 1,142-person public-API snapshot. Actual hosted log observed `LOADING cursor=1300/7449`; validation and ACTIVE are not yet claimed. Final reader deployment remains NOT_RUN. Canonical PostgreSQL, producer runtime, identity/publication decisions and source rights remain unchanged. Sol lead owns integration; Rights Sol exclusively owns native source/environment/deployment; Astra orchestrates.
+
+Public v4 source `5f713e2fd7325034f2c556ec9317a47964d5aede`, saved version `appgprj_6ac46916b4d08191872983ffd6d52aba~appgver_b2ea0c123a3881919fbbdf54305ae371`, deployment `appgdep_6ac7a9b0981081918a0d85c86641e2c3` succeeded. Audience remains public (access revision2), environment revision1; DB has the expected 17 snapshot_meta columns including all six writer fields, initially zero rows. Anonymous/wrong auth401 and authenticated malformed400 PASS. Native archive: 240,578,560 B / 2,728 files, SHA256 `b8e5253a931277c8dd2e1cf2ae6b7d0551c362f07a81d312c19de5daedbc35d8`. Aside home/search/Person/Organization/roster/RSC continuity PASS; bootstrap screenshots NOT_RUN and native390 USER_DEFERRED.
+
+Evidence: `public-deployment/native-bootstrap-receipt.json`, `bootstrap-derived-provenance.json`, `byte-continuity-gate.md`, `compiled-v3blob-b2b59aa.json`; `followup/browser/public-v3-byte-baseline.json` and `bootstrap-continuity.json`. Earlier local-only/preflight receipts below are historical checkpoints, not current deployment status.
 
 ### Goal coverage and remaining visibility gaps
 
 | Capability | Operational baseline / why not visible | This candidate |
 |---|---|---|
-| Person / organization discovery | API has 1,142 public People; live Sites version 3 predates this candidate | Source-backed brief, exploration and exact committee facets staged |
+| Person / organization discovery | API has 1,142 public People; public v4 temporarily preserves the historical 504-person UI during pinned hosted load | Source-backed brief, exploration and exact committee facets staged |
 | Legislative activity / votes | Existing published producers; static artifact grows with dense rendered records | Existing behavior retained; code-only Worker reused |
 | Party / historical scope | Current Assembly facets apply only to their source scope; historical party is not current membership | Korean predicate labels and scoped filter copy staged; no name merges |
 | Career | Biography/NEC/historical Claims previously missed career producer allowlist or source date rendering | Exact contract pairs, coarse date units and provenance connected locally |
@@ -422,8 +423,8 @@ is PASS; unchanged Python code is not re-tested for these Worker-only deltas. Th
 upstream runtime UNKNOWN and capture-window consistency UNVERIFIED.
 
 Exact existing public v3 source `bd059df163ce6dabc643e5dc806b2cd988414b3f` was opened
-read-only by the release operator. Temporary bootstrap preserves all **2,720 assets /
-238,690,338 B** byte-for-byte, including HTML/RSC text and portraits. Initial local asset
+read-only by the release operator. The first physical-checkout copy contained **2,720 assets /
+238,690,338 B** and proved checkout-copy equality only; it was superseded before deployment because core.autocrlf normalized Git blobs. Corrected bootstrap reconstructs all **2,720 assets / 238,611,871 B** from exact original v3 Git blobs. Initial local asset
 routing/body/redirect checks passed. The first revised artifact is **238,715,400 B**; this is a
 temporary bootstrap, not the final code-only artifact or a deployed-size claim. Final
 D1 reader cutover removes the old static data assets after complete staging/validation.
@@ -431,11 +432,9 @@ Evidence lives under `dist/full-goal-evidence/public-deployment/`.
 
 ## Next concrete action
 
-Clean candidate `b2b59aadf0999961e8f335d085866873ecdb8df3` is frozen: final lint and web86 PASS, Worker build/scanner PASS (148 files / 1,765,404 B), independent retry-race review CLOSED. Compiled disposable D1 A/B restore, corrupt-PREVIOUS preservation, stale CAS and actual TEL_NO boundary rejection PASS (`compiled-final-b2b59aa.json`). Bootstrap preserves all 2,720 old assets and is 238,720,154 B; compiled SHA `1f43e4cacb6dab096f975c72e169d1619039d7fd4cd07bc03fc2bac163b9dd51`. Full real rehearsal remains explicitly pre-restore-extension evidence, supplemented by final synthetic compiled proofs and retained-reader 5,170 tuple parity. Hosted operations remain NOT_RUN.
+Clean candidate `b2b59aadf0999961e8f335d085866873ecdb8df3` is frozen: final lint and web86 PASS, Worker build/scanner PASS (148 files / 1,765,404 B), independent retry-race review CLOSED. Compiled disposable D1 A/B restore, corrupt-PREVIOUS preservation, stale CAS and actual TEL_NO boundary rejection PASS (`compiled-final-b2b59aa.json`). Bootstrap preserves all 2,720 old assets and is 238,720,154 B; compiled SHA `1f43e4cacb6dab096f975c72e169d1619039d7fd4cd07bc03fc2bac163b9dd51`. Full real rehearsal remains explicitly pre-restore-extension evidence, supplemented by final synthetic compiled proofs and retained-reader 5,170 tuple parity. Public bootstrap deploy/schema/continuity are PASS; pinned hosted load is IN_PROGRESS, validation/ACTIVE/final reader NOT_RUN.
 
-Execute the reviewed single-operator sequence: runtime secret/approved hash,
-bootstrap save/deploy with schema, anonymous-write rejection and existing asset continuity,
-typed load/validate/activate, then final code-only reader cutover with maintenance secret
+Continue the running pinned hosted load without changing its immutable candidate, then verify bounded validation and exact ACTIVE/hash readback. Only after the root checkpoint deploy the prepared final code-only reader with maintenance secret
 removed. Initial hosted rollback is the exact retained public v3 saved version, not an
 invented D1 PREVIOUS snapshot. Prior protocol restore requires its separately approved previous-manifest pin and full
 bounded revalidation. Legacy local SQL rollback remains separate; no implicit legacy
@@ -454,3 +453,9 @@ exemption or operator-surface bypass was added; subsequent Worker build/scanner 
 Final compiled synthetic policy-negative validation executed and rejected at the public-boundary gate, preserving ACTIVE.
 
 Initial bootstrap failure recovery uses exact public v3 saved version; after bootstrap succeeds, final-reader failure recovery uses its actual returned bootstrap saved-version ID with DB binding/data and removed-secret state retained. Source ZIP: `worker-clean-b2b59aa-source.zip`, 273,532 B, SHA256 `f473d2a61fd4166259330c24815630cb08a8ac427b59476e59f5e36bae52ba18`.
+
+### Public bootstrap packaging recovery checkpoint
+
+The rejected task-owned old-root cleanup was a tool-policy denial and was not retried. Recovery preserved every filesystem/Git legacy file, committed only additions/modifications (D/R0), and used official standalone packaging of a newly copied reviewed build allowlist. Every selected file matched its pushed Git blob (2,728 files / 238,653,861 B, mismatches0). Full helper archive is separately retained. GNU tar Windows path/colon errors were ordinary runner errors, resolved by supported process-only Git Bash path/TAR_OPTIONS --force-local, with no helper patch. CRLF normalization was a separate provenance failure: physical RSC10,119 B/24CRLF versus Gitblob and actual published entity10,095 B/0CRLF. Attributes preserve selected runtime bytes; corrected blob-based artifacts supersede physical copies. Production exact entity-byte proof is one RSC route; Sites-injected HTML response is not equated with source HTML bytes.
+
+Prepared final reader `final-reader-b2b59aa` has 160 allowlisted files / 1,789,762 B (runtime148 / 1,765,404 B), exact existing project_id/DB logical binding and zero legacy static HTML/RSC data assets. Inventory SHA256 `042babcbe6189375636855d894f9d97df20c0f6cecf38f569c42cb765d8c3c19`; native deployment NOT_RUN. Task-root `.wrangler/` untracked disposable smoke residue is preserved; no cleanup retry. Full contract remains incomplete, M4/M5 blocked and M6 planned.
