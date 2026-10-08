@@ -82,7 +82,16 @@ cpSync(join(appRoot, "public"), join(stage, "public"), { recursive: true });
 rmSync(join(stage, "app", "admin"), { recursive: true, force: true });
 cpSync(join(appRoot, "sites-worker", "public-read.d1.ts"), join(stage, "app", "public-read.ts"));
 cpSync(join(appRoot, "sites-worker", "db"), join(stage, "db"), { recursive: true });
-cpSync(join(appRoot, "sites-worker", "drizzle"), join(stage, "drizzle"), { recursive: true });
+cpSync(join(appRoot, "sites-worker", "drizzle"), join(stage, "drizzle"), {
+  recursive: true, filter: (path) => !path.endsWith('rollback_snapshot_writer.sql'),
+});
+cpSync(join(appRoot, 'sites-worker', 'api'), join(stage, 'app', 'api'), { recursive: true });
+mkdirSync(join(stage, 'sites-worker'), { recursive: true });
+for (const name of ['snapshot-writer.mjs', 'snapshot-operations.mjs']) {
+  cpSync(join(appRoot, 'sites-worker', name), join(stage, 'sites-worker', name));
+}
+mkdirSync(join(stage, 'scripts'), { recursive: true });
+for (const name of ['public-boundary.mjs', 'snapshot-scopes.mjs']) cpSync(join(appRoot, 'scripts', name), join(stage, 'scripts', name));
 
 const out = resolve(values.out);
 const linked = existsSync(join(out, ".openai", "hosting.json"))
@@ -165,7 +174,14 @@ if (values["load-local"]) {
   const localSchema = join(stage, '.wrangler', 'local-schema.sql');
   mkdirSync(join(stage, '.wrangler'), { recursive: true });
   writeFileSync(localSchema, readFileSync(join(stage, 'drizzle', '0000_public_projection.sql'), 'utf8').replaceAll('CREATE TABLE ', 'CREATE TABLE IF NOT EXISTS '));
-  for (const file of [localSchema, join(projection, "load.sql"), join(projection, "activate.sql")]) {
+  run(process.execPath, [...wranglerCli, 'd1', 'execute', 'DB', '--local', '--config', 'dist/server/wrangler.json', '--persist-to', '.wrangler/state', '--file', localSchema]);
+  const probe = run(process.execPath, [...wranglerCli, 'd1', 'execute', 'DB', '--local', '--config', 'dist/server/wrangler.json', '--persist-to', '.wrangler/state', '--json', '--command', 'PRAGMA table_info(snapshot_meta)'], { stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8' });
+  const columns = JSON.parse(probe.stdout).flatMap((result) => result.results ?? []).map((column) => column.name);
+  const writerColumns = ['writer_manifest_sha256', 'writer_phase', 'writer_cursor', 'validation_cursor', 'pointer_epoch', 'writer_transition_sha256'];
+  const present = writerColumns.filter((name) => columns.includes(name)).length;
+  if (present !== 0 && present !== writerColumns.length) fail('partial local D1 writer migration; resolve state before proceeding');
+  if (present === 0) run(process.execPath, [...wranglerCli, 'd1', 'execute', 'DB', '--local', '--config', 'dist/server/wrangler.json', '--persist-to', '.wrangler/state', '--file', join(stage, 'drizzle', '0001_snapshot_writer.sql')]);
+  for (const file of [join(projection, "load.sql"), join(projection, "activate.sql")]) {
     run(process.execPath, [...wranglerCli, "d1", "execute", "DB", "--local", "--config", "dist/server/wrangler.json",
       "--persist-to", ".wrangler/state", "--file", file]);
   }

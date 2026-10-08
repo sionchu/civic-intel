@@ -8,6 +8,7 @@
       "when": 1791289378570,
       "tag": "0000_public_projection",
       "breakpoints": true
-    }
+    },
+    { "idx": 1, "version": "6", "when": 1791446400000, "tag": "0001_snapshot_writer", "breakpoints": true }
   ]
 }

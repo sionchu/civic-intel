@@ -7,7 +7,8 @@ import { blob, check, integer, primaryKey, sqliteTable, text } from "drizzle-orm
 
 export const snapshotMeta = sqliteTable("snapshot_meta", {
   snapshotId: text("snapshot_id").primaryKey(),
-  // STAGED → ACTIVE → PREVIOUS → RETIRED (deleted). Exactly one ACTIVE snapshot is served.
+  // STAGED → ACTIVE → PREVIOUS → RETIRED. Exactly one ACTIVE snapshot is served.
+  // The finite writer retains retired rows for already pinned readers; GC is separate.
   status: text("status").notNull(),
   projectionSchemaVersion: integer("projection_schema_version").notNull(),
   generatedAt: text("generated_at").notNull(),
@@ -20,6 +21,14 @@ export const snapshotMeta = sqliteTable("snapshot_meta", {
   partCount: integer("part_count").notNull(),
   publicPeople: integer("public_people").notNull(),
   publicOrganizations: integer("public_organizations").notNull(),
+  // Finite maintenance protocol state. Legacy local snapshots have no writer manifest;
+  // they remain readable but cannot bypass the authenticated upload/seal protocol.
+  writerManifestSha256: text("writer_manifest_sha256"),
+  writerPhase: text("writer_phase"),
+  writerCursor: integer("writer_cursor").notNull().default(0),
+  validationCursor: integer("validation_cursor").notNull().default(0),
+  pointerEpoch: integer("pointer_epoch").notNull().default(0),
+  writerTransitionSha256: text("writer_transition_sha256"),
 }, (table) => [
   check("snapshot_meta_status", sql`${table.status} IN ('STAGED', 'ACTIVE', 'PREVIOUS', 'RETIRED')`),
 ]);

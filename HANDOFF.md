@@ -2,16 +2,18 @@
 
 ## Current local implementation — 2026-10-08
 
-Hosted-writer investigation completed read-only on clean `ac2ecca`: current Site remains
-owner/public/version 3 with no D1 bindings/tables. Documented owner-private dispatch and
-`env.DB.prepare()/batch()` primitives exist, but same-project owner-only writer/DB authority
-is not verified. Exact local SQL preflight is recorded in the active plan: activate 220,538,210 B /
-7,490 statements, maximum statement 80,354 B, BLOB 40,000 B, scope 727,132 B. A whole buffered
-batch exceeds Worker memory; statement-versus-API-call limits remain provider-confirmation
-required. No new protocol/schema/product code or credentials/hosted mutations were introduced;
-tests/build/browser were NOT_RUN for this documentation/read-only investigation. One copyable,
-unsent provider inquiry in the current plan owns the next decision. Evidence:
-`dist/full-goal-evidence/hosted-writer-investigation/`.
+Public delivery implementation is in progress after the owner cancelled the provider
+inquiry and chose the existing public Site. Sol lead owns canonical code/integration;
+Rights Sol is the single native release operator, Astra orchestrates only. The bounded
+Worker-only authenticated writer, independent approved hash pin, D1 protocol state and
+empty/populated reversible migration have 13 narrow tests PASS. Initial actual local D1
+and exact-v3 static bootstrap asset checks passed. Full real bounded HTTP/D1 rehearsal passed (5,170/7,449/578, 664.05 s), and `make verify`
+passed (Python 1,116/3skip, web87 at that checkpoint). Final revised compiled restore,
+policy-negative tests and narrow checks remain pending. Hosted save/deploy/binding/import/
+activation remain NOT_RUN.
+Current exact public v3 source is `bd059df163ce6dabc643e5dc806b2cd988414b3f`, with
+2,720 preserved assets / 238,690,338 B. Bootstrap is temporary; the final reader artifact
+must remain code-only. Current evidence and next sequence are in the existing active plan.
 
 Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
 browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current

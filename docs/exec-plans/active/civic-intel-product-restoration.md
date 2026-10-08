@@ -1,6 +1,6 @@
 # Civic Intel product restoration
 
-Status: LOCAL_CODE_DONE / TEST_PASS / REAL_PUBLIC_API_CONTENT_PASS / BROWSER_PARTIAL / HOSTED_NOT_RUN.
+Status: LOCAL_PUBLIC_WRITER_IN_PROGRESS / PRIOR_REAL_CONTENT_PASS / BROWSER_PARTIAL / HOSTED_NOT_RUN.
 Implementation owner: MAIN; 2026-10-08 follow-up execution/integration owner: GPT-6.1 Sol,
 2026-10-08. The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
@@ -13,10 +13,12 @@ is the entry point, not the permanent product boundary. Preserve the North Star'
 long-term identity, activity, money, change and issue direction without advertising
 unimplemented feeds or inventing records.
 
-Canonical PostgreSQL writes, real identity/publication decisions, new image reuse,
-hosted D1 binding/import/activation, Sites save/deploy, public access and paid resources
-remain separate owner decisions. Local code and disposable-fixture verification are
-authorized. No operational service or other worktree is modified.
+Canonical PostgreSQL writes, identity/publication decisions, new image reuse, new Sites,
+audience changes and paid-resource increases remain outside this slice. On 2026-10-08 the
+owner cancelled the provider inquiry and explicitly chose the existing public Site delivery
+path. Its bounded authenticated D1 bootstrap/import/cutover is authorized after exact local
+proof and orchestration review; public audience does not authorize anonymous writes.
+Original Mac/Windows worktrees and their operational services remain preserved.
 
 ## Baseline and ownership
 
@@ -388,14 +390,65 @@ writer. Service access supplies no visitor identity. The current Site audience w
 `supported-path-assessment.md` and `read-only-provider-state.json` contain the exact live and
 installed-contract evidence; no claim of absolute platform impossibility is made.
 
+## Public delivery follow-up — in progress
+
+The owner cancelled the unsent provider inquiry (`SUPERSEDED_NOT_SENT`) and directed
+public delivery on the existing project. Actual GPT-6.1 Sol owns implementation/final
+verification; Astra only orchestrates. Rights Sol is the single native release operator.
+No hosted operation, credential generation or source push has occurred at this checkpoint.
+
+The canonical exporter now prepares finite hash-bound transport from the exact approved
+existing capture without new API reads. The Worker-only route uses a dedicated runtime
+maintenance secret and an independently configured approved manifest hash. Typed metadata,
+40 KB parts, immutable sealing, decoded response hash/public-boundary validation and cursor
+assertions use transactional D1 batches. Pointer changes use expected identity/epoch and
+an exact transition fingerprint; retired payloads are retained for pinned readers. There
+is no arbitrary SQL endpoint, PostgreSQL/Alembic change or parallel payload truth store.
+D1 schema upgrade/downgrade/upgrade preserves empty and populated reader data.
+
+Current narrow checks include independent auth/body/pin/redaction and authenticated
+current/previous pin lifecycle. Restore uses bounded prepare, per-path byte revalidation
+and final CAS; corruption preserves the current ACTIVE. Independent review found a stale
+restore-prepare retry receipt; its deterministic interleaving test failed before the fix
+and **7 lifecycle tests PASS** after atomic target/epoch/transition confirmation/readback.
+The full real bounded HTTP rehearsal **PASS**: 5,170 paths / 7,449 parts / 578 cited
+Source closure / 386 contract-valid 4xx; load+validation 537.41 s, total 664.05 s. This is
+the pre-restore-extension compiled proof, not a final-bundle full round trip. Its ephemeral
+fixture was disposed; the current generated reader independently reproduced all 5,170
+status/JSON-byte/hash tuples against retained read-only D1. Full `make verify` **PASS**:
+1,116 Python passed / 3 skipped, 87 web tests at that checkpoint, lint/typecheck/quality
+and Next production build. Final narrow web counts are 86/86 PASS; revised compiled restore proof
+remain pending; unchanged Python code is not re-tested for these Worker-only deltas. The existing public dataset remains CURRENT_FRONTEND_PUBLIC_API, with
+upstream runtime UNKNOWN and capture-window consistency UNVERIFIED.
+
+Exact existing public v3 source `bd059df163ce6dabc643e5dc806b2cd988414b3f` was opened
+read-only by the release operator. Temporary bootstrap preserves all **2,720 assets /
+238,690,338 B** byte-for-byte, including HTML/RSC text and portraits. Initial local asset
+routing/body/redirect checks passed. The first revised artifact is **238,715,400 B**; this is a
+temporary bootstrap, not the final code-only artifact or a deployed-size claim. Final
+D1 reader cutover removes the old static data assets after complete staging/validation.
+Evidence lives under `dist/full-goal-evidence/public-deployment/`.
+
 ## Next concrete action
 
-The owner explicitly deferred native 390px on 2026-10-08 (`USER_DEFERRED`); the current Aside
-capability limitation remains recorded and does not block the authorized desktop follow-up.
-Next task only: obtain the provider's **same-project owner-only write-authority contract**.
-The following inquiry is prepared for copying; it has **not been sent**:
+Finish revised compiled A/B restore and policy-negative D1 tests, final narrow web
+verification, independent delta review and clean-commit artifact builds. Before any hosted change, pin the exact bootstrap and
+final artifacts and review the single-operator sequence: runtime secret/approved hash,
+bootstrap save/deploy with schema, anonymous-write rejection and existing asset continuity,
+typed load/validate/activate, then final code-only reader cutover with maintenance secret
+removed. Initial hosted rollback is the exact retained public v3 saved version, not an
+invented D1 PREVIOUS snapshot. Prior protocol restore requires its separately approved previous-manifest pin and full
+bounded revalidation. Legacy local SQL rollback remains separate; no implicit legacy
+adoption is claimed. The final reader deployment removes the maintenance secret so the
+endpoint fails closed.
 
-> 프로젝트 `appgprj_6ac46916b4d08191872983ffd6d52aba`의 현재 public audience/version 3을 유지하면서, 정확한 Sites-managed D1에 owner-only로 적재·검증·원자적 활성화·롤백할 수 있는 공식 지원 경로를 확인해 주세요. 관리 owner와 runtime principal의 검증된 매핑 또는 플랫폼 owner-only enforcement, 정확한 DB/binding 쓰기 권한(다른 private project를 제안한다면 명시적 공유 권한), 비밀값 없이 사용 가능한 credential 방식, request/memory/time 및 SQL 문장 수와 batch API 호출 수의 제한 단위, immutable load·idempotent resume·validation-to-activation exclusion·실제 상태 readback/rollback receipt 계약과 읽기 전용 확인 방법을 제공해 주세요. 직접 administrative file import를 지원한다면 Sites 계정/DB 권한과 whole-file transaction/receipt 및 R2/cost 조건도 명시해 주세요. 접근·배포·binding·적재 변경은 이번 문의에 포함되지 않습니다.
+Native390 remains `USER_DEFERRED`; producer full-chain, real visual capture and M4/M5
+rights/identity/publication acceptance gaps remain unchanged above.
 
-No hosted cutover is authorized. Producer full-chain, real visual capture and M4/M5
-rights/identity/publication remain the acceptance gaps above; native390 remains USER_DEFERRED.
+Build receipts preserve two runner failures: npm ci initially hit OS EPERM because the
+task's active Miniflare held workerd.exe; no privilege change/forced stop occurred, and
+sequential strict ci recovered. The artifact scanner then detected its own `TEL_NO` policy
+array in compiled server code. Only canonical policy-constant representation changed to
+codepoints with exact source labels; all 15 runtime tokens remain identical. No scanner
+exemption or operator-surface bypass was added; subsequent Worker build/scanner passed.
+Final compiled synthetic policy-negative validation remains required before release.

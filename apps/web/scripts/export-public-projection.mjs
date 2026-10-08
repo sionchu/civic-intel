@@ -13,13 +13,17 @@
 //   activate.sql              STAGED → ACTIVE, ACTIVE → PREVIOUS, older PREVIOUS removed
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, createReadStream } from "node:fs";
+import { createInterface } from 'node:readline';
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { gzipSync } from "node:zlib";
 
 import { EMAIL, forbiddenToken } from "./public-boundary.mjs";
-import { PERSON_RELATIONSHIP_QUERY, personRelationshipPath } from "../app/relationship-path.mjs";
+import { personRelationshipPath } from "../app/relationship-path.mjs";
+import { snapshotProtocol, digest } from './snapshot-protocol.mjs';
+import { SCOPES } from './snapshot-scopes.mjs';
+export { SCOPES } from './snapshot-scopes.mjs';
 
 export const PROJECTION_SCHEMA_VERSION = 2;
 // RECENT_PLENARY_VOTE_LIMIT in packages/rendering/profile_projection.py: a Person response carries only
@@ -30,15 +34,6 @@ const PART_BYTES = 40_000;
 const MONEY_QUERY = "earlier_fiscal_year=2024&later_fiscal_year=2025"; // data.ts getOrganizationMoney defaults
 const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 // A path inside one of these scopes that has no row is a public "not found", not a service failure.
-export const SCOPES = [
-  `^/people/${UUID}$`,
-  `^/ontology/people/${UUID}$`,
-  `^/relationships/people/${UUID}\\?${PERSON_RELATIONSHIP_QUERY.replace(/[?&]/g, "\\$&")}$`,
-  `^/organizations/${UUID}$`,
-  `^/ontology/organizations/${UUID}$`,
-  `^/organizations/${UUID}/money\\?${MONEY_QUERY.replace(/[?&]/g, "\\$&")}$`,
-  `^/sources/${UUID}$`,
-];
 
 const appRoot = resolve(import.meta.dirname, "..");
 const repoRoot = resolve(appRoot, "..", "..");
@@ -57,8 +52,35 @@ async function main() {
       api: { type: "string" },
       out: { type: "string", default: resolve(repoRoot, "dist", "moduigukgam-projection") },
       concurrency: { type: "string", default: "4" },
+      'prepare-existing': { type: 'string' },
+      'expected-manifest-sha': { type: 'string' },
+      'expected-load-sha': { type: 'string' },
     },
   });
+  if (values['prepare-existing']) {
+    const input = resolve(values['prepare-existing']);
+    const manifestBytes = readFileSync(join(input, 'projection-manifest.json'));
+    if (!/^[0-9a-f]{64}$/.test(values['expected-manifest-sha'] ?? '') ||
+        !/^[0-9a-f]{64}$/.test(values['expected-load-sha'] ?? '') ||
+        digest(manifestBytes) !== values['expected-manifest-sha']) fail('existing manifest pin mismatch');
+    const loadHash = createHash('sha256');
+    for await (const chunk of createReadStream(join(input, 'load.sql'))) loadHash.update(chunk);
+    if (loadHash.digest('hex') !== values['expected-load-sha']) fail('existing load pin mismatch');
+    const manifest = JSON.parse(manifestBytes.toString('utf8'));
+    const parts = [];
+    for await (const line of createInterface({ input: createReadStream(join(input, 'load.sql')), crlfDelay: Infinity })) {
+      const match = line.match(/^INSERT INTO public_read .* VALUES \('([^']+)', '([^']+)', (\d+), (\d+), '([0-9a-f]+)', X'([0-9a-f]+)'\)/);
+      if (!match) continue;
+      const expected = manifest.paths.find((row) => row.path === match[2]);
+      if (!expected || match[1] !== manifest.snapshot_id || Number(match[4]) !== expected.status || match[5] !== expected.sha256) fail('existing row contract mismatch');
+      parts.push({ path: match[2], part: Number(match[3]), chunk: Buffer.from(match[6], 'hex') });
+    }
+    if (parts.length !== manifest.counts.parts) fail('existing part count mismatch');
+    const out = resolve(values.out); mkdirSync(out, { recursive: true });
+    writeWriterTransport(out, manifest, parts);
+    console.log(JSON.stringify({ status: 'PASS', operation: 'PINNED_EXISTING_TRANSPORT_ONLY', snapshot_id: manifest.snapshot_id, parts: parts.length }));
+    return;
+  }
   const api = values.api?.replace(/\/+$/, "");
   if (!api) fail("--api <private Civic Intel API origin on this host> is required");
   const apiUrl = new URL(api);
@@ -252,7 +274,16 @@ async function main() {
     paths: rows.map(({ path, status, sha256: digest, bytes, gzip }) => ({ path, status, sha256: digest, bytes, gzip_bytes: gzip.length })),
   };
   writeFileSync(join(out, "projection-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeWriterTransport(out, manifest, parts);
   console.log(JSON.stringify({ status: "PASS", out, snapshot_id: snapshotId, semantic_sha256: semanticSha256, counts: manifest.counts }, null, 2));
+}
+
+function writeWriterTransport(out, manifest, parts) {
+  const protocol = snapshotProtocol(manifest, parts);
+  writeFileSync(join(out, 'writer-manifest.json'), `${JSON.stringify(protocol)}\n`);
+  writeFileSync(join(out, 'writer-parts.ndjson'), parts.map((part, ordinal) => JSON.stringify({
+    ordinal, path: part.path, part: part.part, body_base64: part.chunk.toString('base64'),
+  })).join('\n') + '\n');
 }
 
 await main();
