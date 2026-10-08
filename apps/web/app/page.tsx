@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import ReadState from "./components/read-state";
 import { getGukgamTargets, getPeople } from "./data";
-import { KstToday, TodayAuditLine } from "./components/kst-schedule";
+import { AuditBrief } from "./components/kst-schedule";
 import { groupByDateAndCommittee, seoulDate } from "./gukgam/2026/schedule";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,7 @@ export default async function HomePage() {
     : null;
 
   const today = seoulDate(new Date());
+  const renderedToday = process.env.CIVIC_SITES_EXPORT === "1" ? null : today;
   const scheduleGroups = targetsResult.state === "success"
     ? groupByDateAndCommittee(targetsResult.data.items, today)
     : [];
@@ -27,15 +28,23 @@ export default async function HomePage() {
     date: group.date,
     count: group.count,
     committeeCount: group.committees.length,
+    // The first three records in the canonical committee/time/institution order.
+    rows: group.committees.flatMap((committee) => committee.items.map((item) => ({
+      claimId: item.claim_id,
+      organizationId: item.organization.id,
+      organization: item.organization.name,
+      committee: committee.committee,
+      time: item.time_text,
+      sourcePublishedDate: item.source_published_date,
+      pageNumber: item.page_number,
+    }))).slice(0, 3),
   }));
-
-  const featuredPeople = peopleResult.state === "success" ? peopleResult.data.slice(0, 8) : [];
 
   return (
     <div className="site-page home-page">
       <section className="home-intro home-search" aria-labelledby="hero-title">
-        <h1 id="hero-title">국정감사 인물 기록 검색</h1>
-        <p className="lede">국회의원과 2026 국정감사 관련 인물의 공개 기록을 찾습니다.</p>
+        <h1 id="hero-title">모두의국감 <span lang="en">CIVIC INTELLIGENCE</span></h1>
+        <p className="lede">인물과 기관의 공적 이력, 활동과 연결을 공개 기록에서 살펴봅니다.</p>
         <form className="home-search-form" action="/people" method="get" role="search">
           <label className="gukgam-search-field">
             <span className="sr-only">인물 이름으로 검색</span>
@@ -43,7 +52,7 @@ export default async function HomePage() {
             <input
               type="search"
               name="q"
-              placeholder="인물 이름 (예: 안철수)"
+              placeholder="인물 이름으로 공개 기록 찾기"
               autoComplete="off"
               maxLength={80}
               required
@@ -57,44 +66,35 @@ export default async function HomePage() {
 
       <div className="home-columns">
         <section className="home-block" aria-labelledby="home-today-title">
-          <h2 id="home-today-title">오늘 국감 일정</h2>
-          <p className="home-block-meta"><KstToday serverToday={today} /></p>
+          <h2 id="home-today-title">국감 브리프 <span className="domain-label" lang="en">BRIEF</span></h2>
           {targetsResult.state === "error" ? (
-            <p className="coverage-caption">국감 일정을 불러오지 못했습니다.</p>
+            <ReadState error={targetsResult.error} />
           ) : (
-            <TodayAuditLine serverToday={today} days={scheduleDays} />
+            <AuditBrief serverToday={renderedToday} days={scheduleDays} />
           )}
           <p><Link href="/gukgam/2026">전체 감사 일정과 위원회 보기</Link></p>
         </section>
 
-        <section className="home-block" aria-labelledby="home-people-title">
-          <h2 id="home-people-title">인물 기록</h2>
-          <p className="home-block-meta">
-            {peopleCount === null
-              ? "인물 기록 수를 불러오지 못했습니다."
-              : `공개 ${peopleCount}명${latestAsOf ? ` · 최신 출처 기준일 ${latestAsOf}` : ""}`}
-          </p>
-          {featuredPeople.length > 0 && (
-            <ul className="home-people-list">
-              {featuredPeople.map((person) => {
-                const facets = person.discovery?.facets;
-                const detail = [facets?.role?.value, facets?.party?.value].filter(Boolean).join(" · ");
-                return (
-                  <li key={person.id}>
-                    <Link href={`/people/${person.id}`}>{person.canonical_name}</Link>
-                    {detail && <span>{detail}</span>}
-                  </li>
-                );
-              })}
+        <section className="home-block" aria-labelledby="home-explore-title">
+          <h2 id="home-explore-title">공개 기록 탐색 <span className="domain-label" lang="en">EXPLORE</span></h2>
+          <nav aria-label="공개 기록 탐색">
+            <ul className="home-explore-list">
+              <li><Link href="/people">인물</Link><span>공적 경력 · 입법 · 표결 · 출처</span></li>
+              <li><Link href="/organizations">기관·기업</Link><span>공식 직책 · 국감 계획 · 공개 공시</span></li>
+              <li><Link href="/people#filter-party">정당별 인물</Link><span>공개된 국회 소속 기록으로 찾기</span></li>
+              <li><Link href="/people#filter-committees">위원회별 인물</Link><span>각 소속 위원회로 좁혀 보기</span></li>
+              <li><Link href="/gukgam/2026">국정감사 2026</Link><span>계획 일정 · 대상 기관 · 출석 요구 명단</span></li>
             </ul>
-          )}
-          <p><Link href="/people">전체 인물 목록 보기</Link></p>
+          </nav>
         </section>
       </div>
 
       <section className="principles" id="coverage" aria-labelledby="principles-title">
         <h2 id="principles-title">자료 범위</h2>
-        <p className="principles-lede">공식 기록으로 확인된 내용만 싣습니다. 모든 국감 참여자나 전체 증인 명단은 아닙니다.</p>
+        <p className="principles-lede">공개 조건을 충족한 기록을 출처별로 제공합니다. 전체 인물 이력이나 국감 참여자·증인 명단을 포괄하지 않습니다.</p>
+        {peopleCount !== null && (
+          <p className="coverage-note">공개 인물 {peopleCount.toLocaleString("ko-KR")}명{latestAsOf ? ` · 국회 기본정보의 가장 최근 자료 기준일 ${latestAsOf}` : ""}</p>
+        )}
       </section>
     </div>
   );

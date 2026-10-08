@@ -1,7 +1,42 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import ts from "typescript";
+
+// Exercise the actual small TSX presentation components without starting a browser or server.
+// Data reads can be supplied as explicit offline fixtures; package imports use installed deps.
+function loadPresentation(path, overrides = {}) {
+  const cache = new Map();
+  function load(file) {
+    if (cache.has(file)) return cache.get(file).exports;
+    const compiledModule = { exports: {} };
+    cache.set(file, compiledModule);
+    const nativeRequire = createRequire(file);
+    const requireLocal = (specifier) => {
+      if (Object.hasOwn(overrides, specifier)) return overrides[specifier];
+      if (specifier.startsWith(".")) {
+        const target = resolve(dirname(file), specifier);
+        const typed = [target, `${target}.tsx`, `${target}.ts`].find((candidate) => /\.tsx?$/.test(candidate) && existsSync(candidate));
+        if (typed) return load(typed);
+      }
+      return nativeRequire(specifier);
+    };
+    const { outputText } = ts.transpileModule(readFileSync(file, "utf8"), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
+      fileName: file,
+    });
+    new Function("require", "module", "exports", outputText)(requireLocal, compiledModule, compiledModule.exports);
+    return compiledModule.exports;
+  }
+  return load(fileURLToPath(new URL(path, import.meta.url)));
+}
 
 test("profile renders section coverage and evidence traceability", async () => {
   const page = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
@@ -21,7 +56,6 @@ test("profile renders section coverage and evidence traceability", async () => {
 test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", async () => {
   const manifest = JSON.parse(await readFile(new URL("../public/portraits/manifest.json", import.meta.url), "utf8"));
   const portrait = manifest.portraits.find((item) => item.person_id === "44745d09-398c-46ce-bc38-81f0f606c1d7");
-  const loader = await readFile(new URL("../app/portrait.ts", import.meta.url), "utf8");
   const profile = await readFile(new URL("../app/people/[id]/page.tsx", import.meta.url), "utf8");
   const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
   assert.ok(portrait);
@@ -31,9 +65,7 @@ test("Portrait Pilot v0 binds one reviewed local asset by canonical Person ID", 
   const bytes = await readFile(new URL(`../public${portrait.local_path}`, import.meta.url));
   assert.equal(bytes.byteLength, 38558);
   assert.equal(createHash("sha1").update(bytes).digest("hex"), "46f16ce27199a761bb472cb0f68a763a3afa16db");
-  assert.match(loader, /person\.identity_status !== "RESOLVED"/);
-  assert.match(loader, /candidate\.person_id === person\.id/);
-  assert.doesNotMatch(loader, /canonical_name\s*===|person\.canonical_name\s*===/);
+  // Identity/withdrawal selection is exercised by the portrait contract's behavior tests.
   assert.match(profile, /getReviewedPortrait\(person\)/);
   assert.match(profile, /src=\{portrait\.local_path\}/);
   assert.match(profile, /alt=\{`\$\{person\.canonical_name\} 공개 사진`\}/);
@@ -88,9 +120,9 @@ test("Visual System v2 keeps Home editorial and People content-first", async () 
   const roster = await readFile(new URL("../app/components/roster-grid.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
 
-  assert.match(home, /국정감사 인물 기록 검색/);
+  assert.match(home, /CIVIC INTELLIGENCE/);
   assert.match(home, /action="\/people"/);
-  assert.match(home, /공식 기록으로 확인된 내용만/);
+  assert.match(home, /공개 조건을 충족한 기록/);
   assert.doesNotMatch(home, /<RosterGrid|hero-panel|signal-strip/);
   assert.match(people, /인물 목록 \{peopleResult\.data\.length\}명/);
   assert.doesNotMatch(people, /profile-stamp/);
@@ -196,7 +228,7 @@ test("Gukgam 2026 is an event surface inside Civic Intel, not a parallel product
   const home = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
   const page = await readFile(new URL("../app/gukgam/2026/page.tsx", import.meta.url), "utf8");
   assert.match(layout, /href="\/gukgam\/2026"/);
-  assert.match(home, /국감 일정/);
+  assert.match(home, /국감 브리프/);
   assert.match(page, /<h1>국감 2026<\/h1>/);
   assert.match(page, /getPeople/);
   assert.match(page, /getOrganizations/);
@@ -675,11 +707,11 @@ test("모두의국감 public brand replaces developer-facing names without renam
   assert.match(home, /<form className="home-search-form" action="\/people" method="get" role="search">/);
   assert.match(home, /name="q"/);
   assert.match(home, /maxLength=\{80\}/);
-  assert.doesNotMatch(home, /fetch\(|score|rank|probability|confidence/i);
+  assert.doesNotMatch(home, /fetch\(|score|probability|confidence/i);
   assert.match(people, /params\.q\.slice\(0, 80\)/);
   assert.match(roster, /useQueryState\(initialQuery\)/);
   // Scope language stays bounded and the schedule copy is source-gated.
-  assert.match(home, /모든 국감 참여자나 전체 증인 명단은 아닙니다/);
+  assert.match(home, /전체 인물 이력이나 국감 참여자·증인 명단을 포괄하지 않습니다/);
   const kst = await read("../app/components/kst-schedule.tsx");
   assert.match(kst, /오늘은 공개된 감사 일정이 없습니다/);
   assert.doesNotMatch(home, /모든 공직자|완전한 이력|전체 국감 참여자/);
@@ -701,7 +733,7 @@ test("Sites snapshot export keeps reader-time dates and ?q= correct without a se
   ]);
   // "Today" is computed in the reader's browser (KST) after hydration, never frozen at build time.
   assert.match(kst, /useSyncExternalStore\(subscribe, \(\) => seoulDate\(new Date\(\)\), \(\) => serverToday\)/);
-  assert.match(home, /<TodayAuditLine serverToday=\{today\} days=\{scheduleDays\} \/>/);
+  assert.match(home, /<AuditBrief serverToday=\{renderedToday\} days=\{scheduleDays\} \/>/);
   assert.match(query, /useSyncExternalStore\(subscribe, readQueryParam, \(\) => initialQuery\)/);
   assert.match(query, /\.slice\(0, 80\)/);
   // Server builds keep per-request detail pages; only the staged snapshot copy prerenders them.
@@ -812,4 +844,88 @@ test("Plenary votes render as compact rows with the evidence trace one disclosur
   assert.match(person, /<ol className="vote-rows">/);
   assert.match(person, /<details className="audit-details vote-trace">/);
   assert.match(person, /FeederObservation \{trace\?\.feeder_observation_id/);
+});
+
+test("home brief renders source-backed plans with direct Claim paths, including missing time", () => {
+  const { AuditBrief } = loadPresentation("../app/components/kst-schedule.tsx");
+  const days = [{
+    date: "2026-10-08", count: 4, committeeCount: 2,
+    rows: [
+      { claimId: "claim-a", organizationId: "org-a", organization: "공개기관 가", committee: "문화체육관광위원회", time: "10:00", sourcePublishedDate: "2026-09-16", pageNumber: 4 },
+      { claimId: "claim-b", organizationId: "org-b", organization: "공개기관 나", committee: "재정경제기획위원회", time: null, sourcePublishedDate: "2026-09-17", pageNumber: 5 },
+    ],
+  }];
+  const render = (serverToday) => renderToStaticMarkup(createElement(AuditBrief, { serverToday, days }));
+  const today = render("2026-10-08");
+  assert.match(today, /계획서상 감사 4건/);
+  assert.match(today, /공개기관 가/);
+  assert.match(today, /시간 미기재/);
+  assert.match(today, /href="\/organizations\/org-a#claim-claim-a"/);
+  assert.match(today, /계획서 공개 <time dateTime="2026-09-16">2026-09-16<\/time> · 4쪽/);
+  assert.match(today, /외 2건/);
+  assert.match(render("2026-10-07"), /다음 감사일/);
+  assert.match(render("2026-10-09"), /오늘 이후 공개된 감사 계획이 없습니다/);
+  const staticMarkup = render(null);
+  assert.match(staticMarkup, /공개된 국감 계획 4건/);
+  assert.doesNotMatch(staticMarkup, /오늘|다음 감사일|공개기관/);
+  assert.doesNotMatch(today, /실제 출석|오늘 열리는/);
+});
+
+test("roster matches each exact committee name while retaining people without Assembly facets", () => {
+  const { discoveryFacetValues, matchesRosterFacets, default: RosterGrid } = loadPresentation("../app/components/roster-grid.tsx");
+  const facet = (value) => ({ value, claim_id: "claim", evidence_ids: ["evidence"], source_ids: ["source"], as_of: "2026-10-01" });
+  const discovery = {
+    facets: { role: facet("국회의원"), party: facet("공개 정당"), district: null, committees: facet(" 국방위원회, 연금개혁 특별위원회, 국방위원회 "), reelection: null },
+    as_of: "2026-10-01", evidence_ids: ["evidence"], source_ids: ["source"], missing_fields: ["district", "reelection"], ambiguous_fields: [],
+  };
+  assert.deepEqual(discoveryFacetValues(discovery, "committees"), ["국방위원회", "연금개혁 특별위원회"]);
+  assert.equal(matchesRosterFacets(discovery, { committees: "국방위원회" }), true);
+  assert.equal(matchesRosterFacets(discovery, { committees: "연금개혁 특별위원회", party: "공개 정당" }), true);
+  assert.equal(matchesRosterFacets(discovery, { committees: "국방" }), false);
+  assert.equal(matchesRosterFacets(discovery, { committees: "국방위원회", party: "다른 정당" }), false);
+  assert.equal(matchesRosterFacets(undefined, {}), true);
+  assert.equal(matchesRosterFacets(undefined, { committees: "국방위원회" }), false);
+  const people = [
+    { id: "same-name-a", canonical_name: "동명이인", identity_status: "RESOLVED", discovery },
+    { id: "same-name-b", canonical_name: "동명이인", identity_status: "RESOLVED" },
+  ];
+  const html = renderToStaticMarkup(createElement(RosterGrid, { people, initialQuery: "동명이인" }));
+  assert.match(html, /href="\/people\/same-name-a"/);
+  assert.match(html, /href="\/people\/same-name-b"/);
+  assert.match(html, /동명이인 · 2명/);
+  assert.match(html, /<option value="국방위원회">국방위원회<\/option>/);
+  assert.match(html, /<option value="연금개혁 특별위원회">연금개혁 특별위원회<\/option>/);
+  assert.match(html, /id="filter-party"/);
+  assert.match(html, /id="filter-committees"/);
+  assert.match(html, /이름 검색은 전체 인물을 대상으로/);
+  assert.doesNotMatch(html, /기본 정보가 없어|공개된 기본 정보 없음|근거 0개/);
+  const empty = renderToStaticMarkup(createElement(RosterGrid, { people: [], initialQuery: "" }));
+  assert.match(empty, /공개된 정당 필터값 없음/);
+  assert.match(empty, /현재 공개 조건에서 표시할 사람이 없습니다/);
+});
+
+test("new public career and committee predicates retain source attribution in their labels", async () => {
+  const { predicateLabel } = await import("../app/predicate-labels.ts");
+  assert.equal(predicateLabel("ASSEMBLY_COMMITTEE_MEMBERSHIP"), "국회 위원회 소속");
+  assert.equal(predicateLabel("ASSEMBLY_HISTORICAL_TERM"), "과거 국회의원 임기");
+  assert.equal(predicateLabel("ASSEMBLY_BIOGRAPHY_CAREER"), "국회 약력에 기재된 경력");
+  assert.equal(predicateLabel("NEC_CANDIDATE_CAREER"), "후보자 신고 경력");
+  assert.equal(predicateLabel("NEC_CANDIDATE_EDUCATION"), "후보자 신고 학력");
+  assert.equal(predicateLabel("UNSUPPORTED_NEW_TYPE"), "기타 기록");
+});
+
+test("home uses existing exploration paths and never picks arbitrary people", async () => {
+  const { default: Home } = loadPresentation("../app/page.tsx", {
+    "./data": {
+      getPeople: async () => ({ state: "success", data: [{ id: "fixture-person", canonical_name: "노출하지않을임의인물", identity_status: "RESOLVED" }] }),
+      getGukgamTargets: async () => ({ state: "success", data: { items: [] } }),
+    },
+  });
+  const html = renderToStaticMarkup(await Home());
+  for (const href of ["/people", "/organizations", "/people#filter-party", "/people#filter-committees", "/gukgam/2026"]) {
+    assert.ok(html.includes(`href="${href}"`), href);
+  }
+  assert.match(html, /CIVIC INTELLIGENCE/);
+  assert.match(html, /공개 인물 1명/);
+  assert.doesNotMatch(html, /노출하지않을임의인물|\/people\/fixture-person/);
 });

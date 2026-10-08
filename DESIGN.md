@@ -2,9 +2,10 @@
 
 ## Design intent
 
-Civic Intel is a Korean-first public-record directory. The interface should help a reader move
-from a person to the record behind a claim without turning a source into a verdict, score or
-social feed. The visual tone is plain, precise and content-first, closer to a public-service
+Civic Intel is a Korean-first public-governance evidence encyclopedia, presented as 모두의국감.
+The interface helps a reader discover people, institutions, public careers, activities and
+documented connections, then inspect the record behind each claim. 국정감사 2026 is an entry point,
+not the permanent boundary of the product. The visual tone is precise and content-first, closer to a public-service
 page (GOV.UK Frontend, TheyWorkForYou) than to a product landing page.
 
 ## Design principles
@@ -67,9 +68,12 @@ the KRDS numeric scale (principles only; no KRDS assets or government identity):
 - Letter spacing stays between -0.02em and 0.01em; no `text-transform: uppercase`.
 - Numbers use `font-variant-numeric: tabular-nums` (set on `body`) and `Intl.NumberFormat("ko-KR")`.
 
-Public labels and summaries are Korean, and readers see Korean predicate labels
+Public labels and summaries are Korean-first, and readers see Korean predicate labels
 (`apps/web/app/predicate-labels.ts`) instead of predicate codes such as `NOMINATED_AS`. Domain status codes (`FACT`, `UNKNOWN` …) and the
 data-model names `Claim`/`Evidence` stay verbatim because they are the published contract.
+Stable domain headings may be bilingual: CIVIC INTELLIGENCE, BRIEF / 국감 브리프,
+CAREER / 경력, CONNECTIONS / 공식 연결 and EVIDENCE / 출처. Use them only for real navigable
+content, not as repeated decoration or advertisements for unavailable capabilities.
 
 ### Spacing scale
 
@@ -79,9 +83,11 @@ breakpoint requires one.
 
 ### Layout and containers
 
-The content container is capped at 1180px with fluid 20–48px gutters. Home opens with one short
-heading, the search form, and then real records (today's 국감 schedule and the person list) in two
-columns that collapse to one; no hero sentence with empty space beside it. People uses a readable directory column with flat
+The content container is capped at 1180px with fluid 20–48px gutters. Home opens with the product
+identity, one sentence and name search, followed by a source-backed audit-plan brief and working
+exploration links in two columns that collapse to one. Brief rows show their plan date, source
+publication date and direct Claim path; never select arbitrary people as recommendations.
+People uses a readable directory column with flat
 editorial rows and one mobile column. Profile pages keep their narrow index beside a readable
 content column and reflow below 820px. Long Korean values and identifiers wrap instead of clip.
 
@@ -102,6 +108,10 @@ role/party/district/committee values that exist (missing values are omitted, not
 panels. Public review displays remain read-only. The explicitly enabled private admin workspace uses
 selected-record review, before/after previews, final confirmation and server-acknowledged receipts.
 Operational IDs and full audit details remain expandable; mutation success is never optimistic.
+Functional timelines, record panels and bounded graphs may expose eligible evidence, dates and
+relationships using the existing tokens. Available records precede compact coverage notes.
+Assembly discovery-filter gaps are not missing-person-record counts; clearly name the filter
+scope and retain every public Person in unfiltered name search.
 
 ### Reviewed portraits
 
@@ -168,7 +178,7 @@ search inputs, selects and primary filter buttons are 48px tall.
   right-aligned gray paragraph. A heading is followed by at most one short line under it.
 - Don't add decorative ordinal numbers (01/02/03), italic or colored accent words in headings,
   initial-letter avatars, circular arrow badges, KPI tiles or "where to start" card grids.
-- Don't use English uppercase eyebrows or labels on public pages.
+- Don't repeat decorative English eyebrows; meaningful bilingual domain headings are permitted.
 - Don't add reassurance or disclaimer prose ("근거와 출처와 함께…", "없다는 뜻이 아니라…",
   "자동으로 합치지 않습니다", footer promises). Home carries one scope line. A short factual note is
   kept only where a misreading could harm someone, such as witness lists being 출석 요구, not a
