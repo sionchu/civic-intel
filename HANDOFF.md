@@ -2,6 +2,14 @@
 
 ## Current local implementation — 2026-10-08
 
+Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
+browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current
+desktop synthetic graph/Claim/Source flows passed. Native 390px is `USER_DEFERRED`. A new
+isolated, read-only Mac public API export with bounded relationships is running; no real-data
+acceptance is claimed until its transfer/hash/Source closure and largest-page comparison finish.
+See the active plan's follow-up checkpoint and ignored `dist/full-goal-evidence/followup/`.
+This is current-frontend/public-API QA, not deployment of the candidate producer or hosted Sites.
+
 Owner MAIN works in isolated `codex/civic-intel-full-goal`, based on RELEASE-01
 `31e1d7a`. The active [product restoration plan](docs/exec-plans/active/civic-intel-product-restoration.md)
 owns current milestone status and evidence. Source-specific career projection, source-backed

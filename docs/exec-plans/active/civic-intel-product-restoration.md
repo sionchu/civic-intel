@@ -180,6 +180,63 @@ labels its data **DISPOSABLE_SYNTHETIC_QA_NOT_OPERATIONAL_OR_PUBLICATION_APPROVA
   remained on those ports. Other services and worktrees were preserved. No push, merge,
   operational DB write, new image publication, Site save, hosted activation or deploy occurred.
 
+### Follow-up execution checkpoint — 2026-10-08
+
+The owner assigned execution/integration, browser QA and readiness work to actual
+`gpt-6.1-sol` agents; root Astra orchestrates and adjudicates scope only. The prior MAIN
+implementation receipt above remains historical. This follow-up changes no product behavior.
+
+- Clean code input `cd8cdcc610f09717765b02f1cca8b5f87332dfa2`, web tree
+  `b2f51ffb3741619a1068be11d6e5a406d8394081`. `worker-clean-head-build.log` records strict
+  npm ci, Worker typecheck/build, public boundary scan and disposable D1 activation. Manifest
+  `worker-clean-head/worker-manifest.json` records `git_worktree_dirty=false`, **1,744,138 B /
+  146 files**. The generated Sites source ZIP is **900,768 B / 91 files**, SHA-256
+  `a897484fa54f9a09a23ca53568f689a6eedeb300964d657fa22c59c8b71d1193`; it excludes DB and
+  node_modules and is not a hosted deployment artifact or receipt.
+- Exact build command from `apps/web`: `node scripts/build-sites-worker.mjs --lockfile
+  .sites-worker-build/package-lock.json --out ../../dist/full-goal-evidence/followup/worker-clean-head
+  --load-local ../../dist/full-goal-evidence/projection-qa`, with the previously verified npm
+  11.21 CLI selected by `npm_execpath`. Lock hash remains the prior `ce7c5609...361c`.
+- `next-clean-head-build.log`: current Next production build and standalone preparation PASS;
+  standalone contract check PASS. `storage-clean-head-tests.log`: **7 passed, 0 skipped**.
+  Full `make verify` is **NOT_RERUN**: no behavior/schema changes occurred; its prior result
+  above is not relabeled as a fresh full run.
+- `browser/synthetic-acceptance.md` records current desktop relationship disclosure, keyboard
+  Enter, both endpoint Claims, Source cards/policy, direct graph with complete accessible list,
+  and Worker/Next main-text/href/ID parity PASS on `ps-5cb225217ae02703`. Two viewport screenshots
+  were captured and actually opened. Prior harness selector/quoting errors remain in logs.
+- Native top-level 390px is **USER_DEFERRED**, following the owner's explicit instruction.
+  `browser/aside-capability-recheck.json` retains the supported-API limitation separately.
+- Existing Mac API freshly returned ready and **1,142 People**. Operational checkouts/services
+  were preserved. The older real capture remains `ps-b0a439f3b8327121`: manifest SHA-256
+  `6594e56b02f3e90d114d1e0db622451911f5608402ac618bb33cf52f221cf526`, load SQL SHA-256
+  `f38499a1cce7c3422b1476e71f071610bfa86c3b611fa1ba7e9e7736dfe0e26d`. It omits this candidate's
+  bounded relationship paths and is not reused as current acceptance.
+- **RUNNING**: only the current exporter, public-boundary and relationship-path modules were
+  copied into isolated `/Users/lee/Projects/civic-intel-full-goal-qa-20261008`. LF-normalized
+  SHA-256 values match the current code input; see `exporter-source-receipt.json`. Command:
+  `node apps/web/scripts/export-public-projection.mjs --api http://127.0.0.1:8100 --out projection
+  --concurrency 2`. Capture began **2026-10-08T09:12:58.325150Z**. It uses no DB credential,
+  source collector, canonical write or operating-service reconfiguration. The exporter writes
+  only after all public reads complete; no inferred progress percentage is reported.
+- Dataset acceptance is **CURRENT_FRONTEND_PUBLIC_API**. Upstream API runtime revision is
+  **UNKNOWN**, and consistency is **UNVERIFIED_CAPTURE_WINDOW** (not a DB transaction).
+  Current candidate producer runtime is **NOT_DEPLOYED / NOT_VERIFIED**. Public Source-reference
+  closure and token scanning do not independently revalidate rights or canonical publication.
+  **CURRENT_PRODUCER_FULL_CHAIN** remains separate missing evidence; public DTOs intentionally
+  omit canonical SourcePolicy and cannot safely reconstruct that gate.
+- `readiness/owner-review-packet.md` and `sites-readonly-state.json`: fresh owner/public/version 3,
+  no D1 binding/table and no exposed Sites-managed bulk writer. Required owner-scoped writer
+  contract, immutable load/validation/atomic activation/rollback inputs, one bounded additional
+  portrait candidate and the seven-part Gazette approval packet are concrete proposals only.
+  No photo expansion, raw PDF processing, human attestation, hosted write/save/deploy or access
+  change occurred. The existing portrait is **38,558 B**, SHA-1
+  `46f16ce27199a761bb472cb0f68a763a3afa16db`; local integrity does not refresh remote rights.
+
+All new paths in this checkpoint are relative to ignored `dist/full-goal-evidence/followup/`.
+Real full-transfer/hash/Source closure, local real activation, largest-page browser comparison
+and final cleanup remain pending this running capture; no real-data PASS is claimed yet.
+
 ### Hosted writer and approval boundary
 
 Installed Sites storage contract supports logical DB binding plus schema-only migrations.
@@ -202,8 +259,9 @@ restrictions remain in force; do not use AI to manufacture human review.
 
 ## Next concrete action
 
-The next unresolved browser acceptance step is native 390px Aside verification, followed by
-the real largest-page comparison against this candidate's pinned source/data. Resolve an
-actual supported owner-private hosted writer before preparing a concrete DB/Sites cutover
-approval. M4/M5 needs the owner-approved rights/identity/publication packet described above;
-until then, do not claim actual photo coverage expansion or a live personal-assets slice.
+The owner explicitly deferred native 390px on 2026-10-08 (`USER_DEFERRED`); the current Aside
+capability limitation remains recorded and does not block the authorized desktop follow-up.
+Complete the real largest-page comparison against this candidate's pinned public API capture.
+Resolve an actual supported owner-private hosted writer before preparing a concrete DB/Sites
+cutover approval. M4/M5 needs the owner-approved rights/identity/publication packet described
+above; until then, do not claim actual photo coverage expansion or a live personal-assets slice.
