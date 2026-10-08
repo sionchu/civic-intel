@@ -111,12 +111,25 @@ count0 confirms the separate registration entry prerequisite; root authorized it
 preview/commit implementation after intermediate64ded46. That bounded entry is now implemented: complete candidate-policy hash/state dependencies, locked exact-match no-op, mismatched policy rejection, existing audited atomic creation and rollback. Final targeted110 tests/Ruff/mypy PASS; independent review found no actionable findings. Final frozen-code makeverify session80753 exited0: Python1,235 passed/3 skipped/6 warnings in545.76s; web94/94, Ruff/mypy153/Golden quality/lint/typecheck/Next standalone PASS. Canonical registration and PostgreSQL concurrent execution NOT_RUN.
 
 
-Next authorized preparation is exact final-commit raw Git artifact and unused-loopback8122
-bounded read-only preflight using the actual serving interpreter, followed by canonical PETI
-policy-registration preview only. Preserve full owner preview locally and report hashes/status.
-API-only switch/rollback and one-record policy/capture/reviewed-link/publication remain concrete
-approval targets, NOT_EXECUTED; public Site v6 and serving339363f remain unchanged. Next complete
-fresh export is deferred until approved real PETI Claim data exists; prior64c11d export is historical.
+Product source/deploy target is frozen at f5e3829dc5b11f785d1e9fb5785a2df0d8864583;
+subsequent docs-only recording HEAD is distinct. Exact169 raw Git blobs/mismatch0 PASS,
+gzip425,866B/SHA256d135b1697155b0166b7da73b3b9110ad55fb94bdabedc95a3c87f76d8839ea4a.
+Actual serving-interpreter candidate8122 runtime bootstrap/schema0008/default+current read-only
+ON/62 imports inside target PASS. Bounded12GET200 PASS11.47s; two Persons185/2,383 Claims,
+7/20 career entries, six cited Sources and one bounded relationship query; assetsUNKNOWN/[]
+retained. No complete fresh export was repeated.
+Actual canonical policy-registration preview PASS/workerexit0, policy/auditrequest rows0→0,
+writeFalse. Statehash e575c332ece2c01e9f13f953d2c535a7bbb13e1f611d23676ad1a4ef8332f41c;
+policyhash3662c58c8d082b67c7c3e921a4661f22e34b92d240d3d531f036be75509b268b;
+commandhash4e80798b0a3e5919480cd1cd5f286494fc70b74188d7618255a3f6e2ebb0a4e0.
+Full preview remains owner-local. Two helper import failures preceded DB access and were
+corrected; actual corrected preview PASS is separate. PostgreSQL concurrent commit NOT_RUN.
+Current next decision: independently selectable exact API-only switch/rollback and one official
+PETI1record policy/capture/genuine reviewed14ae/QWL link/separate publication. Both NOT_EXECUTED,
+not a generic public-fact reuse permission question. See producer-full-chain/final-operational-review.md
+and final-{source,exact-startup,api-smoke,canonical-policy-preview}-receipt.json. Public v6 and
+serving339363f unchanged; full contract incomplete. Next complete export follows approved real
+PETI Claim data, with D1 validation/activation and public code release separately pinned.
 
 Actual official Assembly press one-page FETCH/STORE_METADATA compatibility passed5 records on
 2026-10-08 (provider total10), content/key excluded from capture. Existing policy still has
