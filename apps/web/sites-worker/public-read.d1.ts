@@ -32,6 +32,9 @@ const activeSnapshot = cacheForRequest(async () => {
   if (snapshot.projection_schema_version !== 2) throw new Error("unsupported public projection schema");
   return { ...snapshot, scope: JSON.parse(snapshot.scope_json) as Scope };
 });
+// One normalized DTO promise per request, shared by metadata/layout/page probes.
+// cacheForRequest caches a zero-argument factory, not a function's arguments.
+const publicResponses = cacheForRequest(() => new Map<string, Promise<PublicReadResponse>>());
 
 export async function readSnapshotAt(): Promise<string> {
   return (await activeSnapshot()).generated_at_kst;
@@ -75,6 +78,17 @@ export async function readPublic(path: string, _options?: { revalidateSeconds?: 
     path = `${entity[1]}/${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}${entity[3] ?? ''}`;
   }
   const snapshot = await activeSnapshot();
+  const responses = publicResponses();
+  const existing = responses.get(path);
+  if (existing) return existing;
+  const pending = readSnapshotPath(snapshot, path);
+  responses.set(path, pending);
+  // Preserve transport retry semantics; failed work must not poison this request.
+  void pending.catch(() => { if (responses.get(path) === pending) responses.delete(path); });
+  return pending;
+}
+
+async function readSnapshotPath(snapshot: ActiveSnapshot & { scope: Scope }, path: string): Promise<PublicReadResponse> {
   const db = env.DB;
   if (!db) throw new Error("D1 binding DB is not configured");
 

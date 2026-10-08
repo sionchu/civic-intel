@@ -206,9 +206,10 @@ test('D1 reader checks manifest/hash/parts and distinguishes lost rows from unkn
     return { bind(...args) { values = args; return this; }, async all() { return { results: db.prepare(query).all(...values) }; } };
   } };
   globalThis.__projectionTestEnv = { DB: binding };
+  globalThis.__projectionTestGeneration = 0;
   const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
     .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__projectionTestEnv;')
-    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value; return () => value ??= fn(); };')
+    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value, generation = -1; return () => { if (generation !== globalThis.__projectionTestGeneration) { generation = globalThis.__projectionTestGeneration; value = fn(); } return value; }; };')
     .replace('"./relationship-path.mjs"', JSON.stringify(relationshipModuleUrl));
   const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
   const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
@@ -251,13 +252,16 @@ test('D1 reader checks manifest/hash/parts and distinguishes lost rows from unkn
     assert.equal(unknownRelationship.status, 404);
     assert.equal(unknownRelationship.body, null);
     db.prepare('DELETE FROM public_read WHERE path = ?').run(personRelationshipPath(PERSON_B));
+    globalThis.__projectionTestGeneration++;
     await assert.rejects(reader.readPublic(personRelationshipPath(PERSON_B)), /missing exported/);
     await assert.rejects(reader.readPublic('/admin/review'), /outside the exported/);
     db.prepare('UPDATE public_read SET body_gzip = ? WHERE path = ?').run(gzipSync(Buffer.from('{}')), `/people/${PERSON_A}`);
+    globalThis.__projectionTestGeneration++;
     await assert.rejects(reader.readPublic(`/people/${PERSON_A}`), /corrupt public projection/);
     db.prepare('DELETE FROM public_read WHERE path = ?').run(`/sources/${SOURCE}`);
+    globalThis.__projectionTestGeneration++;
     await assert.rejects(reader.readPublic(`/sources/${SOURCE}`), /missing exported/);
-  } finally { db.close(); delete globalThis.__projectionTestEnv; }
+  } finally { db.close(); delete globalThis.__projectionTestEnv; delete globalThis.__projectionTestGeneration; }
 });
 
 const vinextShims = new URL('../.sites-worker-build/node_modules/vinext/dist/shims/', import.meta.url);
@@ -271,9 +275,13 @@ test('installed Vinext cache pins metadata and reads to one snapshot per request
   db.exec(readFileSync(new URL('../sites-worker/drizzle/0000_public_projection.sql', import.meta.url), 'utf8'));
   const sql = (result, name) => readFileSync(join(result.out, `${name}.sql`), 'utf8');
   db.exec(sql(a, 'load')); db.exec(sql(a, 'activate')); db.exec(sql(b, 'load'));
+  const partReads = new Map();
   const binding = { prepare(query) {
     let values = [];
-    return { bind(...args) { values = args; return this; }, async all() { return { results: db.prepare(query).all(...values) }; } };
+    return { bind(...args) { values = args; return this; }, async all() {
+      if (query.includes('FROM public_read')) partReads.set(values[1], (partReads.get(values[1]) ?? 0) + 1);
+      return { results: db.prepare(query).all(...values) };
+    } };
   } };
   globalThis.__projectionRequestEnv = { DB: binding };
   const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
@@ -289,9 +297,28 @@ test('installed Vinext cache pins metadata and reads to one snapshot per request
       db.exec(sql(b, 'activate'));
       assert.equal(await reader.readSnapshotAt(), before);
       assert.equal((await reader.readPublic(`/sources/${SOURCE}`)).body.title, '출처');
+      const [first, second] = await Promise.all([
+        reader.readPublic(`/sources/${SOURCE}`), reader.readPublic(`/sources/${SOURCE.toUpperCase()}`),
+      ]);
+      assert.equal(partReads.get(`/sources/${SOURCE}`), 1, 'one read/decode for repeated normalized path in metadata/page context');
+      assert.strictEqual(first.body, second.body);
+      assert.equal((await reader.readPublic(`/sources/${RELATIONSHIP_SOURCE}`)).body.title, '관계에만 연결된 출처');
+      assert.equal(partReads.get(`/sources/${RELATIONSHIP_SOURCE}`), 1, 'different paths do not share DTOs');
     });
     await runWithRequestContext(createRequestContext(), async () => {
       assert.equal((await reader.readPublic(`/sources/${SOURCE}`)).body.title, '변경된 출처');
+      assert.equal(partReads.get(`/sources/${SOURCE}`), 2, 'next request reads the newly ACTIVE snapshot');
+    });
+    const path = `/sources/${SOURCE}`;
+    const stored = db.prepare("SELECT snapshot_id, body_gzip FROM public_read WHERE path = ? AND snapshot_id = (SELECT snapshot_id FROM snapshot_meta WHERE status = 'ACTIVE')").get(path);
+    db.prepare('UPDATE public_read SET body_gzip = ? WHERE snapshot_id = ? AND path = ?').run(gzipSync(Buffer.from('{}')), stored.snapshot_id, path);
+    await runWithRequestContext(createRequestContext(), async () => {
+      const failures = await Promise.allSettled([reader.readPublic(path), reader.readPublic(path)]);
+      assert.ok(failures.every((result) => result.status === 'rejected'));
+      assert.equal(partReads.get(path), 3, 'concurrent failed decode is shared');
+      db.prepare('UPDATE public_read SET body_gzip = ? WHERE snapshot_id = ? AND path = ?').run(stored.body_gzip, stored.snapshot_id, path);
+      assert.equal((await reader.readPublic(path)).body.title, '변경된 출처');
+      assert.equal(partReads.get(path), 4, 'failed promise is evicted for retry');
     });
   } finally { db.close(); delete globalThis.__projectionRequestEnv; }
 });
