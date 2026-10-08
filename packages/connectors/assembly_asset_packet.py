@@ -265,6 +265,13 @@ class GazetteLocator:
         }
 
 
+def _canonical_gazette_url(pdf_id: str) -> str:
+    return (
+        f"https://{GAZETTE_HOST}{GAZETTE_DETAIL_PATH}?cntsDivCd=NAMGZN&menuNo=601019"
+        f"&pdfClsCd=CPR&pdfId={pdf_id}"
+    )
+
+
 @dataclass(frozen=True)
 class GazetteSource:
     gazette_issue: str
@@ -283,10 +290,7 @@ class GazetteSource:
 
     @property
     def canonical_url(self) -> str:
-        return (
-            f"https://{GAZETTE_HOST}{GAZETTE_DETAIL_PATH}?cntsDivCd=NAMGZN&menuNo=601019"
-            f"&pdfClsCd=CPR&pdfId={self.pdf_id}"
-        )
+        return _canonical_gazette_url(self.pdf_id)
 
     @classmethod
     def from_mapping(cls, raw: Mapping[str, Any]) -> GazetteSource:
@@ -336,24 +340,42 @@ class GazetteSource:
         if not _PDF_ID.fullmatch(pdf_id):
             raise AssemblyAssetPacketError("asset packet pdf_id must be digits")
         page_url = _required_text(raw.get("page_url"), "source.page_url", max_length=500)
-        parsed = urlparse(page_url)
+        try:
+            parsed = urlparse(page_url)
+            port = parsed.port
+        except ValueError:
+            raise AssemblyAssetPacketError("asset packet page_url is invalid") from None
         if (
             parsed.scheme != "https"
             or parsed.hostname != GAZETTE_HOST
             or parsed.path != GAZETTE_DETAIL_PATH
-            or parsed.username
-            or parsed.password
+            or parsed.username is not None
+            or parsed.password is not None
+            or port not in (None, 443)
+            or "#" in page_url
+            or parsed.params
         ):
             raise AssemblyAssetPacketError(
                 "asset packet page_url must be the official https Gazette detail page"
             )
         query = parse_qs(parsed.query, keep_blank_values=True)
+        expected_query = {
+            "cntsDivCd": "NAMGZN",
+            "menuNo": "601019",
+            "pdfClsCd": "CPR",
+            "pdfId": pdf_id,
+        }
         if query.get("cntsDivCd") != ["NAMGZN"] or query.get("pdfId") != [pdf_id]:
             raise AssemblyAssetPacketError(
                 "asset packet page_url does not match the Gazette pdf_id"
             )
-        if {"key", "authkey", "servicekey", "token"} & {key.casefold() for key in query}:
-            raise AssemblyAssetPacketError("asset packet page_url must not contain credentials")
+        # Do not retain arbitrary caller query/fragment text in snapshot metadata. A
+        # credential denylist misses alternate names (and values in unknown keys).
+        if any(
+            key not in expected_query or values != [expected_query[key]]
+            for key, values in query.items()
+        ):
+            raise AssemblyAssetPacketError("asset packet page_url has unsupported query parameters")
         if (
             _required_text(raw.get("automation_gate"), "source.automation_gate")
             != ASSET_AUTOMATION_GATE
@@ -372,7 +394,7 @@ class GazetteSource:
             reporting_period_start=start,
             reporting_period_end=end,
             pdf_id=pdf_id,
-            page_url=page_url,
+            page_url=_canonical_gazette_url(pdf_id),
             artifact_filename=_required_text(
                 raw.get("artifact_filename"), "source.artifact_filename"
             ),
