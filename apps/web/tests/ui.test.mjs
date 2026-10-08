@@ -491,12 +491,12 @@ test("Gukgam schedule keeps scope limits and evidence links visible", async () =
   assert.match(page, /오늘 \(KST\)/);
   assert.match(page, /근거 계획서 공개일/);
   const kst = await readFile(new URL("../app/components/kst-schedule.tsx", import.meta.url), "utf8");
-  assert.match(page, /<AuditDateIndex serverToday=\{today\} days=\{scheduleDays\} \/>/);
+  assert.match(page, /<AuditDateIndex serverToday=\{renderedToday\} days=\{scheduleDays\} \/>/);
   assert.match(kst, /aria-label="감사일별 이동"/);
   const organization = await readFile(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
   const panel = await readFile(new URL("../app/components/evidence-panel.tsx", import.meta.url), "utf8");
   assert.match(organization, /<EvidencePanel/);
-  assert.match(panel, /id=\{`claim-\$\{claim\.id\}`\}/);
+  assert.match(panel, /id=\{claimAnchor \? `claim-\$\{claim\.id\}` : undefined\}/);
   assert.doesNotMatch(page + schedule, /score|rank|probability|confidence|위험도|의혹/i);
 });
 
@@ -604,7 +604,7 @@ test("one shared evidence panel renders every Claim on Person and Organization p
     assert.doesNotMatch(page, /Evidence trace|Audit trace|className="evidence-trace"/);
   }
   assert.match(person, /<aside className="profile-index"/);
-  assert.match(panel, /id=\{`claim-\$\{claim\.id\}`\}/);
+  assert.match(panel, /id=\{claimAnchor \? `claim-\$\{claim\.id\}` : undefined\}/);
   assert.match(panel, /<details className="evidence-disclosure">/);
   assert.match(panel, /근거 열기/);
   assert.match(panel, /SOURCE CONFLICT/);
@@ -619,7 +619,7 @@ test("one shared evidence panel renders every Claim on Person and Organization p
     assert.ok(panel.includes(label), label);
   }
   // Ordered definition list; IDs only inside the nested audit disclosure, never in the summary line.
-  assert.ok(panel.indexOf("<dt>기록</dt>") < panel.indexOf("<dt>유효 기간</dt>"));
+  assert.ok(panel.indexOf("<dt>기록</dt>") < panel.indexOf('dateLabel === "기록 기준"'));
   assert.ok(panel.indexOf("<dt>출처 정책</dt>") < panel.indexOf("<dt>한계</dt>"));
   assert.ok(panel.indexOf("<dt>한계</dt>") < panel.indexOf("evidence-audit"));
   const summary = panel.slice(panel.indexOf("<summary>"), panel.indexOf("</summary>"));

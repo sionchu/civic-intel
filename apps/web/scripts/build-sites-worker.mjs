@@ -4,7 +4,8 @@
 // (build-sites-snapshot.mjs) stays the production path until the owner approves a cutover.
 //
 // Usage: node scripts/build-sites-worker.mjs [--plugin-root <installed Sites plugin dir>]
-//          [--out <dir>] [--load-local <projection dir from export-public-projection.mjs>]
+//          [--out <dir>] [--lockfile <previous successful generated lock>]
+//          [--load-local <projection dir from export-public-projection.mjs>]
 //
 // --out receives the generated Sites project source (never edit it; rebuild). --load-local applies
 // the D1 migration and a projection to the starter's local (Miniflare) D1 for preview only.
@@ -51,8 +52,12 @@ const { values } = parseArgs({
     "plugin-root": { type: "string" },
     out: { type: "string", default: resolve(repoRoot, "dist", "moduigukgam-site-worker") },
     "load-local": { type: "string" },
+    lockfile: { type: "string" },
   },
 });
+
+// Read before stage cleanup: the caller may retain the successful lock inside that stage.
+const suppliedLock = values.lockfile ? readFileSync(resolve(values.lockfile)) : null;
 
 // 1. The official starter from the installed Sites plugin (not vendored: Sites owns it).
 const pluginCache = join(homedir(), ".codex", "plugins", "cache", "openai-curated-remote", "sites");
@@ -104,12 +109,20 @@ const added = Object.entries(appPackage.dependencies).filter(([name]) => !stageP
   // Resolve a fresh generated-stage lock, then require npm ci to validate it (no install fallback).
   rmSync(join(stage, 'package-lock.json'), { force: true });
   // Resolve once with the caller's supported npm, then validate with the strict ci step.
-  run("npm", ["install", '--package-lock-only',
-    "--ignore-scripts", "--workspaces=false", "--include=dev", "--include=optional", "--no-audit", "--no-fund"]);
+  if (suppliedLock) {
+    // An explicit prior lock prevents registry re-resolution during a repeat build. npm ci
+    // below still validates it against the current generated package and integrity hashes.
+    writeFileSync(join(stage, 'package-lock.json'), suppliedLock);
+  } else {
+    run("npm", ["install", '--package-lock-only',
+      "--ignore-scripts", "--workspaces=false", "--include=dev", "--include=optional", "--no-audit", "--no-fund"]);
+  }
 }
 const lockSha = createHash("sha256").update(readFileSync(join(stage, "package-lock.json"))).digest("hex");
 const lockMarker = join(stage, ".lock-sha256");
-if (!existsSync(join(stage, "node_modules")) || !existsSync(lockMarker) || readFileSync(lockMarker, "utf8") !== lockSha) {
+if (values.lockfile || !existsSync(join(stage, "node_modules")) || !existsSync(lockMarker) || readFileSync(lockMarker, "utf8") !== lockSha) {
+  // A failed ci can leave a partial node_modules tree. Never reuse the previous success marker.
+  rmSync(lockMarker, { force: true });
   run("npm", ["run", "install:ci"]);
   writeFileSync(lockMarker, lockSha);
 }

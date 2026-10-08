@@ -276,6 +276,82 @@ export type ProfileEntry = {
   details: Record<string, unknown>;
 };
 
+export type CareerPeriod = {
+  start: string | null;
+  end: string | null;
+  point: string | null;
+  start_precision: "DAY" | "MONTH" | "YEAR" | "UNKNOWN";
+  end_precision: "DAY" | "MONTH" | "YEAR" | "UNKNOWN";
+  point_precision: "DAY" | "MONTH" | "YEAR" | "UNKNOWN";
+  ongoing: boolean;
+};
+
+export type RelationshipPeriod = {
+  start: string | null;
+  end: string | null;
+  precision: string;
+  as_of: string | null;
+  ongoing: boolean;
+};
+
+export type RelationshipVia = {
+  key: string;
+  kind: string;
+  label: string;
+  binding: string;
+  organization_id: string | null;
+};
+
+export type PublicAffiliation = {
+  person_id: string;
+  via: RelationshipVia;
+  layer: string;
+  affiliation_type: string;
+  role: string | null;
+  period: RelationshipPeriod;
+  claim_id: string;
+  evidence_ids: string[];
+  source_ids: string[];
+  predicate: string;
+  epistemic_status: Status;
+  source_conflict: boolean;
+};
+
+export type PublicDerivedRelation = {
+  relation_id: string;
+  relation_type: string;
+  status: "DERIVED";
+  rule_id: string;
+  rule_version: string;
+  subject_person_id: string;
+  object_person_id: string;
+  counterpart: { id: string; name: string };
+  via: RelationshipVia;
+  subject_role: string | null;
+  object_role: string | null;
+  temporal: {
+    overlap: "VERIFIED" | "UNKNOWN" | "NOT_OVERLAPPING";
+    basis: string;
+    subject_period: RelationshipPeriod;
+    object_period: RelationshipPeriod;
+  };
+  source_claim_ids: string[];
+  evidence_ids: string[];
+  source_ids: string[];
+  source_conflict: boolean;
+  interpretation_note: string;
+};
+
+export type PersonRelationships = {
+  person: { id: string; name: string };
+  semantics: "DETERMINISTIC_READ_TIME_PROJECTION_FROM_PUBLISHED_CLAIMS";
+  ruleset_version: string;
+  affiliations: PublicAffiliation[];
+  groups: { via: RelationshipVia; layer: string; relations: PublicDerivedRelation[]; relation_count: number }[];
+  relation_count: number;
+  limitations: string[];
+};
+
 export type ProfileSection = {
   id: string;
   label: string;

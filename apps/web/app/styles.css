@@ -784,3 +784,20 @@ main { flex: 1; }
 .witness-matches ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-line); }
 .witness-matches li a { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--color-line); color: var(--color-ink); text-decoration: none; }
 .witness-matches li span, .witness-matches li small { color: var(--color-ink-muted); font-size: 13px; overflow-wrap: anywhere; }
+
+/* Career and relationship evidence reuse the profile's flat, native disclosures. */
+.person-career-period { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 12px 0; }
+.person-career-period span { color: var(--color-ink-muted); }
+.relationship-records { margin-top: 32px; }
+.relationship-group { margin-top: 28px; }
+.relationship-list { list-style: none; padding: 0; }
+.relationship-record { border-top: 1px solid var(--color-line); padding: 20px 0; overflow-wrap: anywhere; }
+.relationship-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.relationship-heading > a { font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; }
+.relationship-periods { display: grid; gap: 8px; margin: 12px 0; }
+.relationship-periods > div { display: grid; grid-template-columns: minmax(80px, 140px) 1fr; gap: 12px; }
+.relationship-periods dd { margin: 0; }
+.relationship-evidence summary, .relationship-method summary,
+.profile-coverage > summary, .profile-other-records > summary { cursor: pointer; padding: 12px 0; min-height: 44px; }
+.relationship-evidence li a { display: inline-block; padding: 8px 0; }
+.relationship-method, .profile-coverage, .profile-other-records { margin-top: 24px; }

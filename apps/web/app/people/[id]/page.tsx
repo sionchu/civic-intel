@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getSource } from "../../data";
+import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getPersonRelationships, getSource } from "../../data";
+import { careerAttribution, careerPeriodText } from "../../career-period";
 import EvidencePanel, { EvidenceTraceList, SourceCard } from "../../components/evidence-panel";
 import FactBox, { type FactRow } from "../../components/fact-box";
 import OntologyLocalGraph from "../../components/ontology-local-graph";
 import OpenTargetDetails from "../../components/open-target-details";
 import PendingLanes from "../../components/pending-lanes";
+import PersonRelationshipsView from "../../components/person-relationships";
 import ReadState from "../../components/read-state";
 import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
@@ -26,10 +28,9 @@ const FACT_PREDICATES: [string, string][] = [
   ["ASSEMBLY_COMMITTEES", "소속 위원회"],
   ["ASSEMBLY_COMMITTEE_ROLE", "위원회 직책"],
   ["ASSEMBLY_REELECTION", "선수"],
+  ["ALIO_REVIEWED_PERSON_ROLE", "공공기관 임원 공시"],
+  ["OPENDART_DISCLOSED_EXECUTIVE_ROLE", "기업 임원 공시"],
 ];
-
-// Per-bill activity records are listed in their own record sections, not as key facts.
-const ACTIVITY_RECORD_PREDICATES = new Set(["ASSEMBLY_BILL_PARTICIPATION", "ASSEMBLY_PLENARY_VOTE"]);
 
 // Person Claims linked to one exact source row after human identity review.
 const LINKED_WITNESS_PREDICATE = "LISTED_AS_GUKGAM_WITNESS";
@@ -91,9 +92,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
   }
   const person = personResult.data;
-  const [portrait, ontologyResult, committeesResult, targetsResult] = await Promise.all([
+  const [portrait, ontologyResult, relationshipsResult, committeesResult, targetsResult] = await Promise.all([
     getReviewedPortrait(person),
     getPersonOntology(id),
+    getPersonRelationships(id),
     getGukgamCommittees(),
     getGukgamTargets(),
   ]);
@@ -101,6 +103,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     ? committeesResult.data.committees.map((committee) => committee.committee_name)
     : [];
   const ontology = ontologyResult.state === "success" ? ontologyResult.data : null;
+  const relationships = relationshipsResult.state === "success" ? relationshipsResult.data : null;
 
   const sectionSourceIds =
     person.profile?.sections.flatMap((section) =>
@@ -108,7 +111,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     ) ?? [];
   const claimSourceIds = (person.claims ?? []).flatMap((claim) => claim.source_ids);
   const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
-  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds])];
+  const relationshipSourceIds = relationships?.groups.flatMap((group) => group.relations.flatMap((relation) => relation.source_ids)) ?? [];
+  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds, ...relationshipSourceIds])];
   const sourceResults = await Promise.all(sourceIds.map(getSource));
   const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
   const sourceError = sourceResults.find((item) => item.state === "error");
@@ -118,17 +122,17 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const claims = person.claims ?? [];
   const claimById = new Map(claims.map((claim) => [claim.id, claim]));
   const publishedClaims = claims.filter((claim) => claim.publication_status === "PUBLISHED");
-  const knownPredicates = new Set(FACT_PREDICATES.map(([predicate]) => predicate));
   const factRows: FactRow[] = [
     ...FACT_PREDICATES.flatMap(([predicate, label]) =>
       publishedClaims.filter((claim) => claim.predicate === predicate).map((claim) => ({
         key: claim.id, label, value: claim.object_text, claim,
       })),
     ),
-    ...publishedClaims
-      .filter((claim) => !knownPredicates.has(claim.predicate) && !ACTIVITY_RECORD_PREDICATES.has(claim.predicate))
-      .map((claim) => ({ key: claim.id, label: predicateLabel(claim.predicate), value: claim.object_text, claim })),
   ];
+  const career = profile?.sections.find((section) => section.id === "career_timeline");
+  const limitations = profile?.sections.find((section) => section.id === "limitations");
+  const representedClaims = new Set(profile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? []);
+  const otherClaims = publishedClaims.filter((claim) => !representedClaims.has(claim.id));
 
   const memberCommittees = committeesResult.state === "success"
     ? committeesResult.data.committees.flatMap((committee) => {
@@ -144,15 +148,18 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const emptyLaneGroups = EMPTY_LANE_REASONS.map((group) => ({
     ...group,
     lanes: (profile?.sections ?? [])
-      .filter((section) => section.entries.length === 0 && (section.reason ?? "SOURCE_NOT_COLLECTED") === group.reason)
+      .filter((section) => section.entries.length === 0 && section.reason === group.reason)
       .map((section) => section.label),
   })).filter((group) => group.lanes.length > 0);
 
   const isPlenaryVote = (entry: ProfileEntry) =>
     entry.kind === "DECISION_EPISODE" && entry.details.action === "PLENARY_ROLL_CALL_VOTE";
 
+  const renderedClaimIds = new Set<string>();
   const renderEntry = (entry: ProfileEntry) => {
     const claim: Claim | undefined = entry.claim_id ? claimById.get(entry.claim_id) : undefined;
+    const claimAnchor = !entry.claim_id || !renderedClaimIds.has(entry.claim_id);
+    if (entry.claim_id) renderedClaimIds.add(entry.claim_id);
     const changeDetails = entry.kind === "CHANGE" ? entry.details as {
       method_version?: string;
       derived_reason?: string;
@@ -214,7 +221,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       const trace = entry.evidence?.[0];
       const source = trace ? sourceById.get(trace.source_id) : undefined;
       return (
-        <li className="vote-row" key={entry.id} id={`claim-${entry.claim_id}`}>
+        <li className="vote-row" key={entry.id} id={claimAnchor ? `claim-${entry.claim_id}` : undefined}>
           <span className="vote-date">{entry.date ?? "날짜 미기재"}</span>
           <span className="vote-bill">
             {typeof entry.details.detail_url === "string"
@@ -245,7 +252,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           title={isLegislativeActivity ? activityTitle ?? entry.title : entry.title}
           kind={isLegislativeActivity ? "OFFICIAL BILL RECORD" : entry.kind}
           sourceConflict={entry.source_conflict}
+          dateLabel={entry.details.career_semantics ? "기록 기준" : undefined}
+          claimAnchor={claimAnchor}
         >
+          {entry.details.career_semantics ? (
+            <p className="person-career-period"><strong>{careerPeriodText(entry.details.career_period)}</strong><span>{careerAttribution(entry.details.career_semantics)}</span></p>
+          ) : null}
           {isLegislativeActivity && (
             <>
               <div className="activity-badges"><span className="status AVAILABLE">{activityRole}</span></div>
@@ -304,7 +316,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               alt={`${person.canonical_name} 공개 사진`}
             />
             <figcaption className="portrait-credit">
-              <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · Wikimedia Commons</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
+              <span>사진: <a href={portrait.source_page_url} target="_blank" rel="noreferrer">{portrait.creator} · {portrait.source_kind === "WIKIMEDIA_COMMONS_REVIEWED" ? "Wikimedia Commons" : "출처"}</a> · <a href={portrait.license_url} target="_blank" rel="noreferrer">{portrait.license}</a></span>
               <details className="audit-details">
                 <summary>사진 출처 정보</summary>
                 <small>
@@ -325,7 +337,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <h2 className="index-heading">이 페이지</h2>
           <nav>
             <ul className="page-anchors">
-              <li><a href="#key-facts">핵심 기록</a></li>
+              {factRows.length > 0 && <li><a href="#key-facts">핵심 기록</a></li>}
+              {career && career.entries.length > 0 && <li><a href="#career">경력</a></li>}
               {hasGukgam && <li><a href="#gukgam-2026">국정감사</a></li>}
               <li><a href="#records">기록</a></li>
               <li><a href="#official-connections">연결</a></li>
@@ -335,14 +348,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         </aside>
 
         <div className="profile-content">
-          <section className="person-section" id="key-facts" aria-labelledby="key-facts-title">
+          {factRows.length > 0 && <section className="person-section" id="key-facts" aria-labelledby="key-facts-title">
             <div className="section-intro">
               <h2 id="key-facts-title">핵심 기록</h2>
             </div>
-            {factRows.length > 0 ? <FactBox rows={factRows} /> : (
-              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 기록이 아직 없습니다.</p>
-            )}
-          </section>
+            <FactBox rows={factRows} />
+          </section>}
+
+          {career && career.entries.length > 0 && (
+            <section className="person-section person-career" id="career" aria-labelledby="career-title">
+              <div className="section-intro"><h2 id="career-title">경력 <span className="domain-label" lang="en">TIMELINE</span></h2><span className={`status ${career.status}`}>{career.status}</span></div>
+              {career.note && <p className="section-note">{career.note}</p>}
+              {career.entries.map(renderEntry)}
+            </section>
+          )}
 
           {hasGukgam && (
             <section className="person-section" id="gukgam-2026" aria-labelledby="person-gukgam-title">
@@ -438,11 +457,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </div>
             {profile ? (
               <>
-                {emptyLaneGroups.map((group) => (
-                  <PendingLanes key={group.reason} title={group.title} lanes={group.lanes} detail={group.detail} />
-                ))}
                 <div className="profile-sections">
-                  {profile.sections.map((section) => section.entries.length === 0 ? null : (
+                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || section.entries.length === 0 ? null : (
                     <section className="profile-section" key={section.id} id={`section-${section.id}`} aria-labelledby={`heading-${section.id}`}>
                       <div className="section-heading">
                         <div><h3 id={`heading-${section.id}`}>{section.label}</h3></div>
@@ -459,6 +475,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             ) : (
               <p className="empty-state"><span><span className="status UNKNOWN">UNKNOWN</span> <strong>아직 공개된 기록이 없습니다.</strong></span></p>
             )}
+            {otherClaims.length > 0 && (
+              <details className="profile-other-records">
+                <summary>기타 공개 근거 기록 {otherClaims.length}건</summary>
+                {otherClaims.map((claim) => <EvidencePanel key={claim.id} claim={claim} sourceById={sourceById} kind={predicateLabel(claim.predicate)} />)}
+              </details>
+            )}
+            {(emptyLaneGroups.length > 0 || Boolean(limitations?.entries.length)) && (
+              <details className="profile-coverage">
+                <summary>자료 범위와 한계</summary>
+                {limitations && limitations.entries.length > 0
+                  ? limitations.entries.map(renderEntry)
+                  : emptyLaneGroups.map((group) => <PendingLanes key={group.reason} title={group.title} lanes={group.lanes} detail={group.detail} />)}
+              </details>
+            )}
           </section>
 
           <section className="ontology-section person-section" id="official-connections" aria-labelledby="ontology-title">
@@ -468,12 +498,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             {ontologyResult.state === "error" ? (
               <ReadState error={ontologyResult.error} />
             ) : ontology && ontology.edges.length > 0 ? (
-              <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} gukgamCommittees={gukgamCommittees} />
-            ) : (
+              <OntologyLocalGraph graph={ontology} sourceTitles={sourceTitleById} gukgamCommittees={gukgamCommittees} claimAnchorsInRecords />
+            ) : relationships && relationships.relation_count > 0 ? null : (
               <p className="empty-state" role="status">
-                <span><strong>아직 공개된 연결이 없습니다.</strong></span>
+                <span><strong>표시할 공개 직접 연결 기록이 없습니다.</strong></span>
               </p>
             )}
+            {relationshipsResult.state === "error" ? <ReadState error={relationshipsResult.error} /> : relationships && <PersonRelationshipsView data={relationships} />}
           </section>
 
           <section className="source-library person-section" id="sources" aria-labelledby="sources-title">

@@ -19,6 +19,7 @@ import { parseArgs } from "node:util";
 import { gzipSync } from "node:zlib";
 
 import { EMAIL, forbiddenToken } from "./public-boundary.mjs";
+import { PERSON_RELATIONSHIP_QUERY, personRelationshipPath } from "../app/relationship-path.mjs";
 
 export const PROJECTION_SCHEMA_VERSION = 2;
 // RECENT_PLENARY_VOTE_LIMIT in packages/rendering/profile_projection.py: a Person response carries only
@@ -32,6 +33,7 @@ const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 export const SCOPES = [
   `^/people/${UUID}$`,
   `^/ontology/people/${UUID}$`,
+  `^/relationships/people/${UUID}\\?${PERSON_RELATIONSHIP_QUERY.replace(/[?&]/g, "\\$&")}$`,
   `^/organizations/${UUID}$`,
   `^/ontology/organizations/${UUID}$`,
   `^/organizations/${UUID}/money\\?${MONEY_QUERY.replace(/[?&]/g, "\\$&")}$`,
@@ -101,7 +103,7 @@ async function main() {
   }
 
   const detailPaths = [
-    ...people.flatMap(({ id }) => [`/people/${id}`, `/ontology/people/${id}`]),
+    ...people.flatMap(({ id }) => [`/people/${id}`, `/ontology/people/${id}`, personRelationshipPath(id)]),
     ...organizations.flatMap(({ id }) => [
       `/organizations/${id}`, `/ontology/organizations/${id}`, `/organizations/${id}/money?${MONEY_QUERY}`,
     ]),

@@ -25,10 +25,12 @@ export default function OntologyLocalGraph({
   graph,
   sourceTitles,
   gukgamCommittees = [],
+  claimAnchorsInRecords = false,
 }: {
   graph: OntologyGraph;
   sourceTitles: Record<string, string>;
   gukgamCommittees?: string[];
+  claimAnchorsInRecords?: boolean;
 }) {
   const gukgamCommitteeNames = new Set(gukgamCommittees);
   const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
@@ -83,7 +85,7 @@ export default function OntologyLocalGraph({
               className="ontology-relation"
               key={edge.id}
               id={
-                edge.relation_type === "SERVED_ON"
+                !claimAnchorsInRecords && edge.relation_type === "SERVED_ON"
                   && graph.edges.findIndex((item) => item.claim_id === edge.claim_id) === edgeIndex
                   ? `claim-${edge.claim_id}`
                   : undefined

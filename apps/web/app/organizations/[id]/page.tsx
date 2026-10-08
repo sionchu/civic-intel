@@ -279,7 +279,7 @@ export default async function OrganizationPage({
           <h2 className="index-heading">이 페이지</h2>
           <nav>
             <ul className="page-anchors">
-              <li><a href="#key-facts">핵심 기록</a></li>
+              {factRows.length > 0 && <li><a href="#key-facts">핵심 기록</a></li>}
               {hasGukgam && <li><a href="#gukgam-2026">국정감사</a></li>}
               <li><a href="#records">기록</a></li>
               {showConnections && <li><a href="#official-connections">연결</a></li>}
@@ -289,14 +289,12 @@ export default async function OrganizationPage({
         </aside>
 
         <div className="profile-content">
-          <section className="organization-section" id="key-facts" aria-labelledby="organization-overview-title">
+          {factRows.length > 0 && <section className="organization-section" id="key-facts" aria-labelledby="organization-overview-title">
             <div className="section-intro">
               <h2 id="organization-overview-title">핵심 기록</h2>
             </div>
-            {factRows.length > 0 ? <FactBox rows={factRows} /> : (
-              <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 표시할 공개 기록이 아직 없습니다.</p>
-            )}
-          </section>
+            <FactBox rows={factRows} />
+          </section>}
 
           {hasGukgam && (
             <section className="organization-section" id="gukgam-2026" aria-labelledby="organization-gukgam-title">
@@ -344,7 +342,6 @@ export default async function OrganizationPage({
             <div className="section-intro">
               <h2 id="organization-records-title">기록</h2>
             </div>
-            <PendingLanes lanes={pendingLanes} />
             {claims.length === 0 && (
               <p className="empty"><span className="status UNKNOWN">UNKNOWN</span> 현재 연결된 공개 기록이 없습니다.</p>
             )}
@@ -374,6 +371,7 @@ export default async function OrganizationPage({
                 ) : moneyResult.state === "error" ? <ReadState error={moneyResult.error} /> : null}
               </div>
             )}
+            {pendingLanes.length > 0 && <details className="profile-coverage"><summary>자료 범위와 한계</summary><PendingLanes lanes={pendingLanes} /></details>}
           </section>
 
           {showConnections && (

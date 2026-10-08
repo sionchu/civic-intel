@@ -9,9 +9,11 @@ import type {
   Organization,
   OrganizationSummary,
   Person,
+  PersonRelationships,
   Source,
 } from "./types";
 import { readPublic } from "./public-read";
+import { personRelationshipPath } from "./relationship-path.mjs";
 
 const DIRECTORY_REVALIDATE_SECONDS = 60;
 
@@ -58,6 +60,9 @@ export function getPeople(): Promise<ApiResult<Person[]>> {
 export function getPerson(id: string): Promise<ApiResult<Person>> { return getJson(`/people/${id}`); }
 export function getPersonOntology(id: string): Promise<ApiResult<OntologyGraph>> {
   return getJson(`/ontology/people/${id}`);
+}
+export function getPersonRelationships(id: string): Promise<ApiResult<PersonRelationships>> {
+  return getJson(personRelationshipPath(id));
 }
 export function getOrganization(id: string): Promise<ApiResult<Organization>> {
   return getJson(`/organizations/${id}`);

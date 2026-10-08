@@ -5,6 +5,8 @@
 // exported rows are transport failures (never UNKNOWN facts).
 import { env } from "cloudflare:workers";
 import { cacheForRequest } from "vinext/cache";
+// This module is copied to app/public-read.ts by the Worker build.
+import { PERSON_RELATIONSHIP_QUERY } from "./relationship-path.mjs";
 
 export type PublicReadResponse = {
   status: number;
@@ -50,6 +52,17 @@ async function gunzipJson(parts: PublicReadPart[], expected: [number, string]): 
 
 // Same signature as the HTTP transport; revalidation hints do not apply to a fixed snapshot.
 export async function readPublic(path: string, _options?: { revalidateSeconds?: number }): Promise<PublicReadResponse> {
+  const invalidInput = (): PublicReadResponse => ({ status: 422, body: { error: { code: 'INVALID_INPUT', message: 'The request input is invalid.' } }, requestId: null });
+  const relationship = path.match(/^\/relationships\/people\/([^/?]+)(?:\?([^#]*))?$/);
+  if (relationship) {
+    const query = new URLSearchParams(relationship[2] ?? '');
+    const expected = new URLSearchParams(PERSON_RELATIONSHIP_QUERY);
+    if ([...query].length !== [...expected].length || [...expected].some(([key, value]) => query.getAll(key).length !== 1 || query.get(key) !== value)) return invalidInput();
+    let hex = '';
+    try { hex = decodeURIComponent(relationship[1]).replace(/^urn:uuid:/, '').replace(/^\{+|\}+$/g, '').replaceAll('-', '').toLowerCase(); } catch { /* Invalid encoded UUID. */ }
+    if (!/^[0-9a-f]{32}$/.test(hex)) return invalidInput();
+    path = `/relationships/people/${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}?${PERSON_RELATIONSHIP_QUERY}`;
+  }
   // The HTTP API parses UUID path inputs before looking up a record. Normalize its common
   // accepted forms to the exported key; this is input parsing, never identity resolution.
   const entity = path.match(/^(\/people|\/organizations|\/sources|\/ontology\/people|\/ontology\/organizations)\/([^/?]+)(\/money\?earlier_fiscal_year=2024&later_fiscal_year=2025)?$/);

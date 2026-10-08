@@ -86,6 +86,9 @@ const HIDDEN_QUALIFIERS = new Set([
   "audited_target_index", "alio_apba_id", "classification", "executive_kind",
   "source_claim_id", "source_observation_id", "identity_review_id", "identity_scope",
   "reported_main_career_semantics", "organization_id",
+  // Normalized date anchors are not literal source values. Career presentation preserves units.
+  "period_start", "period_end", "period_point", "period_start_precision", "period_end_precision",
+  "period_point_precision", "period_ongoing",
 ]);
 
 const CONTRACT_NOTES: Record<string, string> = {
@@ -129,6 +132,8 @@ export default function EvidencePanel({
   kind,
   className,
   sourceConflict = false,
+  dateLabel = "기준",
+  claimAnchor = true,
   children,
 }: {
   claim: Claim;
@@ -137,6 +142,8 @@ export default function EvidencePanel({
   kind?: string;
   className?: string;
   sourceConflict?: boolean;
+  dateLabel?: string;
+  claimAnchor?: boolean;
   children?: ReactNode;
 }) {
   const conflict = sourceConflict || claim.source_conflict === true;
@@ -162,7 +169,7 @@ export default function EvidencePanel({
   const firstSource = sources[0];
 
   return (
-    <article className={`claim evidence-panel${className ? ` ${className}` : ""}`} id={`claim-${claim.id}`}>
+    <article className={`claim evidence-panel${className ? ` ${className}` : ""}`} id={claimAnchor ? `claim-${claim.id}` : undefined}>
       {kind && <span className="claim-kind">{kind}</span>}
       <p className="claim-title">{title ?? claim.proposition}</p>
       {children}
@@ -175,7 +182,7 @@ export default function EvidencePanel({
               <span className="status UNKNOWN">{claim.publication_status}</span>
             )}
             {conflict && <span className="status CONFLICT">SOURCE CONFLICT</span>}
-            <span className="evidence-asof">기준 {asOf ?? "기준일 미기재"}</span>
+            <span className="evidence-asof">{dateLabel} {asOf ?? "기준일 미기재"}</span>
             {firstSource && (
               <span className="evidence-source-name">
                 {firstSource.title}{sources.length > 1 ? ` 외 ${sources.length - 1}` : ""}
@@ -203,7 +210,7 @@ export default function EvidencePanel({
             </dd>
           </div>
           <div>
-            <dt>유효 기간</dt>
+            <dt>{dateLabel === "기록 기준" ? "기록 유효 기간" : "유효 기간"}</dt>
             <dd>{asOf ?? "시작일 미기재"} – {validTo ?? "종료일 없음"}</dd>
           </div>
           <div>

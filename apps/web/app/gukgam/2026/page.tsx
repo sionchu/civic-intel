@@ -57,6 +57,7 @@ export default async function Gukgam2026Page({
   const committees = committeesResult.state === "success" ? committeesResult.data.committees : [];
   const committeeByName = new Map(committees.map((committee) => [committee.committee_name, committee]));
   const today = seoulDate(new Date());
+  const renderedToday = process.env.CIVIC_SITES_EXPORT === "1" ? null : today;
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
   const scheduleGroups = groupByDateAndCommittee(targetItems, today);
   const scheduleDays = scheduleGroups.map((group) => ({
@@ -82,7 +83,7 @@ export default async function Gukgam2026Page({
             2026 국정감사 일정, 피감기관, 위원회 위원, 증인·참고인 명단입니다.
           </p>
           <div className="hero-actions">
-            <NextAuditAction serverToday={today} dates={scheduleDates} />
+            <NextAuditAction serverToday={renderedToday} dates={scheduleDates} />
             <a className="inline-action" href="#gukgam-witnesses-title">증인·참고인 명단</a>
             <Link className="inline-action" href="/people">인물 찾기</Link>
             <Link className="inline-action" href="/organizations">기관 보기</Link>
@@ -120,20 +121,20 @@ export default async function Gukgam2026Page({
               </div>
               <div>
                 <dt>오늘 (KST)</dt>
-                <dd><KstToday serverToday={today} /></dd>
+                <dd><KstToday serverToday={renderedToday} /></dd>
               </div>
             </dl>
             <p className="gukgam-scope-note">
               전체 감사대상 목록이 아닙니다. 위원회 계획서상 일정이며 바뀔 수 있습니다.
             </p>
 
-            <AuditDateIndex serverToday={today} days={scheduleDays} />
+            <AuditDateIndex serverToday={renderedToday} days={scheduleDays} />
 
             <div className="gukgam-schedule" id="gukgam-schedule">
               {scheduleGroups.map((group) => (
                 <AuditDaySection
                   key={group.date}
-                  serverToday={today}
+                  serverToday={renderedToday}
                   date={group.date}
                   dates={scheduleDates}
                   count={group.count}
