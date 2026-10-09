@@ -11,8 +11,8 @@ import type {
   Person,
   Source,
 } from "./types";
+import { readPublic } from "./public-read";
 
-const API = process.env.CIVIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const DIRECTORY_REVALIDATE_SECONDS = 60;
 
 const STATUS_CODE: Record<number, ApiErrorCode> = {
@@ -27,14 +27,9 @@ async function getJson<T>(
   options: { revalidateSeconds?: number } = {},
 ): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(
-      `${API}${path}`,
-      options.revalidateSeconds
-        ? { next: { revalidate: options.revalidateSeconds } }
-        : { cache: "no-store" },
-    );
-    if (response.ok) return { state: "success", data: (await response.json()) as T };
-    const payload = await response.json().catch(() => null) as {
+    const response = await readPublic(path, options);
+    if (response.status >= 200 && response.status < 300) return { state: "success", data: response.body as T };
+    const payload = response.body as {
       error?: { code?: ApiErrorCode; message?: string; request_id?: string };
     } | null;
     return {
@@ -42,7 +37,7 @@ async function getJson<T>(
       error: {
         code: payload?.error?.code ?? STATUS_CODE[response.status] ?? "SERVICE_UNAVAILABLE",
         message: payload?.error?.message ?? "The public data service is temporarily unavailable.",
-        request_id: payload?.error?.request_id ?? response.headers.get("x-request-id"),
+        request_id: payload?.error?.request_id ?? response.requestId,
       },
     };
   } catch {

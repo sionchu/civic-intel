@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { buildRootMetadata, SITE_NAME } from "./site-metadata";
+import { readSnapshotAt } from "./public-read";
 import "./styles.css";
+
+// Snapshot-backed server layouts must refresh on navigation. The static builder rewrites this.
+export const dynamic = "force-dynamic";
 
 export function generateMetadata(): Metadata {
   return buildRootMetadata();
 }
 
-// Set only by the Sites snapshot build: when the public read snapshot was generated (KST).
-const SNAPSHOT_AT = process.env.CIVIC_SNAPSHOT_AT?.trim() || null;
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // HTTP/static uses CIVIC_SNAPSHOT_AT; the Worker uses its request's ACTIVE D1 snapshot.
+  const snapshotAt = await readSnapshotAt();
   return (
     <html lang="ko">
       <body>
@@ -41,7 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <strong>{SITE_NAME}</strong>
             </div>
             <div className="footer-note">
-              {SNAPSHOT_AT && <span>자료 기준 {SNAPSHOT_AT} (공개 기록 스냅샷)</span>}
+              {snapshotAt && <span>자료 기준 {snapshotAt} (공개 기록 스냅샷)</span>}
             </div>
           </footer>
         </div>

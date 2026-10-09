@@ -31,6 +31,9 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".sites-build",
+    ".sites-worker-build",
+    "sites-worker"
   ]
 }

@@ -13,6 +13,9 @@ import {
 import { join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
+import { sizeReport } from "./bundle-size-report.mjs";
+import { EMAIL, forbiddenToken } from "./public-boundary.mjs";
+
 const appRoot = resolve(import.meta.dirname, "..");
 const repoRoot = resolve(appRoot, "..", "..");
 const stage = resolve(appRoot, ".sites-build");
@@ -211,14 +214,9 @@ if (failedReads.length > 0) {
   fail(`${failedReads.length} pages captured a service failure, e.g. ${rel(failedReads[0])}; rebuild when the API is healthy`);
 }
 
-const FORBIDDEN_TOKENS = [
-  apiOrigin, "TEL_NO", "E_MAIL", "normalized_payload", "raw_payload", "railway.internal",
-  "X-Civic-Operator-Token", "CIVIC_OPERATOR", "DATABASE_URL", "postgresql://", "postgresql+psycopg",
-];
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 for (const path of files.filter((file) => /\.(html|txt|js|json|xml)$/.test(file))) {
   const text = readFileSync(path, "utf8");
-  const token = FORBIDDEN_TOKENS.find((item) => text.includes(item));
+  const token = forbiddenToken(text, apiOrigin);
   if (token) fail(`forbidden token ${JSON.stringify(token)} in ${rel(path)}`);
   if (/\.(html|txt)$/.test(path) && EMAIL.test(text)) fail(`email-like text in ${rel(path)}`);
 }
@@ -246,6 +244,11 @@ const manifest = {
     bytes: bundleBytes,
   },
   bundle_sha256: createHash("sha256").update(digests.join("\n")).digest("hex"),
+  // Where the bytes go, so data growth is visible before it reaches the Sites limit.
+  size: sizeReport(out, {
+    publicPeople: people.length,
+    publicOrganizations: Array.isArray(organizations) ? organizations.length : null,
+  }),
 };
 writeFileSync(join(out, "snapshot-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(JSON.stringify({ status: "PASS", out, ...manifest }, null, 2));

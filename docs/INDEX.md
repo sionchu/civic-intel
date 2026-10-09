@@ -107,6 +107,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Cross-lane identity candidate pipeline v0](exec-plans/completed/cross-lane-identity-candidate-pipeline-v0.md)
 - [Gukgam 2026 Governance Ontology + Visual Explorer v0](exec-plans/active/gukgam-2026-governance-ontology-visual-explorer-v0.md)
 - [모두의국감 public launch v0](exec-plans/active/moduigukgam-public-launch-v0.md)
+- [모두의국감 Sites storage split v0 (D1 public read projection)](exec-plans/active/sites-storage-split-v0.md)
 - [Gukgam review throughput receipt v0](exec-plans/completed/gukgam-review-throughput-v0.md)
 - [Operator current review SSOT v0](exec-plans/completed/operator-current-review-ssot-v0.md)
 - [Source-neutral derived CHANGE trace v0](exec-plans/completed/source-neutral-change-trace-v0.md)

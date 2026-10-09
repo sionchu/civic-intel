@@ -1,6 +1,6 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-
+// Bundled with the code (not read from disk at request time) so the lookup also works in the
+// Sites Worker runtime, which has no project filesystem.
+import portraitManifest from "../public/portraits/manifest.json";
 import type { Person } from "./types";
 
 export type ReviewedPortrait = {
@@ -49,16 +49,11 @@ function isSafeLocalPortraitPath(value: string): boolean {
 export async function getReviewedPortrait(person: Person): Promise<ReviewedPortrait | null> {
   if (person.identity_status !== "RESOLVED") return null;
 
-  try {
-    const manifestPath = join(process.cwd(), "public", "portraits", "manifest.json");
-    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as PortraitManifest;
-    const portrait = manifest.portraits.find((candidate) => (
-      candidate.person_id === person.id
-      && candidate.review_status === "ELIGIBLE"
-      && isSafeLocalPortraitPath(candidate.local_path)
-    ));
-    return portrait ?? null;
-  } catch {
-    return null;
-  }
+  const manifest = portraitManifest as PortraitManifest;
+  const portrait = manifest.portraits.find((candidate) => (
+    candidate.person_id === person.id
+    && candidate.review_status === "ELIGIBLE"
+    && isSafeLocalPortraitPath(candidate.local_path)
+  ));
+  return portrait ?? null;
 }
