@@ -18,7 +18,9 @@ export default function CareerTermStrip({ entries, claims }: {
     const start = dateTime(claim.qualifiers.term_start);
     const end = dateTime(claim.qualifiers.term_end);
     const party = claim.qualifiers.party;
-    return [{ entry, claim, label: `${claim.object_text}${party ? ` · ${party}` : ""}`, start, end }];
+    // Historical term text already names the party ("제18대 한나라당 부산 중구동구").
+    const label = party && !claim.object_text.includes(party) ? `${claim.object_text} · ${party}` : claim.object_text;
+    return [{ entry, claim, label, start, end }];
   });
   if (terms.length === 0) return null;
 
