@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getPersonRelationships, getSource } from "../../data";
+import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getPersonRelationships, getSources } from "../../data";
 import { careerAttribution, careerPeriodText } from "../../career-period";
 import PersonEvidenceProvider from "../../components/person-evidence-context";
 import PersonClaimLibrary from "../../components/person-claim-library";
@@ -119,7 +119,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
   const relationshipSourceIds = relationships?.groups.flatMap((group) => group.relations.flatMap((relation) => relation.source_ids)) ?? [];
   const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds, ...relationshipSourceIds])];
-  const sourceResults = await Promise.all(sourceIds.map(getSource));
+  const sourceResults = await getSources(sourceIds);
   const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
   const sourceError = sourceResults.find((item) => item.state === "error");
   const sourceById = new Map(sources.map((source) => [source.id, source]));

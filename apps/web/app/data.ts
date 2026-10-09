@@ -12,7 +12,7 @@ import type {
   PersonRelationships,
   Source,
 } from "./types";
-import { readPublic } from "./public-read";
+import { readPublic, readPublicSources, type PublicReadResponse } from "./public-read";
 import { personRelationshipPath } from "./relationship-path.mjs";
 
 const DIRECTORY_REVALIDATE_SECONDS = 60;
@@ -24,12 +24,7 @@ const STATUS_CODE: Record<number, ApiErrorCode> = {
   422: "INVALID_INPUT",
 };
 
-async function getJson<T>(
-  path: string,
-  options: { revalidateSeconds?: number } = {},
-): Promise<ApiResult<T>> {
-  try {
-    const response = await readPublic(path, options);
+function publicResult<T>(response: PublicReadResponse): ApiResult<T> {
     if (response.status >= 200 && response.status < 300) return { state: "success", data: response.body as T };
     const payload = response.body as {
       error?: { code?: ApiErrorCode; message?: string; request_id?: string };
@@ -42,6 +37,15 @@ async function getJson<T>(
         request_id: payload?.error?.request_id ?? response.requestId,
       },
     };
+}
+
+async function getJson<T>(
+  path: string,
+  options: { revalidateSeconds?: number } = {},
+): Promise<ApiResult<T>> {
+  try {
+    const response = await readPublic(path, options);
+    return publicResult<T>(response);
   } catch {
     return {
       state: "error",
@@ -94,3 +98,9 @@ export function getOrganizationMoney(
   );
 }
 export function getSource(id: string): Promise<ApiResult<Source>> { return getJson(`/sources/${id}`); }
+export async function getSources(ids: string[]): Promise<ApiResult<Source>[]> {
+  try {
+    const responses = await readPublicSources(ids.map((id) => `/sources/${id}`));
+    return responses.map((response) => publicResult<Source>(response));
+  } catch { return ids.map(() => ({ state: "error", error: { code: "SERVICE_UNAVAILABLE", message: "공개 출처를 확인할 수 없습니다.", request_id: null } })); }
+}

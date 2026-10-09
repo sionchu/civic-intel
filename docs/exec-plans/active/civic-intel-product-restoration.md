@@ -1,8 +1,10 @@
 # Civic Intel product restoration
 
-현재 최종 표시 문구 보완까지 포함한 전체 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
+현재 최종 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 동결 후보 공식 Worker 빌드와 전체7070 응답 재검증이 PASS이고 실제 최대 SSR은26조회/최대bind100·동시6/HTML200/10,655,830B/31.12초다. 아직 UNCOMMITTED_FROZEN_CANDIDATE이며 최종 Gitblob 대조 전 release pin 증거로 승격하지 않는다.
 
-제품 d67 원본173파일 대조/읽기전용8124 startup/schema0008/66imports/12GET200 PASS. 동일 d67 데이터 source의 fresh full export72149는 실제 exit0/1733.18초: 1142People/387Org/2478Sources/7070paths/12729parts/386유효clienterror, JSON1,661,526,225B/gzip244,996,006B/maxgziprow1,412,221B. Streaming17predicate·Claim/Evidence/Sourceclosure·UNKNOWN 및 전송예산 검증은 현재 진행 중이다. 전체 데이터capture의 d67 provenance와 새 표시 제품pin은 구분한다. Worker의256MiB guard는 펼친 runtime/build 합계이며 snapshot전체gzip/SQLhex/base64파일의 cap이 아니다. 실제D1allocation/retainedrows/indexes와 hosted128MiBpeak는 아직UNKNOWN/NOT_RUN이다. 운영8100·launchd·canonicalDB·Sitev6는 그대로다.
+이전 표시 문구 제품 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
+
+제품 d67 원본173파일 대조/읽기전용8124 startup/schema0008/66imports/12GET200 PASS. 동일 d67 데이터 source의 fresh full export72149는 실제 exit0/1733.18초: 1142People/387Org/2478Sources/7070paths/12729parts/386유효clienterror, JSON1,661,526,225B/gzip244,996,006B/maxgziprow1,412,221B. 전체 감사 PASS: 17개 published Person predicate의 관측 inventory와 795,154 unique Claim 수가 일치하며 Evidence795,363·Source2478·누락0·795,154 Claim의 subject/publication/근거 연결을 확인했다. 전체7070경로의 raw SHA/status/bytes/part 순서와 실제 scope UTF-8 1,891,534B(기록값 동일, 여유8,466B), 최대 part40,000B/request53,584B를 검증했다. inventory 비교는 2026-10-08T20:24:05.237123Z 관측 기준이며 현재 DB 재집계로 표현하지 않는다. fd73963 API의 12GET 및 공개 runtime172파일이 d67과 동일해 d67 데이터 provenance를 그대로 유지한다. 실제 compiled 최대 인물 SSR은 로컬200/10,655,830B/31.91초지만 D1 SELECT1,942회로 확인됐다. D1 Paid1000/Free50 한도를 초과하므로 현재 배포 준비는 INCOMPLETE이며, 원본 Claim/Source를 유지하는 최소 Source 배치 읽기 보완 중이다. 이 보완의 전체 검증41112는 PASS이고 새 동결 Worker 후보의 실제26조회는 최종 Gitblob 대조를 기다린다. 전체 데이터capture의 d67 provenance와 새 표시 제품pin은 구분한다. Worker의256MiB guard는 펼친 runtime/build 합계이며 snapshot전체gzip/SQLhex/base64파일의 cap이 아니다. 실제D1allocation/retainedrows/indexes와 hosted128MiBpeak는 아직UNKNOWN/NOT_RUN이다. 운영8100·launchd·canonicalDB·Sitev6는 그대로다.
 
 
 Status: LOCAL_KOREAN_AND_PUBLIC_RECORD_CONNECTION_VERIFIED_RELEASE_PREPARATION / LIVE_BASELINE_PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
@@ -32,7 +34,7 @@ DRAFT ALIO2,483/NEC6,133 remain unpublished; no operational news/asset/housing r
 Inventory is counts/SQL eligibility, not full source-gate validation. Current local profile retains recent10 and includes all canonical eligible votes in the same
 Person DTO using a public qualifier allowlist. Two actual subject-bound Persons each expose1910
 votes; largest current JSON10,089,831B/gzip1,412,221B. Claim bodies, valid-time and full
-Evidence/Source locators remain; domains/persistence are unchanged. Full-universe budget is NOT_RUN. No canonical DB, operating339363f or publicv6 change.
+Evidence/Source locators remain; domains/persistence are unchanged. Full-universe data/protocol audit is PASS with actual allocated D1 storage and hosted Worker peak still UNKNOWN/NOT_RUN; compiled SSR D1 query limit is a confirmed delivery gap under correction. No canonical DB, operating339363f or publicv6 change.
 The prior request authorized bounded eligible portrait acquisition/manifest expansion, public
 factual asset source-route preparation, recent activity implementation and actual read-only
 producer verification. Canonical PostgreSQL writes and identity/publication decisions remain
@@ -76,10 +78,10 @@ production service switches and new rights attestations are not delegated implic
 |---|---|---|
 | M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v6 retains DB binding and ACTIVE snapshot; original branches/worktrees preserved |
 | M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 exact public-response tuples/Source closure and local rollback PASS; v6 deployed, immutable maintenance POST404 PASS, largest Person fresh direct PASS (15.641 s, 2,383 Claims/36 Sources), current desktop delta and opened home viewport screenshot PASS; native390 USER_DEFERRED; historical v5 secret-removal gate FAIL retained |
-| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | Public v6 baseline deployed; current Korean presentation and bounded complete-record retrieval are local, targeted102 PASS and actual DOM interaction PASS; final integrated verification PASS (Python1,330/web104), new-stage Visual NOT_COMPLETED/native390 USER_DEFERRED |
+| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | Public v6 baseline deployed; current Korean presentation and bounded complete-record retrieval are local, targeted102 PASS and actual DOM interaction PASS; 표시 문구 제품 fd73963 전체 검증 PASS (Python1,330/web105); Source 배치 수정의 전체 검증41112 PASS, new-stage Visual NOT_COMPLETED/native390 USER_DEFERRED |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; prior transport/browser proofs PASS; actual canonical five-predicate full-chain 9,143 Claims PASS and bounded operational relationship output 71 Claims PASS; running producer still lacks candidate career projection, operational apply NOT_RUN |
 | M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; prior milestone full verification PASS; subsequent Aside intrinsic geometry/keyboard PASS, screenshot NOT_RUN, public rollout NOT_RUN; Lee Jae-myung remains identity review |
-| M5 | Eligible public disclosure collection, exact reviewed identity, separate publication and evidence-backed delivery | Printed-total and explicit SELF-housing contracts/operators/read projection implemented locally; policy registration remains default no-write preview, atomic stored-policy equality and current roster bridge fail closed. Source192 + Activity22, disposable reader27 and UI102 targeted evidence; final make verify PASS (Python1,330/web104). Operational news/assets/housing Claim count0, no real housing receipt, canonical registration/capture/link/publication NOT_RUN. Legacy Gazette exact reviewed-packet route remains separately gated |
+| M5 | Eligible public disclosure collection, exact reviewed identity, separate publication and evidence-backed delivery | Printed-total and explicit SELF-housing contracts/operators/read projection implemented locally; policy registration remains default no-write preview, atomic stored-policy equality and current roster bridge fail closed. Source192 + Activity22, disposable reader27 and UI102 targeted evidence; 표시 문구 제품 fd73963 make verify PASS (Python1,330/web105); 새 Source transport 검증41112 PASS. Operational news/assets/housing Claim count0, no real housing receipt, canonical registration/capture/link/publication NOT_RUN. Legacy Gazette exact reviewed-packet route remains separately gated |
 | M6 | Further change/comparison/issues, API/MCP and community with scoped methods/rights | PLANNED, not advertised as live |
 
 M1 retains its storage-specific contract in [Sites storage split](sites-storage-split-v0.md).
@@ -101,7 +103,9 @@ This plan owns integration and product scope, not a second storage implementatio
 
 ## Current checkpoint
 
-### Local follow-up in progress (2026-10-09; public v6 unchanged)
+### 현재 Source 배치 전체 검증 PASS (2026-10-09; public v6 unchanged)
+
+현재 제품 기준 fd73963의 전체 검증62885는 PASS다. 새6파일 Source batch는 공식 후보 tsc TS18048을 기존 binding guard와 동등하게 보완한 뒤 동결됐으며, 전체 verify41112는 exit0/Python1330/web106 PASS이며 웹 단계가 최종 guard 파일을 검증했다. 전체 데이터 감사와 실제 fd 최대 페이지1942 D1조회 문제는 위 현재 요약 및 하단 출처 배치 보완 기록으로 구분한다.
 
 Historical pre-copy implementation was verified by fourth final make verify session57531: runnerexit0,
 Python1,330 passed/3 skipped/6 warnings517.34s, web104/104, Ruff/mypy157/Golden quality,
@@ -125,7 +129,7 @@ and freeze3 known node-kind corrections passed20 targeted tests before the full 
 Claims for the two Persons and closes 1,948 Sources across 1,956 routes. Representative ALIO,
 expense and Gukgam organization GETs, one money comparison and three cited Sources passed.
 Published public Person predicates total 17; the count-to-path matrix distinguishes DRAFT and
-policy/identity/publication exclusions from missing UI retrieval. At that bounded checkpoint, full-universe API/source-gate and new export storage budget were NOT_RUN; the current fresh export and pending audit are recorded above.
+policy/identity/publication exclusions from missing UI retrieval. At that bounded checkpoint, full-universe API/source-gate and new export storage budget were NOT_RUN; the current completed full export/audit and pending compiled batch verification are recorded above.
 
 Bounded canonical Claim/Source rendering reduced largest measured HTML from 39,126,848 to
 10,657,022 B (gzip 2,459,811 to 1,503,387 B). Actual bill/vote search, pagination, selected evidence
@@ -861,4 +865,12 @@ effects or writes. This docs-only closure does not rerun the unchanged full suit
 
 bounded smoke PID71710 exit0: 두 인물2085/4283 Claim, 자산emptyUNKNOWN, 근거 Source6개와 관계1개를 포함한 12 GET200이다. 최대 측정 Person JSON은10,089,831바이트/3.613초다. 새 전체 export PID72149는 동시요청2·기존40KBparts·현행 cap으로 실행 중이며 완료 전 전체 검증 PASS로 집계하지 않는다. exporter5파일 rawhash mismatch0 및 실제d67 Git commit object도 별도로 검증했다. Mac exporter RSS는 hosted Worker128MiB peak 검증을 대체하지 않는다.
 
-현재 근거: `dist/full-goal-evidence/producer-full-chain/candidate-d67a42d-exact-source-receipt.json`, `candidate-d67a42d-exact-startup-receipt.json`, `candidate-d67a42d-api-smoke-receipt.json`, `candidate-d67a42d-exporter-receipt.json`. 전체 export 후 실제17predicate/ClaimID/Sourceclosure/UNKNOWN/파일크기·최대응답을 검증한다. Public Site v6/운영API339363f/canonical mutation 미실행 경계는 그대로다.
+재연결 당시 진행 근거(현재 export/audit 완료는 상단 및 아래 기록 참조): `dist/full-goal-evidence/producer-full-chain/candidate-d67a42d-exact-source-receipt.json`, `candidate-d67a42d-exact-startup-receipt.json`, `candidate-d67a42d-api-smoke-receipt.json`, `candidate-d67a42d-exporter-receipt.json`. 전체 export 후 실제17predicate/ClaimID/Sourceclosure/UNKNOWN/파일크기·최대응답을 검증한다. Public Site v6/운영API339363f/canonical mutation 미실행 경계는 그대로다.
+
+## 현재 출처 배치 보완 — 2026-10-09
+
+제품 기준 fd73963과 d67 snapshot `ps-41b41dc6632e1be4`의 전체 데이터 감사는 별도 PASS다. 실제 fd compiled 최대 인물 SSR은 1,942 D1 SELECT를 사용해 Paid1000/Free50 한도를 초과했다. 로컬 HTTP200은 hosted query 한도 통과 증거가 아니다. 기존 Source 단건 DTO·Claim/Evidence 연결을 유지하는 request 단위 Source batch로 수정한다. 조회당 snapshot+99경로의 최대100매개변수, 최대6동시 배치, 기존 파트 순서/status/raw SHA 검사와 실패 시 정상 부분결과 보존을 유지한다. 새 경로·schema·truth store·tier/cap 변경은 없다.
+
+6파일 동결 후보는 웹106/lint/typecheck PASS이며 합성1936Source에 21조회(1ACTIVE+20배치)를 검증했다. 실제 compiled 동결 후보 최대 SSR은26조회/최대bind100·동시6/HTML200/31.12초이며 7070 응답 byte/SHA 재검증 PASS다. 최종 커밋 원본 대조 전 UNCOMMITTED_FROZEN_CANDIDATE로 보존한다. 전체 GNU Make4.4.1 verify 세션41112는 실제 exit0/Python1330/3skip/6warning587.40초 및 web106·전체 gates PASS다. 실패를 포함한 이전 로그는 보존한다.
+
+전체 감사 근거: `producer-full-chain/fresh-d67a42d-export-integrity-budget.json`, `fresh-d67a42d-protocol-bounds.json`, `fresh-d67a42d-canonical-count-comparison.json`, `fresh-d67a42d-path-byte-proof.json`, `fd73963-d67-public-data-compatibility.json` (모두 `dist/full-goal-evidence/` 아래). 새 제품 pin의 공개 API 원본 SHA 동등성을 확인하면 동일 불변 데이터의 재사용을 판정하며 capture source d67을 재명명하지 않는다. 실제 D1 allocated storage와 hosted128MiB heap peak는 UNKNOWN/NOT_RUN이다.

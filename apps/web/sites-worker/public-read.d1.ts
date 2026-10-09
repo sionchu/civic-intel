@@ -96,6 +96,10 @@ async function readSnapshotPath(snapshot: ActiveSnapshot & { scope: Scope }, pat
     .prepare("SELECT part, status, content_sha256, body_gzip FROM public_read WHERE snapshot_id = ? AND path = ? ORDER BY part")
     .bind(snapshot.snapshot_id, path)
     .all<PublicReadPart>();
+  return decodeSnapshotParts(snapshot, path, parts);
+}
+
+async function decodeSnapshotParts(snapshot: ActiveSnapshot & { scope: Scope }, path: string, parts: PublicReadPart[]): Promise<PublicReadResponse> {
   const expected = snapshot.scope.paths[path];
   if (expected) {
     if (parts.length === 0) throw new Error("missing exported public projection response");
@@ -106,4 +110,46 @@ async function readSnapshotPath(snapshot: ActiveSnapshot & { scope: Scope }, pat
   const scopes = snapshot.scope.patterns.map((pattern) => new RegExp(pattern));
   if (scopes.some((scope) => scope.test(path))) return { status: 404, body: null, requestId: null };
   throw new Error(`${path} is outside the exported public projection`);
+}
+
+// One snapshot pin per request and at most 100 D1 bind parameters (snapshot + 99 paths).
+export async function readPublicSources(paths: string[]): Promise<PublicReadResponse[]> {
+  const db = env.DB;
+  if (!db) return paths.map(() => ({ status: 503, body: null, requestId: null }));
+  if (paths.some((path) => !/^\/sources\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(path))) {
+    throw new Error("invalid canonical source batch path");
+  }
+  const snapshot = await activeSnapshot();
+  const responses = publicResponses();
+  const unique = [...new Set(paths)].filter((path) => !responses.has(path));
+  const chunks: string[][] = [];
+  for (let offset = 0; offset < unique.length; offset += 99) chunks.push(unique.slice(offset, offset + 99));
+  let cursor = 0;
+  // Reserve all promises before querying, so simultaneous page/metadata readers share work.
+  const deferred = new Map<string, { resolve: (value: PublicReadResponse) => void; reject: (error: unknown) => void }>();
+  for (const path of unique) {
+    const pending = new Promise<PublicReadResponse>((resolve, reject) => { deferred.set(path, { resolve, reject }); });
+    responses.set(path, pending);
+    void pending.catch(() => { if (responses.get(path) === pending) responses.delete(path); });
+  }
+  const requested = paths.map((path) => responses.get(path)!);
+  await Promise.all(Array.from({ length: Math.min(6, chunks.length) }, async () => {
+    while (cursor < chunks.length) {
+      const chunk = chunks[cursor++];
+      try {
+        const { results } = await db.prepare(`SELECT path, part, status, content_sha256, body_gzip FROM public_read WHERE snapshot_id = ? AND path IN (${chunk.map(() => "?").join(",")}) ORDER BY path, part`)
+          .bind(snapshot.snapshot_id, ...chunk).all<PublicReadPart & { path: string }>();
+        const grouped = new Map<string, PublicReadPart[]>();
+        for (const part of results) {
+          if (!chunk.includes(part.path)) throw new Error("unexpected public projection response");
+          const list = grouped.get(part.path) ?? []; list.push(part); grouped.set(part.path, list);
+        }
+        for (const path of chunk) {
+          try { deferred.get(path)!.resolve(await decodeSnapshotParts(snapshot, path, grouped.get(path) ?? [])); }
+          catch (error) { deferred.get(path)!.reject(error); }
+        }
+      } catch (error) { for (const path of chunk) deferred.get(path)!.reject(error); }
+    }
+  }));
+  return Promise.all(requested.map((pending) => pending.catch(() => ({ status: 503, body: null, requestId: null }))));
 }

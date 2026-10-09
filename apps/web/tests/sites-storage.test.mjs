@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -356,4 +357,38 @@ test("D1 transport replays exported responses and never decides publication", as
   // Both transports expose the same function the data layer calls.
   const http = readFileSync(new URL("../app/public-read.ts", import.meta.url), "utf8");
   for (const source of [http, transport]) assert.match(source, /export async function readPublic\(\s*path: string,/);
+});
+
+test('source batch preserves ordered closure with bounded D1 queries, pins and failure eviction', async () => {
+ const ids = Array.from({length:1936}, (_,i) => `00000000-0000-4000-8000-${i.toString(16).padStart(12,'0')}`);
+ const paths = ids.map(id => `/sources/${id}`);
+ const bodies = new Map(paths.map((path,i) => [path, Buffer.from(JSON.stringify({id:ids[i],title:'합성 출처'}))]));
+ const scope = {patterns:['^/sources/[0-9a-f-]{36}$'],paths:Object.fromEntries([...bodies].map(([path,b]) => [path,[200,createHash('sha256').update(b).digest('hex')]]))};
+ let queries=0, active=0, maxActive=0, maxBindings=0, snapshotReads=0, corrupt=null, missing=null, ordinal=null, badHash=null, pinned='pinned';
+ globalThis.__projectionTestGeneration = 0;
+ globalThis.__projectionTestEnv = {DB:{prepare(sql){let values=[];return {bind(...v){values=v;maxBindings=Math.max(maxBindings,v.length);return this;},async all(){queries++;if(sql.includes('FROM snapshot_meta')){snapshotReads++;return {results:[{snapshot_id:pinned,projection_schema_version:2,scope_json:JSON.stringify(scope)}]};} assert.equal(values[0],pinned);active++;maxActive=Math.max(maxActive,active);await new Promise(resolve=>setTimeout(resolve,1));const selected=values.slice(1).filter(path=>path!==missing && bodies.has(path));const results=selected.flatMap(path=>{const packed=gzipSync(path===corrupt?Buffer.from('{}'):bodies.get(path));const chunks=path===paths[1]?[packed.subarray(0,8),packed.subarray(8)]:[packed];return chunks.map((chunk,index)=>({path,part:path===ordinal?1:index,status:200,content_sha256:path===badHash?'b'.repeat(64):scope.paths[path][1],body_gzip:chunk}));});active--;return {results};}};}}};
+ const source=readFileSync(new URL('../sites-worker/public-read.d1.ts',import.meta.url),'utf8').replace('import { env } from "cloudflare:workers";','const env = globalThis.__projectionTestEnv;').replace('import { cacheForRequest } from "vinext/cache";','const cacheForRequest = fn => { let value, generation=-1; return () => {if(generation!==globalThis.__projectionTestGeneration){generation=globalThis.__projectionTestGeneration;value=fn();}return value;};};').replace('"./relationship-path.mjs"',JSON.stringify(relationshipModuleUrl));
+ const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+ const reader=await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+ const response=await reader.readPublicSources(paths);
+ assert.deepEqual(response.map(r=>r.body.id),ids);
+ assert.equal(queries,21);assert.equal(snapshotReads,1);assert.equal(maxBindings,100);assert.ok(maxActive<=6);
+ await reader.readPublicSources([paths[1000],paths[0],paths[1000]]);assert.equal(queries,21);
+ assert.equal((await reader.readPublic(paths[0])).body.id,ids[0]);assert.equal(queries,21);
+ for(const [kind,pattern] of [['missing',/missing exported/],['corrupt',/corrupt public projection/],['ordinal',/inconsistent public projection/],['badHash',/inconsistent public projection/]]){
+  globalThis.__projectionTestGeneration++;
+  missing=kind==='missing'?paths[0]:null;corrupt=kind==='corrupt'?paths[0]:null;ordinal=kind==='ordinal'?paths[0]:null;badHash=kind==='badHash'?paths[0]:null;
+  const partial=await reader.readPublicSources([paths[0],paths[1]]);
+  assert.equal(partial[0].status,503);assert.equal(partial[1].status,200);assert.equal(partial[1].body.id,ids[1]);
+  await assert.rejects(reader.readPublic(paths[0]),pattern);
+  missing=corrupt=ordinal=badHash=null;
+  assert.equal((await reader.readPublicSources([paths[0]]))[0].body.id,ids[0]);
+ }
+ globalThis.__projectionTestGeneration++;pinned='pinned-next';
+ await reader.readPublicSources([paths[0]]);assert.equal(snapshotReads,6);
+ const outside='/sources/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+ assert.equal((await reader.readPublicSources([outside]))[0].status,404);
+ globalThis.__projectionTestEnv.DB=undefined;globalThis.__projectionTestGeneration++;
+ const unavailable=await reader.readPublicSources([paths[0],paths[1]]);assert.deepEqual(unavailable.map(result=>result.status),[503,503]);assert.equal(snapshotReads,6);
+ delete globalThis.__projectionTestEnv;
 });

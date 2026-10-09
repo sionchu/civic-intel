@@ -54,7 +54,7 @@ async function renderPerson(relationshipResult = success(relationships), extraCl
       getPersonRelationships: async () => relationshipResult,
       getGukgamCommittees: async () => success({ committees: [] }),
       getGukgamTargets: async () => success({ items: [] }),
-      getSource: async (id) => { requestedSources.push(id); return success(source(id)); },
+      getSources: async (ids) => ids.map((id) => { requestedSources.push(id); return success(source(id)); }),
     },
     "../../portrait": { getReviewedPortrait: async () => portrait },
   });
