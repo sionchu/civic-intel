@@ -1,15 +1,15 @@
 # Civic Intel product restoration
 
-현재 승인된 exact8b 배포 checkpoint는 보호된 maintenance secret 전달 기능 부재로 native environment/writer/D1 적용 전 SAFE_STOP이다. 승인은 유지되며 실제 Site는 새 native 조회에서도 active/public/v6로 확인됐다. 공식 관리 source helper exit0·remote SHA6208e4bc 확인과 운영자 안내 준비는 완료됐다. 지원되는 보호된 secret 입력 채널 또는 실제 소유자 입력 경로 확인이 다음 조건이며, 해당 UI 경로는 UNKNOWN이다.
+현재 exact8b/ps41 배포는 실제 완료됐다. 새snapshot ACTIVE/VALIDATED·12729parts/7070paths·epoch2, immutable reader v8/env4 배포 성공과23native maintenance404/no-store를 확인했다. 임시 secret/previous key 제거·세션 메모리 폐기는 완료됐고 최종 hosted 최대Person 기능 QA는 CPU_LIMIT으로 NOT_COMPLETED이며 canonical SSR hotfix 후보 검증 중이다. 최초 두409 FAIL/단1건 회복2회/원인UNKNOWN과 native 메모리·DB allocation 미확인은 보존한다.
 
-현재 최종 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 제품 source `8b1335823b666ee976ea3998442ee825ae13f7a1`이 고정됐다. 최종105 frontend Gitblob/2,470,567B와 Mac 파일은 mismatch0이며 공식 Worker build exit0, 전체7070 응답 status/JSON/raw SHA 재검증 PASS다. 실제 최대 SSR은26 D1조회/최대bind100·동시6/HTML200/10,655,830B이며 원본 artifact는 계수용 메모리 instrumentation으로 변경하지 않았다. 최종 local Aside 기능 QA는 별도 PASS이며 hosted peak·실제 배포는 NOT_RUN이다.
+현재 최종 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 제품 source `8b1335823b666ee976ea3998442ee825ae13f7a1`이 고정됐다. 최종105 frontend Gitblob/2,470,567B와 Mac 파일은 mismatch0이며 공식 Worker build exit0, 전체7070 응답 status/JSON/raw SHA 재검증 PASS다. 실제 최대 SSR은26 D1조회/최대bind100·동시6/HTML200/10,655,830B이며 원본 artifact는 계수용 메모리 instrumentation으로 변경하지 않았다. 최종 local Aside 기능 QA는 별도 PASS다. 이후 실제v8/ps41 배포·native거부검증은PASS지만 hosted최대Person은CPU_LIMIT으로NOT_COMPLETED이며 아래hotfix를검증했다. nativepeak는NOT_RUN이다.
 
 이전 표시 문구 제품 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
 
-제품 d67 원본173파일 대조/읽기전용8124 startup/schema0008/66imports/12GET200 PASS. 동일 d67 데이터 source의 fresh full export72149는 실제 exit0/1733.18초: 1142People/387Org/2478Sources/7070paths/12729parts/386유효clienterror, JSON1,661,526,225B/gzip244,996,006B/maxgziprow1,412,221B. 전체 감사 PASS: 17개 published Person predicate의 관측 inventory와 795,154 unique Claim 수가 일치하며 Evidence795,363·Source2478·누락0·795,154 Claim의 subject/publication/근거 연결을 확인했다. 전체7070경로의 raw SHA/status/bytes/part 순서와 실제 scope UTF-8 1,891,534B(기록값 동일, 여유8,466B), 최대 part40,000B/request53,584B를 검증했다. inventory 비교는 2026-10-08T20:24:05.237123Z 관측 기준이며 현재 DB 재집계로 표현하지 않는다. fd73963 API의 12GET 및 공개 runtime172파일이 d67과 동일해 d67 데이터 provenance를 그대로 유지한다. 실제 compiled 최대 인물 SSR은 로컬200/10,655,830B/31.91초지만 D1 SELECT1,942회로 확인됐다. 이전 fd는 D1 Paid1000/Free50 한도를 초과했다. 원본 Claim/Source를 유지한 Source 배치 보완8b13358의 전체 검증41112와 최종 raw105 원본 대조 및 공식 Worker/7070응답/실제26조회 검증이 PASS다. 배포 준비는 hosted writer 보안 결정·실제 storage allocation·native peak·실제 hosted 검증 범위를 별도로 유지한다. 전체 데이터capture의 d67 provenance와 새 표시 제품pin은 구분한다. Worker의256MiB guard는 펼친 runtime/build 합계이며 snapshot전체gzip/SQLhex/base64파일의 cap이 아니다. 실제D1allocation/retainedrows/indexes와 hosted128MiBpeak는 아직UNKNOWN/NOT_RUN이다. 운영8100·launchd·canonicalDB·Sitev6는 그대로다.
+제품 d67 원본173파일 대조/읽기전용8124 startup/schema0008/66imports/12GET200 PASS. 동일 d67 데이터 source의 fresh full export72149는 실제 exit0/1733.18초: 1142People/387Org/2478Sources/7070paths/12729parts/386유효clienterror, JSON1,661,526,225B/gzip244,996,006B/maxgziprow1,412,221B. 전체 감사 PASS: 17개 published Person predicate의 관측 inventory와 795,154 unique Claim 수가 일치하며 Evidence795,363·Source2478·누락0·795,154 Claim의 subject/publication/근거 연결을 확인했다. 전체7070경로의 raw SHA/status/bytes/part 순서와 실제 scope UTF-8 1,891,534B(기록값 동일, 여유8,466B), 최대 part40,000B/request53,584B를 검증했다. inventory 비교는 2026-10-08T20:24:05.237123Z 관측 기준이며 현재 DB 재집계로 표현하지 않는다. fd73963 API의 12GET 및 공개 runtime172파일이 d67과 동일해 d67 데이터 provenance를 그대로 유지한다. 실제 compiled 최대 인물 SSR은 로컬200/10,655,830B/31.91초지만 D1 SELECT1,942회로 확인됐다. 이전 fd는 D1 Paid1000/Free50 한도를 초과했다. 원본 Claim/Source를 유지한 Source 배치 보완8b13358의 전체 검증41112와 최종 raw105 원본 대조 및 공식 Worker/7070응답/실제26조회 검증이 PASS다. 배포 준비는 hosted writer 보안 결정·실제 storage allocation·native peak·실제 hosted 검증 범위를 별도로 유지한다. 전체 데이터capture의 d67 provenance와 새 표시 제품pin은 구분한다. Worker의256MiB guard는 펼친 runtime/build 합계이며 snapshot전체gzip/SQLhex/base64파일의 cap이 아니다. 실제D1allocation/retainedrows/indexes와 hosted128MiBpeak는 아직UNKNOWN/NOT_RUN이다. 운영8100·launchd·canonicalDB는 그대로다. 당시Sitev6는이후아래승인절차로v8/ps41에갱신됐다.
 
 
-Status: APPROVED_NATIVE_SAFE_STOP_PROTECTED_SECRET_TRANSFER / LOCAL_KOREAN_AND_PUBLIC_RECORD_CONNECTION_VERIFIED_RELEASE_PREPARATION / LIVE_BASELINE_PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
+Status: PUBLIC_READER_V8_PS41_ACTIVE_NATIVE_REVOKE_PASS_LARGEST_CPU_LIMIT_HOTFIX_VERIFYING / LOCAL_KOREAN_AND_PUBLIC_RECORD_CONNECTION_VERIFIED_RELEASE_PREPARATION / PS41_HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_HOSTED_FUNCTIONAL_NOT_COMPLETED / FULL_CONTRACT_INCOMPLETE.
 Implementation owner: MAIN; 2026-10-08–09 follow-up execution/integration owner: GPT-6.1 Sol.
 The full contract is not complete. User authorized implementation and
 multi-agent work under the full-goal execution contract after the read-only RCA.
@@ -78,9 +78,9 @@ production service switches and new rights attestations are not delegated implic
 
 | Milestone | Work and acceptance | Current state |
 |---|---|---|
-| M0 | Recheck Git/PR, public/API counts, source seams and owners | API 1,142 public People; actual public v6 retains DB binding and ACTIVE snapshot; original branches/worktrees preserved |
-| M1 | Reuse RELEASE-01, verify code/data separation, lifecycle, source closure, route/browser parity; prepare supported hosted writer decision | 5,170 exact public-response tuples/Source closure and local rollback PASS; v6 deployed, immutable maintenance POST404 PASS, largest Person fresh direct PASS (15.641 s, 2,383 Claims/36 Sources), current desktop delta and opened home viewport screenshot PASS; native390 USER_DEFERRED; historical v5 secret-removal gate FAIL retained |
-| M2 | Source-backed home brief, working exploration, precise filters, positive records before coverage | Public v6 baseline deployed; current Korean presentation and bounded complete-record retrieval are local, final web106/106 PASS and exact8b local Aside interaction PASS; 표시 문구 제품 fd73963 전체 검증 PASS (Python1,330/web105); Source 배치 수정의 전체 검증41112 PASS, new-stage Visual NOT_COMPLETED/native390 USER_DEFERRED |
+| M0 | Recheck Git/PR, public/API counts, source seams and owners | API1,142 public People; actual publicv8/ps41 ACTIVE epoch2; original branches/worktrees preserved |
+| M1 | Exact code/data separation, source closure, finite hosted staging/validation/promotion and immutable reader | Actual12,729parts/7,070paths validated; ps41 ACTIVE epoch2; immutablev8/env4 deployment and23native404/no-store PASS. Largest hostedPerson CPU_LIMIT/functional NOT_COMPLETED; singleJSONtext SSR hotfix fullverify53089 PASS/local CPU33.00→1.04s, final native QA pending. Historical two409/controlled recoveries retained; oldPREVIOUS directread NOT_RUN, NO_DELETE contract/operations0 |
+| M2 | Korean source-backed exploration and bounded complete records | v8 code deployed with ps41 data; earlier exact8b local Aside PASS. Final hosted largest screen CPU_LIMIT pending hotfix. Hotfix Python1,330/web107 fullverify PASS, actual native hydration pending; Visual NOT_COMPLETED/native390 USER_DEFERRED |
 | M3 | Source-specific careers and bounded relationships through API, export, D1 and UI | CODE_DONE; prior transport/browser proofs PASS; actual canonical five-predicate full-chain 9,143 Claims PASS and bounded operational relationship output 71 Claims PASS; running producer still lacks candidate career projection, operational apply NOT_RUN |
 | M4 | Exact-ID rights-reviewed photos, coverage/withdrawal evidence and eligible additional-file review | Local candidate expands one eligible Lee Jun-seok portrait with exact resolved UUID/MONA, own-work CC BY4.0 evidence and preserved original bytes; prior milestone full verification PASS; subsequent Aside intrinsic geometry/keyboard PASS, screenshot NOT_RUN, public rollout NOT_RUN; Lee Jae-myung remains identity review |
 | M5 | Eligible public disclosure collection, exact reviewed identity, separate publication and evidence-backed delivery | Printed-total and explicit SELF-housing contracts/operators/read projection implemented locally; policy registration remains default no-write preview, atomic stored-policy equality and current roster bridge fail closed. Historical Source192 + Activity22, disposable reader27 and UI102 targeted evidence are retained; 표시 문구 제품 fd73963 make verify PASS (Python1,330/web105); 새 Source transport 검증41112 PASS. Operational news/assets/housing Claim count0, no real housing receipt, canonical registration/capture/link/publication NOT_RUN. Legacy Gazette exact reviewed-packet route remains separately gated |
@@ -922,3 +922,78 @@ Root의 새 native get_site 조회는 기존 exact 프로젝트가 active/public
 `8b-post-source-native-unchanged.json`은 Site active/public/v6, environment revision2 및 기존 manifest key1을 기록한다. authenticated D1 state/ACTIVE/epoch 확인은 NOT_RUN이며 과거 pin과 혼동하지 않는다. 보호된 secret handle/reference 기능은 UNAVAILABLE, 소유자 native secret UI 경로는 UNKNOWN이다. environment 변경·native save/deploy·writer 활성화·state·staging·validation·promotion·revoke는 모두 NOT_RUN이다. 원본 GitHub/PR204, canonical DB, API8100 및 기존 데이터에는 변경·삭제가 없다.
 
 다음 실행 조건과 비밀값 비출력 절차는 `8b-owner-secret-handoff.md`에 준비돼 있다. 기존 승인은 유지되며 새로운 포괄 승인이나 secret 채팅 전달을 요구하지 않는다. 지원되는 보호된 채널 확인 후에만 승인된 유한 절차를 재개하고, authenticated state/pin이 불가하거나 불일치하면 모든 D1 begin/쓰기 전에 STOP한다. 전체 목표는 미완료이며 실제 공개 news/assets/housing Claim0과 UNKNOWN, M6 PLANNED 및 native 메모리·hosted 검증 미실행 한계를 유지한다.
+
+## 추가 승인과 실행 재개 — 기록 시각 2026-10-09T03:56:38Z
+
+사용자의 “허락함 진행해”는 직전 설명한 임시 인증의 내부 메모리·도구 응답 경유에 대한 명시적 승인이다. OS CSPRNG 생성값을 functions.exec 내부 응답으로 capture하되 모델 출력 없이 native is_secret:true 입력과 uploader hidden stdin에만 전달하는 transient 흐름을 허용한다. secret 채팅·파일·일반 로그·명령 인자 공개는 허용하지 않는다. 이전 SAFE_STOP 및 NOT_RUN 영수증은 당시 실행 상태로 보존하며 새 결과로 소급 변경하지 않는다.
+
+release Sol만 실제 실행하고 integration은 secret을 보지 않는다. 제품8b13358·관리 source6208e4bc·데이터ps-41b41dc6632e1be4/transport33f3와 승인된 reader/writer archive는 고정한다. authenticated actual state/oldpin 확인 전 모든 D1 begin·staging 쓰기 금지, 불일치/미확인 STOP, NO_DELETE·PREVIOUS/RETIRED 보존·정확 immutable reader 복귀 조건은 그대로다. 원본 저장소/PR204·canonical DB·API8100·identity/publication 적용은 제외된다. 실제 단계는 receipt 검토 후에만 판정하며 news/assets/housing0 UNKNOWN과 전체 계약 미완료를 유지한다.
+
+### 실제 단계 기록: 임시 writer와 인증 state 선확인 PASS
+
+`dist/full-goal-evidence/public-deployment/8b-hosted-state-precondition.json`을 직접 검토했다. 임시 writer version7/appgver_866c626f3bc48191b91233475dc0cdce, deployment appgdep_6ac8661f20d48191820621d2c0432155는 succeeded이며 environment revision3/secret masked다. 승인된 내부 capture→native secret→hidden stdin 흐름은 실제 작동했으므로 이전 보호된 채널 SAFE_STOP은 현재 차단 상태가 아니다.
+
+authenticated state는 기존ps-65e086d2eb00c3c5/ACTIVE/VALIDATED/epoch1/cf88a931…e672c와cursor7449/validation_cursor5170을 실제 확인했고 역사 rollback pin과 일치했다. 새 환경 pin33f3de2d…ee00도 정확하다. 이 선확인 전 D1 staging은 수행하지 않았다. release가 이후12729parts/7070paths의 유한 upload를 시작했으며 완료·validation·promotion·reader 복귀는 후속 영수증까지 미판정이다. 제품8b·관리 source6208·데이터ps41 및 NO_DELETE/olddata보존/원본DB·API8100 제외 경계는 유지한다.
+
+### 실행 중 진행 기록: 새 snapshot STAGED/LOADING
+
+release와 Root가 확인한 실제 상태는 새ps-41b41dc6632e1be4/33f3 pin의 STAGED/LOADING, cursor241/12729, validation_cursor0이다. 이는 처리 개수이며 완료·검증·승격을 뜻하지 않는다. 기존 ACTIVE는 선확인 결과대로 보존한다. immutable reader 관리 source 로컬2036ffbc775326a9bcd72ff9c37a73524406b5bb 준비는 진행 중이며 official helper remote/package 및164파일 최종 proof는 후속 영수증 대기다. writer와 현재 데이터 상태를 유지하고 최종 reader 배포 완료를 선행 판정하지 않는다.
+
+### 최신 진행: immutable reader v8 저장 완료·배포 대기
+
+`dist/full-goal-evidence/public-deployment/8b-immutable-reader-saved.json`을 직접 확인했다. 공식 helper exit0·remote source2036ffbc775326a9bcd72ff9c37a73524406b5bb,164파일/3,366,107B/mismatch0/D0R0이며 승인 gzip SHA837c5b612c8a4c96b1353f0526170357db3e03a351892795301d993d31665aac와 일치한다. native version8/appgver_3bbe502ee4808191b5efce5c63d12321은 SAVED_NOT_DEPLOYED다. native tar3,502,080B/SHA7f8253b33a95abc20a0ed4f34ce95ed2fa8eba8fde341c1eb2b9b0fbe032ecc0는 별도 표현이며 local gzip raw hash와 혼동하지 않는다.
+
+Root의 최신 actual native 관측에서 새ps41은 STAGED/LOADING cursor2058/12729·validation0·epoch0이고 기존 ACTIVE1개는 보존됐다. 이는 upload 진행 근거이며 validation/promotion 또는 reader 배포 완료가 아니다. 앞선 cursor241/600과 reader helper PENDING은 당시 진행 기록이다. 보호된 전달 SAFE_STOP은 추가 승인 흐름으로 해소된 역사 상태이며 현재 업로드가 진행 중이다.
+
+### 현재 결과: 유한 upload 실패, 원인 확인·reader 복귀 대기
+
+release/Root가 보고한 실제 load runner는1488.25초 후 exit1/HTTP409이며 마지막 로그의 처리 표시는4400이다. 이 로그 수치와 실제 commit cursor는 별도 상태 조회로 확인해야 한다. seal·validation·promotion은 실행되지 않았고 부분 staging과 기존 ACTIVE를 보존한다. DELETE·blind retry·성공 승격은 하지 않는다.
+
+Root의 코드 확인에서 atomic()은 db.batch 오류를 STATE_CONFLICT409로 공통 변환하므로 현재 exact 원인은 UNKNOWN이며 cursor 불일치로 단정할 수 없다. release의 안전한 read-only 상태/오류 receipt와 QA 독립 검토 이후 근거 있는 RCA 또는 reader v8 복귀/secret 폐기 결과를 기록한다. 승인된 transient secret 흐름은 작동했으며 이전 capability SAFE_STOP은 역사 기록이다. 제품8b·데이터ps41 source 및 canonical DB/API8100 제외 경계는 유지한다.
+
+### 실제 단1건 진단과 cursor 재개
+
+`8b-hosted-load-failure-state.json`을 직접 검토해 최초 실패의 actual committed cursor4470,새STAGED/LOADING/validation0 및 기존ps65 ACTIVE/epoch1 보존을 확인했다. `8b-hosted-part-4470-diagnostic.json`은 승인된 단1건 ordinal4470 진단이 HTTP200으로4471까지 commit된 결과와 동일 part 재요청200/cursor4471 유지, old ACTIVE 불변을 기록한다. underlying DB 원인은 여전히 UNKNOWN이며 성공한 재요청만으로 구체 원인을 확정하지 않는다.
+
+release는 이 실제 state/idempotence 확인 후 canonical client를cursor4471에서 유한 resume했다(PID25455). 최초1488.25초/exit1/HTTP409 FAIL과 로그는 보존한다. 새 전체 load·seal·validation·promotion 성공은 아직 미판정이며 blind retry·DELETE·olddata 삭제 없이 승인된 동일 artifact/pin 범위를 유지한다.
+
+### 두 번째 load 실패와 제한된 회복 조건
+
+Root/release 보고의 두 번째 actual load는2218.75초/exit1/REMOTE_HTTP409다. 마지막 stdout11100은 실제 최종 commit cursor를 대체하지 않는다. 첫1488.25초 실패와4470 단1건 회복 결과를 각각 보존하며 seal·validation·promotion은 여전히 미실행이다. catch-all409의 내부 원인은 UNKNOWN이다.
+
+release가 read-only 실제state·oldACTIVE·다음ordinal의 동일pin/hash/phase를 먼저 확인한다. 정확한 조건에서만 같은 단1건 controlled diagnostic이 허용되며 전체 회복은 첫4470을 포함해 최대3건이다. 진단 반복 실패·pin/hash/state 불일치 시 blind resume 없이 준비된v8 reader 복귀·인증 폐기로 종료한다. 제품·canonical DB·API8100은 변경하지 않는다. 실제 후속 영수증 전까지 성공 또는 재개 완료를 판정하지 않는다.
+
+### 두 번째 단1건 회복과 유한 재개
+
+`8b-hosted-part-11157-diagnostic.json`을 직접 읽었다. 실제 새STAGED cursor11157에서 단1건HTTP200으로11158 commit, readonly committed duplicate200/cursor11158 유지 및 oldps65/cf88 ACTIVE/epoch1 before/after 불변을 확인했다. Root 보고 진단 runner exit0/12.66초이며 underlying 첫·두 번째409 RCA는 여전히 UNKNOWN이다. release는 확인된11158에서 같은 canonical uploader를 재개했다(PID33975). 회복은2/최대3 사용했고 seal·전체검증·promotion·reader복귀는 후속 근거 대기다. 처음 두 FAIL은 삭제하거나 전체성공으로 바꾸지 않는다.
+
+### 현재 실제 단계: 전체 part seal 완료, 전체 path 검증 진행
+
+release/Root의 authenticated read-only 실제 state는ps41/33f3 STAGED/SEALED·writer cursor12729로 전체part commit 및seal을 확인했다. validation cursor165/7070이며 canonical uploader는 검증 loop 진행 중이다. 중간 로그 출력이 없는 검증 단계의 진행은 실제state 관측으로만 판단한다. promotion은 아직 실행되지 않았고 full load runner exit0·7070검증·reader 복귀는 미판정이다. 최초 두409 FAIL과2건 제한된 회복 및 내부 원인UNKNOWN은 유지한다.
+
+### 실제 native 배포 완료: ps41 활성화·불변 reader 복귀·임시 인증 폐기
+
+`8b-hosted-load-validated.log`은 최종load exit0/2700.85초와ps41/33f3 STAGED/VALIDATED·cursor12729/validation7070을 기록한다. `8b-hosted-activate.log`은 expected oldps65/epoch1 조건의 atomic 활성화 후 새ACTIVE/VALIDATED·epoch2 PASS다. 최초1488.25초·2218.75초/HTTP409 실패와 두 ordinal4470/11157 회복은 별도 보존하며 내부 원인UNKNOWN을 바꾸지 않는다.
+
+`8b-hosted-final-deployment.json`을 직접 검토했다. immutable reader source2036ffbc/제품8b의 nativev8 appgver_3bbe502ee4808191b5efce5c63d12321, deployment appgdep_6ac88306860c819199f589619edda344는 succeeded/env4이며 기존 public URL은 그대로다. 임시 CIVIC_SNAPSHOT_WRITER_SECRET 및 PREVIOUS_MANIFEST key 제거, transient session memory DISCARDED다. `8b-native-reader-revoke-env3.json`/`env4.json` 각각23실제native 요청은 GET/POST/PUT/PATCH/DELETE/OPTIONS/HEAD의 noauth/synthetic/retained 및 malformed/oversize에서404/no-store PASS다. HEAD는 body가 없어stable_error null이며 그 밖에는MAINTENANCE_DISABLED다. native DB dispatch 계수는 지원되지 않아 no-dispatch 근거는 exact source/compiled reader와 분리한다.
+
+실제delete operations0이며 canonical atomic promotion NO_DELETE 계약을 유지했다. 승격 후oldPREVIOUS 직접state조회는 NOT_RUN이므로 이를 실제row 전수보존 검증으로 확대하지 않는다. hosted DB allocation UNKNOWN/native peak NOT_RUN은 그대로다. 원본GitHub/PR204·canonicalDB·API8100·identity/publication에는 변경이 없다. 최종hosted Aside는 진행 중이며 전체goal/news/assets/housing0UNKNOWN 상태는 미완료다.
+
+### 최종 hosted 화면 실패와 canonical SSR CPU hotfix 후보
+
+`8b-native-hosted-largest-cpu-failure.json`은06:03:19.536UTC GET/people/REDACTED의 exceededCpu·CPU32,500ms/wall37,720ms를 기록한다. 인물UUID는비공개이며 시간·route 상관만 확인했고 HTTPstatus는UNKNOWN이다. hosted Aside 최대Person은60초timeout/innerERROR(outer runner exit0)이며 기능PASS가 아니다. native활성화·reader거부검증PASS와 화면기능실패를 분리한다.
+
+실제local compiled8b 프로세스군CPU31.56user/1.44sys초와decoder1941회의wall합658ms는 단계별CPU측정이 아니지만 inflater가주원인이라는 가설을 약화했다. concatenatedgzip은Node에서작동했어도 실제workerd가trailingbytes로거부해 제품에적용하지 않았다. 현재 최소후보는 기존publishedClaims+Sources를JSON.stringify한단일RSCstring으로sharedProvider에전달하고useMemoJSON.parse로동일canonicalDTO복원하는2runtime파일 및1의미회귀다. 전체Claim/Evidence/Source/UNKNOWN·원문·ID·상태·publication·직접hash접근을삭제하거나합성하지 않는다. 회귀24 및web107/type/lintPASS, fullmakeverify53089와공식Worker실측은진행중이며 CPU개선/nativehydration은미판정이다. API/DTO/exportdata불변으로ps41재업로드는현재필요하지않다.
+
+### SSR 후보 실측: 동일 데이터에서 로컬 CPU 비용 감소
+
+`ssr-json-text-candidate-build-receipt.json`과`ssr-json-text-candidate-largest-cpu-decoder-{profile,resource}.log`를 직접 읽었다. 공식Worker후보build exit0/19.47초, 동일ps41 compiled 최대Person replay exit0/1.18초다. 프로세스군CPU0.87user+0.17sys=1.04초로baseline8b의31.56user+1.44sys=33.00초보다약96.8%감소했다. Node호스트CPU는workerdchild를포함하지않으며별도값으로만기록한다. decoder1941회/decoded11,483,971B·D1조회26·maxbind100/동시6은유지됐다. RSC object→singleJSONtext 변경대조가주요직렬화병목을뒷받침하지만 nativeCPU는아직NOT_RUN이다.
+
+HTML200/11,102,770B로8b의10,655,830B보다446,940B증가했으므로rawHTML같음을주장하지않는다. OS프로세스군RSS는Workerisolate128MiBpeak를대체하지않으며nativepeak미확인을유지한다. 후보는UNCOMMITTED_FROZEN_CANDIDATE이고실제Flight/hydration/hosted기능은후속QA대기다. 기존snapshotAPIrawrecords와7070검증은불변이며새D1upload를수행하지않는다.
+
+
+### SSR hotfix 전체 검증 완료, 정확한 제품 pin 준비
+
+기존GNUmake4.4.1의 canonical verify53089는 actual exit0이다. Python1,330passed/3skipped/6warnings601.83초·웹107/107·Ruff·mypy157·Golden품질·lint/typecheck·Next standalone PASS다. 로그와3파일SHA는`followup/readiness/ssr-json-text-make-verify.log`/`ssr-json-text-verification.json`에보존했다. 독립QA는코드상의미·escaping우회없음·전체DTO보존을확인했으며 실제Flight/nativeCPU/hydration은배포후별도검증이다.
+
+`producer-full-chain/ssr-json-text-api-data-compatibility.json`은8b의173개APIruntime Gitblob/bytes/SHA동일·mismatch0와API/DTO/export불변을기록한다. hotfix는Provider/page의단일JSONtext전달과의미회귀만변경해기존ps41/33f3·7070rawbyte검증을재사용하며snapshot재업로드를하지않는다. 정확한commit후105frontend원본과공식로컬후보의rawSHA를대조해재사용근거를닫고immutablereader코드만공식native배포하여CPU/상호작용을검증한다. 기존8b nativeCPU실패·upload409/회복/폐기근거는별도유지하고최종goal완료로승격하지않는다.

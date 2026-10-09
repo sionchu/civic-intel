@@ -477,3 +477,22 @@ test("money role presentation distinguishes institution heads from unknown scope
  const page = readFileSync(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
  assert.match(page, /moneyRoleLabel\(money.details.organization.role_scope\)/);
 });
+
+
+test("single-text evidence transport preserves canonical Claim and Source values for every consumer", () => {
+  const { default: Provider, usePersonEvidence } = loadPresentation("../app/components/person-evidence-context.tsx");
+  const original = { claims: [{ ...claim("text-transport", "ASSEMBLY_PLENARY_VOTE"),
+    epistemic_status: "UNKNOWN", asserted_as_true: false,
+    object_text: "원문 <script> & \"따옴표\" · 한글", resolution_note: "원자료 미확인",
+    qualifiers: { source_contract: "assembly_plenary_roll_call_vote", vote_value_published: "불참" },
+    evidence: [{ id: "e-original", claim_id: "text-transport", source_id: "source-a", stance: "SUPPORT", excerpt: null, quote_hash: "exact-hash", snapshot_id: "snapshot-a" }],
+  }], sources: [source("source-a")] };
+  let restored;
+  function Consumer() { restored = usePersonEvidence(); return createElement("span", null, restored.claims[0].object_text); }
+  const html = renderToStaticMarkup(createElement(Provider, { dataJson: JSON.stringify(original) }, createElement(Consumer)));
+  assert.deepEqual(restored, original);
+  assert.equal(restored.claims[0].asserted_as_true, false);
+  assert.equal(restored.claims[0].evidence[0].quote_hash, "exact-hash");
+  assert.match(html, /&lt;script&gt;/);
+  assert.doesNotMatch(html, /<script>/);
+});

@@ -349,7 +349,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   };
 
   return (
-    <PersonEvidenceProvider claims={publishedClaims} sources={sources}>
+    <PersonEvidenceProvider dataJson={JSON.stringify({ claims: publishedClaims, sources })}>
     <div className="site-page profile-page">
       <Link href="/people" className="back-link"><span aria-hidden="true">←</span> 인물 찾기</Link>
       <header className="profile-header">
