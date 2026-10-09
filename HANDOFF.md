@@ -1,5 +1,7 @@
 # Current local implementation — 2026-10-09
 
+현재 승인된 exact8b 배포 checkpoint는 보호된 maintenance secret 전달 기능 부재로 native environment/writer/D1 적용 전 SAFE_STOP이다. 승인은 유지되며 실제 Site는 새 native 조회에서도 active/public/v6로 확인됐다. 공식 관리 source helper exit0·remote SHA6208e4bc 확인과 운영자 안내 준비는 완료됐다. 지원되는 보호된 secret 입력 채널 또는 실제 소유자 입력 경로 확인이 다음 조건이며, 해당 UI 경로는 UNKNOWN이다.
+
 현재 최종 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 제품 source `8b1335823b666ee976ea3998442ee825ae13f7a1`이 고정됐다. 최종105 frontend Gitblob/2,470,567B와 Mac 파일은 mismatch0이며 공식 Worker build exit0, 전체7070 응답 status/JSON/raw SHA 재검증 PASS다. 실제 최대 SSR은26 D1조회/최대bind100·동시6/HTML200/10,655,830B이며 원본 artifact는 계수용 메모리 instrumentation으로 변경하지 않았다. 최종 local Aside 기능 QA는 별도 PASS이며 hosted peak·실제 배포는 NOT_RUN이다.
 
 이전 표시 문구 제품 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
@@ -3890,7 +3892,7 @@ bounded smoke PID71710 exit0: 두 인물2085/4283 Claim, 자산emptyUNKNOWN, 근
 
 최종 exact 근거: `public-deployment/source-batch-final-git-blob-proof.json`, `mac-8b13358-transfer-receipt.json`, `mac-8b13358-retained-reader-fresh.json`, `mac-8b13358-largest-query-count.json`, `mac-8b13358-largest-exact-render.json`, `followup/readiness/source-batch-make-verify-source.json` (모두 `dist/full-goal-evidence/` 아래). API exact173 archive438,201B/SHA4eb381051a10023662fa2a46c7dd1731e598992b565f050a495dfe38864f8f88는 fd와 byte 및 manifest 완전 동일이므로 검증된 읽기전용8125/schema0008/66imports/12GET 근거를 재사용하며 실제 서비스 전환은 NOT_RUN이다. 데이터 source는 d67, snapshot ps-41b41dc6632e1be4, transport33f3de2d76e4fc8f95aa7d08a4ca7dd91725ba2c490638a3b1b3515e8f5aee00로 그대로다.
 
-정확한8b13358 reader·별도 임시 writer archive와 실제 local QA·기존 v6 보존·atomic promotion/restore·새 hosted credential/env 범위의 검토 자료는 완료됐다. 다음 결정은 해당 구체적인 hosted 보안 checkpoint 승인 여부이며 승인 전 실행하지 않는다. 승인 전 API8100/launchd·canonical policy/capture/link/publication·hosted writer 보안/배포를 실행하지 않는다. 실제 news/assets/housing published Claim은0이고 M6는 PLANNED, 전체 계약은 INCOMPLETE다. 기존 f5/e575 승인 후보는 역사 근거이며 재사용하지 않는다.
+정확한8b13358 reader·별도 임시 writer archive와 실제 local QA·기존 v6 보존·atomic promotion/restore·새 hosted credential/env 범위의 검토 자료는 완료됐다. 해당 구체적인 hosted 보안 checkpoint는 사용자 “어 진행해”로 승인됐다. 아래 현재 승인·단계 기록을 적용하며 그 밖의 운영 범위는 승인되지 않았다. API8100/launchd·canonical policy/capture/link/publication은 이 승인 범위 밖이며 실행하지 않는다. 승인된 hosted writer 보안/배포는 아래 기능 차단 상태로 미실행이다. 실제 news/assets/housing published Claim은0이고 M6는 PLANNED, 전체 계약은 INCOMPLETE다. 기존 f5/e575 승인 후보는 역사 근거이며 재사용하지 않는다.
 
 최종8b Worker Aside 초기 DOM은20표결/20법안/20Source·1910 complete·readErrors0·1440×900 overflow없음이며 새3공개자료 section은0entries/UNKNOWN이다. 최초 preview JavaScript3개404/hydration 미완료·클릭/Enter/filter NOT_COMPLETED 기록은 보존했다. 제품·runtime 변경 없이 지원 Miniflare assets-first/Worker fallback 설정의 새 exact8b preview에서 JavaScript4개200/정상MIME/React hydration을 확인했다. 최종 exact8b/ps41 지원 preview의 Aside 실제 상호작용도 PASS다:1910complete/hydrated·표결20→40/검색없음0·법안20→40/정확검색4/없음0·offwindow Claim unique/open·Source 선택 및 directhash unique1/상단371.5px(헤더73px)/카드21·닫기/열기/재열기·새3section UNKNOWN/0entries/absence≠none·duplicateIDs0/readErrors0·1440×900 overflow없음. 이전 d67 Next 결과를 재사용하지 않고 최종 Worker를 직접 검증했으며 Source200/7070rawSHA는 별도 compiled 근거로 분리한다. 초기 toggle 조건 오류도 보존한다. screenshot STOP·native390 USER_DEFERRED도 그대로다.
 
@@ -3901,3 +3903,35 @@ bounded smoke PID71710 exit0: 두 인물2085/4283 Claim, 자산emptyUNKNOWN, 근
 rollback pin은 역사 `hosted-active-receipt.json`의 실제 scope hash와 원본manifest1324583B를 대조해 cf88a931321b0d9508cb3a223ea8d17c7627e3d663d14fd79b0576c6fe9e672c 일치 PASS다(`public-deployment/8b13358-rollback-pin-proof.json`). 이는 현재native pointer 확인을 대체하지 않는다. source sync 검토 범위는 Sites 관리 source 저장소뿐이며 원본 GitHub/PR204의 push/merge 권한을 포함하지 않는다. 지원 assets-first preview의4JS200·정상MIME·React hydration 및 runtime tree 불변은 `mac-8b13358-aside-hydration-readiness.json`으로 별도 확인했다.
 
 최종 local Aside 원본 안전 로그는 `dist/full-goal-evidence/public-deployment/mac-8b13358-aside-qa-fresh-functional.log`, `mac-8b13358-aside-qa-direct-reopen.log`, `mac-8b13358-aside-qa-source-toggle.log`이다. 첫 direct-reopen의 false는 처음 닫힌 Source를 열린 것으로 가정한 조건 실패로 보존했고, 마지막 source-toggle에서 initialClosed/opened/closed/reopened 모두true를 직접 확인했다. 최종 fresh-functional은20→40·목록 밖 exact Claim/Source·검색·UNKNOWN·중복0/읽기오류0을 실행했다. 이 문서 기록의 추가 커밋은 제품 source8b13358 또는 데이터 source d67을 변경하지 않는다.
+
+## 승인된 유한 배포 checkpoint — 기록 시각 2026-10-09T02:49:45Z
+
+사용자의 “어 진행해”가 직전 exact8b 보안 제안서에 대한 승인으로 전달됐다. 승인 대상은 기존 Sites 관리 source 저장소의 정확한 source 동기화·native 저장/배포, 제안서에 고정한 임시 derived writer와 새 일회성 scoped credential/manifest 환경, 인증 state 선확인 후 유한 staging/전체검증/expected-pointer atomic promotion, 최종 불변 reader 복귀와 native maintenance404 확인이다. 제품8b13358·데이터d67/ps-41b41dc6632e1be4·transport33f3 pin과 reader/writer archive hash는 변경하지 않는다. 기록 시각은 승인 전달을 문서에 남긴 시각이며 source freshness를 재설정하지 않는다.
+
+실제 실행 소유권은 release Sol, integration은 비밀값 없이 안전 receipt만 검토한다. 인증된 actual ACTIVE/epoch·old manifest pin 확인 전 begin을 포함한 모든 staging 쓰기는 금지한다. 불일치·확인불가면 immutable reader 복구 후 STOP한다. 기존 snapshot PREVIOUS/RETIRED 보존, DELETE/cleanup 및 local activate.sql 실행은 금지한다. 원본 GitHub/PR204·canonical DB policy/capture/link/publication·API8100/launchd·binding/공개권한/유료 tier 변경은 이 승인에 포함되지 않는다.
+
+아래 단계별 receipt로 source 준비 완료와 writer/native/data 미실행을 별도로 판정했다. 운영 news/assets/housing Claim0과 M6 PLANNED/전체 계약 INCOMPLETE는 그대로다.
+
+### 실제 단계 기록: 관리 source 열기 완료
+
+release의 공식 hidden-stdin source 열기 runner는 exit0이다. 기존 Sites 관리 저장소 provider cloudflare_artifact/main의 실제 remote source는 f79ad69dd68bae3c54dcde96c9807b9b24db2a0a로 확인했다. credential은 private 실행 경로에만 유지했고 원본 저장소는 변경하지 않았다. 사용하지 않은 최초 새 credential은 폐기했으며 과거 credential을 복구하지 않았다. frozen runtime의 정확한 source 동기화/helper commit/archive가 다음 단계이며, 이 시점 native version·environment·D1은 아직 변경하지 않았다. 이 실행 사실은 source 준비 단계일 뿐 새 데이터 staging/승격 성공이 아니다.
+
+### 실제 단계 기록: 임시 writer 관리 Git 원본 대조
+
+`public-deployment/8b-managed-writer-git-provenance.json`을 직접 읽고 승인 archive와 대조했다. 관리 source의 로컬 SHA6208e4bc71d5558d1d45c66f97349fab34bb169e,165파일·3,387,068B·mismatch0·삭제0·rename0이며 archive SHAe21eac04cdc1ca883c39f1fce4c38ff4ef5634b352baece2f3624d328e506bde가 승인값과 동일하다. 이 대조 당시 session2762의 terminal 결과는 PENDING이었다. 이후 공식 helper exit0와 remote HEAD6208e4bc71d5558d1d45c66f97349fab34bb169e를 확인했다. native 저장/환경/배포·D1 state/staging은 여전히 NOT_RUN이며 source 준비 완료와 구분한다.
+
+### 현재 안전 중단: 보호된 secret 전달 기능 부재
+
+승인은 유지되지만 지원되는 보호된 maintenance secret 생성→native 환경 입력의 무출력 전달 기능을 확인할 수 없어 environment 변경·임시 writer native 활성화·D1 state/staging 전에 SAFE_STOP했다. 비밀값을 모델·로그·인자·파일로 우회 전달하지 않고 새 승인 질문을 반복하지 않는다. 관리 source helper terminal 결과와 운영자 입력 안내는 아래 최종 영수증으로 완료됐으며, 보호된 입력 기능 확보 전에는 이 보안 단계를 재개하지 않는다.
+
+Root의 새 native get_site 조회는 기존 exact 프로젝트가 active/public/latest_version_number6이고 current_live_url이 그대로임을 직접 확인했다. 이는 현재 Site v6 근거이며 D1 ACTIVE/epoch 또는 environment revision 확인 근거가 아니다. 실제 canonicalDB/API8100/native environment update/writer activation/D1 mutation은 수행하지 않았다. QA도 local 관리Git165파일3387068B provenance를 독립 확인했다. helper archive hash 확인의 sharing lock 오류는 실행 중인 파일의 접근 문제이며 제품 실패나 helper 완료를 뜻하지 않는다.
+
+### 승인된 checkpoint 최종 결과: source 준비 완료, 보안 적용 전 SAFE_STOP
+
+`dist/full-goal-evidence/public-deployment/8b-release-approved-execution-status.json`과 `8b-managed-source-final-receipt.json`을 직접 검토했다. 공식 helper exit0·remote HEAD6208e4bc71d5558d1d45c66f97349fab34bb169e·관리 Git165파일/3,387,068B/mismatch0/D0R0를 확인했다. 제품8b13358 및 데이터ps-41b41dc6632e1be4는 그대로다.
+
+보존용 full-helper archive는51,533,105B/SHA256 d514c4f91f71920c93bef27fc0b5801775684930bbc49e2ab30db0d3d5e2ead2,5,708파일/481,997,239B이다. `8b-managed-fullsource-archive-proof.json`의 selected raw-byte mismatch5 FAIL은 보존한다. `8b-full-helper-metadata-transform-review.json`은4개 newline 차이와1개 JSON key-order 차이의 의미 동등성만 확인하며 raw-byte 일치로 승격하지 않는다. 이 전체 archive는 native upload 후보가 아니다. 승인된 writer archive SHAe21eac04…506bde와 immutable reader SHA837c5b61…665aac는 별도 exact artifact다.
+
+`8b-post-source-native-unchanged.json`은 Site active/public/v6, environment revision2 및 기존 manifest key1을 기록한다. authenticated D1 state/ACTIVE/epoch 확인은 NOT_RUN이며 과거 pin과 혼동하지 않는다. 보호된 secret handle/reference 기능은 UNAVAILABLE, 소유자 native secret UI 경로는 UNKNOWN이다. environment 변경·native save/deploy·writer 활성화·state·staging·validation·promotion·revoke는 모두 NOT_RUN이다. 원본 GitHub/PR204, canonical DB, API8100 및 기존 데이터에는 변경·삭제가 없다.
+
+다음 실행 조건과 비밀값 비출력 절차는 `8b-owner-secret-handoff.md`에 준비돼 있다. 기존 승인은 유지되며 새로운 포괄 승인이나 secret 채팅 전달을 요구하지 않는다. 지원되는 보호된 채널 확인 후에만 승인된 유한 절차를 재개하고, authenticated state/pin이 불가하거나 불일치하면 모든 D1 begin/쓰기 전에 STOP한다. 전체 목표는 미완료이며 실제 공개 news/assets/housing Claim0과 UNKNOWN, M6 PLANNED 및 native 메모리·hosted 검증 미실행 한계를 유지한다.
