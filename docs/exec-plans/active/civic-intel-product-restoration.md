@@ -1,5 +1,10 @@
 # Civic Intel product restoration
 
+현재 최종 표시 문구 보완까지 포함한 전체 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
+
+제품 d67 원본173파일 대조/읽기전용8124 startup/schema0008/66imports/12GET200 PASS. 동일 d67 데이터 source의 fresh full export72149는 실제 exit0/1733.18초: 1142People/387Org/2478Sources/7070paths/12729parts/386유효clienterror, JSON1,661,526,225B/gzip244,996,006B/maxgziprow1,412,221B. Streaming17predicate·Claim/Evidence/Sourceclosure·UNKNOWN 및 전송예산 검증은 현재 진행 중이다. 전체 데이터capture의 d67 provenance와 새 표시 제품pin은 구분한다. Worker의256MiB guard는 펼친 runtime/build 합계이며 snapshot전체gzip/SQLhex/base64파일의 cap이 아니다. 실제D1allocation/retainedrows/indexes와 hosted128MiBpeak는 아직UNKNOWN/NOT_RUN이다. 운영8100·launchd·canonicalDB·Sitev6는 그대로다.
+
+
 Status: LOCAL_KOREAN_AND_PUBLIC_RECORD_CONNECTION_VERIFIED_RELEASE_PREPARATION / LIVE_BASELINE_PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS / LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
 Implementation owner: MAIN; 2026-10-08–09 follow-up execution/integration owner: GPT-6.1 Sol.
 The full contract is not complete. User authorized implementation and
@@ -98,7 +103,7 @@ This plan owns integration and product scope, not a second storage implementatio
 
 ### Local follow-up in progress (2026-10-09; public v6 unchanged)
 
-Current Korean/public-record implementation is frozen for fourth final make verify session57531: runnerexit0,
+Historical pre-copy implementation was verified by fourth final make verify session57531: runnerexit0,
 Python1,330 passed/3 skipped/6 warnings517.34s, web104/104, Ruff/mypy157/Golden quality,
 lint/typecheck/Next production standalone all PASS. Backend157 file hashes remained unchanged;
 frontend85-file treeSHA3a2215e18fcebe3337e50baa58e0cc2a367f7297a9030944055560374aaecd5b. Third runner76716 exited0:
@@ -120,8 +125,7 @@ and freeze3 known node-kind corrections passed20 targeted tests before the full 
 Claims for the two Persons and closes 1,948 Sources across 1,956 routes. Representative ALIO,
 expense and Gukgam organization GETs, one money comparison and three cited Sources passed.
 Published public Person predicates total 17; the count-to-path matrix distinguishes DRAFT and
-policy/identity/publication exclusions from missing UI retrieval. Full-universe API/source-gate and
-new export storage budget remain NOT_RUN.
+policy/identity/publication exclusions from missing UI retrieval. At that bounded checkpoint, full-universe API/source-gate and new export storage budget were NOT_RUN; the current fresh export and pending audit are recorded above.
 
 Bounded canonical Claim/Source rendering reduced largest measured HTML from 39,126,848 to
 10,657,022 B (gzip 2,459,811 to 1,503,387 B). Actual bill/vote search, pagination, selected evidence
@@ -849,3 +853,12 @@ effects or writes. This docs-only closure does not rerun the unchanged full suit
 - Mac device 상태만 bounded 1회 재조회한 결과 OFFLINE/last seen 44분이다. 정확한 원격 전송·runtime 검증·fresh full export·hosted 크기/메모리·save/deploy는 NOT_RUN이다. operating API/DB/public Site v6는 변경하지 않았다.
 
 배포 준비 근거: `dist/full-goal-evidence/public-deployment/local-d67a42d-build-verification.json`, `local-d67a42d-release-review.md`, `local-d67a42d-source-provenance.json`; 연결 근거: `dist/full-goal-evidence/producer-full-chain/mac-device-status-bounded-recheck.json`. 새 source policy/canonical 적용·API 전환·hosted writer 보안 변경은 여전히 별도 구체 검토 대상이며 실행되지 않았다.
+
+
+### 2026-10-09 Mac 재연결 후 실제 읽기 전용 준비 진행
+
+위 OFFLINE 차단 기록은 당시 실행 결과로 보존한다. 사용자 재개 후 동일 Mac이 ONLINE으로 확인되어 제품 `d67a42d` 원본 173파일을 전송했고 raw Git SHA256 대조 mismatch 0 PASS다. 격리 후보 PID71616/loopback8124는 runtime bootstrap/schema0008, transaction/default read_only ON, 내부66 imports 전부 후보 source로 startup PASS다. 운영8100/launchd/DB 정책·자료는 변경하지 않았다.
+
+bounded smoke PID71710 exit0: 두 인물2085/4283 Claim, 자산emptyUNKNOWN, 근거 Source6개와 관계1개를 포함한 12 GET200이다. 최대 측정 Person JSON은10,089,831바이트/3.613초다. 새 전체 export PID72149는 동시요청2·기존40KBparts·현행 cap으로 실행 중이며 완료 전 전체 검증 PASS로 집계하지 않는다. exporter5파일 rawhash mismatch0 및 실제d67 Git commit object도 별도로 검증했다. Mac exporter RSS는 hosted Worker128MiB peak 검증을 대체하지 않는다.
+
+현재 근거: `dist/full-goal-evidence/producer-full-chain/candidate-d67a42d-exact-source-receipt.json`, `candidate-d67a42d-exact-startup-receipt.json`, `candidate-d67a42d-api-smoke-receipt.json`, `candidate-d67a42d-exporter-receipt.json`. 전체 export 후 실제17predicate/ClaimID/Sourceclosure/UNKNOWN/파일크기·최대응답을 검증한다. Public Site v6/운영API339363f/canonical mutation 미실행 경계는 그대로다.

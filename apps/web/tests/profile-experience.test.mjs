@@ -467,3 +467,13 @@ test("every operator manifest emitted status has a precise Korean presentation",
  assert.notEqual(statusLabel("CURRENT_REVIEW_DRIFT"), statusLabel("CURRENT_REVIEW_BLOCKED"));
  assert.equal(statusLabel("UNKNOWN"), "미확인");
 });
+
+test("money role presentation distinguishes institution heads from unknown scope", () => {
+ const { moneyRoleLabel } = loadPresentation("../app/display-labels.ts");
+ assert.equal(moneyRoleLabel("INSTITUTION_HEAD"), "기관장");
+ assert.equal(moneyRoleLabel("UNKNOWN"), "대상 직위 미확인");
+ assert.equal(moneyRoleLabel("UNRECOGNIZED"), "대상 직위 미확인");
+ assert.equal(moneyRoleLabel(null), "대상 직위 미확인");
+ const page = readFileSync(new URL("../app/organizations/[id]/page.tsx", import.meta.url), "utf8");
+ assert.match(page, /moneyRoleLabel\(money.details.organization.role_scope\)/);
+});

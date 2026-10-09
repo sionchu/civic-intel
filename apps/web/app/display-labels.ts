@@ -31,3 +31,5 @@ export function entryKindLabel(code: string): string { return ({ IDENTITY: "인�
 export function relationLabel(code: string): string { return ({ HELD_ROLE: "직책", DISCLOSED_ROLE_AT: "검토된 공시상 직책", WORKED_AT: "경력", STUDIED_AT: "학력", SERVED_ON: "위원회", DIRECTOR_OF: "이사회", APPOINTED_TO: "임명", APPEARED_AT: "출석", QUESTIONED: "질의", AUDITED_BY: "감사", LISTS_EXECUTIVE: "공식 공시상 임원" } as Record<string, string>)[code] ?? "관계 유형 미확인"; }
 
 export function nodeKindLabel(code: string): string { return ({ PERSON: "인물", ORGANIZATION: "기관", EDUCATIONAL_INSTITUTION: "교육기관", COMPANY: "기업", COMMITTEE: "위원회", HEARING: "청문회", ISSUE: "쟁점", OFFICE: "직위", SOURCE_LISTED_ROLE_HOLDER: "출처 기재 직책 보유자" } as Record<string, string>)[code] ?? "대상 유형 미확인"; }
+
+export function moneyRoleLabel(code: string | null | undefined): string { return code === "INSTITUTION_HEAD" ? "기관장" : "대상 직위 미확인"; }

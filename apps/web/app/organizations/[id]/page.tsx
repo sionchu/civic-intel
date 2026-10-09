@@ -1,4 +1,4 @@
-import { statusLabel } from "../../display-labels";
+import { statusLabel, moneyRoleLabel } from "../../display-labels";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -124,7 +124,7 @@ function MoneyCard({
       </div>
       <h3>기관장 업무추진비 공시액의 회계연도 간 변화</h3>
       <p className="money-scope">
-        {money.details.organization.role_scope} · {money.details.organization.code} · 공개 기록 기반
+        {moneyRoleLabel(money.details.organization.role_scope)} · {money.details.organization.code} · 공개 기록 기반
       </p>
       <div className="money-values" aria-label="연도별 공시금액">
         <div className="money-value">
