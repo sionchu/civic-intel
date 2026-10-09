@@ -1,8 +1,8 @@
 # Current local implementation — 2026-10-09
 
-현재 exact8b/ps41 배포는 실제 완료됐다. 새snapshot ACTIVE/VALIDATED·12729parts/7070paths·epoch2, immutable reader v8/env4 배포 성공과23native maintenance404/no-store를 확인했다. 임시 secret/previous key 제거·세션 메모리 폐기는 완료됐고 최종 hosted 최대Person 기능 QA는 CPU_LIMIT으로 NOT_COMPLETED이며 canonical SSR hotfix 후보 검증 중이다. 최초 두409 FAIL/단1건 회복2회/원인UNKNOWN과 native 메모리·DB allocation 미확인은 보존한다.
+현재 제품b7b2bfa/관리source62ab83의 immutable reader v9/env4 배포와 최종 hosted Aside 기능 검증이 완료됐다. 기존ps41/33f3 ACTIVE epoch2·12729parts/7070paths 데이터는그대로다. 최대Person HTTP200/native CPU1719·2315ms,1910표결완전성·hydration·20→40·Claim/Source근거접근을실제로확인했다. 임시인증폐기·23native404/no-store와공식helper exit0도완료다. nativepeak/quotaUNKNOWN·직접freshSourcehash별도v9미실행·화면captureSTOP/390defer 및 실제news/assets/housing0UNKNOWN·전체목표미완료는유지한다.
 
-현재 최종 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 제품 source `8b1335823b666ee976ea3998442ee825ae13f7a1`이 고정됐다. 최종105 frontend Gitblob/2,470,567B와 Mac 파일은 mismatch0이며 공식 Worker build exit0, 전체7070 응답 status/JSON/raw SHA 재검증 PASS다. 실제 최대 SSR은26 D1조회/최대bind100·동시6/HTML200/10,655,830B이며 원본 artifact는 계수용 메모리 instrumentation으로 변경하지 않았다. 최종 local Aside 기능 QA는 별도 PASS다. 이후 실제v8/ps41 배포·native거부검증은PASS지만 hosted최대Person은CPU_LIMIT으로NOT_COMPLETED이며 아래hotfix를검증했다. nativepeak는NOT_RUN이다.
+이전 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 당시 제품 source `8b1335823b666ee976ea3998442ee825ae13f7a1`을 고정했고 현재 최종제품은b7b2bfa다. 최종105 frontend Gitblob/2,470,567B와 Mac 파일은 mismatch0이며 공식 Worker build exit0, 전체7070 응답 status/JSON/raw SHA 재검증 PASS다. 실제 최대 SSR은26 D1조회/최대bind100·동시6/HTML200/10,655,830B이며 원본 artifact는 계수용 메모리 instrumentation으로 변경하지 않았다. 최종 local Aside 기능 QA는 별도 PASS다. 이후 실제v8/ps41 배포·native거부검증은PASS지만 hosted최대Person은CPU_LIMIT으로NOT_COMPLETED이며 아래hotfix를검증했다. nativepeak는NOT_RUN이다.
 
 이전 표시 문구 제품 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
 
@@ -4010,3 +4010,21 @@ HTML200/11,102,770B로8b의10,655,830B보다446,940B증가했으므로rawHTML같
 기존GNUmake4.4.1의 canonical verify53089는 actual exit0이다. Python1,330passed/3skipped/6warnings601.83초·웹107/107·Ruff·mypy157·Golden품질·lint/typecheck·Next standalone PASS다. 로그와3파일SHA는`followup/readiness/ssr-json-text-make-verify.log`/`ssr-json-text-verification.json`에보존했다. 독립QA는코드상의미·escaping우회없음·전체DTO보존을확인했으며 실제Flight/nativeCPU/hydration은배포후별도검증이다.
 
 `producer-full-chain/ssr-json-text-api-data-compatibility.json`은8b의173개APIruntime Gitblob/bytes/SHA동일·mismatch0와API/DTO/export불변을기록한다. hotfix는Provider/page의단일JSONtext전달과의미회귀만변경해기존ps41/33f3·7070rawbyte검증을재사용하며snapshot재업로드를하지않는다. 정확한commit후105frontend원본과공식로컬후보의rawSHA를대조해재사용근거를닫고immutablereader코드만공식native배포하여CPU/상호작용을검증한다. 기존8b nativeCPU실패·upload409/회복/폐기근거는별도유지하고최종goal완료로승격하지않는다.
+
+
+### 중간 단계 기록: 최종 제품 pin과 v9 reader 배포, 당시 기능 검증 대기
+
+제품commit은`b7b2bfa9d37e655dbec988e6b9b6ffcb543e7b2f`다. 공식후보의WindowsCRLF와최종GitLF 및테스트delta 차이3건은`ssr-json-text-precommit-raw-mismatch-preserved.json`에FAIL로보존했다. 의미동등성으로raw검증을우회하지않고최종rawGit3delta를전송해105파일/2,472,177B/전체manifest동일·mismatch0를직접확인했다(`ssr-json-text-final-git-source-proof.json`,`b7b2bfa-transfer-receipt.json`). 최종raw공식build exit0/28.72초와동일compiledSSR의프로세스군CPU0.93user+0.23sys=1.16초는후보1.04초와별도다. decoder1941/11,483,971B·조회26/bind100/동시6·HTML200/11,102,770B를유지했다. aggregateRSS는nativeisolatepeak대체불가다.
+
+`b7b2bfa-native-deployment.json`은관리source62ab83bfc5f79efe9f78da917bdeedd7ffdd8b95,164파일/3,366,096B/Gitblob0mismatch/D0R0,immutablev9 appgver_ce65c0a4651c8191950694bfe6cf0263와deployment appgdep_6ac88a65d1f08191ba2d6bbe27b643d8 succeeded/env4를기록한다. localgzipSHA1c3e62f14d6ddfb368058a3b4528a70d052d735c7910271022970af96d2f58f8와nativetar3,502,080B/SHA29843ec0f16afc5f03e9a1d54f9ee83ead326c50007ccce748ceffd703f7e52e는표현을분리한다. env/D1mutationfalse이며기존ps41/33f3snapshot을재업로드하지않았다. 이 단계 당시 공식fullhelper terminal과실제hostedCPU/Aside는후속영수증대기였다. 아래최종closure에서확인했으며 이전8b/v8nativeCPU실패는보존해성공으로소급변경하지않는다.
+
+
+### 최종 closure: v9 실제 hosted CPU·hydration·근거 접근 PASS
+
+`b7b2bfa-aside-hosted-v9-supported-recovery.log`를직접읽었다. 실제최대Person200/1910complete,offwindowClaim unique/open→exactSource unique/hash일치/상단371.71875px(헤더73px),닫기/재열기,법안20→40/정확검색4/없음0,새press/assets/housing3section UNKNOWN/0entries/absence≠none,1440×900/scroll1425·readErrors0/overlayfalse/duplicateIds0을확인했다. 초기hydratedfalse와첫more20은earlysample로보존했다. `b7b2bfa-aside-hosted-v9-final-readiness.log`의06:37:58.299–06:38:05.956 단일load는hydrationBefore/Aftertrue와실제키보드Enter20→40/[ok7671ms]를확인해누락된준비검증을닫았다. 첫context/selector오류·v8CPU_LIMIT은이성공으로소급변경하지않는다.
+
+`b7b2bfa-native-v9-supported-recovery-cpu.json`은QA창06:35:39.665–44.674 내06:35:42.627 GETpeopleREDACTED outcomeok/status200/CPU1719ms/wall3521ms를기록한다. `b7b2bfa-native-v9-final-readiness-cpu.json`은06:38:05.148의200/ok/CPU2315ms/wall4849ms다. 정확UUID가native쪽redacted이므로time+route상관한계를유지하며nativepeak/quota UNKNOWN은바꾸지않는다. v9freshSourcehash별도직접navigation은NOT_RUN,선택Source exacthash/상호작용PASS와분리한다. screenshotSTOP/VisualNOT_COMPLETED·native390USER_DEFERRED도유지한다.
+
+`b7b2bfa-native-v9-maintenance-disabled.json`의실제23case는none/synthetic/synthetic_fixed에서전부404/no-store다. 실제임시secret은이미폐기돼v9검사에재사용하지않았다. v8env3/env4의retained-secret실제검사와v9무인증/합성검사는각각범위대로보존하며noDBdispatch는native계측없음/exactsource+compiledproof다. `b7b2bfa-official-source-helper-terminal.json`은helperexit0/managed62ab83·보존용fullarchive51,782,815B/SHA d67f08aebc68de98fda63ef13269e4ce78c6ab640d41e338d221f13d6d0e3aae/5,788files/483,168,123B이며nativeupload용이아니다. updatednative배포영수증은helperPASS와GitcredentialDISCARDED를기록한다.
+
+현재승인된공개delivery/CPUhotfixmilestone은완료됐지만전체제품계약은미완료다. 실제news/assets/housingpublishedClaim0/UNKNOWN·M6PLANNED이며새source수집·Personreview·publication의실제운영적용은하지않았다. 다음현재작업은최종source계약에맞는정확한read-only정책등록preview/statehash를새로준비하고PETI1건capture→실제owneridentityreview→별도publication의구체적운영checkpoint를검토하는것이다. 이전f5/e575typedcommand/statehash는재사용하지않고canonicalDB/API8100전환승인은Sites보안승인과구분한다. 원본Windows/Mac저장소·PR204와기존사용자변경은보존했다. 이추가문서commit은제품b7b2bfa·데이터capture d67/ps41·관리source62ab83을바꾸지않는다.
