@@ -10,8 +10,9 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any
+from uuid import UUID
 
 from packages.domain.contracts import SourcePolicy
 from packages.domain.enums import SourceCollectionMode
@@ -20,6 +21,10 @@ from packages.verification.policy import PolicyAction, PolicyDenied, require_pol
 PROVIDER_DOMAIN = "www.reb.or.kr"
 HOUSING_TABLE = "A_2024_00546"
 HOUSING_SOURCE = "https://www.reb.or.kr/r-one/portal/stat/easyStatPage/A_2024_00546.do"
+HOUSING_ENDPOINT = "https://www.reb.or.kr/r-one/openapi/SttsApiTblData.do"
+L2_POLICY_ID = UUID("16130000-0000-0000-0000-000000000007")
+L2_SOURCE_CONTRACT = "reb_housing_month_reporting_date_l2_v1"
+L2_REGION = "500001"  # Explicit nationwide R-ONE CLS_ID, NOT MOLIT LAWD_CD
 SOURCE_KIND = "REB_REPORTED_DATE_ALL_HOUSING_TRADES"
 SCOPE_LIMIT = "UNVERIFIED_PROVIDER_SAMPLE_OR_SINGLE_PAGE"
 REGION_CODE_NAMESPACE = "RONE_CLS_ID_NOT_MOLIT_LAWD_CD"
@@ -77,6 +82,69 @@ def _required_text(row: Mapping[str, Any], field: str) -> str:
     return value.strip()
 
 
+def reb_housing_l2_policy() -> SourcePolicy:
+    """Conservative source-specific decision for one user-authorized local L2 read.
+
+    This object is NOT authority to alter a production SourcePolicy or publish data.
+    """
+    return SourcePolicy(
+        id=L2_POLICY_ID,
+        domain=PROVIDER_DOMAIN,
+        source_class="official_reb_reported_date_volume_api_l2",
+        collection_mode=SourceCollectionMode.API,
+        can_fetch=True,
+        can_store_metadata=True,
+        can_store_fulltext=False,
+        can_send_to_ai=False,
+        can_show_excerpt=False,
+        can_commercialize=False,
+        terms_checked_at=datetime(2026, 10, 10, tzinfo=UTC),
+        license="Public-data portal 15134761: 이용허락범위 제한 없음; operation approval separately required",
+        rate_limit="Single operator-initiated month and nation, one page, one record; no schedule or full scan",
+        policy_note=(
+            "Reviewed against R-ONE official Open API developer guide and data.go.kr 15134761. "
+            "This object is an exact local-use source contract, not proof of owner review. "
+            "Only A_2024_00546/ITM_ID=100001/CLS_ID=500001/one month for an isolated "
+            "disposable SourceSnapshot/FeederObservation proof. No production policy "
+            "installation, public-map statistics, fulltext, AI, or Person links."
+        ),
+    )
+
+
+def require_reb_housing_l2_policy(policy: SourcePolicy) -> None:
+    """Pin the whole policy, not a free-text marker or host-only approval."""
+    require_policy(policy, PolicyAction.FETCH)
+    require_policy(policy, PolicyAction.STORE_METADATA)
+    if policy.model_dump(mode="json") != reb_housing_l2_policy().model_dump(mode="json"):
+        raise PolicyDenied("R-ONE L2 requires the exact reviewed single-month policy")
+
+
+def parse_reb_housing_l2_month(
+    response: Mapping[str, Any],
+    *,
+    month: str,
+    region_code: str,
+    policy: SourcePolicy,
+) -> RebHousingResearchPage:
+    """Validate one exact authenticated 1-row/month slice; still never publishable."""
+    require_reb_housing_l2_policy(policy)
+    if not _SIX_DIGITS.fullmatch(month) or region_code != L2_REGION:
+        raise RebMarketStatError("L2 permits only one reporting month and national region code")
+    try:
+        date(int(month[:4]), int(month[4:]), 1)
+    except ValueError:
+        raise RebMarketStatError("invalid L2 requested month") from None
+    page = _parse_reb_housing_response(response)
+    if (
+        page.provider_total_count != 1
+        or page.sampled_row_count != 1
+        or page.rows[0].month != month
+        or page.rows[0].region_code != region_code
+    ):
+        raise RebMarketStatError("R-ONE L2 response does not match one exact month/region")
+    return page
+
+
 def _scope_policy(policy: SourcePolicy) -> None:
     require_policy(policy, PolicyAction.STORE_METADATA)
     if (
@@ -98,6 +166,10 @@ def parse_reb_housing_research_page(
     R-ONE requires an issued KEY to enumerate beyond its fixed keyless sample.
     """
     _scope_policy(policy)
+    return _parse_reb_housing_response(response)
+
+
+def _parse_reb_housing_response(response: Mapping[str, Any]) -> RebHousingResearchPage:
     if not isinstance(response, Mapping) or set(response) != {"SttsApiTblData"}:
         raise RebMarketStatError("unexpected R-ONE response family")
     sections = response["SttsApiTblData"]
