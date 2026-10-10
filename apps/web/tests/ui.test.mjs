@@ -299,6 +299,10 @@ test("3D ontology is optional, bounded, evidence-linked and keyboard accessible"
   assert.match(view, /mode === "diagram" \? children/);
   assert.match(view, /await import\("3d-force-graph"\)/);
   assert.match(view, /supportedWebGL\(\)/);
+  assert.match(view, /graphFingerprint = JSON\.stringify\(graph\)/);
+  assert.match(view, /useMemo\(\(\) => JSON\.parse\(graphFingerprint\)/);
+  assert.match(view, /\.cooldownTicks\(reducedMotion \? 0 : 60\)/);
+  assert.match(view, /fx: coords\.x, fy: coords\.y, fz: coords\.z/);
   assert.match(view, /escapeLabel\(/);
   assert.match(view, /aria-pressed=\{mode === "spatial"\}/);
   assert.match(view, /<select id=\{selectId\}/);

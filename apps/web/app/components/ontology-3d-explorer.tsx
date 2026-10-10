@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { relationLabel, statusLabel } from "../display-labels";
 import type { NodeObject, LinkObject, ForceGraph3DInstance } from "3d-force-graph";
@@ -46,6 +46,9 @@ export default function Ontology3DExplorer({
   const [selectedNodeId, setSelectedNodeId] = useState(graph.center_node_id);
   const mountRef = useRef<HTMLDivElement>(null);
   const selectId = useId();
+  // Equivalent public read models must not restart an existing WebGL scene.
+  const graphFingerprint = JSON.stringify(graph);
+  const sceneGraph = useMemo(() => JSON.parse(graphFingerprint) as BoundedGraph, [graphFingerprint]);
 
   useEffect(() => {
     if (mode !== "spatial") return;
@@ -73,12 +76,21 @@ export default function Ontology3DExplorer({
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       // Copy the server's bounded public projection: the graph engine mutates coordinates.
-      const nodes = graph.nodes.map((node) => ({
-        id: node.id,
-        name: node.label,
-        kind: node.kind,
-      }));
-      const links = graph.edges.map((edge) => ({
+      const nodes = sceneGraph.nodes.map((node, index) => {
+        const angle = index * 2.399963229728653;
+        const radius = 55 + Math.floor(index / 12) * 20;
+        const coords = node.id === sceneGraph.center_node_id
+          ? { x: 0, y: 0, z: 0 }
+          : { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, z: (index % 5 - 2) * 15 };
+        return {
+          id: node.id,
+          name: node.label,
+          kind: node.kind,
+          // Stationary coordinates when reduced motion is requested.
+          ...(reducedMotion ? { ...coords, fx: coords.x, fy: coords.y, fz: coords.z } : {}),
+        };
+      });
+      const links = sceneGraph.edges.map((edge) => ({
         id: edge.id,
         source: edge.source,
         target: edge.target,
@@ -93,13 +105,13 @@ export default function Ontology3DExplorer({
         .backgroundColor(surface)
         .showNavInfo(false)
         .nodeId("id")
-        .nodeVal((node) => node.id === graph.center_node_id ? 18 : 9)
-        .nodeColor((node) => node.id === graph.center_node_id ? accent : ink)
+        .nodeVal((node) => node.id === sceneGraph.center_node_id ? 18 : 9)
+        .nodeColor((node) => node.id === sceneGraph.center_node_id ? accent : ink)
         .nodeLabel((node) => escapeLabel(String(node.name ?? "")))
         .linkColor(() => line)
         .linkWidth(1.3)
         .linkOpacity(0.55)
-        .cooldownTicks(60)
+        .cooldownTicks(reducedMotion ? 0 : 60)
         .onEngineStop(() => view.zoomToFit(reducedMotion ? 0 : 250, 80))
         .linkLabel((link) => escapeLabel(relationLabel(String(link.relation_type))))
         .onNodeClick((node) => setSelectedNodeId(String(node.id)))
@@ -110,10 +122,6 @@ export default function Ontology3DExplorer({
         })
         .graphData({ nodes, links });
       view.cameraPosition({ z: 180 });
-      if (disposed) {
-        view._destructor();
-        return;
-      }
       if (typeof ResizeObserver !== "undefined") {
         observer = new ResizeObserver(() => {
           if (container.clientWidth > 0) {
@@ -133,7 +141,7 @@ export default function Ontology3DExplorer({
       observer?.disconnect();
       disposeGraph?.();
     };
-  }, [mode, graph]);
+  }, [mode, sceneGraph]);
 
   const selectedNode = graph.nodes.find((node) => node.id === selectedNodeId);
   const selectedEdges: OntologyEdge[] = graph.edges
