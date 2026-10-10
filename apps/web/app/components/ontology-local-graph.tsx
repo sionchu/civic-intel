@@ -1,6 +1,8 @@
 import { statusLabel, relationLabel } from "../display-labels";
 import Link from "next/link";
 
+import Ontology3DExplorer from "./ontology-3d-explorer";
+
 import { committeeHref } from "../gukgam/2026/committees";
 import type { OntologyGraph } from "../types";
 
@@ -27,10 +29,19 @@ export default function OntologyLocalGraph({
   const singleRelationType = relationKinds.size === 1 ? visibleEdges[0]?.relation_type : null;
   const height = Math.max(180, visibleEdges.length * 76 + 44);
   const centerY = height / 2;
+  // The optional 3D view receives only the already-public, bounded read model.
+  const spatialEdges = graph.edges.slice(0, 48);
+  const spatialIds = new Set([graph.center_node_id, ...spatialEdges.flatMap((edge) => [edge.source, edge.target])]);
+  const spatialGraph = {
+    center_node_id: graph.center_node_id,
+    nodes: graph.nodes.filter((node) => spatialIds.has(node.id)),
+    edges: spatialEdges,
+  };
 
   return (
     <div className="ontology-explorer">
-      <div className="ontology-visual" aria-hidden="true">
+      <Ontology3DExplorer graph={spatialGraph} key={graph.center_node_id} totalEdges={graph.edges.length}>
+        <div className="ontology-visual" aria-hidden="true">
         <svg viewBox={`0 0 720 ${height}`} role="presentation">
           {visibleEdges.map((edge, index) => {
             const target = nodeById.get(edge.source === graph.center_node_id ? edge.target : edge.source);
@@ -61,7 +72,8 @@ export default function OntologyLocalGraph({
             {shortLabel(center?.label ?? "인물", 14)}
           </text>
         </svg>
-      </div>
+        </div>
+      </Ontology3DExplorer>
 
       <div className="ontology-relations" aria-label="공식 기록상 연결 목록">
         {graph.edges.map((edge, edgeIndex) => {
@@ -107,7 +119,7 @@ export default function OntologyLocalGraph({
       </div>
 
       {graph.edges.length > visibleEdges.length && (
-        <p className="ontology-limit-note">그림은 읽기 쉽도록 처음 {visibleEdges.length}개 연결만 그립니다. 아래 목록에는 공개된 연결이 모두 있습니다.</p>
+        <p className="ontology-limit-note">2D 관계도에는 처음 {visibleEdges.length}개 연결만 그립니다. 아래 목록에는 공개된 연결이 모두 있습니다.</p>
       )}
       {graph.nodes.some((node) => node.kind === "SOURCE_LISTED_ROLE_HOLDER") && (
         <p className="ontology-limit-note">

@@ -14,6 +14,7 @@
     "test": "node scripts/check-portrait-assets.mjs && node --test tests/ui.test.mjs tests/gukgam-witnesses.test.mjs tests/sites-storage.test.mjs tests/portrait.test.mjs tests/profile-experience.test.mjs tests/sites-writer*.test.mjs"
   },
   "dependencies": {
+    "3d-force-graph": "1.80.1",
     "cytoscape": "3.34.3",
     "next": "^16.1.0",
     "react": "^19.2.0",

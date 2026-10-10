@@ -408,6 +408,36 @@ main { flex: 1; }
 .ontology-explorer { display: grid; gap: 22px; }
 .ontology-visual { min-width: 0; overflow-x: auto; padding: 18px; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); }
 .ontology-visual svg { display: block; width: 100%; min-width: 640px; height: auto; }
+.ontology-viewer { display: grid; gap: 12px; }
+.ontology-view-modes { display: flex; flex-wrap: wrap; gap: 8px; }
+.ontology-view-modes button {
+  min-height: 44px; padding: 8px 16px; font: inherit; font-size: 15px; font-weight: 700;
+  color: var(--color-ink); background: var(--color-surface);
+  border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); cursor: pointer;
+}
+.ontology-view-modes button[aria-pressed="true"] {
+  background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-ink);
+}
+.ontology-view-modes button:focus-visible,
+.ontology-spatial-details select:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.ontology-spatial { display: grid; gap: 12px; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); overflow: hidden; }
+.ontology-spatial-canvas { height: 320px; width: 100%; min-width: 0; }
+.ontology-spatial-state { padding: 12px 16px; margin: 0; color: var(--color-ink-muted); }
+.ontology-spatial-details { display: grid; gap: 12px; padding: 0 16px 16px; }
+.ontology-spatial-details label { font-size: 15px; font-weight: 700; }
+.ontology-spatial-details select {
+  width: 100%; max-width: 100%; min-height: 44px; padding: 8px;
+  border: 1px solid var(--color-line-strong); border-radius: var(--radius-md);
+  background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: 15px;
+}
+.ontology-spatial-selection { display: grid; gap: 10px; border-top: 1px solid var(--color-line); padding-top: 14px; }
+.ontology-spatial-selection strong { font-size: 17px; }
+.ontology-spatial-selection p { margin: 0; font-size: 13px; color: var(--color-ink-muted); }
+.ontology-spatial-selection ul { display: grid; gap: 10px; list-style: none; padding: 0; margin: 0; }
+.ontology-spatial-selection li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; }
+.ontology-spatial-selection li a { font-weight: 700; }
+@media (max-width: 600px) { .ontology-spatial-canvas { height: 260px; } }
+
 .ontology-line { stroke: var(--color-line-strong); stroke-width: 1.5; }
 .ontology-node { stroke: var(--color-line-strong); stroke-width: 1.2; fill: var(--color-surface-muted); }
 .ontology-node-center { stroke: var(--color-accent); fill: var(--color-accent-soft); }
