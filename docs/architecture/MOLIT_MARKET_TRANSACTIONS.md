@@ -1,6 +1,6 @@
 # Official real-estate market sources — MOLIT L1 and R-ONE local L2
 
-**Status (2026-10-10): MOLIT L1 CONTRACT_STAGED; R-ONE one-national-month L2 LOCAL_VERIFIED only.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
+**Status (2026-10-10): MOLIT L1 CONTRACT_STAGED; R-ONE three separately scoped national-month L2 LOCAL_VERIFIED records, province-code catalog DISCOVERY_ONLY.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
 
 ## Official sources and rights
 
@@ -82,8 +82,11 @@ publishability decision and verified regional codes are required for a map.
   `1` and exactly one returned row. This is *all housing types*, not
   apartment-only trading, a sale price, an ownership record, or a current month.
 - **SourcePolicy:** `packages/connectors/reb_market_statistics.py`
-  `reb_housing_l2_policy()` pins the full reviewed local-use decision for the
-  single source table/item/region/month. `FETCH` and `STORE_METADATA` only;
+  `reb_market_l2_policy()` pins the full source-specific local-use decision for the
+  reviewed three R-ONE market tables and one region/month per bounded request.
+  This 2026-10-10 scope extension changes the strict SourcePolicy semantics;
+  a stored older policy must fail closed until explicitly re-registered in a
+  fresh isolated proof. No operational policy is silently revised. `FETCH` and `STORE_METADATA` only;
   no raw fulltext, AI, excerpt, commercial reuse or public release. The exact
   matching policy was registered **only** in a freshly Alembic-migrated
   disposable database. Existing operational policy records were not altered.
@@ -95,7 +98,7 @@ publishability decision and verified regional codes are required for a map.
   source-scope metadata. No original response JSON, raw XML, Person link,
   Claim, public display or second source-truth store was created.
 - **Local receipt:** in the owner-authorized Mac mini
-  `/Users/lee/Developer/cvic-reb-l2-proof-final-20261010/reb_official_one_month.sqlite`,
+  an owner-private, Alembic-migrated, isolated SQLite receipt outside this repo,
   one policy, one Source, one snapshot, one FeederObservation, two success
   runs and one checkpoint. First run 1 new observation, same-input replay
   **0 new / 1 unchanged**, same snapshot. No people or Claims created.
@@ -117,6 +120,65 @@ publishability decision and verified regional codes are required for a map.
 Operational prerequisites remain a reviewed publication/access decision,
 a broader source-specific canonical policy, idempotent multi-month coverage,
 official regional code crosswalk and current-boundary validation.
+
+## R-ONE nationwide sales L2 + official table-specific region codes (2026-10-10)
+
+**Observed national reporting-date sale totals, LOCAL_VERIFIED / NOT_PUBLISHED:**
+
+| Kind | R-ONE official table | Exact reporting month | National CLS_ID | ITM_ID | Units | Observed total |
+|---|---|---|---|---|---|---|
+| Housing (all types) | `A_2024_00546` | 2025-01 | `500001` | `100001` | 동(호)수 | 64,215 |
+| Apartment **sales** | `A_2024_00554` | 2026-07 | `500001` | `100001` | 호수 | 50,129 |
+| Land **sales** | `A_2024_00536` | 2026-08 | `500001` | `100001` | 필지수 | 80,776 |
+
+The official [R-ONE statistical map](https://www.reb.or.kr/r-one/portal/dashboard/statsVisualPage.do)
+confirms both sale-table identifiers and the current national headline values.
+Two authenticated, bounded provider requests using the issued key returned
+HTTP 200, provider INFO-000, declared 1 row/returned 1 row and exact
+matching month+item+national `CLS_ID`. The previous housing item remains
+distinct. These figures **do not share a reporting month** and are not
+individual transaction records, purchase prices, public-official wealth,
+fully enumerated time-series or ownership of any property.
+
+One reusable, source-specific R-ONE `SourcePolicy` now pins the three
+reviewed table IDs, common `ITM_ID=100001`, one national region and one month
+per local research request. Its semantics deliberately change compared with
+the prior single-housing-table proof; older stored policy records must not
+be silently overwritten or treated as matching. Registration occurs only in
+a **fresh disposable DB**, with exact policy semantics checked on every
+subsequent commit. No production policy change is executed.
+
+The Mac mini local isolated proof
+in a second owner-private, freshly migrated disposable SQLite DB
+passed: **one policy / one query-free Source / three SourceSnapshots /
+three FeederObservations / six successful runs / three checkpoints**.
+Each exact same-input replay creates zero duplicate observations.
+The file contains no provider key; no people, Person links or Claims exist.
+Only sanitized period, numeric unit/count, table/item identifiers, source
+contract and explicit `NOT_APPROVED` are retained. No public read-model
+or public Site data changes were made.
+
+Official R-ONE `selectOpenApiItmCd.do` table-specific
+[code search page](https://www.reb.or.kr/r-one/portal/openapi/openApiGuideCdPage.do)
+returned **19 apartment-sale and 18 land-sale top-level classifications**.
+The sanitized metadata with exact provider response digests is pinned in
+[`reb-provincial-code-catalog.json`](reb-provincial-code-catalog.json).
+This is a source/metadata **research record**, not a certified crosswalk
+to the historic 2020 SVG map or a complete 2026 administrative universe.
+
+**Known conflict:** 제주 is `CLS_ID=500019` in the apartment-sale table
+for legal code `50000000` but `500018` in land-sale. Apartment
+`500018` is a separate **historical '(구)제주'** classification
+(`49000000`). Old/compound 광주·전남 labels also appear.
+No name-only join, table-independent region mapping, version
+migration, choropleth coloring or automatic public value promotion is permitted.
+
+L3 still requires approved latest month ranges and correction/revision
+history, complete municipality coverage with explicit source-time
+denominators, a reviewed historical/current administrative crosswalk, and
+operational distribution rights. The data.go.kr entry for R-ONE permits
+development automatic access but explicitly lists operational approval
+review. The issued key and local proof are **not** operational approval.
 
 ## Region outline UI preview (2026-10-10)
 
