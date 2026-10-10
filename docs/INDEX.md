@@ -50,6 +50,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Assembly roll-call votes L3 sign-off v0](exec-plans/completed/assembly-roll-call-votes-l3-signoff-v0.md)
 - [Assembly minutes statement feeder](architecture/ASSEMBLY_MINUTES_STATEMENT_FEEDER.md)
 - [National Assembly asset-disclosure source gate and curated-source strategy](architecture/NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md)
+- [MOLIT apartment/land sale regional market-context source](architecture/MOLIT_MARKET_TRANSACTIONS.md)
 - [Gwanbo personnel feeder](architecture/GWANBO_PERSONNEL_FEEDER.md)
 - [NEC local winner feeder](architecture/NEC_LOCAL_WINNER_FEEDER.md)
 - [NEC local candidate feeder](architecture/NEC_LOCAL_CANDIDATE_FEEDER.md)

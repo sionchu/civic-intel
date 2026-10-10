@@ -1,5 +1,10 @@
 # National Assembly asset disclosure source gate
 
+MOLIT apartment/land **market transactions are not official asset ownership evidence**.
+They are kept as a separate regional/monthly reference lane in
+[MOLIT market transactions](MOLIT_MARKET_TRANSACTIONS.md), with no automatic
+property-owner or precise-residence linkage to PETI/Gazette disclosures.
+
 ## PETI self-owned housing — local source contract
 
 The existing asset importer now stages a separate `peti_public_self_housing_metadata_v1`
