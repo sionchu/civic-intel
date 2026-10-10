@@ -21,6 +21,55 @@ Only date (for scope validation), trade amount (unit: **만원**), area (for val
 
 Reported transactions and cancelled transactions are distinguished. Missing or malformed date/price/area, inconsistent pagination, unrecognized cancellation codes and provider errors **fail closed**. `median_active_price_10k_krw=null` on an empty/fully cancelled input means no active transaction was observed in the **supplied query pages** — not no assets, no market activity elsewhere, a completed ownership disclosure, or zero wealth. The summary also marks `PROVIDER_CORRECTION_HISTORY_UNKNOWN`; provider revision/tombstone semantics and full-year universe are unverified.
 
+## Official public-map statistics — separate R-ONE L1 candidate
+
+The official MOLIT contract-date transaction pages are **not** themselves the
+statistics that the MOLIT public-real-estate-site recommends for external
+publication. Its [conditions-based CSV page](https://rt.molit.go.kr/pt/xls/xls.do?mobileAt=)
+states that outside publication should use the reporting-date
+official statistics and warns that contract-date data can change with
+late reports or cancellations. A public map must preserve that basis,
+instead of relabeling a contract-date API page count as an official
+reported-date statistic.
+
+R-ONE / 한국부동산원
+[Open API](https://www.reb.or.kr/r-one/portal/openapi/openApiDevPage.do),
+[portal dataset 15134761](https://www.data.go.kr/data/15134761/openapi.do)
+is an officially documented candidate, distinct from the two MOLIT APIs.
+A single bounded **no-key sample** (2026-10-10) for table
+`A_2024_00546` (housing transactions including multiple types, **not**
+apartment-only) returned official JSON envelope
+`SttsApiTblData: [{head:[{list_total_count}, {RESULT}]}, {row:[...]}]`.
+The provider advertised 137,976 rows but supplied only **five sample rows**
+when no key was present. The five sample observations were for **2006-01**.
+This does not establish 2026 freshness, full enumeration, nationwide
+coverage, monthly series completeness or right to expose the sample as
+current official statistics.
+
+`packages/connectors/reb_market_statistics.py` implements an **offline
+supplied-response parser only** for that exact housing volume table/item
+(`ITM_ID=100001`, `UI_NM=동(호)수`, `DTACYCLE_CD=MM`).
+It validates the official response family, result code, period, amount,
+region namespace and duplicate region-month key, while discarding all
+non-allowlisted fields. The result is permanently
+`UNVERIFIED_PROVIDER_SAMPLE_OR_SINGLE_PAGE` and `publishable=False`.
+Neither keyless sampling nor a numerical `list_total_count` is a
+publication or completeness proof.
+
+**Critical namespace separation:** R-ONE `CLS_ID` (e.g. 전국 `500001`)
+is not MOLIT `LAWD_CD` (`11110` for 종로구). Any map aggregation or
+joining requires an independently reviewed official region crosswalk
+with version/time basis. Do not infer crosswalks or replicate old aliases
+from similar names, and never join Person disclosure rows to trades.
+
+The R-ONE [developer guide](https://www.reb.or.kr/r-one/portal/openapi/openApiDevPage.do)
+requires a login-issued API key for full access and notes that the
+provider does **not** support direct browser CORS queries. No key,
+credential handling, live provider client, stored policy, DB write,
+public endpoint or map UI is introduced by this L1 work.
+An approved, observed full-reporting-date extract plus exact reviewed
+SourcePolicy and immutable provenance are prerequisites for a public map.
+
 ## Relation to CVIC official asset disclosures
 
 The existing `NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md` and PETI source contract govern **reported declared totals** and reviewed SELF-housing metadata. Their actual published operational records remain separately unverified; prior 2026-10-09 operations documented 0 new published asset/housing claims. Current resolved-person identity review never makes market transactions into that person's purchases, sales, residences, taxable wealth or unexplained assets.
