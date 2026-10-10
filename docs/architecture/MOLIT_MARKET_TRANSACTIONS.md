@@ -1,6 +1,6 @@
-# MOLIT apartment and land sales — regional market context L1
+# Official real-estate market sources — MOLIT L1 and R-ONE local L2
 
-**Status (2026-10-10): L1 CONTRACT_STAGED / OFFLINE FIXTURES ONLY.** No production data collection, canonical persistence, source-policy application, Person linkage, public transaction display, map layer, or L3 coverage is claimed. This is a scoped source-adapter implementation, not public-official asset ownership evidence.
+**Status (2026-10-10): MOLIT L1 CONTRACT_STAGED; R-ONE one-national-month L2 LOCAL_VERIFIED only.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
 
 ## Official sources and rights
 
@@ -63,12 +63,60 @@ with version/time basis. Do not infer crosswalks or replicate old aliases
 from similar names, and never join Person disclosure rows to trades.
 
 The R-ONE [developer guide](https://www.reb.or.kr/r-one/portal/openapi/openApiDevPage.do)
-requires a login-issued API key for full access and notes that the
-provider does **not** support direct browser CORS queries. No key,
-credential handling, live provider client, stored policy, DB write,
-public endpoint or map UI is introduced by this L1 work.
-An approved, observed full-reporting-date extract plus exact reviewed
-SourcePolicy and immutable provenance are prerequisites for a public map.
+requires a login-issued API key for full access, supports `pIndex`/`pSize`
+and says that direct browser CORS queries are unsupported. The previous
+L1 parser had **no live fetch or stored policy**. The later local L2 proof
+below adds a separate, explicitly bounded request and canonical storage
+path, but never adds a public map statistic or operation sync.
+An approved, observed full-reporting-date extract plus a source-specific
+publishability decision and verified regional codes are required for a map.
+
+## R-ONE nationwide single-month — L2 LOCAL_VERIFIED (2026-10-10)
+
+- **Official source:** [R-ONE statistical data API](https://www.reb.or.kr/r-one/openapi/SttsApiTblData.do),
+  table `A_2024_00546`, `ITM_ID=100001`, `DTACYCLE_CD=MM`.
+  Exact one-record query `CLS_ID=500001` (전국), `START_WRTTIME=202501`,
+  `END_WRTTIME=202501`, `pIndex=1`, `pSize=1`.
+- **Observed official result:** January 2025, **64,215 동(호)** reported total
+  housing-unit transactions. Response HTTP 200 / `INFO-000`, provider total
+  `1` and exactly one returned row. This is *all housing types*, not
+  apartment-only trading, a sale price, an ownership record, or a current month.
+- **SourcePolicy:** `packages/connectors/reb_market_statistics.py`
+  `reb_housing_l2_policy()` pins the full reviewed local-use decision for the
+  single source table/item/region/month. `FETCH` and `STORE_METADATA` only;
+  no raw fulltext, AI, excerpt, commercial reuse or public release. The exact
+  matching policy was registered **only** in a freshly Alembic-migrated
+  disposable database. Existing operational policy records were not altered.
+- **Canonical capture:** `workers/reb_housing_import.py` validates an
+  exact one-row query and builds the existing `Source → SourceSnapshot →
+  FeederObservation` trail through `SqlAlchemyRepository.commit_source_page`
+  with `require_stored_policy_match=True`. The Source URL contains **no KEY
+  or parameters**; snapshots and observations contain only safe numeric and
+  source-scope metadata. No original response JSON, raw XML, Person link,
+  Claim, public display or second source-truth store was created.
+- **Local receipt:** in the owner-authorized Mac mini
+  `/Users/lee/Developer/cvic-reb-l2-proof-final-20261010/reb_official_one_month.sqlite`,
+  one policy, one Source, one snapshot, one FeederObservation, two success
+  runs and one checkpoint. First run 1 new observation, same-input replay
+  **0 new / 1 unchanged**, same snapshot. No people or Claims created.
+  `SourceSnapshot.content_hash`:
+  `548f71eeb4880e76cdbee732be67074f3ab1368c9291ec5ee3f4a5dd039f35d4`.
+  The local DB was also checked not to contain the API key. The one-page
+  source reader uses a per-call standard-library HTTPS handler with debugging
+  disabled and redirects blocked; it reads at most 120KB plus one byte and
+  emits fixed sanitized failure messages. No HTTPX URL INFO logging or raw
+  HTTP request/response record is written into the evidence store.
+- **Maturity limit:** each authorized collector invocation issues only one
+  exact region/month HTTPS request; the persisted proof retains one such
+  official record. This does **not** prove the provider
+  universe, 2026/current-year completeness, revision history, national/region
+  crosswalk, fresh scheduled synchronization, full acquisition rights for
+  a public Site, or hosted/public display. `RebHousingResearchPage.publishable`
+  remains `False`.
+
+Operational prerequisites remain a reviewed publication/access decision,
+a broader source-specific canonical policy, idempotent multi-month coverage,
+official regional code crosswalk and current-boundary validation.
 
 ## Region outline UI preview (2026-10-10)
 
@@ -99,7 +147,10 @@ Supported future UI grammar, inspired only by [Real Signal](https://real-signal.
 
 ## Next milestones / verification gates
 
-1. **L1:** deterministic offline XML/mock HTTP tests, fail-closed privacy/pagination/aggregation. Only source-specific code and this canonical source document.
+The R-ONE **single nationwide January 2025 local L2 proof** above is complete, not the
+same thing as MOLIT's still L1 apartment/land market lane or a current regional series.
+
+1. **MOLIT L1:** deterministic offline XML/mock HTTP tests, fail-closed privacy/pagination/aggregation. Only source-specific code and this canonical source document.
 2. **L2 one region/month:** owner-reviewed effective SourcePolicy and authorized API key, one official page plus sanitized SourceSnapshot/FeederObservation/SourceRun in an isolated database, exact rerun/checkpoint evidence. No raw parcel/unit, no Person linkage and no public deployment.
 3. **L3:** source-defined and rights-approved region/month universe, bounded batch coordinator, stable source-page coverage, idempotent snapshots, source cancellation/revision tracking. Prove full-year coverage, not merely one district/month.
 4. **Read-only map:** only after eligible regional market data is explicitly approved and the map geometry is licensed with source/time/region keys; no invented coordinates or ownership.
