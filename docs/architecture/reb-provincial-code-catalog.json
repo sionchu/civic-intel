@@ -1,0 +1,287 @@
+{
+  "source_url": "https://www.reb.or.kr/r-one/portal/openapi/selectOpenApiItmCd.do",
+  "reviewed_at": "2026-10-10",
+  "scope": "OFFICIAL_PROVIDER_CODE_DISCOVERY_NOT_PUBLIC_GEO_CROSSWALK",
+  "geo_join_allowed": false,
+  "tables": {
+    "apartment_sale": {
+      "statbl_id": "A_2024_00554",
+      "response_sha256": "457acf7f541d509c35fbe63840d0551a9eaf3a996edbfeca42f255e4d4415852",
+      "metadata_rows": 312,
+      "top_level_count": 19,
+      "item_id": "100001",
+      "item_name": "동(호)수",
+      "regions": [
+        {
+          "cls_id": "500001",
+          "label_as_published": "전국",
+          "provider_lawd_cd": "1000010",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500002",
+          "label_as_published": "서울",
+          "provider_lawd_cd": "11000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500003",
+          "label_as_published": "부산",
+          "provider_lawd_cd": "26000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500004",
+          "label_as_published": "대구",
+          "provider_lawd_cd": "27000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500005",
+          "label_as_published": "인천",
+          "provider_lawd_cd": "28000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500006",
+          "label_as_published": "전남광주>(구)광주",
+          "provider_lawd_cd": "29000000",
+          "legacy_or_ambiguous": true,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500007",
+          "label_as_published": "대전",
+          "provider_lawd_cd": "30000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500008",
+          "label_as_published": "울산",
+          "provider_lawd_cd": "31000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500009",
+          "label_as_published": "세종",
+          "provider_lawd_cd": "36110000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500010",
+          "label_as_published": "경기",
+          "provider_lawd_cd": "41000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500011",
+          "label_as_published": "강원",
+          "provider_lawd_cd": "51000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500012",
+          "label_as_published": "충북",
+          "provider_lawd_cd": "43000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500013",
+          "label_as_published": "충남",
+          "provider_lawd_cd": "44000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500014",
+          "label_as_published": "전북",
+          "provider_lawd_cd": "52000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500015",
+          "label_as_published": "전남광주>(구)전남",
+          "provider_lawd_cd": "46000000",
+          "legacy_or_ambiguous": true,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500016",
+          "label_as_published": "경북",
+          "provider_lawd_cd": "47000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500017",
+          "label_as_published": "경남",
+          "provider_lawd_cd": "48000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500018",
+          "label_as_published": "(구)제주",
+          "provider_lawd_cd": "49000000",
+          "legacy_or_ambiguous": true,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500019",
+          "label_as_published": "제주",
+          "provider_lawd_cd": "50000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        }
+      ]
+    },
+    "land_sale": {
+      "statbl_id": "A_2024_00536",
+      "response_sha256": "5edcf045cb521ded8890fc63c59dabd18ddb59fccc05e3125e5a997f1d179f99",
+      "metadata_rows": 293,
+      "top_level_count": 18,
+      "item_id": "100001",
+      "item_name": "필지수",
+      "regions": [
+        {
+          "cls_id": "500001",
+          "label_as_published": "전국",
+          "provider_lawd_cd": "1000010",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500002",
+          "label_as_published": "서울",
+          "provider_lawd_cd": "11000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500003",
+          "label_as_published": "부산",
+          "provider_lawd_cd": "26000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500004",
+          "label_as_published": "대구",
+          "provider_lawd_cd": "27000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500005",
+          "label_as_published": "인천",
+          "provider_lawd_cd": "28000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500006",
+          "label_as_published": "전남광주>(구)광주",
+          "provider_lawd_cd": "29000000",
+          "legacy_or_ambiguous": true,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500007",
+          "label_as_published": "대전",
+          "provider_lawd_cd": "30000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500008",
+          "label_as_published": "울산",
+          "provider_lawd_cd": "31000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500009",
+          "label_as_published": "세종",
+          "provider_lawd_cd": "36110000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500010",
+          "label_as_published": "경기",
+          "provider_lawd_cd": "41000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500011",
+          "label_as_published": "강원",
+          "provider_lawd_cd": "51000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500012",
+          "label_as_published": "충북",
+          "provider_lawd_cd": "43000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500013",
+          "label_as_published": "충남",
+          "provider_lawd_cd": "44000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500014",
+          "label_as_published": "전북",
+          "provider_lawd_cd": "52000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500015",
+          "label_as_published": "전남광주>(구)전남",
+          "provider_lawd_cd": "46000000",
+          "legacy_or_ambiguous": true,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500016",
+          "label_as_published": "경북",
+          "provider_lawd_cd": "47000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500017",
+          "label_as_published": "경남",
+          "provider_lawd_cd": "48000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        },
+        {
+          "cls_id": "500018",
+          "label_as_published": "제주",
+          "provider_lawd_cd": "50000000",
+          "legacy_or_ambiguous": false,
+          "geography_join_approved": false
+        }
+      ]
+    }
+  }
+}

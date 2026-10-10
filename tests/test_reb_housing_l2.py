@@ -18,7 +18,7 @@ from packages.connectors.reb_market_statistics import (
     L2_REGION,
     RebMarketStatError,
     parse_reb_housing_l2_month,
-    reb_housing_l2_policy,
+    reb_market_l2_policy,
 )
 from packages.domain.db import SourcePolicyRow
 from packages.persistence import SqlAlchemyRepository
@@ -91,7 +91,7 @@ def _response(rows: list[dict] | None = None, *, total: int = 1) -> dict:
 
 def _page():
     return parse_reb_housing_l2_month(
-        _response(), month=MONTH, region_code=L2_REGION, policy=reb_housing_l2_policy()
+        _response(), month=MONTH, region_code=L2_REGION, policy=reb_market_l2_policy()
     )
 
 
@@ -109,7 +109,7 @@ def test_exact_official_query_one_month_and_no_credential_in_records():
 
     page = fetch_one_month(
         month=MONTH,
-        policy=reb_housing_l2_policy(),
+        policy=reb_market_l2_policy(),
         key=SECRET,
         opener=respond,
     )
@@ -142,7 +142,7 @@ def test_stdlib_client_emits_no_key_at_info_level():
         root.setLevel(logging.INFO)
         page = fetch_one_month(
             month=MONTH,
-            policy=reb_housing_l2_policy(),
+            policy=reb_market_l2_policy(),
             key=SECRET,
             opener=lambda _req: _json_response(_response()),
         )
@@ -163,7 +163,7 @@ def test_transport_error_with_secret_url_is_sanitized():
     with pytest.raises(RebMarketStatError) as error:
         fetch_one_month(
             month=MONTH,
-            policy=reb_housing_l2_policy(),
+            policy=reb_market_l2_policy(),
             key=SECRET,
             opener=failed,
         )
@@ -189,7 +189,7 @@ def test_streaming_response_byte_limit_is_enforced():
     with pytest.raises(RebMarketStatError, match="size outside"):
         fetch_one_month(
             month=MONTH,
-            policy=reb_housing_l2_policy(),
+            policy=reb_market_l2_policy(),
             key=SECRET,
             opener=lambda _req: _FakeResponse(200, b"X" * 120001),
         )
@@ -203,7 +203,7 @@ def test_http_failures_redact_query_with_secret(error_status: int):
     with pytest.raises(RebMarketStatError) as exc:
         fetch_one_month(
             month=MONTH,
-            policy=reb_housing_l2_policy(),
+            policy=reb_market_l2_policy(),
             key=SECRET,
             opener=respond,
         )
@@ -211,7 +211,7 @@ def test_http_failures_redact_query_with_secret(error_status: int):
 
 
 def test_policy_is_exact_not_domain_or_marker_text():
-    p = reb_housing_l2_policy()
+    p = reb_market_l2_policy()
 
     def forbidden(_request: Request) -> _FakeResponse:
         raise AssertionError("network before full policy check")
@@ -249,7 +249,7 @@ def test_exact_month_page_scope_fails_closed(month, region, total, rows):
             _response(rows, total=total),
             month=month,
             region_code=region,
-            policy=reb_housing_l2_policy(),
+            policy=reb_market_l2_policy(),
         )
 
 
@@ -279,7 +279,7 @@ def _migrated_repo(tmp_path: Path) -> tuple[SqlAlchemyRepository, Path]:
 
 def _register_disposable_policy(repo: SqlAlchemyRepository) -> None:
     """Testing-only registration in a new disposable, migrated database."""
-    policy = reb_housing_l2_policy()
+    policy = reb_market_l2_policy()
     data = policy.model_dump()
     data["id"] = str(policy.id)
     data["collection_mode"] = policy.collection_mode.value
@@ -290,7 +290,7 @@ def _register_disposable_policy(repo: SqlAlchemyRepository) -> None:
 
 def test_canonical_single_month_capture_idempotent_and_no_person_link(tmp_path: Path):
     repo, db = _migrated_repo(tmp_path)
-    policy = reb_housing_l2_policy()
+    policy = reb_market_l2_policy()
     page = _page()
     with pytest.raises(RebMarketStatError, match="stored"):
         commit_one_month(repo, page=page, month=MONTH, policy=policy)
@@ -338,7 +338,7 @@ def test_status_failure_after_committed_page_does_not_write_failed(tmp_path: Pat
 
     repo.finish_source_run = fail_success  # type: ignore[method-assign]
     with pytest.raises(RuntimeError, match="status write"):
-        commit_one_month(repo, page=_page(), month=MONTH, policy=reb_housing_l2_policy())
+        commit_one_month(repo, page=_page(), month=MONTH, policy=reb_market_l2_policy())
     assert len(repo.feeder_observations(FEEDER, scope_key(MONTH))) == 1
     runs = repo.source_runs(FEEDER, scope_key(MONTH))
     assert len(runs) == 1
@@ -346,7 +346,7 @@ def test_status_failure_after_committed_page_does_not_write_failed(tmp_path: Pat
 
 
 def test_single_month_capture_contains_only_official_allowlist():
-    policy = reb_housing_l2_policy()
+    policy = reb_market_l2_policy()
     src, snapshot, observation = capture_one_month(
         _page(),
         month=MONTH,

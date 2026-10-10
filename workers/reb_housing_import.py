@@ -25,10 +25,13 @@ from packages.connectors.reb_market_statistics import (
     HOUSING_TABLE,
     L2_REGION,
     L2_SOURCE_CONTRACT,
+    REGIONAL_SALE_TABLES,
     RebHousingResearchPage,
     RebMarketStatError,
+    RebRegionalSalesPage,
     parse_reb_housing_l2_month,
-    require_reb_housing_l2_policy,
+    parse_reb_national_sale_month,
+    require_reb_market_l2_policy,
 )
 from packages.domain.contracts import (
     FeederObservation,
@@ -40,7 +43,9 @@ from packages.domain.enums import SourceRunStatus
 from packages.persistence import SqlAlchemyRepository
 from packages.persistence.repository import source_policy_semantics_equal
 
+# Preserve existing canonical housing SourceRun/checkpoint identity.
 FEEDER = "reb_reporting_date_housing_volume"
+SALE_FEEDER = "reb_reporting_date_sales_volume"
 SEMANTIC_SCOPE = "regional_official_trade_statistics_not_person_ownership"
 _NAMESPACE = UUID("47a82e65-5668-4f17-964d-15654e345a0b")
 MAX_JSON_BYTES = 120_000
@@ -56,8 +61,11 @@ def _month(value: str) -> str:
     return value
 
 
-def scope_key(month: str) -> str:
-    return f"{HOUSING_TABLE}:CLS:{L2_REGION}:ITM:100001:MM:{_month(month)}"
+def scope_key(month: str, *, table: str = HOUSING_TABLE) -> str:
+    allowed = {HOUSING_TABLE} | {x["statbl_id"] for x in REGIONAL_SALE_TABLES.values()}
+    if table not in allowed:
+        raise RebMarketStatError("R-ONE source table is not in the reviewed catalog")
+    return f"{table}:CLS:{L2_REGION}:ITM:100001:MM:{_month(month)}"
 
 
 class _NoProviderRedirect(HTTPRedirectHandler):
@@ -67,26 +75,22 @@ class _NoProviderRedirect(HTTPRedirectHandler):
         return None
 
 
-def fetch_one_month(
+def _fetch_one_page(
     *,
+    table: str,
     month: str,
     policy: SourcePolicy,
     key: str,
-    opener: Callable[[Request], Any] | None = None,
-) -> RebHousingResearchPage:
-    """One bounded official HTTPS request with no HTTPX request-URL INFO logging.
-
-    The supplied opener is for deterministic offline tests only. The real
-    client uses a fresh stdlib HTTPS handler with debug logging disabled.
-    Failures are translated into fixed messages without a KEY-bearing URL.
-    """
-    require_reb_housing_l2_policy(policy)
-    _month(month)
+    opener: Callable[[Request], Any] | None,
+) -> Mapping[str, Any]:
+    """One reviewed metadata-only R-ONE query, with no request URL logging."""
+    require_reb_market_l2_policy(policy)
+    scope_key(month, table=table)
     if not isinstance(key, str) or not 8 <= len(key) <= 512 or any(c.isspace() for c in key):
         raise RebMarketStatError("R-ONE issued key is missing or malformed")
     query = {
         "KEY": key,
-        "STATBL_ID": HOUSING_TABLE,
+        "STATBL_ID": table,
         "DTACYCLE_CD": "MM",
         "CLS_ID": L2_REGION,
         "ITM_ID": "100001",
@@ -99,8 +103,6 @@ def fetch_one_month(
     request = Request(HOUSING_ENDPOINT + "?" + urlencode(query))
     try:
         if opener is None:
-            # New per-call opener, not the process-wide urllib opener. No
-            # debug-level request URL tracing or transport logs are enabled.
             with build_opener(HTTPSHandler(debuglevel=0), _NoProviderRedirect()).open(
                 request, timeout=18
             ) as response:
@@ -121,42 +123,105 @@ def fetch_one_month(
         raise RebMarketStatError("R-ONE request or response failed") from None
     if not isinstance(result, Mapping):
         raise RebMarketStatError("R-ONE response must be a JSON object")
+    return result
+
+
+def fetch_one_month(
+    *,
+    month: str,
+    policy: SourcePolicy,
+    key: str,
+    opener: Callable[[Request], Any] | None = None,
+) -> RebHousingResearchPage:
+    """Original all-housing-volume source lane."""
+    result = _fetch_one_page(
+        table=HOUSING_TABLE, month=month, policy=policy, key=key, opener=opener
+    )
     return parse_reb_housing_l2_month(result, month=month, region_code=L2_REGION, policy=policy)
 
 
+def fetch_one_sale_month(
+    *,
+    kind: str,
+    month: str,
+    policy: SourcePolicy,
+    key: str,
+    opener: Callable[[Request], Any] | None = None,
+) -> RebRegionalSalesPage:
+    """Exact one-table/one-month nationwide apartment/land sale data."""
+    if kind not in REGIONAL_SALE_TABLES:
+        raise RebMarketStatError("R-ONE regional sale kind not approved")
+    result = _fetch_one_page(
+        table=REGIONAL_SALE_TABLES[kind]["statbl_id"],
+        month=month,
+        policy=policy,
+        key=key,
+        opener=opener,
+    )
+    return parse_reb_national_sale_month(result, kind=kind, month=month, policy=policy)
+
+
 def capture_one_month(
-    page: RebHousingResearchPage,
+    page: RebHousingResearchPage | RebRegionalSalesPage,
     *,
     month: str,
     policy: SourcePolicy,
     run_id: UUID,
+    kind: str = "housing_volume",
 ) -> tuple[Source, SourceSnapshot, FeederObservation]:
-    """Prepare only minimized Source/Snapshot/Observation, never provider fulltext."""
-    require_reb_housing_l2_policy(policy)
+    """Minimize a reviewed R-ONE market row; never retain source fulltext or identities."""
+    require_reb_market_l2_policy(policy)
     _month(month)
     if page.publishable or page.provider_total_count != 1 or len(page.rows) != 1:
-        raise RebMarketStatError("single month capture requires exactly one unpublishable row")
-    record = page.rows[0]
-    if record.month != month or record.region_code != L2_REGION:
-        raise RebMarketStatError("R-ONE capture scope differs from the requested month")
+        raise RebMarketStatError("one-month capture requires exactly one nonpublishable row")
+    if kind == "housing_volume":
+        if not isinstance(page, RebHousingResearchPage):
+            raise RebMarketStatError("housing contract and response type differ")
+        table = HOUSING_TABLE
+        contract = L2_SOURCE_CONTRACT
+        unit = "동(호)수"
+        quantity_name = "reported_housing_units"
+        housing_row = page.rows[0]
+        if housing_row.month != month or housing_row.region_code != L2_REGION:
+            raise RebMarketStatError("R-ONE housing capture scope mismatch")
+        region_label = housing_row.region_label
+        quantity = housing_row.reported_housing_units
+    else:
+        if (
+            kind not in REGIONAL_SALE_TABLES
+            or not isinstance(page, RebRegionalSalesPage)
+            or page.kind != kind
+            or page.rows[0].kind != kind
+        ):
+            raise RebMarketStatError("sale type and official R-ONE page do not match")
+        spec = REGIONAL_SALE_TABLES[kind]
+        table = spec["statbl_id"]
+        unit = spec["unit"]
+        contract = f"reb_{kind}_reporting_date_l2"
+        quantity_name = "reported_sale_units"
+        sale_row = page.rows[0]
+        if sale_row.month != month or sale_row.region_code != L2_REGION:
+            raise RebMarketStatError("R-ONE sale capture scope mismatch")
+        region_label = sale_row.region_label
+        quantity = sale_row.count
     source = Source(
         id=uuid5(_NAMESPACE, "reb-housing-official-api"),
-        url=HOUSING_ENDPOINT,  # NEVER place the KEY or other request params in Source URLs
-        title="한국부동산원 부동산거래현황 — 전국 월별 주택거래량",
+        url=HOUSING_ENDPOINT,  # NEVER include KEY or any request query.
+        title="한국부동산원 R-ONE 부동산 거래현황 공식 통계 API",
         publisher="한국부동산원",
-        published_at=None,  # A reporting month is not a source publication date.
+        published_at=None,
         policy_id=policy.id,
     )
     normalized: dict[str, Any] = {
-        "source_contract": L2_SOURCE_CONTRACT,
-        "provider_table": HOUSING_TABLE,
+        "source_contract": contract,
+        "provider_table": table,
         "item_id": "100001",
-        "unit": "동(호)수",
+        "unit": unit,
         "reported_month": month,
         "region_namespace": "RONE_CLS_ID_NOT_MOLIT_LAWD_CD",
         "region_code": L2_REGION,
-        "region_label": record.region_label,
-        "reported_housing_units": record.reported_housing_units,
+        "region_label": region_label,
+        quantity_name: quantity,
         "statistical_basis": "RONE_REPORTED_DATE",
         "coverage": "ONE_NATIONAL_MONTH_ONLY",
         "publication": "NOT_APPROVED",
@@ -166,17 +231,18 @@ def capture_one_month(
         normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode()
     digest = hashlib.sha256(payload).hexdigest()
+    scoped = scope_key(month, table=table)
     snapshot = SourceSnapshot(
         id=uuid5(_NAMESPACE, "snapshot:" + digest),
         source_id=source.id,
         content_hash=digest,
         metadata={
-            "source_contract": L2_SOURCE_CONTRACT,
+            "source_contract": contract,
             "provider_total_count": page.provider_total_count,
             "row_count": page.sampled_row_count,
-            "scope_key": scope_key(month),
+            "scope_key": scoped,
             "query": {
-                "STATBL_ID": HOUSING_TABLE,
+                "STATBL_ID": table,
                 "CLS_ID": L2_REGION,
                 "ITM_ID": "100001",
                 "DTACYCLE_CD": "MM",
@@ -192,9 +258,9 @@ def capture_one_month(
     )
     observation = FeederObservation(
         id=uuid5(_NAMESPACE, "observation:" + digest),
-        feeder=FEEDER,
-        scope_key=scope_key(month),
-        provider_record_key=f"{HOUSING_TABLE}:{L2_REGION}:100001:{month}",
+        feeder=FEEDER if kind == "housing_volume" else SALE_FEEDER,
+        scope_key=scoped,
+        provider_record_key=f"{table}:{L2_REGION}:100001:{month}",
         snapshot_id=snapshot.id,
         run_id=run_id,
         provider_observed_at=None,
@@ -209,31 +275,39 @@ def capture_one_month(
 def commit_one_month(
     repository: SqlAlchemyRepository,
     *,
-    page: RebHousingResearchPage,
+    page: RebHousingResearchPage | RebRegionalSalesPage,
     month: str,
     policy: SourcePolicy,
+    kind: str = "housing_volume",
 ) -> dict[str, object]:
     """Commit to existing canonical repository; policy must be registered FIRST."""
-    require_reb_housing_l2_policy(policy)
+    require_reb_market_l2_policy(policy)
     repository.assert_ready()
     stored = repository.policies([policy.id]).get(policy.id)
     if stored is None or not source_policy_semantics_equal(stored, policy):
         raise RebMarketStatError("an exact stored R-ONE policy is required before any import")
-    scoped = scope_key(month)
-    # Validate input before starting a persistent run.
-    capture_one_month(page, month=month, policy=policy, run_id=uuid5(_NAMESPACE, "preflight"))
+    preflight = capture_one_month(
+        page,
+        month=month,
+        policy=policy,
+        run_id=uuid5(_NAMESPACE, "preflight"),
+        kind=kind,
+    )
+    scoped = preflight[2].scope_key
+    contract = preflight[2].normalized["source_contract"]
+    feeder = FEEDER if kind == "housing_volume" else SALE_FEEDER
     run = repository.start_source_run(
-        FEEDER,
+        feeder,
         scoped,
         metadata={
-            "source_contract": L2_SOURCE_CONTRACT,
-            "source_kind": "RONE_REPORTED_DATE_ALL_HOUSING_TRADES",
+            "source_contract": contract,
+            "source_kind": kind,
             "publication": "NOT_APPROVED",
         },
     )
     try:
         source, snapshot, observation = capture_one_month(
-            page, month=month, policy=policy, run_id=run.id
+            page, month=month, policy=policy, run_id=run.id, kind=kind
         )
         committed = repository.commit_source_page(
             run_id=run.id,
@@ -243,7 +317,7 @@ def commit_one_month(
             observations=[observation],
             cursor=month,
             checkpoint_metadata={
-                "source_contract": L2_SOURCE_CONTRACT,
+                "source_contract": contract,
                 "provider_total_count": page.provider_total_count,
                 "region_code": L2_REGION,
                 "reported_month": month,

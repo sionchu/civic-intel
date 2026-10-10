@@ -26,10 +26,51 @@ L2_POLICY_ID = UUID("16130000-0000-0000-0000-000000000007")
 L2_SOURCE_CONTRACT = "reb_housing_month_reporting_date_l2_v1"
 L2_REGION = "500001"  # Explicit nationwide R-ONE CLS_ID, NOT MOLIT LAWD_CD
 SOURCE_KIND = "REB_REPORTED_DATE_ALL_HOUSING_TRADES"
+
+# IDs and item names observed in the official R-ONE StatsVisual dashboard
+# and selectOpenApiItmCd source-code endpoint, 2026-10-10.
+# No inferred market prices, individual purchases or geographical joins.
+REGIONAL_SALE_TABLES = {
+    "apartment_sale": {
+        "statbl_id": "A_2024_00554",
+        "table_title": "(월) 행정구역별 아파트매매거래현황",
+        "item_id": "100001",
+        "item_name": "동(호)수",
+        "unit": "호수",
+    },
+    "land_sale": {
+        "statbl_id": "A_2024_00536",
+        "table_title": "(월) 행정구역별 토지매매거래현황",
+        "item_id": "100001",
+        "item_name": "필지수",
+        "unit": "필지수",
+    },
+}
+
 SCOPE_LIMIT = "UNVERIFIED_PROVIDER_SAMPLE_OR_SINGLE_PAGE"
 REGION_CODE_NAMESPACE = "RONE_CLS_ID_NOT_MOLIT_LAWD_CD"
 _COUNT = re.compile(r"^(?:0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:,[0-9]{3})+)$")
 _SIX_DIGITS = re.compile(r"^[0-9]{6}$")
+
+
+@dataclass(frozen=True)
+class RebRegionalSaleRow:
+    kind: str
+    month: str
+    region_code: str  # Official R-ONE CLS_ID, never MOLIT LAWD_CD
+    region_label: str
+    count: int
+
+
+@dataclass(frozen=True)
+class RebRegionalSalesPage:
+    kind: str
+    month: str
+    provider_total_count: int
+    sampled_row_count: int
+    rows: tuple[RebRegionalSaleRow, ...]
+    completeness: str = "QUERY_PAGE_ONLY_OFFICIAL_REVISION_UNKNOWN"
+    publishable: bool = False
 
 
 class RebMarketStatError(ValueError):
@@ -82,15 +123,15 @@ def _required_text(row: Mapping[str, Any], field: str) -> str:
     return value.strip()
 
 
-def reb_housing_l2_policy() -> SourcePolicy:
-    """Conservative source-specific decision for one user-authorized local L2 read.
+def reb_market_l2_policy() -> SourcePolicy:
+    """Single canonical domain SourcePolicy for reviewed local R-ONE market L2 calls.
 
     This object is NOT authority to alter a production SourcePolicy or publish data.
     """
     return SourcePolicy(
         id=L2_POLICY_ID,
         domain=PROVIDER_DOMAIN,
-        source_class="official_reb_reported_date_volume_api_l2",
+        source_class="official_reb_reported_date_housing_and_sales_api_l2",
         collection_mode=SourceCollectionMode.API,
         can_fetch=True,
         can_store_metadata=True,
@@ -100,22 +141,24 @@ def reb_housing_l2_policy() -> SourcePolicy:
         can_commercialize=False,
         terms_checked_at=datetime(2026, 10, 10, tzinfo=UTC),
         license="Public-data portal 15134761: 이용허락범위 제한 없음; operation approval separately required",
-        rate_limit="Single operator-initiated month and nation, one page, one record; no schedule or full scan",
+        rate_limit="Only reviewed 3 tables, one national region/month/page per request; no schedule or bulk scan",
         policy_note=(
             "Reviewed against R-ONE official Open API developer guide and data.go.kr 15134761. "
             "This object is an exact local-use source contract, not proof of owner review. "
-            "Only A_2024_00546/ITM_ID=100001/CLS_ID=500001/one month for an isolated "
-            "disposable SourceSnapshot/FeederObservation proof. No production policy "
+            "Only A_2024_00546 (all-housing volume), A_2024_00554 (apartment sale "
+            "volume) and A_2024_00536 (land sale parcels), ITM_ID=100001, "
+            "CLS_ID=500001, one reporting month per approved local research pull; "
+            "isolated SourceSnapshot/FeederObservation only. No production policy "
             "installation, public-map statistics, fulltext, AI, or Person links."
         ),
     )
 
 
-def require_reb_housing_l2_policy(policy: SourcePolicy) -> None:
-    """Pin the whole policy, not a free-text marker or host-only approval."""
+def require_reb_market_l2_policy(policy: SourcePolicy) -> None:
+    """Pin full source-rights policy for all reviewed R-ONE L2 source kinds."""
     require_policy(policy, PolicyAction.FETCH)
     require_policy(policy, PolicyAction.STORE_METADATA)
-    if policy.model_dump(mode="json") != reb_housing_l2_policy().model_dump(mode="json"):
+    if policy.model_dump(mode="json") != reb_market_l2_policy().model_dump(mode="json"):
         raise PolicyDenied("R-ONE L2 requires the exact reviewed single-month policy")
 
 
@@ -127,7 +170,7 @@ def parse_reb_housing_l2_month(
     policy: SourcePolicy,
 ) -> RebHousingResearchPage:
     """Validate one exact authenticated 1-row/month slice; still never publishable."""
-    require_reb_housing_l2_policy(policy)
+    require_reb_market_l2_policy(policy)
     if not _SIX_DIGITS.fullmatch(month) or region_code != L2_REGION:
         raise RebMarketStatError("L2 permits only one reporting month and national region code")
     try:
@@ -240,4 +283,79 @@ def _parse_reb_housing_response(response: Mapping[str, Any]) -> RebHousingResear
         provider_total_count=total,
         sampled_row_count=len(normalized),
         rows=tuple(normalized),
+    )
+
+
+def parse_reb_national_sale_month(
+    response: Mapping[str, Any],
+    *,
+    kind: str,
+    month: str,
+    policy: SourcePolicy,
+) -> RebRegionalSalesPage:
+    """Validate precisely one official national sale month, never publishable."""
+    require_reb_market_l2_policy(policy)
+    if kind not in REGIONAL_SALE_TABLES:
+        raise RebMarketStatError("R-ONE sale table is outside reviewed catalog")
+    if not isinstance(month, str) or not _SIX_DIGITS.fullmatch(month):
+        raise RebMarketStatError("R-ONE reporting month must be YYYYMM")
+    try:
+        date(int(month[:4]), int(month[4:]), 1)
+    except ValueError:
+        raise RebMarketStatError("invalid reporting month") from None
+    if not isinstance(response, Mapping) or set(response) != {"SttsApiTblData"}:
+        raise RebMarketStatError("R-ONE sale response envelope changed or returned an error")
+    sections = response["SttsApiTblData"]
+    if not isinstance(sections, list) or len(sections) != 2:
+        raise RebMarketStatError("R-ONE response is not a single table page")
+    header, body = sections
+    if not isinstance(header, Mapping) or not isinstance(body, Mapping):
+        raise RebMarketStatError("R-ONE sale response head/row objects missing")
+    if set(header) != {"head"} or set(body) != {"row"}:
+        raise RebMarketStatError("R-ONE sale response fields are not the reviewed format")
+    heads = header["head"]
+    if not isinstance(heads, list) or len(heads) != 2:
+        raise RebMarketStatError("R-ONE sale provider metadata changed")
+    if any(not isinstance(obj, Mapping) for obj in heads):
+        raise RebMarketStatError("R-ONE sale provider metadata invalid")
+    if set(heads[0]) != {"list_total_count"} or set(heads[1]) != {"RESULT"}:
+        raise RebMarketStatError("R-ONE sale provider metadata format changed")
+    result = heads[1]["RESULT"]
+    if not isinstance(result, Mapping) or result.get("CODE") != "INFO-000":
+        raise RebMarketStatError("R-ONE sale provider did not report success")
+    total = _count(heads[0]["list_total_count"], "list_total_count")
+    rows = body["row"]
+    if total != 1 or not isinstance(rows, list) or len(rows) != 1:
+        raise RebMarketStatError("R-ONE sale request scope is incomplete or ambiguous")
+    row = rows[0]
+    expected = REGIONAL_SALE_TABLES[kind]
+    if not isinstance(row, Mapping) or any(
+        (
+            row.get("STATBL_ID") != expected["statbl_id"],
+            row.get("DTACYCLE_CD") != "MM",
+            row.get("WRTTIME_IDTFR_ID") != month,
+            str(row.get("CLS_ID")) != L2_REGION,
+            str(row.get("ITM_ID")) != expected["item_id"],
+            row.get("ITM_NM") != expected["item_name"],
+            row.get("UI_NM") != expected["unit"],
+        )
+    ):
+        raise RebMarketStatError("R-ONE sale row does not match approved table/item/month/region")
+    label = _required_text(row, "CLS_NM")
+    if label != "전국":
+        raise RebMarketStatError("R-ONE national region label was not verified")
+    return RebRegionalSalesPage(
+        kind=kind,
+        month=month,
+        provider_total_count=total,
+        sampled_row_count=1,
+        rows=(
+            RebRegionalSaleRow(
+                kind=kind,
+                month=month,
+                region_code=L2_REGION,
+                region_label=label,
+                count=_count(row.get("DTA_VAL"), "DTA_VAL"),
+            ),
+        ),
     )
