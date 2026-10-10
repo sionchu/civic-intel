@@ -30,6 +30,12 @@ page (GOV.UK Frontend, TheyWorkForYou) than to a product landing page.
 External design references may inform this grammar, but they do not override product behavior,
 evidence rules, accessibility or existing component conventions. No external brand assets, copy,
 fonts, icons, screenshots or proprietary tokens are part of this system.
+The optional regional market map is a **2020 historical boundary-navigation surface**.
+Until approved regional official statistics are available, it displays no amounts or
+transaction counts, keeps data absence explicit, and never treats geography or
+market-wide transactions as an individual official's property evidence.
+A keyboard-usable region select parallels pointer selection on the decorative SVG.
+
 
 ## Foundations
 

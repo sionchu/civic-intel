@@ -84,6 +84,7 @@ export default async function HomePage() {
               <li><Link href="/people#filter-party">정당별 인물</Link><span>공개된 국회 소속 기록으로 찾기</span></li>
               <li><Link href="/people#filter-committees">위원회별 인물</Link><span>각 소속 위원회로 좁혀 보기</span></li>
               <li><Link href="/gukgam/2026">국정감사 2026</Link><span>계획 일정 · 대상 기관 · 출석 요구 명단</span></li>
+              <li><Link href="/market">지역별 거래 동향</Link><span>행정경계 탐색 · 공식 거래통계 연결 현황</span></li>
             </ul>
           </nav>
         </section>
