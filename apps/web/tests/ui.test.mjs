@@ -284,6 +284,37 @@ test("Organization detail renders source-listed executive ontology without Perso
 });
 
 
+test("3D ontology is optional, bounded, evidence-linked and keyboard accessible", async () => {
+  const view = await readFile(new URL("../app/components/ontology-3d-explorer.tsx", import.meta.url), "utf8");
+  const server = await readFile(new URL("../app/components/ontology-local-graph.tsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../app/styles.css", import.meta.url), "utf8");
+  const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+
+  assert.match(server, /graph\.edges\.slice\(0, 48\)/);
+  assert.match(server, /graph\.nodes\.filter\(\(node\) => spatialIds\.has\(node\.id\)\)/);
+  assert.match(server, /<Ontology3DExplorer graph=\{spatialGraph\}/);
+  assert.equal(pkg.dependencies["3d-force-graph"], "1.80.1");
+
+  assert.match(view, /"use client"/);
+  assert.match(view, /mode === "diagram" \? children/);
+  assert.match(view, /await import\("3d-force-graph"\)/);
+  assert.match(view, /supportedWebGL\(\)/);
+  assert.match(view, /graphFingerprint = JSON\.stringify\(graph\)/);
+  assert.match(view, /useMemo\(\(\) => JSON\.parse\(graphFingerprint\)/);
+  assert.match(view, /\.cooldownTicks\(reducedMotion \? 0 : 60\)/);
+  assert.match(view, /fx: coords\.x, fy: coords\.y, fz: coords\.z/);
+  assert.match(view, /escapeLabel\(/);
+  assert.match(view, /aria-pressed=\{mode === "spatial"\}/);
+  assert.match(view, /<select id=\{selectId\}/);
+  assert.match(view, /edge\.epistemic_status/);
+  assert.match(view, /edge\.source_conflict/);
+  assert.match(view, /#claim-\$\{edge\.claim_id\}/);
+  assert.match(view, /#source-\$\{edge\.source_ids\[0\]\}/);
+  assert.match(view, /SOURCE_LISTED_ROLE_HOLDER/);
+  assert.doesNotMatch(view, /fetch\(|\/people\/\$\{selectedNode|LLM|ZTC/);
+  assert.match(css, /\.ontology-spatial-details select/);
+});
+
 test("Ontology local graph collapses repeated relation labels for cleaner dense views", async () => {
   const graph = await readFile(new URL("../app/components/ontology-local-graph.tsx", import.meta.url), "utf8");
   assert.match(graph, /const relationKinds = new Set/);

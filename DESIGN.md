@@ -109,6 +109,9 @@ selected-record review, before/after previews, final confirmation and server-ack
 Operational IDs and full audit details remain expandable; mutation success is never optimistic.
 Functional timelines, record panels and bounded graphs may expose eligible evidence, dates and
 relationships using the existing tokens. Available records precede compact coverage notes.
+The optional 3D ontology view is user-activated, bounded to existing published graph edges, and
+keeps the original 2D diagram and complete evidence/source list as the accessible default.
+It does not introduce inferred links, new publication semantics or answer-verdict badges.
 Assembly discovery-filter gaps are not missing-person-record counts; clearly name the filter
 scope and retain every public Person in unfiltered name search.
 
