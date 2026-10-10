@@ -7,6 +7,7 @@ overriding them. `exec-plans/active/` contains only currently approved long-runn
 work. Closed milestones move to `exec-plans/completed/`; source/rights/precondition stops move to
 `exec-plans/blocked/`. Historical plans remain reference evidence, not current instructions.
 
+- [Active Civic Intel product restoration](exec-plans/active/civic-intel-product-restoration.md) — full-goal local implementation and staged/blocked evidence.
 - [Architecture](../ARCHITECTURE.md)
 - [System overview: purpose, architecture, source gates and current state](architecture/CIVIC_INTEL_SYSTEM_OVERVIEW.md)
 - [Identity resolution](architecture/IDENTITY_RESOLUTION.md)
@@ -18,6 +19,7 @@ work. Closed milestones move to `exec-plans/completed/`; source/rights/precondit
 - [Person profile section producers and empty-section reasons](architecture/PERSON_PROFILE_SECTION_PRODUCERS.md)
 - [Appointment targets and talent pools](architecture/APPOINTMENT_TALENT_POOLS.md)
 - [Institutional governance](architecture/INSTITUTIONAL_GOVERNANCE.md)
+- [Official Assembly press metadata and staged activity adapters](architecture/NATIONAL_ASSEMBLY_PRESS_METADATA.md)
 - [Feeder source coverage](architecture/FEEDER_SOURCE_COVERAGE.md)
 - [Source acquisition playbook and human-assisted packet gates](architecture/FEEDER_SOURCE_COVERAGE.md#source-acquisition-playbook)
 - [Source parsing and semantics](architecture/SOURCE_PARSING_AND_SEMANTICS.md)

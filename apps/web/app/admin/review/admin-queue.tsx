@@ -26,7 +26,7 @@ export default function AdminQueue({ queue, capabilities, q, state, playbook }: 
     finally { setBusy(false); }
   }
   return <section className="admin-queue">
-    <div className="operator-section-head"><div><span className="micro-label">PERSON RECORD REVIEW</span><h2>인물 수집 기록 검토</h2></div>
+    <div className="operator-section-head"><div><span className="micro-label">인물 기록 검토</span><h2>인물 수집 기록 검토</h2></div>
       <span>ALIO 공개 이름 기록 {queue.named_record_total.toLocaleString()}건</span></div>
     <p className="operator-note">이름이 있는 출처 기록을 빠짐없이 업무로 표시합니다. 고유 이름 문자열 {queue.distinct_names.toLocaleString()}개는 서로 다른 사람 수가 아닙니다. 각 행의 기관·직책·원문과 기존 인물 후보를 검토하세요.</p>
     <nav className="admin-dispositions" aria-label="인물 검토 상태">{Object.entries(DISPOSITION_LABELS).map(([key, label]) =>
@@ -43,7 +43,7 @@ export default function AdminQueue({ queue, capabilities, q, state, playbook }: 
           <strong>{item.fields.canonical_name ?? item.label}</strong><span className="operator-tag">{DISPOSITION_LABELS[item.disposition] ?? item.disposition}</span></label>
         <p>{String(item.fields.institution_name ?? "기관 미기록")} · {String(item.fields.position_text ?? "직책 미기록")}</p>
         <small>{String(item.fields.term_start ?? "기간 미기록")} → {String(item.fields.term_end ?? "종료 미기록")}</small>
-        {item.link_decision_class === "DETERMINISTIC_SOURCE_CONTEXT" && <small className="admin-source-context">공식 ALIO 단일 현재 기록에서 자동 생성 · 다른 출처와 동일인 확정 아님 · 역할 Claim은 별도 승인</small>}
+        {item.link_decision_class === "DETERMINISTIC_SOURCE_CONTEXT" && <small className="admin-source-context">공식 ALIO 단일 현재 기록에서 자동 생성 · 다른 출처와 동일인 확정 아님 · 직책 기록은 별도 승인</small>}
         {item.candidate_count > 0 && item.disposition !== "REGISTERED" && <aside className="admin-candidates"><strong>동일 이름 후보 {item.candidate_count}명 · 동일인 미확정</strong>
           {item.candidates.map((person) => <Link key={person.id} target="_blank" prefetch={false} href={`/admin/review?tab=records&kind=people&focus_kind=people&focus_id=${person.id}`}>{person.canonical_name} · {person.id.slice(0, 8)} ↗</Link>)}</aside>}
         <div className="admin-row-actions"><button type="button" disabled={busy} onClick={() => inspect(item.id)}>원문 경로·연결 확인</button>

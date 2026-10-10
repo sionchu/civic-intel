@@ -13,4 +13,5 @@ node_modules/
 out/
 .sites-build/
 .sites-worker-build/
+.wrangler/
 dist/

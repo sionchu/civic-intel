@@ -8,7 +8,7 @@ from typing import Annotated
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -48,11 +48,20 @@ from packages.rendering.gukgam_witness_claim import (
     GUKGAM_WITNESS_PREDICATE,
     build_gukgam_witness_projection,
 )
-from packages.rendering.money_projection import build_alio_head_expense_money_from_claims
+from packages.rendering.money_projection import (
+    AssetSourceVersionConflict,
+    build_alio_head_expense_money_from_claims,
+    build_assembly_declared_assets_from_claims,
+)
 from packages.rendering.profile_projection import (
     PEOPLE_DISCOVERY_PREDICATES,
+    PLENARY_VOTE_DETAIL_KEYS,
     build_people_discovery_projection,
     build_profile_projection,
+)
+from packages.rendering.public_disclosure_records import (
+    DISCLOSURE_RECORD_PREDICATES,
+    validate_public_disclosure_records,
 )
 from packages.rendering.relationship_graph import (
     compare_payload,
@@ -66,9 +75,23 @@ from packages.rendering.relationship_projection import (
     cosponsorship_pairs,
     shortest_evidence_path,
 )
+from packages.verification.assembly_asset_import import ASSEMBLY_ASSET_TOTAL_PREDICATE
 from packages.verification.assembly_plenary_votes import ASSEMBLY_PLENARY_VOTE_PREDICATE
 from packages.verification.claims import validate_claim_publication
 from packages.verification.person_record_links import LINKED_WITNESS_PREDICATE
+
+PUBLIC_PLENARY_VOTE_QUALIFIERS = frozenset(
+    (
+        *PLENARY_VOTE_DETAIL_KEYS,
+        "source_contract",
+        "provider_identity_namespace",
+        "provider_person_key",
+        "date",
+        "vote_semantics",
+        "assembly_age",
+        "sitting_number",
+    )
+)
 
 
 class PublicApiError(Exception):
@@ -169,7 +192,7 @@ def create_app(
             request,
             status_code=422,
             code="INVALID_INPUT",
-            message="The request input is invalid.",
+            message="요청한 입력값이 올바르지 않습니다.",
         )
 
     @app.exception_handler(HTTPException)
@@ -185,10 +208,10 @@ def create_app(
             422: "INVALID_INPUT",
         }.get(exc.status_code, "SERVICE_UNAVAILABLE")
         message = {
-            "ACCESS_DENIED": "This operation is not available.",
-            "PUBLIC_RECORD_NOT_FOUND": "The public record was not found.",
-            "INVALID_INPUT": "The request input is invalid.",
-            "SERVICE_UNAVAILABLE": "The public data service is temporarily unavailable.",
+            "ACCESS_DENIED": "이 작업을 이용할 수 없습니다.",
+            "PUBLIC_RECORD_NOT_FOUND": "공개 기록을 찾을 수 없습니다.",
+            "INVALID_INPUT": "요청한 입력값이 올바르지 않습니다.",
+            "SERVICE_UNAVAILABLE": "공개 자료 서비스를 일시적으로 이용할 수 없습니다.",
         }[code]
         return _error_response(
             request,
@@ -203,7 +226,7 @@ def create_app(
             request,
             status_code=503,
             code="SERVICE_UNAVAILABLE",
-            message="The public data service is temporarily unavailable.",
+            message="공개 자료 서비스를 일시적으로 이용할 수 없습니다.",
         )
 
     def person_or_404(person_id: UUID, *, public: bool = False):
@@ -216,13 +239,13 @@ def create_app(
                 or not target.person_is_public(person.id)
             )
         ):
-            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
+            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "공개 기록을 찾을 수 없습니다.")
         return person
 
     def organization_or_404(organization_id: UUID, *, public: bool = False):
         organization = target.organization(organization_id)
         if not organization or (public and organization.superseded_at is not None):
-            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
+            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "공개 기록을 찾을 수 없습니다.")
         return organization
 
     def policy_summary(policy) -> dict[str, str]:
@@ -264,17 +287,42 @@ def create_app(
             raise PublicApiError(
                 503,
                 "SERVICE_UNAVAILABLE",
-                "The public data service is temporarily unavailable.",
+                "공개 자료 서비스를 일시적으로 이용할 수 없습니다.",
             )
         gate = validate_claim_publication(claim, subject, selected_evidence, sources, policies)
         if not gate.publishable:
             raise PublicApiError(
                 503,
                 "SERVICE_UNAVAILABLE",
-                "The public data service is temporarily unavailable.",
+                "공개 자료 서비스를 일시적으로 이용할 수 없습니다.",
             )
         stances = {item.stance.value for item in selected_evidence}
-        return claim.model_dump(mode="json") | {
+        if claim.predicate in DISCLOSURE_RECORD_PREDICATES:
+            try:
+                validate_public_disclosure_records(
+                    target, subject, [claim], {claim.id: selected_evidence}
+                )
+            except AssetSourceVersionConflict as exc:
+                raise PublicApiError(
+                    409, "SOURCE_VERSION_CONFLICT", "공개 출처 버전이 충돌합니다."
+                ) from exc
+            except ValueError as exc:
+                raise PublicApiError(
+                    503, "SERVICE_UNAVAILABLE", "공개 근거를 확인할 수 없습니다."
+                ) from exc
+        payload = claim.model_dump(mode="json")
+        if claim.predicate == ASSEMBLY_PLENARY_VOTE_PREDICATE:
+            # Publication above validates the complete canonical Claim. Public retrieval keeps
+            # its statement and exact Evidence locators, without repeating importer hashes,
+            # observation keys or system timestamps already owned by canonical persistence.
+            payload["qualifiers"] = {
+                key: value
+                for key, value in claim.qualifiers.items()
+                if key in PUBLIC_PLENARY_VOTE_QUALIFIERS
+            }
+            for field in ("recorded_at", "superseded_at"):
+                payload.pop(field, None)
+        return payload | {
             "evidence": [item.model_dump(mode="json") for item in selected_evidence],
             "source_ids": sorted({str(item.source_id) for item in selected_evidence}),
             "source_conflict": {"SUPPORT", "REFUTE"} <= stances,
@@ -331,10 +379,14 @@ def create_app(
         item = person_or_404(person_id, public=True)
         # Two bounded reads instead of one Evidence query per Claim: Assembly members carry
         # thousands of vote Claims.
-        claims_context, evidence_context = target.published_person_claim_contexts(
-            [person_id]
-        ).get(person_id, ((), {}))
+        claims_context, evidence_context = target.published_person_claim_contexts([person_id]).get(
+            person_id, ((), {})
+        )
         published_claims = list(claims_context)
+        if any(claim.person_id != person_id for claim in published_claims):
+            raise PublicApiError(
+                503, "SERVICE_UNAVAILABLE", "공개 자료 서비스를 일시적으로 이용할 수 없습니다."
+            )
         evidence_by_claim = {
             claim.id: list(evidence_context.get(claim.id, ())) for claim in published_claims
         }
@@ -347,6 +399,18 @@ def create_app(
         policy_map = target.policies(source.policy_id for source in source_map.values())
         relationships = target.relationships(person_id)
         decision_episodes = target.decision_episodes(person_id)
+        try:
+            disclosure_records = validate_public_disclosure_records(
+                target, item, published_claims, evidence_by_claim
+            )
+        except AssetSourceVersionConflict as exc:
+            raise PublicApiError(
+                409, "SOURCE_VERSION_CONFLICT", "공개 기록의 출처 버전이 충돌합니다."
+            ) from exc
+        except ValueError as exc:
+            raise PublicApiError(
+                503, "SERVICE_UNAVAILABLE", "공개 기록의 근거를 확인할 수 없습니다."
+            ) from exc
         profile = build_profile_projection(
             item,
             published_claims,
@@ -355,9 +419,11 @@ def create_app(
             decision_episodes,
             sources=source_map,
             policies=policy_map,
+            declared_assets=validated_person_assets(item, person_id),
+            disclosure_records=disclosure_records,
         )
-        # Vote Claims number in the thousands per member; only those the profile renders are
-        # embedded, while the profile note carries the whole-record counts.
+        # The profile keeps ten recent vote episodes. All published subject-bound vote Claims
+        # remain retrievable in the same payload for bounded client-side filtering/pagination.
         rendered_claim_ids = {
             entry["claim_id"]
             for section in profile["sections"]
@@ -367,8 +433,11 @@ def create_app(
         person_claims = [
             claim_payload(claim, evidence_by_claim[claim.id])
             for claim in published_claims
-            if claim.predicate != ASSEMBLY_PLENARY_VOTE_PREDICATE
-            or str(claim.id) in rendered_claim_ids
+            if (
+                claim.predicate
+                not in (ASSEMBLY_ASSET_TOTAL_PREDICATE, *DISCLOSURE_RECORD_PREDICATES)
+                or str(claim.id) in rendered_claim_ids
+            )
         ]
         return item.model_dump(mode="json") | {
             "claims": person_claims,
@@ -671,7 +740,7 @@ def create_app(
             raise PublicApiError(
                 422,
                 "INVALID_INPUT",
-                "The earlier fiscal year must precede the later fiscal year.",
+                "비교 시작 회계연도는 종료 회계연도보다 앞서야 합니다.",
             )
         organization = organization_or_404(organization_id, public=True)
         published_claims = target.claims(
@@ -690,7 +759,7 @@ def create_app(
             raise PublicApiError(
                 422,
                 "INSUFFICIENT_ELIGIBLE_INPUTS",
-                "Eligible published annual Claims are insufficient for this comparison.",
+                "이 비교에 필요한 공개 연도별 기록이 충분하지 않습니다.",
             )
         available_years = {
             claim.qualifiers.get("fiscal_year") for claim in candidate_claims
@@ -699,7 +768,7 @@ def create_app(
             raise PublicApiError(
                 422,
                 "INSUFFICIENT_ELIGIBLE_INPUTS",
-                "Eligible published annual Claims are insufficient for this comparison.",
+                "이 비교에 필요한 공개 연도별 기록이 충분하지 않습니다.",
             )
 
         evidence_by_claim = {
@@ -760,7 +829,7 @@ def create_app(
             raise PublicApiError(
                 409,
                 "SOURCE_VERSION_CONFLICT",
-                "Conflicting source versions prevent this comparison.",
+                "출처의 서로 다른 버전이 충돌하여 비교할 수 없습니다.",
             ) from exc
 
     @app.get("/people/{person_id}/relationships")
@@ -802,7 +871,7 @@ def create_app(
     @app.get("/relationships/compare")
     def compare_people(a: UUID, b: UUID, include_candidates: bool = False) -> dict:
         if a == b:
-            raise PublicApiError(422, "INVALID_INPUT", "Two different people are required.")
+            raise PublicApiError(422, "INVALID_INPUT", "서로 다른 두 인물을 선택해야 합니다.")
         person_or_404(a, public=True)
         person_or_404(b, public=True)
         return compare_payload(
@@ -834,16 +903,67 @@ def create_app(
             }
         return path
 
+    def validated_person_assets(person, person_id: UUID) -> list[dict]:
+        claims, evidence = target.published_person_claim_contexts(
+            [person_id], predicates=(ASSEMBLY_ASSET_TOTAL_PREDICATE,)
+        ).get(person_id, ((), {}))
+        observation_ids = {
+            item.feeder_observation_id
+            for items in evidence.values()
+            for item in items
+            if item.feeder_observation_id is not None
+        }
+        contexts = target.feeder_observation_contexts(observation_ids)
+        active_person_ids = target.active_person_ids_by_observation(list(observation_ids))
+        if any(
+            active_person_ids.get(key, frozenset()) != frozenset({person_id})
+            for key in observation_ids
+        ):
+            raise PublicApiError(
+                503, "SERVICE_UNAVAILABLE", "공개 자료 서비스를 일시적으로 이용할 수 없습니다."
+            )
+        observations = {key: value[0] for key, value in contexts.items()}
+        for observation in tuple(observations.values()):
+            for sibling in target.feeder_observations(
+                observation.feeder, observation.scope_key, observation.provider_record_key
+            ):
+                observations[sibling.id] = sibling
+        try:
+            rows = build_assembly_declared_assets_from_claims(
+                person,
+                claims,
+                evidence,
+                observations=observations,
+                snapshots={value[1].id: value[1] for value in contexts.values()},
+                sources={value[2].id: value[2] for value in contexts.values()},
+                policies={value[3].id: value[3] for value in contexts.values()},
+                links=target.person_observation_links(person_id),
+            )
+            return rows
+        except AssetSourceVersionConflict as exc:
+            raise PublicApiError(
+                409,
+                "SOURCE_VERSION_CONFLICT",
+                "출처의 서로 다른 버전이 충돌하여 공시 기록을 표시할 수 없습니다.",
+            ) from exc
+        except ValueError as exc:
+            raise PublicApiError(
+                503, "SERVICE_UNAVAILABLE", "공개 자료 서비스를 일시적으로 이용할 수 없습니다."
+            ) from exc
+
     @app.get("/people/{person_id}/assets")
-    def assets(person_id: UUID) -> list:
-        person_or_404(person_id, public=True)
-        return []
+    def assets(person_id: UUID, response: Response) -> list:
+        rows = validated_person_assets(person_or_404(person_id, public=True), person_id)
+        response.headers["X-Civic-Asset-Coverage"] = (
+            "PUBLISHED_DECLARED_TOTALS" if rows else "NO_PUBLISHED_ASSET_CLAIMS"
+        )
+        return rows
 
     @app.get("/sources/{source_id}")
     def get_source(source_id: UUID) -> dict:
         source = target.public_source(source_id)
         if not source:
-            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
+            raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "공개 기록을 찾을 수 없습니다.")
         policy = target.policies([source.policy_id])[source.policy_id]
         return source_payload(source, policy)
 
@@ -1025,7 +1145,7 @@ def create_app(
 
     @app.get("/{public_path:path}", include_in_schema=False)
     def public_route_not_found(public_path: str) -> dict:
-        raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "The public record was not found.")
+        raise PublicApiError(404, "PUBLIC_RECORD_NOT_FOUND", "공개 기록을 찾을 수 없습니다.")
 
     return app
 

@@ -91,6 +91,82 @@ def test_fixture_is_review_required_and_parses() -> None:
     assert packet.source.canonical_url.endswith("pdfId=0")
 
 
+@pytest.mark.parametrize(
+    "suffix",
+    [
+        "&access_token=synthetic-private-canary",
+        "&unknown=synthetic-private-canary",
+        "#token=synthetic-private-canary",
+        "#",
+        "&pdfId=0",
+        "&cntsDivCd=NAMGZN",
+        "&menuNo=601019",
+        "&pdfClsCd=CPR",
+        "&menuNo=synthetic-private-canary",
+    ],
+)
+def test_gazette_url_rejects_extra_or_duplicate_input_without_echoing_values(suffix: str) -> None:
+    raw = payload()
+    raw["source"]["page_url"] += suffix
+    with pytest.raises(AssemblyAssetPacketError) as error:
+        parse_reviewed_assembly_asset_packet(raw)
+    assert "synthetic-private-canary" not in str(error.value)
+
+
+@pytest.mark.parametrize(
+    "authority",
+    [
+        "synthetic-private-canary@www.assembly.go.kr",
+        "synthetic-private-canary:password@www.assembly.go.kr",
+        "@www.assembly.go.kr",
+        "www.assembly.go.kr:444",
+        "www.assembly.go.kr:synthetic-private-canary",
+    ],
+)
+def test_gazette_url_rejects_userinfo_and_non_default_port(authority: str) -> None:
+    raw = payload()
+    raw["source"]["page_url"] = raw["source"]["page_url"].replace("www.assembly.go.kr", authority)
+    with pytest.raises(AssemblyAssetPacketError) as error:
+        parse_reviewed_assembly_asset_packet(raw)
+    assert "synthetic-private-canary" not in str(error.value)
+
+
+@pytest.mark.parametrize("parameter", ["menuNo=other", "pdfClsCd=other"])
+def test_gazette_url_rejects_wrong_official_query_values(parameter: str) -> None:
+    raw = payload()
+    raw["source"]["page_url"] = (
+        "https://www.assembly.go.kr/portal/cnts/cntsCont/dataA.do?"
+        f"cntsDivCd=NAMGZN&pdfId=0&{parameter}"
+    )
+    with pytest.raises(AssemblyAssetPacketError, match="unsupported query"):
+        parse_reviewed_assembly_asset_packet(raw)
+
+
+def test_gazette_url_canonicalizes_optional_navigation_parameters_before_capture() -> None:
+    raw = payload()
+    raw["source"]["page_url"] = (
+        "https://www.assembly.go.kr:443/portal/cnts/cntsCont/dataA.do?pdfId=0&cntsDivCd=NAMGZN"
+    )
+    packet = parse_reviewed_assembly_asset_packet(raw)
+    capture = build_assembly_asset_capture(packet, artifact_bytes=ARTIFACT_BYTES)
+    assert packet.source.page_url == packet.source.canonical_url
+    assert capture.snapshot.metadata["parent_page_url"] == packet.source.canonical_url
+    assert str(capture.source.url) == packet.source.canonical_url
+
+
+def test_worker_rejected_url_does_not_echo_private_query_in_error(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    raw = payload()
+    raw["source"]["page_url"] += "&access_token=synthetic-private-canary"
+    packet, artifact = write_inputs(tmp_path, raw)
+    with pytest.raises(SystemExit):
+        main(cli(packet, artifact))
+    output = capsys.readouterr()
+    assert "synthetic-private-canary" not in output.out + output.err
+    assert "unsupported query" in output.err
+
+
 def _set_amount(item: dict, field: str, text: str, value: int) -> None:
     item[field] = {"text": text, "value": value}
 

@@ -1,6 +1,7 @@
 # Frontend direction — Evidence Encyclopedia
 
-Status: ACCEPTED for the public beta on 2026-10-04 (owner-directed). Single canonical frontend
+Status: ACCEPTED product direction, updated for the owner-directed 2026-10-08 discovery and
+profile-restoration implementation. This describes intended behavior, not deployed coverage. Single canonical frontend
 direction artifact; `DESIGN.md` remains the visual contract and
 `docs/product/CIVIC_INTEL_NORTH_STAR.md` the product authority. Reference observations:
 `docs/research/frontend-references/references-2026-10-04.json` (several reference pages were
@@ -13,7 +14,8 @@ blocked by robots/egress and are marked UNVERIFIED there).
    interaction.
 2. Wiki-level navigability (fact box, in-page index, anchors), not wiki content culture.
 3. Show dates, status and coverage beside the value; never hide UNKNOWN or conflict.
-4. Missing capability is shown as a precise unavailable lane, never as an empty promise.
+4. Available records lead. Missing eligible records have compact, precise coverage notes;
+   unavailable capabilities never become teaser controls or zero-valued claims.
 5. Presentation may group or sort; it never invents identity, relationship, position, witness
    status, wrongdoing, importance or influence.
 
@@ -36,11 +38,16 @@ CC BY-NC OpenSanctions data, unlicensed OpenWatch data).
 
 ## Page anatomy
 
-**Person**: header (name, identity status) → in-page index → 핵심 기록 fact box (label, value,
-status, 기준일, 근거 anchor) → 2026 국정감사 (only for members of a Gukgam committee: committee,
-audit dates, audited-institution count, "membership ≠ questioning" note) → 기록 sections with
-Evidence Panels → one "아직 수집되지 않은 기록" line for non-live lanes → 공식 기록상 연결
-(ego view + list) → 출처.
+**Home**: 모두의국감 / CIVIC INTELLIGENCE → one-sentence purpose and name search → BRIEF with
+actual published audit-plan rows, plan/source dates and direct Claim links → EXPLORE using
+working person, organization, party/committee filter and Gukgam paths → compact public coverage.
+No arbitrary first-N people, inferred recommendations or unavailable CHANGE/MONEY cards.
+
+**Person**: identity header (reviewed portrait only when eligible) → in-page index → 핵심 기록
+fact box (value, status, 기준일, Claim anchor) → source-attributed CAREER / 경력 with real periods →
+activity (including bounded bills/votes and eligible Gukgam context) → 공식 기록상 연결 → eligible
+personal money and procedural records → compact coverage → Evidence/출처. Missing facet metadata
+does not hide an otherwise public Person. Committee membership does not establish questioning.
 
 **Organization**: header → index → 핵심 기록 (classification, executive-disclosure count labelled
 집계, Gukgam target rows) → 2026 국정감사 (dates, committee, plan evidence, committee members) →
@@ -49,7 +56,8 @@ Evidence Panels → one "아직 수집되지 않은 기록" line for non-live la
 
 **Gukgam**: date index → date → committee → institution rows (FACT plan listing, plan page,
 evidence link) → "감사 위원 N명 →" link to one committee-members section per committee →
-witnesses only after the witness lane publishes real reviewed packets.
+source-listed witness/참고인 requests from published reviewed packets, with Person links only
+where an exact reviewed identity link is publicly eligible. A request is not actual attendance.
 
 ## Evidence Panel
 
@@ -61,17 +69,21 @@ SOURCE CONFLICT) · 유효 기간 · 기록 시각 (Civic Intel recording time, 
 
 ## Timeline
 
-Only for real temporal meaning. Today that is the Gukgam plan dates. Person role timelines stay
-unrendered until historical-role sources exist (current data has a single roster snapshot).
+Use real temporal meaning from each published source contract: Gukgam plan dates, historical
+Assembly terms and attributed biography/NEC career periods. Keep YEAR/MONTH/DAY precision and
+FACT/CLAIM status. Undated public career statements remain visible as period-unspecified records.
 Valid time, recorded time, source-observed time and supersession are labelled separately; fetch
-time is never shown as an event; gaps are not interpolated.
+time and election day are never substituted for a career start. Gaps are not interpolated.
 
 ## Graph
 
 Bounded ego view, depth 1, typed evidenced edges only (SERVED_ON committee, HELD_ROLE, …), each
 edge/list row linking to its Claim; list twin always rendered; uniform node size; no centrality.
-The public view stays the existing SVG + list (Cytoscape remains admin-only) until depth-2 or
-annotation steps are needed.
+Reuse the existing SVG + list for direct edges (Cytoscape remains admin-only). The existing
+bounded `/relationships/people/{id}` projection may add typed Person–via–Person connections with
+both sides' Claim/Evidence/Source, rule version and temporal overlap. Candidates default off;
+UNKNOWN overlap does not establish shared tenure. Do not duplicate direct ontology facts, infer
+friendship or use node size as influence. Frontend and D1 export/replay must share the same query.
 
 ## Status language
 
@@ -82,21 +94,20 @@ Colour never encodes political desirability; party is text, not colour.
 ## Responsive rules
 
 390px: no horizontal overflow, long Korean names wrap, fact box stacks, evidence panel rows
-stack label above value, graph degrades to the list, status chips ≥ 11px.
+stack label above value, graph degrades to the list, status chips ≥ 13px.
 
 ## Accessibility
 
 Skip link, landmarks, semantic headings, visible focus, `<details>` disclosures for evidence,
 labels not colour-only, list twin for every graph, ≥ 44px touch targets for navigation.
 
-## Implementation order
+## Implementation boundary
 
-1. Evidence Panel + anchors (done 2026-10-04).
-2. Fact box + in-page index (done 2026-10-04).
-3. Gukgam context: committee members (done), person ↔ Gukgam (done), executives as source-listed
-   names (done).
-4. Gukgam payload: move the search roster to a lighter read (open).
-5. Legislative/news layers only after their source lanes pass SourcePolicy gates.
+Reuse the existing Evidence Panel, fact box, profile index, Gukgam contexts and published
+legislative records. Restore the career producer and relationship consumer/export path as
+coherent slices. Rights-approved portraits and personal-money publication remain separately
+gated; absence never becomes an invented image or zero assets. Live, staged and blocked
+milestone evidence belongs to the active execution plan, not this design document.
 
 ## Do not build
 

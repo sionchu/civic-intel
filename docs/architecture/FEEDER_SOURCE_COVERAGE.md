@@ -1,5 +1,44 @@
 # Feeder Source Coverage
 
+## Current bounded public records — 2026-10-09
+
+Official press metadata uses the existing Assembly SourcePolicy and canonical
+Source → SourceSnapshot → FeederObservation → reviewed identity → Claim/Evidence → separate
+publication path. The specific `ninnagrlaelvtzfnt` exact-date/page live metadata fetch passed;
+content/body and unreviewed article routes are dropped. AI processing is not authorized by that
+policy. Local capture/review/publication operators and public projection are implemented with
+synthetic regression proof; canonical operational capture/Person assignment/publication remain
+NOT_RUN. Reviewed Person linkage currently supports current Assembly members with an actual
+published roster bridge, not every public Person. External journalism and direct quotations are
+not covered. See [official press contracts](NATIONAL_ASSEMBLY_PRESS_METADATA.md).
+
+Existing committee-minutes speaker-turn observations remain an enrichment-only statement path:
+no Person linkage or published Claim is created. Printed speaker labels and whitespace-free parser
+glyph sequences are not a direct-quote feed. Exact source text/display rights, identity review and
+separate publication remain prerequisites; source AI restrictions remain unchanged. Vote/bill
+retrieval provides official activity records, not personal tendencies or ideological assertions.
+
+Four additional schema-specific supplied-metadata adapters (SPGRPPRESS, NAMEMBEREVENT,
+nkulntiravezskrjd and npeslxqbanwkimebr) share that canonical capture path. Their live request/date
+semantics and stable provider locator remain unverified; LINK/PUBLISH fail closed. Schema and
+license review does not establish live-record coverage or relevance to a Person.
+
+PETI printed totals have a reviewed local one-record candidate and executable policy registration,
+capture, reviewed link and separate publication operators. The self-housing receipt is a closed
+staged contract: only explicitly disclosed SELF ownership or exact source absence evidence is
+eligible. Empty/withheld/partial data stays UNKNOWN, without family, residence, address or amount
+inference. No real housing receipt exists and neither lane has operational published records.
+Public factual disclosure does not require blanket individual reuse consent; source-specific
+collection/storage restrictions, exact identity review and publication decisions remain separate.
+
+|Target category|Existing connected discovery/records|Assets and housing boundary|
+|---|---|---|
+|Current MPs|Assembly/NEC careers, bills, votes; reviewed official press local path|PETI printed total candidate/local operators; self-housing staged, actual receipt absent|
+|Other central/local/public-institution/judicial officers|Researched PETI/Gazette; ALIO disclosed roles for applicable institutions|MP-specific PETI contract rejects other categories; no general assets/housing importer|
+|Election candidates|NEC candidacy, submitted career and education|Assets/housing not connected by this implementation|
+|Corporate officers|DART disclosed executive, compensation/specific-security source paths where governed|No inferred personal real estate or general wealth coverage|
+|Academics/general public|Only existing governed public-role records|No assumed disclosure eligibility or private-family discovery|
+
 ## Purpose
 
 Civic Intel maintains one canonical map of **where publicly consequential people can be
@@ -52,6 +91,7 @@ fixtures, manual row counts or a successful packet import alone do not promote a
 | National Assembly historical member careers (enrichment only) | former-member career rows returned for a selected `PROFILE_UNIT_CD`; current roster is a separate lane and is not included by this service | 열린국회정보 `nfzegpkvaclgtscxt` historical member-career API | API | `MONA_CD` is a provider namespace; no stable row-level Person key is published | packet-only parser plus existing temporal Claim/Evidence semantics; one reviewed Person proof can produce a derived CHANGE, but no automatic Person path or live CHANGE coverage | L1 CONTRACT_STAGED; L3 promotion blocked — 22 term labels were observed, but the provider publishes no complete code manifest, row key, correction/version contract or service-specific reuse decision |
 | National Assembly asset disclosure (enrichment only) | existing officially anchored Assembly members; no family or staff discovery | official 국회공보 재산공개 issue (국회공직자윤리위원회) via operator-saved PDF + human-reviewed packet; opengirok/OpenWatch discovery/methodology only | STRUCTURED_DISCLOSURE; human-assisted packet (`workers/assembly_asset_import.py`); automated route blocked (robots `Disallow: /`) | reviewer-stated official `MONA_CD` as a review-only hint; no Person link; name/locator review-only | source-level FeederObservation only (member declared totals + self-held items; relative-held items excluded); AssetDisclosure/Claim deferred; no new schema | L1 CONTRACT_STAGED — human-assisted packet path; no real packet yet; L2/L3 blocked on rights per issue, revision semantics, issue coverage and permitted route |
 | Gwanbo personnel notices | official personnel-notice metadata in an explicit publication-date window | 대한민국 전자관보 인사 API | OFFICIAL_WEB | notice `cntntSeqNo`; no Person anchor at list stage | Public Service notice discovery | L3 FULL_ENUMERATION; metadata only, no Person creation |
+| Public factual declared-asset headline (PETI) | one bounded official public record; no family/address/item discovery | official PETI printed headline selector, source-specific normalized metadata receipt | BROWSER receipt; metadata only, no raw/fulltext storage | exact printed context is review-only; resolved Assembly anchor required before reviewed Person link | existing Source/Snapshot/FeederObservation then separate Claim/Evidence publication; shared immutable reader feeds /assets and Person public_declared_assets | LOCAL CONTRACT/STAGING IMPLEMENTED; default-preview canonical operations in preparation, operational observations/Claims absent, no application/publication executed |
 | National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | L3 FULL_ENUMERATION; multi-person event observations, no Person creation |
 | National Assembly committee roster (enrichment only) | official committee/member role context; no staff discovery and no historical-term inference | 열린국회정보 `nktulghcadyhmiqxi` member list + `nxrvzonlafugpqjuh` committee status | API | relationship key `DEPT_CD:MONA_CD`; status key `HR_DEPT_CD`; no Civic Intel UUID authority | Committee membership source observations; future CommitteeMembershipEpisode only after current-roster and InstitutionalBody review | L2 SINGLE_PULL — official no-key sample through staged connectors, contact/staff fields discarded; L3 blocked pending issued key, full enumeration, current-member reconciliation and status-code restriction to member-backed committees |
 | National Assembly subcommittee bill review (enrichment only) | bill-level subcommittee referral/table/processing metadata; no person discovery | 열린국회정보 `TVBPMCONFINFO` (`AGE` required) | API | `BILL_ID` is the source-backed packet key after full-universe proof that each BILL_ID maps to one BILL_NO; provider review rows remain nested variants and `COMMITTEE_ID` remains a provider namespace | Legislative review-process source observations only; no canonical Bill/Committee materialization | L3 FULL_ENUMERATION — 22nd Assembly keyed universe 18,324 rows / 19 pages → 17,727 BILL_ID packet observations; 471 multi-row bills and 5 exact duplicate surplus rows preserved; live partial/resume and final 0-created / 17,727-unchanged rerun proven; page-level representation drift is retained as immutable SourceSnapshots without forcing semantic packet versions; no Person/Organization/Claim mutation ([doc](ASSEMBLY_SUBCOMMITTEE_BILL_REVIEW_FEEDER.md)) |

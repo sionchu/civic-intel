@@ -31,3 +31,13 @@ export async function readPublic(
     requestId: response.headers.get("x-request-id"),
   };
 }
+
+// Existing source routes and DTOs, with bounded HTTP concurrency; no new API endpoint.
+export async function readPublicSources(paths: string[]): Promise<PublicReadResponse[]> {
+  const results: PublicReadResponse[] = new Array(paths.length);
+  let cursor = 0;
+  await Promise.all(Array.from({ length: Math.min(6, paths.length) }, async () => {
+    while (cursor < paths.length) { const index = cursor++; try { results[index] = await readPublic(paths[index]); } catch { results[index] = { status: 503, body: null, requestId: null }; } }
+  }));
+  return results;
+}

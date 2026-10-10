@@ -1,3 +1,4 @@
+import { statusLabel } from "../../display-labels";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -57,6 +58,7 @@ export default async function Gukgam2026Page({
   const committees = committeesResult.state === "success" ? committeesResult.data.committees : [];
   const committeeByName = new Map(committees.map((committee) => [committee.committee_name, committee]));
   const today = seoulDate(new Date());
+  const renderedToday = process.env.CIVIC_SITES_EXPORT === "1" ? null : today;
   const targetItems = targetsResult.state === "success" ? targetsResult.data.items : [];
   const scheduleGroups = groupByDateAndCommittee(targetItems, today);
   const scheduleDays = scheduleGroups.map((group) => ({
@@ -82,7 +84,7 @@ export default async function Gukgam2026Page({
             2026 국정감사 일정, 피감기관, 위원회 위원, 증인·참고인 명단입니다.
           </p>
           <div className="hero-actions">
-            <NextAuditAction serverToday={today} dates={scheduleDates} />
+            <NextAuditAction serverToday={renderedToday} dates={scheduleDates} />
             <a className="inline-action" href="#gukgam-witnesses-title">증인·참고인 명단</a>
             <Link className="inline-action" href="/people">인물 찾기</Link>
             <Link className="inline-action" href="/organizations">기관 보기</Link>
@@ -119,21 +121,21 @@ export default async function Gukgam2026Page({
                 <dd>{planDateRange ?? "—"}</dd>
               </div>
               <div>
-                <dt>오늘 (KST)</dt>
-                <dd><KstToday serverToday={today} /></dd>
+                <dt>오늘 (한국 시간)</dt>
+                <dd><KstToday serverToday={renderedToday} /></dd>
               </div>
             </dl>
             <p className="gukgam-scope-note">
               전체 감사대상 목록이 아닙니다. 위원회 계획서상 일정이며 바뀔 수 있습니다.
             </p>
 
-            <AuditDateIndex serverToday={today} days={scheduleDays} />
+            <AuditDateIndex serverToday={renderedToday} days={scheduleDays} />
 
             <div className="gukgam-schedule" id="gukgam-schedule">
               {scheduleGroups.map((group) => (
                 <AuditDaySection
                   key={group.date}
-                  serverToday={today}
+                  serverToday={renderedToday}
                   date={group.date}
                   dates={scheduleDates}
                   count={group.count}
@@ -154,9 +156,9 @@ export default async function Gukgam2026Page({
                               </p>
                             </div>
                             <div className="gukgam-target-evidence">
-                              <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">FACT</span>
+                              <span className="status FACT" title="공식 계획서상 피감대상이라는 계획 사실">{statusLabel("FACT")}</span>
                               <small>
-                                공식 계획서 {item.source_published_date} 공개 · {item.section} · p.{item.page_number}
+                                공식 계획서 {item.source_published_date} 공개 · {item.section} · {item.page_number}쪽
                               </small>
                               <Link
                                 className="inline-action"
@@ -165,13 +167,13 @@ export default async function Gukgam2026Page({
                                 이 일정의 근거 보기
                               </Link>
                               <details className="audit-details">
-                                <summary>Claim·Evidence 확인 경로</summary>
+                                <summary>기록·근거 확인 경로</summary>
                                 <small>
-                                  Claim {item.claim_id}<br />
-                                  Evidence {item.evidence_ids.join(", ")}<br />
-                                  Source {item.source_ids.join(", ")}<br />
-                                  SourceSnapshot {item.snapshot_ids.join(", ")}<br />
-                                  FeederObservation {item.observation_ids.join(", ")}
+                                  기록 {item.claim_id}<br />
+                                  근거 {item.evidence_ids.join(", ")}<br />
+                                  출처 {item.source_ids.join(", ")}<br />
+                                  출처 저장본 {item.snapshot_ids.join(", ")}<br />
+                                  수집 기록 {item.observation_ids.join(", ")}
                                 </small>
                               </details>
                             </div>

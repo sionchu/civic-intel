@@ -5,6 +5,8 @@
 // exported rows are transport failures (never UNKNOWN facts).
 import { env } from "cloudflare:workers";
 import { cacheForRequest } from "vinext/cache";
+// This module is copied to app/public-read.ts by the Worker build.
+import { PERSON_RELATIONSHIP_QUERY } from "./relationship-path.mjs";
 
 export type PublicReadResponse = {
   status: number;
@@ -30,6 +32,9 @@ const activeSnapshot = cacheForRequest(async () => {
   if (snapshot.projection_schema_version !== 2) throw new Error("unsupported public projection schema");
   return { ...snapshot, scope: JSON.parse(snapshot.scope_json) as Scope };
 });
+// One normalized DTO promise per request, shared by metadata/layout/page probes.
+// cacheForRequest caches a zero-argument factory, not a function's arguments.
+const publicResponses = cacheForRequest(() => new Map<string, Promise<PublicReadResponse>>());
 
 export async function readSnapshotAt(): Promise<string> {
   return (await activeSnapshot()).generated_at_kst;
@@ -50,6 +55,17 @@ async function gunzipJson(parts: PublicReadPart[], expected: [number, string]): 
 
 // Same signature as the HTTP transport; revalidation hints do not apply to a fixed snapshot.
 export async function readPublic(path: string, _options?: { revalidateSeconds?: number }): Promise<PublicReadResponse> {
+  const invalidInput = (): PublicReadResponse => ({ status: 422, body: { error: { code: 'INVALID_INPUT', message: 'The request input is invalid.' } }, requestId: null });
+  const relationship = path.match(/^\/relationships\/people\/([^/?]+)(?:\?([^#]*))?$/);
+  if (relationship) {
+    const query = new URLSearchParams(relationship[2] ?? '');
+    const expected = new URLSearchParams(PERSON_RELATIONSHIP_QUERY);
+    if ([...query].length !== [...expected].length || [...expected].some(([key, value]) => query.getAll(key).length !== 1 || query.get(key) !== value)) return invalidInput();
+    let hex = '';
+    try { hex = decodeURIComponent(relationship[1]).replace(/^urn:uuid:/, '').replace(/^\{+|\}+$/g, '').replaceAll('-', '').toLowerCase(); } catch { /* Invalid encoded UUID. */ }
+    if (!/^[0-9a-f]{32}$/.test(hex)) return invalidInput();
+    path = `/relationships/people/${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}?${PERSON_RELATIONSHIP_QUERY}`;
+  }
   // The HTTP API parses UUID path inputs before looking up a record. Normalize its common
   // accepted forms to the exported key; this is input parsing, never identity resolution.
   const entity = path.match(/^(\/people|\/organizations|\/sources|\/ontology\/people|\/ontology\/organizations)\/([^/?]+)(\/money\?earlier_fiscal_year=2024&later_fiscal_year=2025)?$/);
@@ -62,6 +78,17 @@ export async function readPublic(path: string, _options?: { revalidateSeconds?: 
     path = `${entity[1]}/${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}${entity[3] ?? ''}`;
   }
   const snapshot = await activeSnapshot();
+  const responses = publicResponses();
+  const existing = responses.get(path);
+  if (existing) return existing;
+  const pending = readSnapshotPath(snapshot, path);
+  responses.set(path, pending);
+  // Preserve transport retry semantics; failed work must not poison this request.
+  void pending.catch(() => { if (responses.get(path) === pending) responses.delete(path); });
+  return pending;
+}
+
+async function readSnapshotPath(snapshot: ActiveSnapshot & { scope: Scope }, path: string): Promise<PublicReadResponse> {
   const db = env.DB;
   if (!db) throw new Error("D1 binding DB is not configured");
 
@@ -69,6 +96,10 @@ export async function readPublic(path: string, _options?: { revalidateSeconds?: 
     .prepare("SELECT part, status, content_sha256, body_gzip FROM public_read WHERE snapshot_id = ? AND path = ? ORDER BY part")
     .bind(snapshot.snapshot_id, path)
     .all<PublicReadPart>();
+  return decodeSnapshotParts(snapshot, path, parts);
+}
+
+async function decodeSnapshotParts(snapshot: ActiveSnapshot & { scope: Scope }, path: string, parts: PublicReadPart[]): Promise<PublicReadResponse> {
   const expected = snapshot.scope.paths[path];
   if (expected) {
     if (parts.length === 0) throw new Error("missing exported public projection response");
@@ -79,4 +110,46 @@ export async function readPublic(path: string, _options?: { revalidateSeconds?: 
   const scopes = snapshot.scope.patterns.map((pattern) => new RegExp(pattern));
   if (scopes.some((scope) => scope.test(path))) return { status: 404, body: null, requestId: null };
   throw new Error(`${path} is outside the exported public projection`);
+}
+
+// One snapshot pin per request and at most 100 D1 bind parameters (snapshot + 99 paths).
+export async function readPublicSources(paths: string[]): Promise<PublicReadResponse[]> {
+  const db = env.DB;
+  if (!db) return paths.map(() => ({ status: 503, body: null, requestId: null }));
+  if (paths.some((path) => !/^\/sources\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(path))) {
+    throw new Error("invalid canonical source batch path");
+  }
+  const snapshot = await activeSnapshot();
+  const responses = publicResponses();
+  const unique = [...new Set(paths)].filter((path) => !responses.has(path));
+  const chunks: string[][] = [];
+  for (let offset = 0; offset < unique.length; offset += 99) chunks.push(unique.slice(offset, offset + 99));
+  let cursor = 0;
+  // Reserve all promises before querying, so simultaneous page/metadata readers share work.
+  const deferred = new Map<string, { resolve: (value: PublicReadResponse) => void; reject: (error: unknown) => void }>();
+  for (const path of unique) {
+    const pending = new Promise<PublicReadResponse>((resolve, reject) => { deferred.set(path, { resolve, reject }); });
+    responses.set(path, pending);
+    void pending.catch(() => { if (responses.get(path) === pending) responses.delete(path); });
+  }
+  const requested = paths.map((path) => responses.get(path)!);
+  await Promise.all(Array.from({ length: Math.min(6, chunks.length) }, async () => {
+    while (cursor < chunks.length) {
+      const chunk = chunks[cursor++];
+      try {
+        const { results } = await db.prepare(`SELECT path, part, status, content_sha256, body_gzip FROM public_read WHERE snapshot_id = ? AND path IN (${chunk.map(() => "?").join(",")}) ORDER BY path, part`)
+          .bind(snapshot.snapshot_id, ...chunk).all<PublicReadPart & { path: string }>();
+        const grouped = new Map<string, PublicReadPart[]>();
+        for (const part of results) {
+          if (!chunk.includes(part.path)) throw new Error("unexpected public projection response");
+          const list = grouped.get(part.path) ?? []; list.push(part); grouped.set(part.path, list);
+        }
+        for (const path of chunk) {
+          try { deferred.get(path)!.resolve(await decodeSnapshotParts(snapshot, path, grouped.get(path) ?? [])); }
+          catch (error) { deferred.get(path)!.reject(error); }
+        }
+      } catch (error) { for (const path of chunk) deferred.get(path)!.reject(error); }
+    }
+  }));
+  return Promise.all(requested.map((pending) => pending.catch(() => ({ status: 503, body: null, requestId: null }))));
 }

@@ -1,4 +1,204 @@
+# Current local implementation — 2026-10-09
+
+현재 제품b7b2bfa/관리source62ab83의 immutable reader v9/env4 배포와 최종 hosted Aside 기능 검증이 완료됐다. 기존ps41/33f3 ACTIVE epoch2·12729parts/7070paths 데이터는그대로다. 최대Person HTTP200/native CPU1719·2315ms,1910표결완전성·hydration·20→40·Claim/Source근거접근을실제로확인했다. 임시인증폐기·23native404/no-store와공식helper exit0도완료다. nativepeak/quotaUNKNOWN·직접freshSourcehash별도v9미실행·화면captureSTOP/390defer 및 실제news/assets/housing0UNKNOWN·전체목표미완료는유지한다.
+
+이전 Source 배치 전체 검증41112는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings587.40초, 웹106/106 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 기존 62885와 공식 후보 TS18048 실패는 당시 파일 근거로 보존한다. 배치당99 Source경로+snapshot의100매개변수/최대6동시성을 지키며 canonical 공개 DTO·출처·Claim body는 그대로다. 당시 제품 source `8b1335823b666ee976ea3998442ee825ae13f7a1`을 고정했고 현재 최종제품은b7b2bfa다. 최종105 frontend Gitblob/2,470,567B와 Mac 파일은 mismatch0이며 공식 Worker build exit0, 전체7070 응답 status/JSON/raw SHA 재검증 PASS다. 실제 최대 SSR은26 D1조회/최대bind100·동시6/HTML200/10,655,830B이며 원본 artifact는 계수용 메모리 instrumentation으로 변경하지 않았다. 최종 local Aside 기능 QA는 별도 PASS다. 이후 실제v8/ps41 배포·native거부검증은PASS지만 hosted최대Person은CPU_LIMIT으로NOT_COMPLETED이며 아래hotfix를검증했다. nativepeak는NOT_RUN이다.
+
+이전 표시 문구 제품 검증62885는 실제 exit0이다: Python1,330 passed/3 skipped/6 warnings576.14초, 웹105/105 및 Ruff·mypy157·Golden품질·lint·typecheck·Next standalone PASS. 이전57531 PASS와 실패 이력은 각 당시 소스 근거로 보존한다. 조직 역할명 표시와 비공개 playbook의 생성 문구11개만 보완했으며 공개 API/DTO/수집·신원·publication 게이트는 변경하지 않았다.
+
+제품 d67 원본173파일 대조/읽기전용8124 startup/schema0008/66imports/12GET200 PASS. 동일 d67 데이터 source의 fresh full export72149는 실제 exit0/1733.18초: 1142People/387Org/2478Sources/7070paths/12729parts/386유효clienterror, JSON1,661,526,225B/gzip244,996,006B/maxgziprow1,412,221B. 전체 감사 PASS: 17개 published Person predicate의 관측 inventory와 795,154 unique Claim 수가 일치하며 Evidence795,363·Source2478·누락0·795,154 Claim의 subject/publication/근거 연결을 확인했다. 전체7070경로의 raw SHA/status/bytes/part 순서와 실제 scope UTF-8 1,891,534B(기록값 동일, 여유8,466B), 최대 part40,000B/request53,584B를 검증했다. inventory 비교는 2026-10-08T20:24:05.237123Z 관측 기준이며 현재 DB 재집계로 표현하지 않는다. fd73963 API의 12GET 및 공개 runtime172파일이 d67과 동일해 d67 데이터 provenance를 그대로 유지한다. 실제 compiled 최대 인물 SSR은 로컬200/10,655,830B/31.91초지만 D1 SELECT1,942회로 확인됐다. 이전 fd는 D1 Paid1000/Free50 한도를 초과했다. 원본 Claim/Source를 유지한 Source 배치 보완8b13358의 전체 검증41112와 최종 raw105 원본 대조 및 공식 Worker/7070응답/실제26조회 검증이 PASS다. 배포 준비는 hosted writer 보안 결정·실제 storage allocation·native peak·실제 hosted 검증 범위를 별도로 유지한다. 전체 데이터capture의 d67 provenance와 새 표시 제품pin은 구분한다. Worker의256MiB guard는 펼친 runtime/build 합계이며 snapshot전체gzip/SQLhex/base64파일의 cap이 아니다. 실제D1allocation/retainedrows/indexes와 hosted128MiBpeak는 아직UNKNOWN/NOT_RUN이다. 운영8100·launchd·canonicalDB는 그대로다. 당시Sitev6는이후아래승인절차로v8/ps41에갱신됐다.
+
+The Korean/public-record connection request supersedes the previous f5e3829 operational approval
+candidate. Its exact artifact and e575… policy preview remain historical NOT_EXECUTED evidence;
+neither API switch nor canonical writes were approved. Current product changes are local and
+fourth final integrated verification57531 passed with runnerexit0: Python1,330/3skip/6warnings
+517.34s, web104, Ruff/mypy157/Golden quality/lint/typecheck/Next standalone PASS. Third76716 exited0 withPython1,330,
+web102 and all gates; it is an exact prior-language-scope PASS. Final private message16/known-node
+and manifeststatus11 display corrections passed operator/API61 and wholeweb104 targeted checks. Second runner37322 exited2 after
+Python1,330/3skip/6warnings513.93s; web101/102 failed one stale phrase assertion only. Corrected
+complete web-verify83393 exited0 with102tests/lint/typecheck/Nextstandalone PASS. The first full runner63876 exited2
+after1,329 Python passes and one stale section-order failure; its two expected IDs were corrected
+and four targeted tests passed. First web phase was NOT_RUN; the failed log is preserved. Public Site v6 and operating API339363f/schema0008 stay
+unchanged. Lead owns backend/integration, UI Sol owns presentation, source Sol owns bounded source
+contracts/operators. No new schema/repository or parallel source truth store was introduced.
+
+Two read-only actual Persons each carry 1,910 subject-bound canonical vote Claims with a recent
+10 summary; largest Person DTO gzip is 1,412,221 B. Final bounded replay closes all 1,948 Source
+references across 1,956 actual routes, including ontology/relationship/Gukgam inputs and structured
+vote eligible_count/scope. Three representative organizations (ALIO roles, disclosed expenses and
+Gukgam targets), their money route and three cited Sources passed bounded read-only GET checks.
+This does not establish full-universe API/source-gate/storage coverage. The frontend now bounds
+Source and legislative/residual Claim cards while retaining every canonical body, ID and evidence
+path. Actual largest HTML fell from 39,126,848 to 10,657,022 B; gzip fell from 2,459,811 to 1,503,387 B.
+Direct Claim/Source flow has functional DOM proof; screenshot verification remains NOT_COMPLETED.
+
+Press/housing operators are local/synthetic verified, no real operational published records.
+Current MP roster bridge and owner-reviewed exact linkage are required; four additional official
+metadata adapters retain unverified locator/query status and cannot LINK/PUBLISH. Housing empty
+receipts remain UNKNOWN; no real housing receipt or inferred residence is claimed.
+
+Historical pre-reconnection next action: inspect the verified final diff, commit coherently, prepare the exact read-only API artifact
+and one fresh full public export, measure artifact/storage/reader budgets, then prepare a new exact approval candidate
+without executing live changes. See current active plan and public-predicate-coverage evidence.
+Hosted writer delivery remains a separate checkpoint: compiled read-only v6, discarded credential
+and no native SQL path do not authorize credential/environment recovery. Local activate.sql deletes
+RETIRED rows and is excluded from hosted execution under the no-cleanup scope. Preserve all old
+public snapshot rows. Exact fresh export/build/budget preparation proceeds before any final decision.
+
+
+---
+
+## Historical baseline and previous approval preparation
+
 # HANDOFF
+
+## Current public delivery — 2026-10-09
+
+PUBLIC_READER_V6_DEPLOYED / HOSTED_ACTIVE_PASS / IMMUTABLE_MAINTENANCE_DISABLED_PASS /
+LARGEST_PERSON_DIRECT_PASS / DESKTOP_DELTA_QA_PASS / FULL_CONTRACT_INCOMPLETE.
+
+Product code `b7ec64c1f9e6da29c13102301d62ed443e6af692`; native source
+`f79ad69dd68bae3c54dcde96c9807b9b24db2a0a`; saved version
+`appgprj_6ac46916b4d08191872983ffd6d52aba~appgver_caa5c78cfe748191a0d805f0eb105735`;
+deployment `appgdep_6ac7d5b6eec08191ad05e72ff043a3d9` succeeded at the same
+`https://moduigukgam.leeje92.chatgpt.site`, public access revision 2/environment revision 2 and DB binding retained.
+Only the non-secret manifest pin is listed. Previously validated ACTIVE snapshot
+`ps-65e086d2eb00c3c5` remains epoch 1 / 7,449 parts / 5,170 paths / 1,142 People / 387 Organizations /
+578 Sources; capture/data-as-of remains 2026-10-08. Capture manifest b6839703… and hosted transport
+pin cf88a931… are separate. No reload, pointer transition or canonical write accompanied v6.
+
+Immutable route compiled synthetic POSTs and hosted service fixed-state synthetic-auth POST
+all 404/no-store/MAINTENANCE_DISABLED PASS; actual Aside GET 404 PASS. Fresh largest-Person direct
+navigation completed 15.641 s under 60 s, 2,383 Claims/36 Sources, no observed pageerrors during its
+listener interval. Home Enter/client navigation, 12 relationships/2 edges, both endpoint Claims,
+Person/Organization Source keyboard navigation, 1,142 unique People, 387 Organizations and Gukgam
+counts PASS. Home 1440×900 viewport screenshot actually opened PASS; broader/full-page visual
+NOT_RUN, native 390 USER_DEFERRED. Browser POST NOT_RUN under Aside's GET/HEAD-only fetch contract;
+service POST is separate. Listener-free empty errors arrays are not error-absence proof.
+
+Full `make verify` at combined code exit 0: Python 1,116 passed/3 skipped/6 warnings, 407.25 s;
+web 87/87, Ruff/mypy 152/quality/lint/typecheck/Next standalone PASS. Final clean Worker 147 files /
+1,746,848 B/scanner PASS; installed Vinext separate request contexts reproduced all 5,170 exact
+status/JSON-byte/hash tuples and 386 valid 4xx. Final local reader 159 files / 1,771,206 B. Native
+selected Git blobs D/R0/mismatch0; official archive 152 exact files plus one expected hosting JSON
+format transform 96→91 B with equal semantics. Native tar and local gzip hashes are distinct;
+raw archive equality not proven. Full source helper exit0 preserved legacy assets.
+
+Historical v5 formerly valid-secret acceptance after env removal remains security FAIL, cause
+UNKNOWN, writes not proven; secret discarded and not recovered. V6 removes the maintenance
+capability at source. Memo 3 decoded reads→1 measured locally and final direct read PASS do not
+diagnose historical Worker memory-limit causes. Sol owns execution/integration/native operations;
+Astra orchestrates. Original Windows/Mac/release worktrees and PR204 preserved, no GitHub push/merge.
+Tool-policy-denied original cleanup was not retried; `.wrangler/` and fixture residue retained,
+ignored generated runtime. Subsequent M4/M5 local implementation is in progress under the latest
+portrait/public factual asset request; operational data/coverage remains pending, M6 PLANNED.
+
+Current receipts under `dist/full-goal-evidence/`: `public-deployment/native-readonly-b7ec64c-receipt.json`,
+`hosted-readonly-b7ec64c-denial.json`, `compiled-reader-disabled-b7ec64c.json`,
+`retained-reader-b7ec64c.json`, `make-verify-readonly-memo.log`, and
+`followup/browser/public-v6-acceptance.md`. The active plan records exact hashes and all QA limits.
+
+Current follow-up: actual authorized Mac API is ready on loopback port 8100, deployment checkout
+`339363f5cf35502abb14fc2af04ed629a7ee8250`, canonical schema 0008. Strict read-only audits verified
+all 9,143 published Claims across five career/education/committee predicates through policy,
+Source/Snapshot/observation hash/checkpoint, governed identity and publication gates PASS.
+Isolated candidate projection produced 8,103 unique career entries; it is not applied operationally.
+Ten actual Person GETs returned 200/RESOLVED and zero candidate career-semantic entries, confirming
+the producer code gap. Actual bounded largest-Person relationships referenced 71 distinct Claims,
+all canonical support/publication chains PASS. Resident module hashes are not directly attested;
+all-feeder/all-person proof and post-update capture-window consistency remain unverified.
+Receipts reside in `dist/full-goal-evidence/producer-full-chain/`.
+
+Local asset reader, second eligible portrait, recent-official-activity UI and bounded official
+press metadata preparation are integrated. Final frozen-code `make verify` exited0: Python
+1,144 passed/3 skipped/6 warnings in492.05s, web90/90, Ruff/mypy153/Golden quality/lint/typecheck/
+Next standalone PASS. The superseded pre-correction run was interrupted, not PASS. New portrait
+source bytes were opened. Subsequent actual Aside DOM geometry verified Ahn400×534→180×239.625 and
+Lee4032×2268→180×102.125 (including borders), keyboard/licence and no horizontal overflow PASS;
+screenshot NOT_RUN. Receipt followup/browser/portrait-intrinsic-runtime.json. These local changes
+are not public deployment.
+
+Isolated candidate64c11d3352571e03916ac476e311bee460ad9d6d now has raw Git169/169 file-byte proof,
+actual port8121 runtime bootstrap schema0008/default and current transaction read-only ON, and
+11 Person GETs200/154 exact Claim-linked career entries PASS. Five exporter helpers separately
+match raw Git. Finite fresh export and deterministic row verification PASS: snapshot
+ps-4e2dc7570a4484b3,5,170paths/7,526parts,4,784HTTP200/386HTTP422,936Persons/8,103unique
+career ClaimIDs all resolve in their Person DTO. Generated2026-10-09 04:31KST is projection capture,
+not refreshed source freshness. Embedded Git commit UNKNOWN (archive has no.git); raw-file
+external64c11d provenance is explicit. No SQL applied. Receipts:
+producer-full-chain/candidate-64c11d-exact-{source,startup,api-smoke}-receipt.json,
+candidate-64c11d-exporter-git-blobs.json and candidate-64c11d-exact-export-verification.json.
+
+Current local candidate includes: PETI source-specific pure staging, shared validated /assets→
+Person public_declared_assets ProfileEntry, explicit printed-total UI, and bill-vote retrieval.
+Targeted API/profile/Person61 tests and UI12 tests PASS; actual UI uses synthetic static data for assets,
+not operational records. Existing canonical review/admin operation CLI is implemented: capture, actual owner LINK_PERSON
+review producing DRAFT, separate PUBLISH with source/identity checks; content-free stdout and
+optional owner-local full preview. The policy equality check is atomic inside page commit.
+Disposable canonical DB lifecycle→Person API→Source GET tests PASS; no production write.
+Intermediate full make verify exited2: Python1,208 passed/3 skipped/6 warnings in493.08s; Ruff/mypy153/Golden quality PASS, then web92/94 failed on two stale static assertions. Only those assertions were corrected; canonical web-verify subsequently exited0 with94/94, lint/typecheck/Next standalone PASS. That intermediate full runner remains FAIL. The subsequent required policy-registration milestone passed final full makeverify80753: Python1,235/3 skipped/6 warnings/545.76s, web94/94, Ruff/mypy153/quality/lint/typecheck/Next standalone PASS. Canonical PETI policy count0 was observed read-only;
+explicit registration preview/commit is now locally implemented and independently reviewed, not a Golden/implicit
+creation workaround. Operational switch, exact identity review
+and canonical one-record materialization/publication are separate reviewable decisions. No canonical
+writes/merges or new publication decisions occurred.
+Recent bill/vote activity does not fulfill requested news/statements/tendencies; exact permitted
+news metadata, reviewed Person anchors and publishable statement text remain distinct inputs.
+Reassess statutory public asset metadata without a generic individual consent requirement;
+SourcePolicy collection/AI, privacy, exact identity and publication gates still apply. M6 PLANNED,
+whole contract incomplete. The current active plan records this superseding evidence and scope.
+
+
+Product source/deploy target is frozen at f5e3829dc5b11f785d1e9fb5785a2df0d8864583;
+subsequent docs-only recording HEAD is distinct. Exact169 raw Git blobs/mismatch0 PASS,
+gzip425,866B/SHA256d135b1697155b0166b7da73b3b9110ad55fb94bdabedc95a3c87f76d8839ea4a.
+Actual serving-interpreter candidate8122 runtime bootstrap/schema0008/default+current read-only
+ON/62 imports inside target PASS. Bounded12GET200 PASS11.47s; two Persons185/2,383 Claims,
+7/20 career entries, six cited Sources and one bounded relationship query; assetsUNKNOWN/[]
+retained. No complete fresh export was repeated.
+Actual canonical policy-registration preview PASS/workerexit0, policy/auditrequest rows0→0,
+writeFalse. Statehash e575c332ece2c01e9f13f953d2c535a7bbb13e1f611d23676ad1a4ef8332f41c;
+policyhash3662c58c8d082b67c7c3e921a4661f22e34b92d240d3d531f036be75509b268b;
+commandhash4e80798b0a3e5919480cd1cd5f286494fc70b74188d7618255a3f6e2ebb0a4e0.
+Full preview remains owner-local. Two helper import failures preceded DB access and were
+corrected; actual corrected preview PASS is separate. PostgreSQL concurrent commit NOT_RUN.
+Current next decision: independently selectable exact API-only switch/rollback and one official
+PETI1record policy/capture/genuine reviewed14ae/QWL link/separate publication. Both NOT_EXECUTED,
+not a generic public-fact reuse permission question. See producer-full-chain/final-operational-review.md
+and final-{source,exact-startup,api-smoke,canonical-policy-preview}-receipt.json. Public v6 and
+serving339363f unchanged; full contract incomplete. Next complete export follows approved real
+PETI Claim data, with D1 validation/activation and public code release separately pinned.
+
+Use the active plan for current exact receipts and next step. Older checkpoints below are historical.
+
+## Historical local follow-up — 2026-10-08
+
+Follow-up checkpoint: the owner assigned actual GPT-6.1 Sol agents to execution/integration,
+browser QA and readiness; Astra only orchestrates. Clean `cd8cdcc` Worker build and current
+desktop synthetic graph/Claim/Source flows passed. Native 390px is `USER_DEFERRED`. A new
+isolated, read-only Mac public API export with bounded relationships finished: 1,142 People /
+387 Organizations / 578 Sources / 5,170 paths, snapshot `ps-65e086d2eb00c3c5`. Exact transfer,
+all response hashes, captured Source-reference closure and local replay/export tuple parity
+passed. Local D1 load/exact validation/activation and full ACTIVE decoding passed; real data is
+ACTIVE and synthetic PREVIOUS before the exercised rollback. Clean Source-anchor fix candidate
+`145348b` passed UI50, lint, Worker/Next builds and standalone checks. Post-fix largest-page
+SSR/Worker content parity, Source geometry, relationship Claim paths, roster1142 and homeEnter
+passed; real screenshots remain NOT_COMPLETED. Rollback restored synthetic ACTIVE and real
+PREVIOUS with both full integrity checks PASS; canonical PREVIOUS restore returned real ACTIVE
+with all5,170 response hashes/7,449parts and final runtime retention PASS. An initial activate
+retry was a no-op because it requires STAGED; the failed ACTIVE postcondition is preserved as a
+lead recipe error. All owned preview ports are stopped. Rejected
+positive-offset transfer was recovered with 76 exact hashed chunks before any SQL execution.
+Tool policy rejected failed-temporary-chunk cleanup (`blocked by policy`); cleanup is NOT_RUN.
+See the active plan's follow-up checkpoint and ignored `dist/full-goal-evidence/followup/`.
+This is current-frontend/public-API QA, not deployment of the candidate producer or hosted Sites.
+
+Owner MAIN works in isolated `codex/civic-intel-full-goal`, based on RELEASE-01
+`31e1d7a`. The active [product restoration plan](docs/exec-plans/active/civic-intel-product-restoration.md)
+owns current milestone status and evidence. Source-specific career projection, source-backed
+home/facets, bounded relationship API–D1–UI transport, and portrait/Gazette hardening
+were integrated locally at this historical checkpoint, before the v6 hosted release above.
+Real photo/asset rights and canonical writes remain separate approval gates. Older states
+below are historical checkpoints; use the active plan and actual Git/runtime for current status.
 
 ## Current state — 2026-10-07 evening (official careers: former members, NEC, OpenDART master)
 
@@ -3659,3 +3859,172 @@ Keep the exact 41-item post-org.go Gukgam Claim DRAFT uncommitted until explicit
 its manifest hash. Independently review the new 70-item MOIS Organization proposal. Only after
 explicit review should a source-specific reviewed Organization materialization contract be created;
 do not auto-create Organizations from exact names and do not merge these two approval boundaries.
+
+
+### 2026-10-09 최종 제품 커밋 및 공개 전달 준비
+
+제품 정본은 `d67a42d87315dd08c06502d58884630d6cf17280`이다. 최종 전체 `make verify` 세션 57531은 실제 exit 0: Python 1,330 passed / 3 skipped / 6 warnings / 517.34초, 웹 104/104 및 Ruff·mypy 157파일·Golden 품질·lint·typecheck·Next standalone PASS다. 앞선 실패 이력은 기존 기록대로 보존한다.
+
+원본 Git blob API 패키지는 173파일, gzip 438,113바이트, SHA256 `8a7eb1d63f76a50afb7069a668e4b47b1f70e223aeeba90c1978a3bafa87060c`다. 근거는 `dist/full-goal-evidence/producer-full-chain/producer-d67a42d-exact-source.json`이다. 실제 전송 시 원격 Mac이 offline(last seen 41분 전)을 반환하여 전송은 수행되지 않았다. 원격 raw-byte 검증·격리 API 실행·최신 전체 공개 export·실제 hosted 예산/메모리 검증은 NOT_RUN_DEVICE_OFFLINE이다. 다음 실행은 Mac 연결이 복구된 뒤 같은 exact artifact를 전송하여 바이트 대조와 read-only candidate를 검증하고 전체 export를 수행하는 것이다.
+
+운영 API 339363f/8100과 공개 Site v6는 그대로다. canonical 정책 등록·수집·인물 연결·publication과 운영 API 전환은 미실행이며 이전 f5/e575 승인 대상을 재사용하지 않는다. 새 뉴스·자산·주택 운영 기록은 0이며 staged 경로 연결을 실제 수집 완료로 표시하지 않는다. hosted writer 보안 경계와 no-cleanup 제약은 유지한다.
+
+
+### 2026-10-09 공개 전달 준비의 최종 실행 한계
+
+제품 source `d67a42d87315dd08c06502d58884630d6cf17280`과 API runtime 173파일/SHA256 `8a7eb1d63f76a50afb7069a668e4b47b1f70e223aeeba90c1978a3bafa87060c`는 그대로 고정한다. 제품 전체 make verify 및 Next standalone PASS와 아래 배포 준비 실행 결과는 별개다.
+
+- 정확한 frontend Git blob 준비: 105파일, 2,461,610바이트, mismatch 0 PASS. 첫 source archive의 103개 newline mismatch는 FAIL 근거로 보존하고 빌드에 사용하지 않았다.
+- 공식 Site builder 세션 3453과 29126은 모두 install:ci의 child cmd/Node 해석 실패로 exit 1 RUNNER_FAIL이다. process-local absolute Node/PATH 보완도 해결하지 못했다. generated lock SHA256은 `3a4a7b8320f197397ab7d4116e526fb7d3364e2f33803513fd1fcef3cd3625e3`이다. Worker compile/typecheck는 NOT_RUN_INSTALL_FAILED이며 제품 build PASS로 대체하지 않는다. EBUSY/EPERM 잔여 파일은 보존했고 삭제 재시도·비공식 helper patch·ignore-scripts·shim·전역 환경 변경은 하지 않았다.
+- 공식 prepare-site-build.cjs는 이미 생성된 dist를 포장하는 도구이며 현재 install 실패의 복구 진입점이 아니다. 추가 실행은 하지 않았다. 원격 연결이 복구된 뒤 같은 exact source를 지원되는 Mac runtime에서 빌드하는 후속 경로는 아직 미실행이다.
+- Mac device 상태만 bounded 1회 재조회한 결과 OFFLINE/last seen 44분이다. 정확한 원격 전송·runtime 검증·fresh full export·hosted 크기/메모리·save/deploy는 NOT_RUN이다. operating API/DB/public Site v6는 변경하지 않았다.
+
+배포 준비 근거: `dist/full-goal-evidence/public-deployment/local-d67a42d-build-verification.json`, `local-d67a42d-release-review.md`, `local-d67a42d-source-provenance.json`; 연결 근거: `dist/full-goal-evidence/producer-full-chain/mac-device-status-bounded-recheck.json`. 새 source policy/canonical 적용·API 전환·hosted writer 보안 변경은 여전히 별도 구체 검토 대상이며 실행되지 않았다.
+
+
+### 2026-10-09 Mac 재연결 후 실제 읽기 전용 준비 진행
+
+위 OFFLINE 차단 기록은 당시 실행 결과로 보존한다. 사용자 재개 후 동일 Mac이 ONLINE으로 확인되어 제품 `d67a42d` 원본 173파일을 전송했고 raw Git SHA256 대조 mismatch 0 PASS다. 격리 후보 PID71616/loopback8124는 runtime bootstrap/schema0008, transaction/default read_only ON, 내부66 imports 전부 후보 source로 startup PASS다. 운영8100/launchd/DB 정책·자료는 변경하지 않았다.
+
+bounded smoke PID71710 exit0: 두 인물2085/4283 Claim, 자산emptyUNKNOWN, 근거 Source6개와 관계1개를 포함한 12 GET200이다. 최대 측정 Person JSON은10,089,831바이트/3.613초다. 새 전체 export PID72149는 동시요청2·기존40KBparts·현행 cap으로 실행 중이며 완료 전 전체 검증 PASS로 집계하지 않는다. exporter5파일 rawhash mismatch0 및 실제d67 Git commit object도 별도로 검증했다. Mac exporter RSS는 hosted Worker128MiB peak 검증을 대체하지 않는다.
+
+재연결 당시 진행 근거(현재 export/audit 완료는 상단 및 아래 기록 참조): `dist/full-goal-evidence/producer-full-chain/candidate-d67a42d-exact-source-receipt.json`, `candidate-d67a42d-exact-startup-receipt.json`, `candidate-d67a42d-api-smoke-receipt.json`, `candidate-d67a42d-exporter-receipt.json`. 전체 export 후 실제17predicate/ClaimID/Sourceclosure/UNKNOWN/파일크기·최대응답을 검증한다. Public Site v6/운영API339363f/canonical mutation 미실행 경계는 그대로다.
+
+최종 exact 근거: `public-deployment/source-batch-final-git-blob-proof.json`, `mac-8b13358-transfer-receipt.json`, `mac-8b13358-retained-reader-fresh.json`, `mac-8b13358-largest-query-count.json`, `mac-8b13358-largest-exact-render.json`, `followup/readiness/source-batch-make-verify-source.json` (모두 `dist/full-goal-evidence/` 아래). API exact173 archive438,201B/SHA4eb381051a10023662fa2a46c7dd1731e598992b565f050a495dfe38864f8f88는 fd와 byte 및 manifest 완전 동일이므로 검증된 읽기전용8125/schema0008/66imports/12GET 근거를 재사용하며 실제 서비스 전환은 NOT_RUN이다. 데이터 source는 d67, snapshot ps-41b41dc6632e1be4, transport33f3de2d76e4fc8f95aa7d08a4ca7dd91725ba2c490638a3b1b3515e8f5aee00로 그대로다.
+
+정확한8b13358 reader·별도 임시 writer archive와 실제 local QA·기존 v6 보존·atomic promotion/restore·새 hosted credential/env 범위의 검토 자료는 완료됐다. 해당 구체적인 hosted 보안 checkpoint는 사용자 “어 진행해”로 승인됐다. 아래 현재 승인·단계 기록을 적용하며 그 밖의 운영 범위는 승인되지 않았다. API8100/launchd·canonical policy/capture/link/publication은 이 승인 범위 밖이며 실행하지 않는다. 승인된 hosted writer 보안/배포는 아래 기능 차단 상태로 미실행이다. 실제 news/assets/housing published Claim은0이고 M6는 PLANNED, 전체 계약은 INCOMPLETE다. 기존 f5/e575 승인 후보는 역사 근거이며 재사용하지 않는다.
+
+최종8b Worker Aside 초기 DOM은20표결/20법안/20Source·1910 complete·readErrors0·1440×900 overflow없음이며 새3공개자료 section은0entries/UNKNOWN이다. 최초 preview JavaScript3개404/hydration 미완료·클릭/Enter/filter NOT_COMPLETED 기록은 보존했다. 제품·runtime 변경 없이 지원 Miniflare assets-first/Worker fallback 설정의 새 exact8b preview에서 JavaScript4개200/정상MIME/React hydration을 확인했다. 최종 exact8b/ps41 지원 preview의 Aside 실제 상호작용도 PASS다:1910complete/hydrated·표결20→40/검색없음0·법안20→40/정확검색4/없음0·offwindow Claim unique/open·Source 선택 및 directhash unique1/상단371.5px(헤더73px)/카드21·닫기/열기/재열기·새3section UNKNOWN/0entries/absence≠none·duplicateIDs0/readErrors0·1440×900 overflow없음. 이전 d67 Next 결과를 재사용하지 않고 최종 Worker를 직접 검증했으며 Source200/7070rawSHA는 별도 compiled 근거로 분리한다. 초기 toggle 조건 오류도 보존한다. screenshot STOP·native390 USER_DEFERRED도 그대로다.
+
+공식 local archive는 reader2,094,647B/SHA837c5b612c8a4c96b1353f0526170357db3e03a351892795301d993d31665aac, 임시 writer2,099,809B/SHAe21eac04cdc1ca883c39f1fce4c38ff4ef5634b352baece2f3624d328e506bde다. 각각163/164파일은 원본과 exact이며 `.openai/hosting.json`의 기존 project_id 추가만 공식 packager의 명시된 metadata 변환이다. Mac AppleDouble 포함 최초 archive 실패는 보존하고 process-local COPYFILE_DISABLE=1만 사용했다. 원격 source sync/native saved version/deploy는 NOT_RUN이다.
+
+현재 native snapshot_meta 조회는 INVALID_ARGUMENT/NOT_COMPLETED이며 반환빈목록을0rows로 해석하지 않는다. 현재 ACTIVE/epoch와 D1 allocation은 UNKNOWN이며 ps-65e086d2eb00c3c5/epoch1은 마지막 알려진 역사값이다. `public-deployment/8b13358-security-checkpoint-proposal.md`와 `mac-8b13358-release-archive-provenance.json`, `8b13358-native-snapshot-state.json`을 검토 자료로 보존한다. 승인 뒤에도 인증된 state 읽기·actual pointer/manifest 확인 전 begin/staging 쓰기를 허용하지 않는다.
+
+rollback pin은 역사 `hosted-active-receipt.json`의 실제 scope hash와 원본manifest1324583B를 대조해 cf88a931321b0d9508cb3a223ea8d17c7627e3d663d14fd79b0576c6fe9e672c 일치 PASS다(`public-deployment/8b13358-rollback-pin-proof.json`). 이는 현재native pointer 확인을 대체하지 않는다. source sync 검토 범위는 Sites 관리 source 저장소뿐이며 원본 GitHub/PR204의 push/merge 권한을 포함하지 않는다. 지원 assets-first preview의4JS200·정상MIME·React hydration 및 runtime tree 불변은 `mac-8b13358-aside-hydration-readiness.json`으로 별도 확인했다.
+
+최종 local Aside 원본 안전 로그는 `dist/full-goal-evidence/public-deployment/mac-8b13358-aside-qa-fresh-functional.log`, `mac-8b13358-aside-qa-direct-reopen.log`, `mac-8b13358-aside-qa-source-toggle.log`이다. 첫 direct-reopen의 false는 처음 닫힌 Source를 열린 것으로 가정한 조건 실패로 보존했고, 마지막 source-toggle에서 initialClosed/opened/closed/reopened 모두true를 직접 확인했다. 최종 fresh-functional은20→40·목록 밖 exact Claim/Source·검색·UNKNOWN·중복0/읽기오류0을 실행했다. 이 문서 기록의 추가 커밋은 제품 source8b13358 또는 데이터 source d67을 변경하지 않는다.
+
+## 승인된 유한 배포 checkpoint — 기록 시각 2026-10-09T02:49:45Z
+
+사용자의 “어 진행해”가 직전 exact8b 보안 제안서에 대한 승인으로 전달됐다. 승인 대상은 기존 Sites 관리 source 저장소의 정확한 source 동기화·native 저장/배포, 제안서에 고정한 임시 derived writer와 새 일회성 scoped credential/manifest 환경, 인증 state 선확인 후 유한 staging/전체검증/expected-pointer atomic promotion, 최종 불변 reader 복귀와 native maintenance404 확인이다. 제품8b13358·데이터d67/ps-41b41dc6632e1be4·transport33f3 pin과 reader/writer archive hash는 변경하지 않는다. 기록 시각은 승인 전달을 문서에 남긴 시각이며 source freshness를 재설정하지 않는다.
+
+실제 실행 소유권은 release Sol, integration은 비밀값 없이 안전 receipt만 검토한다. 인증된 actual ACTIVE/epoch·old manifest pin 확인 전 begin을 포함한 모든 staging 쓰기는 금지한다. 불일치·확인불가면 immutable reader 복구 후 STOP한다. 기존 snapshot PREVIOUS/RETIRED 보존, DELETE/cleanup 및 local activate.sql 실행은 금지한다. 원본 GitHub/PR204·canonical DB policy/capture/link/publication·API8100/launchd·binding/공개권한/유료 tier 변경은 이 승인에 포함되지 않는다.
+
+아래 단계별 receipt로 source 준비 완료와 writer/native/data 미실행을 별도로 판정했다. 운영 news/assets/housing Claim0과 M6 PLANNED/전체 계약 INCOMPLETE는 그대로다.
+
+### 실제 단계 기록: 관리 source 열기 완료
+
+release의 공식 hidden-stdin source 열기 runner는 exit0이다. 기존 Sites 관리 저장소 provider cloudflare_artifact/main의 실제 remote source는 f79ad69dd68bae3c54dcde96c9807b9b24db2a0a로 확인했다. credential은 private 실행 경로에만 유지했고 원본 저장소는 변경하지 않았다. 사용하지 않은 최초 새 credential은 폐기했으며 과거 credential을 복구하지 않았다. frozen runtime의 정확한 source 동기화/helper commit/archive가 다음 단계이며, 이 시점 native version·environment·D1은 아직 변경하지 않았다. 이 실행 사실은 source 준비 단계일 뿐 새 데이터 staging/승격 성공이 아니다.
+
+### 실제 단계 기록: 임시 writer 관리 Git 원본 대조
+
+`public-deployment/8b-managed-writer-git-provenance.json`을 직접 읽고 승인 archive와 대조했다. 관리 source의 로컬 SHA6208e4bc71d5558d1d45c66f97349fab34bb169e,165파일·3,387,068B·mismatch0·삭제0·rename0이며 archive SHAe21eac04cdc1ca883c39f1fce4c38ff4ef5634b352baece2f3624d328e506bde가 승인값과 동일하다. 이 대조 당시 session2762의 terminal 결과는 PENDING이었다. 이후 공식 helper exit0와 remote HEAD6208e4bc71d5558d1d45c66f97349fab34bb169e를 확인했다. native 저장/환경/배포·D1 state/staging은 여전히 NOT_RUN이며 source 준비 완료와 구분한다.
+
+### 현재 안전 중단: 보호된 secret 전달 기능 부재
+
+승인은 유지되지만 지원되는 보호된 maintenance secret 생성→native 환경 입력의 무출력 전달 기능을 확인할 수 없어 environment 변경·임시 writer native 활성화·D1 state/staging 전에 SAFE_STOP했다. 비밀값을 모델·로그·인자·파일로 우회 전달하지 않고 새 승인 질문을 반복하지 않는다. 관리 source helper terminal 결과와 운영자 입력 안내는 아래 최종 영수증으로 완료됐으며, 보호된 입력 기능 확보 전에는 이 보안 단계를 재개하지 않는다.
+
+Root의 새 native get_site 조회는 기존 exact 프로젝트가 active/public/latest_version_number6이고 current_live_url이 그대로임을 직접 확인했다. 이는 현재 Site v6 근거이며 D1 ACTIVE/epoch 또는 environment revision 확인 근거가 아니다. 실제 canonicalDB/API8100/native environment update/writer activation/D1 mutation은 수행하지 않았다. QA도 local 관리Git165파일3387068B provenance를 독립 확인했다. helper archive hash 확인의 sharing lock 오류는 실행 중인 파일의 접근 문제이며 제품 실패나 helper 완료를 뜻하지 않는다.
+
+### 승인된 checkpoint 최종 결과: source 준비 완료, 보안 적용 전 SAFE_STOP
+
+`dist/full-goal-evidence/public-deployment/8b-release-approved-execution-status.json`과 `8b-managed-source-final-receipt.json`을 직접 검토했다. 공식 helper exit0·remote HEAD6208e4bc71d5558d1d45c66f97349fab34bb169e·관리 Git165파일/3,387,068B/mismatch0/D0R0를 확인했다. 제품8b13358 및 데이터ps-41b41dc6632e1be4는 그대로다.
+
+보존용 full-helper archive는51,533,105B/SHA256 d514c4f91f71920c93bef27fc0b5801775684930bbc49e2ab30db0d3d5e2ead2,5,708파일/481,997,239B이다. `8b-managed-fullsource-archive-proof.json`의 selected raw-byte mismatch5 FAIL은 보존한다. `8b-full-helper-metadata-transform-review.json`은4개 newline 차이와1개 JSON key-order 차이의 의미 동등성만 확인하며 raw-byte 일치로 승격하지 않는다. 이 전체 archive는 native upload 후보가 아니다. 승인된 writer archive SHAe21eac04…506bde와 immutable reader SHA837c5b61…665aac는 별도 exact artifact다.
+
+`8b-post-source-native-unchanged.json`은 Site active/public/v6, environment revision2 및 기존 manifest key1을 기록한다. authenticated D1 state/ACTIVE/epoch 확인은 NOT_RUN이며 과거 pin과 혼동하지 않는다. 보호된 secret handle/reference 기능은 UNAVAILABLE, 소유자 native secret UI 경로는 UNKNOWN이다. environment 변경·native save/deploy·writer 활성화·state·staging·validation·promotion·revoke는 모두 NOT_RUN이다. 원본 GitHub/PR204, canonical DB, API8100 및 기존 데이터에는 변경·삭제가 없다.
+
+다음 실행 조건과 비밀값 비출력 절차는 `8b-owner-secret-handoff.md`에 준비돼 있다. 기존 승인은 유지되며 새로운 포괄 승인이나 secret 채팅 전달을 요구하지 않는다. 지원되는 보호된 채널 확인 후에만 승인된 유한 절차를 재개하고, authenticated state/pin이 불가하거나 불일치하면 모든 D1 begin/쓰기 전에 STOP한다. 전체 목표는 미완료이며 실제 공개 news/assets/housing Claim0과 UNKNOWN, M6 PLANNED 및 native 메모리·hosted 검증 미실행 한계를 유지한다.
+
+## 추가 승인과 실행 재개 — 기록 시각 2026-10-09T03:56:38Z
+
+사용자의 “허락함 진행해”는 직전 설명한 임시 인증의 내부 메모리·도구 응답 경유에 대한 명시적 승인이다. OS CSPRNG 생성값을 functions.exec 내부 응답으로 capture하되 모델 출력 없이 native is_secret:true 입력과 uploader hidden stdin에만 전달하는 transient 흐름을 허용한다. secret 채팅·파일·일반 로그·명령 인자 공개는 허용하지 않는다. 이전 SAFE_STOP 및 NOT_RUN 영수증은 당시 실행 상태로 보존하며 새 결과로 소급 변경하지 않는다.
+
+release Sol만 실제 실행하고 integration은 secret을 보지 않는다. 제품8b13358·관리 source6208e4bc·데이터ps-41b41dc6632e1be4/transport33f3와 승인된 reader/writer archive는 고정한다. authenticated actual state/oldpin 확인 전 모든 D1 begin·staging 쓰기 금지, 불일치/미확인 STOP, NO_DELETE·PREVIOUS/RETIRED 보존·정확 immutable reader 복귀 조건은 그대로다. 원본 저장소/PR204·canonical DB·API8100·identity/publication 적용은 제외된다. 실제 단계는 receipt 검토 후에만 판정하며 news/assets/housing0 UNKNOWN과 전체 계약 미완료를 유지한다.
+
+### 실제 단계 기록: 임시 writer와 인증 state 선확인 PASS
+
+`dist/full-goal-evidence/public-deployment/8b-hosted-state-precondition.json`을 직접 검토했다. 임시 writer version7/appgver_866c626f3bc48191b91233475dc0cdce, deployment appgdep_6ac8661f20d48191820621d2c0432155는 succeeded이며 environment revision3/secret masked다. 승인된 내부 capture→native secret→hidden stdin 흐름은 실제 작동했으므로 이전 보호된 채널 SAFE_STOP은 현재 차단 상태가 아니다.
+
+authenticated state는 기존ps-65e086d2eb00c3c5/ACTIVE/VALIDATED/epoch1/cf88a931…e672c와cursor7449/validation_cursor5170을 실제 확인했고 역사 rollback pin과 일치했다. 새 환경 pin33f3de2d…ee00도 정확하다. 이 선확인 전 D1 staging은 수행하지 않았다. release가 이후12729parts/7070paths의 유한 upload를 시작했으며 완료·validation·promotion·reader 복귀는 후속 영수증까지 미판정이다. 제품8b·관리 source6208·데이터ps41 및 NO_DELETE/olddata보존/원본DB·API8100 제외 경계는 유지한다.
+
+### 실행 중 진행 기록: 새 snapshot STAGED/LOADING
+
+release와 Root가 확인한 실제 상태는 새ps-41b41dc6632e1be4/33f3 pin의 STAGED/LOADING, cursor241/12729, validation_cursor0이다. 이는 처리 개수이며 완료·검증·승격을 뜻하지 않는다. 기존 ACTIVE는 선확인 결과대로 보존한다. immutable reader 관리 source 로컬2036ffbc775326a9bcd72ff9c37a73524406b5bb 준비는 진행 중이며 official helper remote/package 및164파일 최종 proof는 후속 영수증 대기다. writer와 현재 데이터 상태를 유지하고 최종 reader 배포 완료를 선행 판정하지 않는다.
+
+### 최신 진행: immutable reader v8 저장 완료·배포 대기
+
+`dist/full-goal-evidence/public-deployment/8b-immutable-reader-saved.json`을 직접 확인했다. 공식 helper exit0·remote source2036ffbc775326a9bcd72ff9c37a73524406b5bb,164파일/3,366,107B/mismatch0/D0R0이며 승인 gzip SHA837c5b612c8a4c96b1353f0526170357db3e03a351892795301d993d31665aac와 일치한다. native version8/appgver_3bbe502ee4808191b5efce5c63d12321은 SAVED_NOT_DEPLOYED다. native tar3,502,080B/SHA7f8253b33a95abc20a0ed4f34ce95ed2fa8eba8fde341c1eb2b9b0fbe032ecc0는 별도 표현이며 local gzip raw hash와 혼동하지 않는다.
+
+Root의 최신 actual native 관측에서 새ps41은 STAGED/LOADING cursor2058/12729·validation0·epoch0이고 기존 ACTIVE1개는 보존됐다. 이는 upload 진행 근거이며 validation/promotion 또는 reader 배포 완료가 아니다. 앞선 cursor241/600과 reader helper PENDING은 당시 진행 기록이다. 보호된 전달 SAFE_STOP은 추가 승인 흐름으로 해소된 역사 상태이며 현재 업로드가 진행 중이다.
+
+### 현재 결과: 유한 upload 실패, 원인 확인·reader 복귀 대기
+
+release/Root가 보고한 실제 load runner는1488.25초 후 exit1/HTTP409이며 마지막 로그의 처리 표시는4400이다. 이 로그 수치와 실제 commit cursor는 별도 상태 조회로 확인해야 한다. seal·validation·promotion은 실행되지 않았고 부분 staging과 기존 ACTIVE를 보존한다. DELETE·blind retry·성공 승격은 하지 않는다.
+
+Root의 코드 확인에서 atomic()은 db.batch 오류를 STATE_CONFLICT409로 공통 변환하므로 현재 exact 원인은 UNKNOWN이며 cursor 불일치로 단정할 수 없다. release의 안전한 read-only 상태/오류 receipt와 QA 독립 검토 이후 근거 있는 RCA 또는 reader v8 복귀/secret 폐기 결과를 기록한다. 승인된 transient secret 흐름은 작동했으며 이전 capability SAFE_STOP은 역사 기록이다. 제품8b·데이터ps41 source 및 canonical DB/API8100 제외 경계는 유지한다.
+
+### 실제 단1건 진단과 cursor 재개
+
+`8b-hosted-load-failure-state.json`을 직접 검토해 최초 실패의 actual committed cursor4470,새STAGED/LOADING/validation0 및 기존ps65 ACTIVE/epoch1 보존을 확인했다. `8b-hosted-part-4470-diagnostic.json`은 승인된 단1건 ordinal4470 진단이 HTTP200으로4471까지 commit된 결과와 동일 part 재요청200/cursor4471 유지, old ACTIVE 불변을 기록한다. underlying DB 원인은 여전히 UNKNOWN이며 성공한 재요청만으로 구체 원인을 확정하지 않는다.
+
+release는 이 실제 state/idempotence 확인 후 canonical client를cursor4471에서 유한 resume했다(PID25455). 최초1488.25초/exit1/HTTP409 FAIL과 로그는 보존한다. 새 전체 load·seal·validation·promotion 성공은 아직 미판정이며 blind retry·DELETE·olddata 삭제 없이 승인된 동일 artifact/pin 범위를 유지한다.
+
+### 두 번째 load 실패와 제한된 회복 조건
+
+Root/release 보고의 두 번째 actual load는2218.75초/exit1/REMOTE_HTTP409다. 마지막 stdout11100은 실제 최종 commit cursor를 대체하지 않는다. 첫1488.25초 실패와4470 단1건 회복 결과를 각각 보존하며 seal·validation·promotion은 여전히 미실행이다. catch-all409의 내부 원인은 UNKNOWN이다.
+
+release가 read-only 실제state·oldACTIVE·다음ordinal의 동일pin/hash/phase를 먼저 확인한다. 정확한 조건에서만 같은 단1건 controlled diagnostic이 허용되며 전체 회복은 첫4470을 포함해 최대3건이다. 진단 반복 실패·pin/hash/state 불일치 시 blind resume 없이 준비된v8 reader 복귀·인증 폐기로 종료한다. 제품·canonical DB·API8100은 변경하지 않는다. 실제 후속 영수증 전까지 성공 또는 재개 완료를 판정하지 않는다.
+
+### 두 번째 단1건 회복과 유한 재개
+
+`8b-hosted-part-11157-diagnostic.json`을 직접 읽었다. 실제 새STAGED cursor11157에서 단1건HTTP200으로11158 commit, readonly committed duplicate200/cursor11158 유지 및 oldps65/cf88 ACTIVE/epoch1 before/after 불변을 확인했다. Root 보고 진단 runner exit0/12.66초이며 underlying 첫·두 번째409 RCA는 여전히 UNKNOWN이다. release는 확인된11158에서 같은 canonical uploader를 재개했다(PID33975). 회복은2/최대3 사용했고 seal·전체검증·promotion·reader복귀는 후속 근거 대기다. 처음 두 FAIL은 삭제하거나 전체성공으로 바꾸지 않는다.
+
+### 현재 실제 단계: 전체 part seal 완료, 전체 path 검증 진행
+
+release/Root의 authenticated read-only 실제 state는ps41/33f3 STAGED/SEALED·writer cursor12729로 전체part commit 및seal을 확인했다. validation cursor165/7070이며 canonical uploader는 검증 loop 진행 중이다. 중간 로그 출력이 없는 검증 단계의 진행은 실제state 관측으로만 판단한다. promotion은 아직 실행되지 않았고 full load runner exit0·7070검증·reader 복귀는 미판정이다. 최초 두409 FAIL과2건 제한된 회복 및 내부 원인UNKNOWN은 유지한다.
+
+### 실제 native 배포 완료: ps41 활성화·불변 reader 복귀·임시 인증 폐기
+
+`8b-hosted-load-validated.log`은 최종load exit0/2700.85초와ps41/33f3 STAGED/VALIDATED·cursor12729/validation7070을 기록한다. `8b-hosted-activate.log`은 expected oldps65/epoch1 조건의 atomic 활성화 후 새ACTIVE/VALIDATED·epoch2 PASS다. 최초1488.25초·2218.75초/HTTP409 실패와 두 ordinal4470/11157 회복은 별도 보존하며 내부 원인UNKNOWN을 바꾸지 않는다.
+
+`8b-hosted-final-deployment.json`을 직접 검토했다. immutable reader source2036ffbc/제품8b의 nativev8 appgver_3bbe502ee4808191b5efce5c63d12321, deployment appgdep_6ac88306860c819199f589619edda344는 succeeded/env4이며 기존 public URL은 그대로다. 임시 CIVIC_SNAPSHOT_WRITER_SECRET 및 PREVIOUS_MANIFEST key 제거, transient session memory DISCARDED다. `8b-native-reader-revoke-env3.json`/`env4.json` 각각23실제native 요청은 GET/POST/PUT/PATCH/DELETE/OPTIONS/HEAD의 noauth/synthetic/retained 및 malformed/oversize에서404/no-store PASS다. HEAD는 body가 없어stable_error null이며 그 밖에는MAINTENANCE_DISABLED다. native DB dispatch 계수는 지원되지 않아 no-dispatch 근거는 exact source/compiled reader와 분리한다.
+
+실제delete operations0이며 canonical atomic promotion NO_DELETE 계약을 유지했다. 승격 후oldPREVIOUS 직접state조회는 NOT_RUN이므로 이를 실제row 전수보존 검증으로 확대하지 않는다. hosted DB allocation UNKNOWN/native peak NOT_RUN은 그대로다. 원본GitHub/PR204·canonicalDB·API8100·identity/publication에는 변경이 없다. 최종hosted Aside는 진행 중이며 전체goal/news/assets/housing0UNKNOWN 상태는 미완료다.
+
+### 최종 hosted 화면 실패와 canonical SSR CPU hotfix 후보
+
+`8b-native-hosted-largest-cpu-failure.json`은06:03:19.536UTC GET/people/REDACTED의 exceededCpu·CPU32,500ms/wall37,720ms를 기록한다. 인물UUID는비공개이며 시간·route 상관만 확인했고 HTTPstatus는UNKNOWN이다. hosted Aside 최대Person은60초timeout/innerERROR(outer runner exit0)이며 기능PASS가 아니다. native활성화·reader거부검증PASS와 화면기능실패를 분리한다.
+
+실제local compiled8b 프로세스군CPU31.56user/1.44sys초와decoder1941회의wall합658ms는 단계별CPU측정이 아니지만 inflater가주원인이라는 가설을 약화했다. concatenatedgzip은Node에서작동했어도 실제workerd가trailingbytes로거부해 제품에적용하지 않았다. 현재 최소후보는 기존publishedClaims+Sources를JSON.stringify한단일RSCstring으로sharedProvider에전달하고useMemoJSON.parse로동일canonicalDTO복원하는2runtime파일 및1의미회귀다. 전체Claim/Evidence/Source/UNKNOWN·원문·ID·상태·publication·직접hash접근을삭제하거나합성하지 않는다. 회귀24 및web107/type/lintPASS, fullmakeverify53089와공식Worker실측은진행중이며 CPU개선/nativehydration은미판정이다. API/DTO/exportdata불변으로ps41재업로드는현재필요하지않다.
+
+### SSR 후보 실측: 동일 데이터에서 로컬 CPU 비용 감소
+
+`ssr-json-text-candidate-build-receipt.json`과`ssr-json-text-candidate-largest-cpu-decoder-{profile,resource}.log`를 직접 읽었다. 공식Worker후보build exit0/19.47초, 동일ps41 compiled 최대Person replay exit0/1.18초다. 프로세스군CPU0.87user+0.17sys=1.04초로baseline8b의31.56user+1.44sys=33.00초보다약96.8%감소했다. Node호스트CPU는workerdchild를포함하지않으며별도값으로만기록한다. decoder1941회/decoded11,483,971B·D1조회26·maxbind100/동시6은유지됐다. RSC object→singleJSONtext 변경대조가주요직렬화병목을뒷받침하지만 nativeCPU는아직NOT_RUN이다.
+
+HTML200/11,102,770B로8b의10,655,830B보다446,940B증가했으므로rawHTML같음을주장하지않는다. OS프로세스군RSS는Workerisolate128MiBpeak를대체하지않으며nativepeak미확인을유지한다. 후보는UNCOMMITTED_FROZEN_CANDIDATE이고실제Flight/hydration/hosted기능은후속QA대기다. 기존snapshotAPIrawrecords와7070검증은불변이며새D1upload를수행하지않는다.
+
+
+### SSR hotfix 전체 검증 완료, 정확한 제품 pin 준비
+
+기존GNUmake4.4.1의 canonical verify53089는 actual exit0이다. Python1,330passed/3skipped/6warnings601.83초·웹107/107·Ruff·mypy157·Golden품질·lint/typecheck·Next standalone PASS다. 로그와3파일SHA는`followup/readiness/ssr-json-text-make-verify.log`/`ssr-json-text-verification.json`에보존했다. 독립QA는코드상의미·escaping우회없음·전체DTO보존을확인했으며 실제Flight/nativeCPU/hydration은배포후별도검증이다.
+
+`producer-full-chain/ssr-json-text-api-data-compatibility.json`은8b의173개APIruntime Gitblob/bytes/SHA동일·mismatch0와API/DTO/export불변을기록한다. hotfix는Provider/page의단일JSONtext전달과의미회귀만변경해기존ps41/33f3·7070rawbyte검증을재사용하며snapshot재업로드를하지않는다. 정확한commit후105frontend원본과공식로컬후보의rawSHA를대조해재사용근거를닫고immutablereader코드만공식native배포하여CPU/상호작용을검증한다. 기존8b nativeCPU실패·upload409/회복/폐기근거는별도유지하고최종goal완료로승격하지않는다.
+
+
+### 중간 단계 기록: 최종 제품 pin과 v9 reader 배포, 당시 기능 검증 대기
+
+제품commit은`b7b2bfa9d37e655dbec988e6b9b6ffcb543e7b2f`다. 공식후보의WindowsCRLF와최종GitLF 및테스트delta 차이3건은`ssr-json-text-precommit-raw-mismatch-preserved.json`에FAIL로보존했다. 의미동등성으로raw검증을우회하지않고최종rawGit3delta를전송해105파일/2,472,177B/전체manifest동일·mismatch0를직접확인했다(`ssr-json-text-final-git-source-proof.json`,`b7b2bfa-transfer-receipt.json`). 최종raw공식build exit0/28.72초와동일compiledSSR의프로세스군CPU0.93user+0.23sys=1.16초는후보1.04초와별도다. decoder1941/11,483,971B·조회26/bind100/동시6·HTML200/11,102,770B를유지했다. aggregateRSS는nativeisolatepeak대체불가다.
+
+`b7b2bfa-native-deployment.json`은관리source62ab83bfc5f79efe9f78da917bdeedd7ffdd8b95,164파일/3,366,096B/Gitblob0mismatch/D0R0,immutablev9 appgver_ce65c0a4651c8191950694bfe6cf0263와deployment appgdep_6ac88a65d1f08191ba2d6bbe27b643d8 succeeded/env4를기록한다. localgzipSHA1c3e62f14d6ddfb368058a3b4528a70d052d735c7910271022970af96d2f58f8와nativetar3,502,080B/SHA29843ec0f16afc5f03e9a1d54f9ee83ead326c50007ccce748ceffd703f7e52e는표현을분리한다. env/D1mutationfalse이며기존ps41/33f3snapshot을재업로드하지않았다. 이 단계 당시 공식fullhelper terminal과실제hostedCPU/Aside는후속영수증대기였다. 아래최종closure에서확인했으며 이전8b/v8nativeCPU실패는보존해성공으로소급변경하지않는다.
+
+
+### 최종 closure: v9 실제 hosted CPU·hydration·근거 접근 PASS
+
+`b7b2bfa-aside-hosted-v9-supported-recovery.log`를직접읽었다. 실제최대Person200/1910complete,offwindowClaim unique/open→exactSource unique/hash일치/상단371.71875px(헤더73px),닫기/재열기,법안20→40/정확검색4/없음0,새press/assets/housing3section UNKNOWN/0entries/absence≠none,1440×900/scroll1425·readErrors0/overlayfalse/duplicateIds0을확인했다. 초기hydratedfalse와첫more20은earlysample로보존했다. `b7b2bfa-aside-hosted-v9-final-readiness.log`의06:37:58.299–06:38:05.956 단일load는hydrationBefore/Aftertrue와실제키보드Enter20→40/[ok7671ms]를확인해누락된준비검증을닫았다. 첫context/selector오류·v8CPU_LIMIT은이성공으로소급변경하지않는다.
+
+`b7b2bfa-native-v9-supported-recovery-cpu.json`은QA창06:35:39.665–44.674 내06:35:42.627 GETpeopleREDACTED outcomeok/status200/CPU1719ms/wall3521ms를기록한다. `b7b2bfa-native-v9-final-readiness-cpu.json`은06:38:05.148의200/ok/CPU2315ms/wall4849ms다. 정확UUID가native쪽redacted이므로time+route상관한계를유지하며nativepeak/quota UNKNOWN은바꾸지않는다. v9freshSourcehash별도직접navigation은NOT_RUN,선택Source exacthash/상호작용PASS와분리한다. screenshotSTOP/VisualNOT_COMPLETED·native390USER_DEFERRED도유지한다.
+
+`b7b2bfa-native-v9-maintenance-disabled.json`의실제23case는none/synthetic/synthetic_fixed에서전부404/no-store다. 실제임시secret은이미폐기돼v9검사에재사용하지않았다. v8env3/env4의retained-secret실제검사와v9무인증/합성검사는각각범위대로보존하며noDBdispatch는native계측없음/exactsource+compiledproof다. `b7b2bfa-official-source-helper-terminal.json`은helperexit0/managed62ab83·보존용fullarchive51,782,815B/SHA d67f08aebc68de98fda63ef13269e4ce78c6ab640d41e338d221f13d6d0e3aae/5,788files/483,168,123B이며nativeupload용이아니다. updatednative배포영수증은helperPASS와GitcredentialDISCARDED를기록한다.
+
+현재승인된공개delivery/CPUhotfixmilestone은완료됐지만전체제품계약은미완료다. 실제news/assets/housingpublishedClaim0/UNKNOWN·M6PLANNED이며새source수집·Personreview·publication의실제운영적용은하지않았다. 다음현재작업은최종source계약에맞는정확한read-only정책등록preview/statehash를새로준비하고PETI1건capture→실제owneridentityreview→별도publication의구체적운영checkpoint를검토하는것이다. 이전f5/e575typedcommand/statehash는재사용하지않고canonicalDB/API8100전환승인은Sites보안승인과구분한다. 원본Windows/Mac저장소·PR204와기존사용자변경은보존했다. 이추가문서commit은제품b7b2bfa·데이터capture d67/ps41·관리source62ab83을바꾸지않는다.

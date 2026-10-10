@@ -4,7 +4,8 @@
 // (build-sites-snapshot.mjs) stays the production path until the owner approves a cutover.
 //
 // Usage: node scripts/build-sites-worker.mjs [--plugin-root <installed Sites plugin dir>]
-//          [--out <dir>] [--load-local <projection dir from export-public-projection.mjs>]
+//          [--out <dir>] [--lockfile <previous successful generated lock>]
+//          [--load-local <projection dir from export-public-projection.mjs>]
 //
 // --out receives the generated Sites project source (never edit it; rebuild). --load-local applies
 // the D1 migration and a projection to the starter's local (Miniflare) D1 for preview only.
@@ -51,8 +52,12 @@ const { values } = parseArgs({
     "plugin-root": { type: "string" },
     out: { type: "string", default: resolve(repoRoot, "dist", "moduigukgam-site-worker") },
     "load-local": { type: "string" },
+    lockfile: { type: "string" },
   },
 });
+
+// Read before stage cleanup: the caller may retain the successful lock inside that stage.
+const suppliedLock = values.lockfile ? readFileSync(resolve(values.lockfile)) : null;
 
 // 1. The official starter from the installed Sites plugin (not vendored: Sites owns it).
 const pluginCache = join(homedir(), ".codex", "plugins", "cache", "openai-curated-remote", "sites");
@@ -77,7 +82,16 @@ cpSync(join(appRoot, "public"), join(stage, "public"), { recursive: true });
 rmSync(join(stage, "app", "admin"), { recursive: true, force: true });
 cpSync(join(appRoot, "sites-worker", "public-read.d1.ts"), join(stage, "app", "public-read.ts"));
 cpSync(join(appRoot, "sites-worker", "db"), join(stage, "db"), { recursive: true });
-cpSync(join(appRoot, "sites-worker", "drizzle"), join(stage, "drizzle"), { recursive: true });
+cpSync(join(appRoot, "sites-worker", "drizzle"), join(stage, "drizzle"), {
+  recursive: true, filter: (path) => !path.endsWith('rollback_snapshot_writer.sql'),
+});
+cpSync(join(appRoot, 'sites-worker', 'api'), join(stage, 'app', 'api'), { recursive: true });
+mkdirSync(join(stage, 'sites-worker'), { recursive: true });
+for (const name of ['snapshot-writer.mjs', 'snapshot-operations.mjs']) {
+  cpSync(join(appRoot, 'sites-worker', name), join(stage, 'sites-worker', name));
+}
+mkdirSync(join(stage, 'scripts'), { recursive: true });
+for (const name of ['public-boundary.mjs', 'snapshot-scopes.mjs']) cpSync(join(appRoot, 'scripts', name), join(stage, 'scripts', name));
 
 const out = resolve(values.out);
 const linked = existsSync(join(out, ".openai", "hosting.json"))
@@ -104,12 +118,20 @@ const added = Object.entries(appPackage.dependencies).filter(([name]) => !stageP
   // Resolve a fresh generated-stage lock, then require npm ci to validate it (no install fallback).
   rmSync(join(stage, 'package-lock.json'), { force: true });
   // Resolve once with the caller's supported npm, then validate with the strict ci step.
-  run("npm", ["install", '--package-lock-only',
-    "--ignore-scripts", "--workspaces=false", "--include=dev", "--include=optional", "--no-audit", "--no-fund"]);
+  if (suppliedLock) {
+    // An explicit prior lock prevents registry re-resolution during a repeat build. npm ci
+    // below still validates it against the current generated package and integrity hashes.
+    writeFileSync(join(stage, 'package-lock.json'), suppliedLock);
+  } else {
+    run("npm", ["install", '--package-lock-only',
+      "--ignore-scripts", "--workspaces=false", "--include=dev", "--include=optional", "--no-audit", "--no-fund"]);
+  }
 }
 const lockSha = createHash("sha256").update(readFileSync(join(stage, "package-lock.json"))).digest("hex");
 const lockMarker = join(stage, ".lock-sha256");
-if (!existsSync(join(stage, "node_modules")) || !existsSync(lockMarker) || readFileSync(lockMarker, "utf8") !== lockSha) {
+if (values.lockfile || !existsSync(join(stage, "node_modules")) || !existsSync(lockMarker) || readFileSync(lockMarker, "utf8") !== lockSha) {
+  // A failed ci can leave a partial node_modules tree. Never reuse the previous success marker.
+  rmSync(lockMarker, { force: true });
   run("npm", ["run", "install:ci"]);
   writeFileSync(lockMarker, lockSha);
 }
@@ -152,7 +174,14 @@ if (values["load-local"]) {
   const localSchema = join(stage, '.wrangler', 'local-schema.sql');
   mkdirSync(join(stage, '.wrangler'), { recursive: true });
   writeFileSync(localSchema, readFileSync(join(stage, 'drizzle', '0000_public_projection.sql'), 'utf8').replaceAll('CREATE TABLE ', 'CREATE TABLE IF NOT EXISTS '));
-  for (const file of [localSchema, join(projection, "load.sql"), join(projection, "activate.sql")]) {
+  run(process.execPath, [...wranglerCli, 'd1', 'execute', 'DB', '--local', '--config', 'dist/server/wrangler.json', '--persist-to', '.wrangler/state', '--file', localSchema]);
+  const probe = run(process.execPath, [...wranglerCli, 'd1', 'execute', 'DB', '--local', '--config', 'dist/server/wrangler.json', '--persist-to', '.wrangler/state', '--json', '--command', 'PRAGMA table_info(snapshot_meta)'], { stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8' });
+  const columns = JSON.parse(probe.stdout).flatMap((result) => result.results ?? []).map((column) => column.name);
+  const writerColumns = ['writer_manifest_sha256', 'writer_phase', 'writer_cursor', 'validation_cursor', 'pointer_epoch', 'writer_transition_sha256'];
+  const present = writerColumns.filter((name) => columns.includes(name)).length;
+  if (present !== 0 && present !== writerColumns.length) fail('partial local D1 writer migration; resolve state before proceeding');
+  if (present === 0) run(process.execPath, [...wranglerCli, 'd1', 'execute', 'DB', '--local', '--config', 'dist/server/wrangler.json', '--persist-to', '.wrangler/state', '--file', join(stage, 'drizzle', '0001_snapshot_writer.sql')]);
+  for (const file of [join(projection, "load.sql"), join(projection, "activate.sql")]) {
     run(process.execPath, [...wranglerCli, "d1", "execute", "DB", "--local", "--config", "dist/server/wrangler.json",
       "--persist-to", ".wrangler/state", "--file", file]);
   }

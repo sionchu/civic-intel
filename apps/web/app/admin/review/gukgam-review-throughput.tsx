@@ -192,21 +192,20 @@ export default function GukgamReviewThroughputPanel({
     : Math.round(overall.evidence_open_rate * 100);
 
   return <div className="review-throughput">
-    <div className="review-throughput-summary" aria-label="Gukgam 리뷰 처리량">
-      <div><small>결정 receipt</small><strong>{throughput?.decided_count ?? 0} / {items.length}</strong></div>
-      <div><small>median active</small><strong>{duration(overall?.median_active_ms ?? null)}</strong></div>
-      <div><small>p90 active</small><strong>{duration(overall?.p90_active_ms ?? null)}</strong></div>
-      <div><small>첫 occurrence median</small><strong>{duration(throughput?.first_occurrence.median_active_ms ?? null)}</strong></div>
-      <div><small>반복 occurrence median</small><strong>{duration(throughput?.repeat_occurrence.median_active_ms ?? null)}</strong></div>
-      <div><small>HOLD / 근거 열람</small><strong>{holdCount} ({holdRate}%) / {evidenceCount} ({evidenceRate}%)</strong></div>
+    <div className="review-throughput-summary" aria-label="국감 검토 처리량">
+      <div><small>결정 처리 기록</small><strong>{throughput?.decided_count ?? 0} / {items.length}</strong></div>
+      <div><small>활동 시간 중앙값</small><strong>{duration(overall?.median_active_ms ?? null)}</strong></div>
+      <div><small>활동 시간 90백분위</small><strong>{duration(overall?.p90_active_ms ?? null)}</strong></div>
+      <div><small>첫 기재 건 중앙값</small><strong>{duration(throughput?.first_occurrence.median_active_ms ?? null)}</strong></div>
+      <div><small>반복 기재 건 중앙값</small><strong>{duration(throughput?.repeat_occurrence.median_active_ms ?? null)}</strong></div>
+      <div><small>보류 / 근거 열람</small><strong>{holdCount} ({holdRate}%) / {evidenceCount} ({evidenceRate}%)</strong></div>
     </div>
     <p className="operator-note">
-      시간은 5분 idle cap을 적용한 상호작용 기반 active-time proxy입니다. 이 receipt의
-      APPROVE/REJECT/HOLD는 항목별 사람 검토 기록이며, reviewed manifest 생성이나 Claim
-      commit을 자동 승인하지 않습니다. 70개 MOIS Organization 검토와도 별도 지표입니다.
+      시간은 5분 유휴 시간 상한을 적용한 상호작용 기반 활동 시간 추정치입니다. 이 처리 기록의
+      승인·제외·보류는 항목별 사람 검토 기록이며, 검토된 목록 생성이나 공개 기록의 확정 반영을 자동 승인하지 않습니다. 행정안전부 기관 70개 검토와도 별도 지표입니다.
     </p>
     {!throughput && <p className="admin-error" role="alert">
-      현재 manifest와 연결된 처리량 receipt를 읽을 수 없어 결정 기록을 비활성화했습니다.
+      현재 검토 목록과 연결된 처리량 처리 기록을 읽을 수 없어 결정 기록을 비활성화했습니다.
     </p>}
     {message && <p className="admin-receipt" role="status">{message}</p>}
     {error && <p className="admin-error" role="alert">{error}</p>}
@@ -214,7 +213,7 @@ export default function GukgamReviewThroughputPanel({
     <div className="operator-table-scroll">
       <table className="operator-table">
         <thead><tr>
-          <th>기관</th><th>위원회 / 감사 예정일</th><th>근거·현재 상태</th><th>사람 리뷰 receipt</th>
+          <th>기관</th><th>위원회 / 감사 예정일</th><th>근거·현재 상태</th><th>사람 리뷰 처리 기록</th>
         </tr></thead>
         <tbody>{items.map((item) => {
           const latest = latestByKey.get(item.review_key);
@@ -225,31 +224,31 @@ export default function GukgamReviewThroughputPanel({
             <td>
               <strong>{item.organization_name}</strong>
               <small>{item.review_key}</small>
-              <small>기관 occurrence {position?.index ?? "—"} / {position?.count ?? "—"}</small>
+              <small>기관 기재 건 {position?.index ?? "—"} / {position?.count ?? "—"}</small>
             </td>
             <td>{item.committee_name}<small>{item.audit_date}</small></td>
             <td>
               <span className="operator-tag">{item.match_class}</span>
-              <small>Claim 존재 {item.current_claim_present ? "예" : "아니요"} · commit 승인되지 않음</small>
+              <small>기록 존재 {item.current_claim_present ? "예" : "아니요"} · 저장 반영 승인되지 않음</small>
               <div className="review-evidence-links">
                 <Link
                   href={recordLink("organizations", item.organization_id)}
                   target="_blank"
                   prefetch={false}
                   onClick={() => evidenceOpen(item.review_key, "organization", Date.now())}
-                >Organization ↗</Link>
+                >기관 ↗</Link>
                 <Link
                   href={recordLink("observations", item.observation_id)}
                   target="_blank"
                   prefetch={false}
                   onClick={() => evidenceOpen(item.review_key, "gukgam_observation", Date.now())}
-                >schedule observation ↗</Link>
+                >일정 수집 기록 ↗</Link>
               </div>
             </td>
             <td>
               {latest && <div className="review-latest">
                 <strong>{decisionLabel(latest.decision)}</strong>
-                <small>active {duration(latest.active_ms)} · 근거 열람 {
+                <small>활동 시간 {duration(latest.active_ms)} · 근거 열람 {
                   Object.values(latest.evidence_opens).reduce((sum, value) => sum + value, 0)
                 }회</small>
                 {latest.hold_reason && <small>{HOLD_REASONS[latest.hold_reason]}</small>}
@@ -263,7 +262,7 @@ export default function GukgamReviewThroughputPanel({
               {active && <div className="review-decision">
                 <small>타이머 시작됨 · 근거 링크는 새 탭으로 열립니다.</small>
                 <label>
-                  HOLD 사유
+                  보류 사유
                   <select
                     value={holdReason}
                     onChange={(event) => {
@@ -271,21 +270,21 @@ export default function GukgamReviewThroughputPanel({
                       setHoldReason(event.target.value as GukgamReviewHoldReason | "");
                     }}
                   >
-                    <option value="">HOLD일 때만 선택</option>
+                    <option value="">보류일 때만 선택</option>
                     {Object.entries(HOLD_REASONS).map(([value, label]) =>
                       <option key={value} value={value}>{label}</option>)}
                   </select>
                 </label>
                 <div className="admin-button-row">
-                  <button disabled={busy} type="button" onClick={() => decide("APPROVE")}>APPROVE</button>
-                  <button disabled={busy} type="button" onClick={() => decide("REJECT")}>REJECT</button>
-                  <button disabled={busy || !holdReason} type="button" onClick={() => decide("HOLD")}>HOLD</button>
+                  <button disabled={busy} type="button" onClick={() => decide("APPROVE")}>승인</button>
+                  <button disabled={busy} type="button" onClick={() => decide("REJECT")}>제외</button>
+                  <button disabled={busy || !holdReason} type="button" onClick={() => decide("HOLD")}>보류</button>
                   <button disabled={busy} type="button" onClick={() => {
                     setSession(null);
                     setHoldReason("");
                     setMessage("");
                     setError("");
-                  }}>취소 · receipt 없음</button>
+                  }}>취소 · 처리 기록 없음</button>
                 </div>
               </div>}
             </td>

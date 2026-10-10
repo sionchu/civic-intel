@@ -198,7 +198,7 @@ class Change:
             for key in self.after
             if self.before is None or self.after[key] != self.before.get(key)
         }
-        keys &= SAFE_CHANGE_FIELDS
+        keys &= (set(SourcePolicy.model_fields) if self.model is db.SourcePolicyRow else SAFE_CHANGE_FIELDS)
         return {
             "table": self.model.__tablename__,
             "id": self.record_id,
@@ -787,8 +787,289 @@ def _link_opendart(plan: Plan, observation: Any) -> None:
     )
 
 
+def _peti_anchor(plan: Plan, target: Any, evidence_rows: list[Any], printed_name: str) -> None:
+    """Owner review of one disclosure against a current authoritative roster, never a merge."""
+    from packages.connectors.open_assembly import OpenAssemblyMemberConnector
+    from packages.verification.assembly_asset_import import assembly_asset_observation_hash
+
+    if target.identity_status != "RESOLVED" or target.canonical_name != printed_name:
+        raise AdminError("PETI_IDENTITY_CONFLICT", "확인된 현직 인물과 공개 신고 명칭이 다릅니다.")
+    if len(evidence_rows) != 1:
+        raise AdminError("PETI_ROSTER_REQUIRED", "현직 국회 명부 근거 하나를 선택하세요.")
+    evidence = evidence_rows[0]
+    claim = plan.get(db.ClaimRow, evidence.claim_id)
+    observation = plan.get(db.FeederObservationRow, evidence.feeder_observation_id)
+    normalized = observation.normalized_json
+    if (
+        claim.person_id != target.id or claim.superseded_at is not None
+        or claim.publication_status != "PUBLISHED" or claim.epistemic_status != "FACT"
+        or not claim.asserted_as_true or evidence.stance != "SUPPORT"
+        or claim.predicate not in {"ASSEMBLY_PARTY", "ASSEMBLY_DISTRICT", "ASSEMBLY_COMMITTEES", "ASSEMBLY_REELECTION"}
+        or claim.qualifiers.get("source_contract") != "assembly_member_roster"
+        or claim.qualifiers.get("provider_record_key") != observation.provider_record_key
+        or claim.qualifiers.get("immutable_observation_hash") != observation.content_hash
+        or observation.feeder != "national_assembly_members"
+        or observation.scope_key != "current_member_roster"
+        or observation.semantic_scope != "legislative_member_roster"
+        or normalized.get("canonical_name") != printed_name
+        or normalized.get("member_code") != observation.provider_record_key
+        or assembly_asset_observation_hash(normalized) != observation.content_hash
+    ):
+        raise AdminError("PETI_ROSTER_REQUIRED", "정확한 현재 국회 명부 근거가 필요합니다.")
+    _publication_gate(plan, Claim.model_validate(claim, from_attributes=True), [evidence])
+    snapshot = plan.get(db.SourceSnapshotRow, observation.snapshot_id)
+    source = plan.get(db.SourceRow, snapshot.source_id)
+    governing = plan.get(db.SourcePolicyRow, source.policy_id)
+    if governing.id != "11000000-0000-0000-0000-000000000001":
+        raise AdminError("PETI_ROSTER_REQUIRED", "공식 국회 명부 정책이 아닙니다.")
+    try:
+        OpenAssemblyMemberConnector._validated_query(source.url)
+    except ValueError:
+        raise AdminError("PETI_ROSTER_REQUIRED", "공식 국회 명부 주소가 아닙니다.") from None
+    links = plan.query(db.PersonObservationLinkRow,
+        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.superseded_at.is_(None))
+    if len(links) != 1 or links[0].person_id != target.id:
+        raise AdminError("PETI_IDENTITY_CONFLICT", "명부의 인물 연결이 유일하지 않습니다.")
+    checkpoints = plan.query(db.SourceCheckpointRow,
+        db.SourceCheckpointRow.feeder == observation.feeder,
+        db.SourceCheckpointRow.scope_key == observation.scope_key, limit=1)
+    if not checkpoints or not checkpoints[0].last_run_id:
+        raise AdminError("PETI_ROSTER_REQUIRED", "완료된 현직 명부 체크포인트가 필요합니다.")
+    checkpoint = checkpoints[0]
+    run = plan.get(db.SourceRunRow, checkpoint.last_run_id)
+    metadata = checkpoint.metadata_json
+    hashes = metadata.get("seen_provider_hashes", {})
+    total, pages = metadata.get("list_total_count"), metadata.get("expected_pages")
+    if (
+        metadata.get("source_contract") != "assembly_member_roster"
+        or not isinstance(hashes, dict) or not isinstance(total, int) or total <= 0
+        or not isinstance(pages, int) or pages <= 0 or checkpoint.cursor != str(pages)
+        or len(hashes) != total or hashes.get(observation.provider_record_key) != observation.content_hash
+        or run.status != "SUCCESS" or run.feeder != observation.feeder
+        or run.scope_key != observation.scope_key or run.records_seen != total
+    ):
+        raise AdminError("PETI_ROSTER_REQUIRED", "현직 명부의 완료·버전 근거가 일치하지 않습니다.")
+
+
+def _peti_context(plan: Plan, observation: Any) -> tuple[Any, Any, Any]:
+    from packages.persistence.repository import SqlAlchemyRepository as Repository
+    from packages.verification.assembly_asset_import import (
+        PETI_HOUSING_FEEDER,
+        normalize_peti_asset_receipt,
+        normalize_peti_housing_receipt,
+    )
+
+    snapshot = plan.get(db.SourceSnapshotRow, observation.snapshot_id)
+    source = plan.get(db.SourceRow, snapshot.source_id)
+    policy = plan.get(db.SourcePolicyRow, source.policy_id)
+    try:
+        normalizer = normalize_peti_housing_receipt if observation.feeder == PETI_HOUSING_FEEDER else normalize_peti_asset_receipt
+        normalizer(observation.normalized_json, policy=Repository._policy(policy))
+    except (ValueError, PermissionError):
+        raise AdminError("PETI_SOURCE_INVALID", "공개 총계 메타데이터 또는 정책이 유효하지 않습니다.") from None
+    versions = plan.query(db.FeederObservationRow,
+        db.FeederObservationRow.feeder == observation.feeder,
+        db.FeederObservationRow.scope_key == observation.scope_key,
+        db.FeederObservationRow.provider_record_key == observation.provider_record_key, limit=20)
+    if {row.content_hash for row in versions} != {observation.content_hash}:
+        raise AdminError("PETI_SOURCE_CONFLICT", "같은 신고 기록의 서로 다른 버전이 있습니다.")
+    return source, snapshot, policy
+
+
+def _link_peti(plan: Plan, observation: Any) -> None:
+    from packages.domain.contracts import IdentityReviewItem, PersonObservationLink
+    from packages.persistence.repository import SqlAlchemyRepository as Repository
+    from packages.verification.assembly_asset_import import (
+        PETI_HOUSING_FEEDER,
+        build_peti_asset_total_claim,
+        build_peti_housing_claim,
+    )
+
+    _require_unlinked(plan, observation.id)
+    source, snapshot, policy = _peti_context(plan, observation)
+    target = _current_person(plan, plan.command.target_person_id)
+    bridge = [plan.get(db.ClaimEvidenceRow, identifier) for identifier in plan.command.evidence_ids]
+    _peti_anchor(plan, target, bridge, observation.normalized_json["printed_name"])
+    review_id = _save_review(plan, observation.id, "RESOLVED", "REGISTERED", target.id)
+    review = IdentityReviewItem(id=UUID(review_id), observation_id=UUID(observation.id),
+        candidate_person_id=UUID(target.id), reason_code="OPERATOR_REVIEW", status="RESOLVED",
+        resolution_note=plan.command.reason, resolved_at=plan.review_time)
+    link = PersonObservationLink(id=UUID(plan.uid(f"link:{observation.id}")),
+        person_id=UUID(target.id), observation_id=UUID(observation.id), action="REVIEWED_LINK",
+        decision_class="REVIEWED_SOURCE_CONTEXT", review_item_id=review.id)
+    try:
+        builder = build_peti_housing_claim if observation.feeder == PETI_HOUSING_FEEDER else build_peti_asset_total_claim
+        claim, _ = builder(Repository._source(source), Repository._snapshot(snapshot),
+            Repository._observation(observation), policy=Repository._policy(policy),
+            person=Person.model_validate(target, from_attributes=True), link=link, review=review)
+    except (ValueError, PermissionError):
+        raise AdminError("PETI_SOURCE_INVALID", "공개 총계의 불변 출처 검증에 실패했습니다.") from None
+    _create_link_and_claim(plan, observation, target.id, "REVIEWED_LINK", "REVIEWED_SOURCE_CONTEXT",
+        review_id, claim, source.id, bridge)
+
+
+def _revalidate_peti_publication(plan: Plan, row: Any, evidence_rows: list[Any]) -> None:
+    from packages.domain.contracts import IdentityReviewItem
+    from packages.persistence.repository import SqlAlchemyRepository as Repository
+    from packages.rendering.money_projection import build_assembly_declared_assets_from_claims
+    from packages.verification.assembly_asset_import import (
+        PETI_HOUSING_FEEDER,
+        build_peti_housing_claim,
+    )
+
+    support = [item for item in evidence_rows if item.stance == "SUPPORT"]
+    bridge = [item for item in evidence_rows if item.stance == "NEUTRAL"]
+    if len(support) != 1 or len(bridge) != 1:
+        raise AdminError("PETI_SOURCE_INVALID", "총계와 명부 근거가 정확히 하나씩 필요합니다.")
+    observation = plan.get(db.FeederObservationRow, support[0].feeder_observation_id)
+    _source, snapshot, _policy = _peti_context(plan, observation)
+    target = _current_person(plan, row.person_id)
+    # The copied neutral bridge must still point to an actual published roster Claim.
+    originals = plan.query(db.ClaimEvidenceRow,
+        db.ClaimEvidenceRow.feeder_observation_id == bridge[0].feeder_observation_id,
+        db.ClaimEvidenceRow.source_id == bridge[0].source_id,
+        db.ClaimEvidenceRow.snapshot_id == bridge[0].snapshot_id,
+        db.ClaimEvidenceRow.stance == "SUPPORT")
+    originals = [item for item in originals if plan.get(db.ClaimRow, item.claim_id).person_id == target.id
+        and plan.get(db.ClaimRow, item.claim_id).qualifiers.get("source_contract") == "assembly_member_roster"]
+    if not originals:
+        raise AdminError("PETI_ROSTER_REQUIRED", "현재 공개 명부 근거가 없습니다.")
+    _peti_anchor(plan, target, [originals[0]], observation.normalized_json["printed_name"])
+    links = plan.query(db.PersonObservationLinkRow,
+        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.superseded_at.is_(None))
+    if len(links) != 1 or links[0].person_id != target.id:
+        raise AdminError("PETI_IDENTITY_CONFLICT", "총계의 인물 연결이 유일하지 않습니다.")
+    review = plan.get(db.IdentityReviewItemRow, links[0].review_item_id)
+    if review.status != "RESOLVED" or review.observation_id != observation.id or review.candidate_person_id != target.id or not review.resolution_note:
+        raise AdminError("PETI_IDENTITY_CONFLICT", "원본 인물 검토 결정이 일치하지 않습니다.")
+    evidence, sources, policies = _evidence_context(plan, evidence_rows)
+    claim = Claim.model_validate(row, from_attributes=True).model_copy(update={"publication_status": PublicationStatus.PUBLISHED})
+    try:
+        if observation.feeder == PETI_HOUSING_FEEDER:
+            expected, _ = build_peti_housing_claim(Repository._source(_source), Repository._snapshot(snapshot),
+                Repository._observation(observation), policy=Repository._policy(_policy),
+                person=Person.model_validate(target, from_attributes=True),
+                link=Repository._person_observation_link(links[0]),
+                review=IdentityReviewItem.model_validate(review, from_attributes=True), publication_approved=True)
+            if any(getattr(claim, field) != getattr(expected, field) for field in (
+                "id", "person_id", "subject", "predicate", "proposition", "object_text", "qualifiers",
+                "epistemic_status", "asserted_as_true", "resolution_note")):
+                raise ValueError("housing claim changed")
+            return
+        result = build_assembly_declared_assets_from_claims(Person.model_validate(target, from_attributes=True),
+            [claim], {claim.id: evidence}, observations={UUID(observation.id): Repository._observation(observation)},
+            snapshots={UUID(snapshot.id): Repository._snapshot(snapshot)}, sources=sources, policies=policies,
+            links=[Repository._person_observation_link(item) for item in links])
+        if len(result) != 1:
+            raise ValueError("No publishable total")
+    except (ValueError, PermissionError):
+        raise AdminError("PETI_SOURCE_INVALID", "공개 총계의 읽기 검증에 실패했습니다.") from None
+
+
+def _press_context(plan: Plan, observation: Any) -> tuple[Any, Any, Any]:
+    from packages.verification.assembly_press_import import PRESS_FEEDER
+    if observation.feeder != PRESS_FEEDER:
+        raise AdminError("PRESS_SOURCE_INVALID", "공식 보도자료 기록이 아닙니다.")
+    snapshot = plan.get(db.SourceSnapshotRow, observation.snapshot_id)
+    source = plan.get(db.SourceRow, snapshot.source_id)
+    policy = plan.get(db.SourcePolicyRow, source.policy_id)
+    require_policy(SourcePolicy.model_validate(policy, from_attributes=True), PolicyAction.STORE_METADATA)
+    if snapshot.metadata_json.get("source_contract") == "national_assembly_activity_metadata_staged_v1":
+        raise AdminError("PRESS_RECORD_LOCATOR_UNVERIFIED", "안정된 원본 기록 식별자와 조회 범위 검증이 필요합니다.")
+    run = plan.get(db.SourceRunRow, observation.run_id)
+    if run.status != "SUCCESS" or run.feeder != observation.feeder or run.scope_key != observation.scope_key:
+        raise AdminError("PRESS_SOURCE_INVALID", "완료된 보도자료 수집 근거가 필요합니다.")
+    versions = plan.query(db.FeederObservationRow,
+        db.FeederObservationRow.feeder == observation.feeder,
+        db.FeederObservationRow.scope_key == observation.scope_key,
+        db.FeederObservationRow.provider_record_key == observation.provider_record_key, limit=20)
+    if {item.content_hash for item in versions} != {observation.content_hash}:
+        raise AdminError("PRESS_SOURCE_CONFLICT", "동일 보도자료의 서로 다른 버전이 있습니다.")
+    return source, snapshot, policy
+
+
+def _link_press(plan: Plan, observation: Any) -> None:
+    from packages.domain.contracts import IdentityReviewItem, PersonObservationLink
+    from packages.persistence.repository import SqlAlchemyRepository as Repository
+    from packages.verification.assembly_press_import import build_press_claim
+    _require_unlinked(plan, observation.id)
+    source, snapshot, policy = _press_context(plan, observation)
+    target = _current_person(plan, plan.command.target_person_id)
+    bridge = [plan.get(db.ClaimEvidenceRow, i) for i in plan.command.evidence_ids]
+    # The roster establishes exact identity only. The explicit human source-context
+    # review establishes relevance; a title name match is never consulted.
+    _peti_anchor(plan, target, bridge, target.canonical_name)
+    review_id = _save_review(plan, observation.id, "RESOLVED", "REGISTERED", target.id)
+    review = IdentityReviewItem(id=UUID(review_id), observation_id=UUID(observation.id),
+        candidate_person_id=UUID(target.id), reason_code="OPERATOR_REVIEW", status="RESOLVED",
+        resolution_note=plan.command.reason, resolved_at=plan.review_time)
+    link = PersonObservationLink(id=UUID(plan.uid(f"link:{observation.id}")), person_id=UUID(target.id),
+        observation_id=UUID(observation.id), action="REVIEWED_LINK",
+        decision_class="REVIEWED_SOURCE_CONTEXT", review_item_id=review.id)
+    try:
+        claim, _ = build_press_claim(Repository._source(source), Repository._snapshot(snapshot),
+            Repository._observation(observation), policy=Repository._policy(policy),
+            person=Person.model_validate(target, from_attributes=True), link=link, review=review)
+    except (ValueError, PermissionError):
+        raise AdminError("PRESS_SOURCE_INVALID", "공식 보도자료 불변 근거 검증에 실패했습니다.") from None
+    _create_link_and_claim(plan, observation, target.id, "REVIEWED_LINK", "REVIEWED_SOURCE_CONTEXT",
+        review_id, claim, source.id, bridge)
+
+
+def _revalidate_press_publication(plan: Plan, row: Any, evidence_rows: list[Any]) -> None:
+    from packages.domain.contracts import IdentityReviewItem
+    from packages.persistence.repository import SqlAlchemyRepository as Repository
+    from packages.verification.assembly_press_import import build_press_claim
+    support = [item for item in evidence_rows if item.stance == "SUPPORT"]
+    bridge = [item for item in evidence_rows if item.stance == "NEUTRAL"]
+    if len(support) != 1 or len(bridge) != 1:
+        raise AdminError("PRESS_SOURCE_INVALID", "보도자료와 현재 명부 근거 하나씩 필요합니다.")
+    observation = plan.get(db.FeederObservationRow, support[0].feeder_observation_id)
+    source, snapshot, policy = _press_context(plan, observation)
+    target = _current_person(plan, row.person_id)
+    originals = plan.query(db.ClaimEvidenceRow,
+        db.ClaimEvidenceRow.feeder_observation_id == bridge[0].feeder_observation_id,
+        db.ClaimEvidenceRow.source_id == bridge[0].source_id,
+        db.ClaimEvidenceRow.snapshot_id == bridge[0].snapshot_id,
+        db.ClaimEvidenceRow.stance == "SUPPORT")
+    originals = [item for item in originals if plan.get(db.ClaimRow, item.claim_id).person_id == target.id
+        and plan.get(db.ClaimRow, item.claim_id).qualifiers.get("source_contract") == "assembly_member_roster"]
+    if not originals:
+        raise AdminError("PRESS_IDENTITY_CONFLICT", "현재 공개 명부 근거가 없습니다.")
+    _peti_anchor(plan, target, [originals[0]], target.canonical_name)
+    links = plan.query(db.PersonObservationLinkRow,
+        db.PersonObservationLinkRow.observation_id == observation.id,
+        db.PersonObservationLinkRow.superseded_at.is_(None))
+    if len(links) != 1 or links[0].person_id != target.id:
+        raise AdminError("PRESS_IDENTITY_CONFLICT", "보도자료 검토 연결이 유일하지 않습니다.")
+    review = plan.get(db.IdentityReviewItemRow, links[0].review_item_id)
+    try:
+        expected, _ = build_press_claim(Repository._source(source), Repository._snapshot(snapshot),
+            Repository._observation(observation), policy=Repository._policy(policy),
+            person=Person.model_validate(target, from_attributes=True),
+            link=Repository._person_observation_link(links[0]),
+            review=IdentityReviewItem.model_validate(review, from_attributes=True))
+        actual = Claim.model_validate(row, from_attributes=True)
+        if any(getattr(actual, field) != getattr(expected, field) for field in (
+            "id", "person_id", "subject", "predicate", "proposition", "object_text", "qualifiers",
+            "epistemic_status", "asserted_as_true", "resolution_note")):
+            raise ValueError("claim changed")
+    except (ValueError, PermissionError):
+        raise AdminError("PRESS_SOURCE_INVALID", "공개 보도자료 근거가 변경되었습니다.") from None
+
+
 def _register_or_link(plan: Plan, identifier: UUID, created_names: set[str]) -> None:
     row = plan.get(db.FeederObservationRow, identifier)
+    if plan.command.identity_basis == "OFFICIAL_PRESS_SOURCE_CONTEXT":
+        _link_press(plan, row)
+        return
+    if plan.command.identity_basis == "PUBLIC_DISCLOSURE_SOURCE_CONTEXT":
+        if row.feeder not in {"peti_public_declared_total", "peti_public_self_housing"}:
+            raise AdminError("SOURCE_RECORD_UNSUPPORTED", "공개 재산신고 전용 연결 근거입니다.")
+        _link_peti(plan, row)
+        return
     if row.feeder != ALIO_EXECUTIVE_FEEDER:
         if plan.command.action != AdminAction.LINK_PERSON:
             raise AdminError(
@@ -966,6 +1247,16 @@ def _claim_action(plan: Plan, identifier: UUID) -> None:
                 )
         if row.predicate in {LINKED_WITNESS_PREDICATE, OPENDART_ROLE_PREDICATE}:
             _revalidate_reviewed_record_link(plan, row)
+        if row.qualifiers.get("source_contract") in {"peti_public_declared_total_metadata_v1", "peti_public_self_housing_metadata_v1"} or any(
+            item.feeder_observation_id and plan.get(db.FeederObservationRow, item.feeder_observation_id).feeder in {"peti_public_declared_total", "peti_public_self_housing"}
+            for item in evidence_rows
+        ):
+            _revalidate_peti_publication(plan, row, evidence_rows)
+        if row.qualifiers.get("source_contract") == "national_assembly_press_release_metadata_v1" or any(
+            item.feeder_observation_id and plan.get(db.FeederObservationRow, item.feeder_observation_id).feeder == "national_assembly_press_metadata"
+            for item in evidence_rows
+        ):
+            _revalidate_press_publication(plan, row, evidence_rows)
         values = row_data(row)
         values["publication_status"] = "PUBLISHED"
         _publication_gate(plan, Claim.model_validate(values), evidence_rows)
@@ -1357,11 +1648,58 @@ def _person_action(plan: Plan, identifier: UUID) -> None:
     )
 
 
+PETI_METADATA_POLICY_ID = UUID("12ee6a2d-b36f-4bea-9a6e-79d0a2f65f75")
+
+
+def _register_peti_policy(plan: Plan) -> None:
+    from packages.persistence.repository import source_policy_semantics_equal
+    from packages.verification.assembly_asset_import import require_peti_asset_metadata_policy
+
+    assert plan.command.value is not None
+    candidate = SourcePolicy.model_validate_json(plan.command.value)
+    require_peti_asset_metadata_policy(candidate)
+    # This is the previously reviewed public-total metadata decision, not a generic grant.
+    # can_send_to_ai remains explicitly supplied (required by SourcePolicy); false is preserved.
+    if (
+        candidate.id != PETI_METADATA_POLICY_ID
+        or candidate.source_class != "official_public_declared_asset_metadata"
+        or candidate.can_commercialize or candidate.license is not None
+        or not candidate.policy_note or len(candidate.policy_note.strip()) < 20
+    ):
+        raise AdminError("PETI_POLICY_SCOPE_INVALID", "검토된 PETI 공개 총계 메타데이터 정책만 등록합니다.")
+    values = candidate.model_dump(mode="json")
+    for name in ("robots_checked_at", "terms_checked_at"):
+        audit_date = getattr(candidate, name)
+        if audit_date is not None and audit_date.tzinfo is not None:
+            values[name] = audit_date.astimezone(UTC).isoformat()
+    policy_hash = digest(values)
+    plan.dependencies["peti_candidate_policy"] = policy_hash
+    existing = plan.query(db.SourcePolicyRow,
+        or_(db.SourcePolicyRow.id == str(candidate.id), db.SourcePolicyRow.domain == candidate.domain),
+        limit=2)
+    if existing:
+        if len(existing) != 1 or not source_policy_semantics_equal(
+            SourcePolicy.model_validate(existing[0], from_attributes=True), candidate
+        ):
+            raise AdminError("PETI_POLICY_CONFLICT", "기존 정책이 다릅니다. 자동 덮어쓰기는 허용하지 않습니다.")
+        disposition = "ALREADY_REGISTERED_EXACT_MATCH"
+    else:
+        row_values = candidate.model_dump(mode="python")
+        row_values.update(id=str(candidate.id), collection_mode=candidate.collection_mode.value)
+        plan.create(db.SourcePolicyRow, **row_values)
+        disposition = "REGISTER_POLICY"
+    plan.outcomes.append({"policy_id": str(candidate.id), "policy_hash": policy_hash,
+        "disposition": disposition, "capture_performed": False,
+        "identity_link_performed": False, "claim_publication": False})
+
+
 def build_plan(session: Session, command: AdminCommand, *, locking: bool = False) -> Plan:
     plan = Plan(session, command, locking)
     created_names: set[str] = set()
     for identifier in sorted(command.record_ids, key=str):
-        if command.action in {AdminAction.HOLD, AdminAction.EXCLUDE, AdminAction.REOPEN}:
+        if command.action == AdminAction.REGISTER_SOURCE_POLICY:
+            _register_peti_policy(plan)
+        elif command.action in {AdminAction.HOLD, AdminAction.EXCLUDE, AdminAction.REOPEN}:
             row = plan.get(db.FeederObservationRow, identifier)
             if (
                 row.feeder != ALIO_EXECUTIVE_FEEDER
@@ -1397,7 +1735,7 @@ def build_plan(session: Session, command: AdminCommand, *, locking: bool = False
             _claim_action(plan, identifier)
         else:
             _person_action(plan, identifier)
-    if not plan.changes:
+    if not plan.changes and command.action != AdminAction.REGISTER_SOURCE_POLICY:
         raise AdminError("NO_CHANGE", "변경할 항목이 없습니다.")
     return plan
 
@@ -1431,6 +1769,9 @@ def commit_command(
     plan = build_plan(session, command, locking=True)
     if plan.state_hash() != expected_state:
         raise AdminError("STALE_PREVIEW", "미리보기 이후 데이터가 바뀌었습니다. 다시 검토하세요.")
+    if command.action == AdminAction.REGISTER_SOURCE_POLICY and not plan.changes:
+        return {**plan.report(), "changed_rows": 0, "replayed": False,
+            "status": "ALREADY_REGISTERED_EXACT_MATCH"}
     plan.apply()
     result = {
         "outcomes": plan.outcomes,

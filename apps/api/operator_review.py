@@ -128,8 +128,7 @@ def _gukgam_claim_review_inspection(
     return {
         "status": "HUMAN_REVIEW_REQUIRED_NO_WRITE",
         "message": (
-            "현재 Gukgam schedule/checkpoint, current Organization, current Claim을 다시 읽어 "
-            "exact-one 미공개 후보만 계산했습니다. 이름 일치는 승인 권한이 아닙니다."
+            "현재 국감 일정과 수집 점검값, 기관 및 기록을 다시 읽어 정확히 하나로 연결되는 미공개 후보만 계산했습니다. 이름 일치는 승인 권한이 아닙니다."
         ),
         "manifest_sha256": manifest.sha256() if manifest.items else None,
         "item_count": len(pending),
@@ -151,7 +150,7 @@ def _mois_review_inspection(
     except (OSError, json.JSONDecodeError):
         return {
             "status": "ARTIFACT_UNAVAILABLE",
-            "message": "MOIS review artifact를 읽을 수 없습니다.",
+            "message": "행정안전부 검토 자료를 읽을 수 없습니다.",
             "write_performed": False,
             "items": [],
         }
@@ -165,7 +164,7 @@ def _mois_review_inspection(
     ):
         return {
             "status": "ARTIFACT_INVALID",
-            "message": "MOIS review artifact contract가 현재 코드와 다릅니다.",
+            "message": "행정안전부 검토 자료의 데이터 규격이 현재 코드와 다릅니다.",
             "write_performed": False,
             "items": [],
         }
@@ -174,7 +173,7 @@ def _mois_review_inspection(
     if checkpoint is None:
         return {
             "status": "CURRENT_SOURCE_UNAVAILABLE",
-            "message": "현재 MOIS checkpoint가 없어 proposal을 재검증할 수 없습니다.",
+            "message": "현재 행정안전부 수집 점검값이 없어 기관 등록 후보안을 재검증할 수 없습니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
@@ -183,7 +182,7 @@ def _mois_review_inspection(
     if checkpoint.last_run_id is None:
         return {
             "status": "CURRENT_SOURCE_CONFLICT",
-            "message": "현재 MOIS checkpoint에 완료 run 참조가 없습니다.",
+            "message": "현재 행정안전부 수집 점검값에 완료된 수집 실행 참조가 없습니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
@@ -198,7 +197,7 @@ def _mois_review_inspection(
     ):
         return {
             "status": "CURRENT_SOURCE_CONFLICT",
-            "message": "현재 MOIS checkpoint가 완결된 SUCCESS run과 일치하지 않습니다.",
+            "message": "현재 행정안전부 수집 점검값이 성공적으로 완료된 전체 수집 실행과 일치하지 않습니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
@@ -214,7 +213,7 @@ def _mois_review_inspection(
     except (KeyError, TypeError, ValueError):
         return {
             "status": "CURRENT_SOURCE_CONFLICT",
-            "message": "현재 MOIS checkpoint coverage metadata가 불완전합니다.",
+            "message": "현재 행정안전부 수집 점검값의 범위 정보가 불완전합니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
@@ -239,8 +238,7 @@ def _mois_review_inspection(
         return {
             "status": "CURRENT_SOURCE_DRIFT",
             "message": (
-                "현재 MOIS observation/checkpoint universe가 review artifact 기준과 달라졌습니다. "
-                "proposal 재생성이 필요합니다."
+                "현재 행정안전부 관측 기록과 수집 점검값의 전체 범위가 검토 자료 기준과 달라졌습니다. 기관 등록 후보안을 다시 만들어야 합니다."
             ),
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
@@ -251,8 +249,7 @@ def _mois_review_inspection(
         return {
             "status": "CURRENT_ORGANIZATION_DRIFT",
             "message": (
-                "현재 canonical Organization 수가 proposal 기준과 달라졌습니다. "
-                "proposal 재생성이 필요합니다."
+                "현재 정본 기관 수가 기관 등록 후보안의 기준과 달라졌습니다. 후보안을 다시 만들어야 합니다."
             ),
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
@@ -271,7 +268,7 @@ def _mois_review_inspection(
     if not isinstance(ambiguous_items, list):
         return {
             "status": "ARTIFACT_INVALID",
-            "message": "MOIS review artifact ambiguous-items contract가 현재 코드와 다릅니다.",
+            "message": "행정안전부 검토 자료의 불명확 항목 데이터 규격이 현재 코드와 다릅니다.",
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
             "items": [],
@@ -298,8 +295,7 @@ def _mois_review_inspection(
         return {
             "status": "CURRENT_REVIEW_DRIFT",
             "message": (
-                "현재 Gukgam NO_EXACT target 집합이 MOIS proposal 기준과 달라졌습니다. "
-                "proposal 재생성이 필요합니다."
+                "이름으로 정확히 연결되지 않은 국감 대상 집합이 행정안전부 기관 등록 후보안의 기준과 달라졌습니다. 후보안을 다시 만들어야 합니다."
             ),
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
@@ -382,8 +378,7 @@ def _mois_review_inspection(
         return {
             "status": "CURRENT_REVIEW_DRIFT",
             "message": (
-                "MOIS proposal의 provider observation 또는 Gukgam occurrence가 현재 DB와 "
-                "일치하지 않습니다. 자동 수정하지 않습니다."
+                "행정안전부 기관 등록 후보안의 제공기관 관측 기록 또는 국감 대상 기록이 현재 저장소와 일치하지 않습니다. 자동 수정하지 않습니다."
             ),
             "artifact_sha256": _canonical_sha256(artifact),
             "write_performed": False,
@@ -394,8 +389,7 @@ def _mois_review_inspection(
     return {
         "status": "HUMAN_REVIEW_REQUIRED_NO_WRITE",
         "message": (
-            "체크인된 MOIS proposal을 현재 checkpoint, exact provider observations, "
-            "current Organizations와 Gukgam NO_EXACT occurrences에 대해 재검증했습니다."
+            "저장된 행정안전부 기관 등록 후보안을 현재 수집 점검값, 제공기관의 정확한 관측 기록, 현재 기관 및 이름으로 정확히 연결되지 않은 국감 대상 기록에 대해 재검증했습니다."
         ),
         "artifact_sha256": _canonical_sha256(artifact),
         "proposal_count": len(validated_items),
@@ -415,8 +409,7 @@ def current_review_inspection(repository: SqlAlchemyRepository) -> dict[str, Any
         return {
             "status": "CURRENT_REVIEW_UNAVAILABLE",
             "message": (
-                "현재 Gukgam reviewed schedule/checkpoint를 canonical DB에서 복구하지 못했습니다. "
-                "과거 artifact로 대체하지 않습니다."
+                "현재 검토된 국감 일정과 수집 점검값을 정본 저장소에서 복구하지 못했습니다. 과거 자료로 대체하지 않습니다."
             ),
             "checked_at": before,
             "write_performed": False,
@@ -441,9 +434,9 @@ def current_review_inspection(repository: SqlAlchemyRepository) -> dict[str, Any
     return {
         "status": "CURRENT_HUMAN_REVIEW_READY" if ready else "CURRENT_REVIEW_BLOCKED",
         "message": (
-            "현재 DB 기준 human-review lanes입니다. 어떤 항목도 자동 승인·반영하지 않습니다."
+            "현재 저장소를 기준으로 사람이 검토할 항목입니다. 어떤 항목도 자동 승인·반영하지 않습니다."
             if ready
-            else "하나 이상의 review lane이 현재 DB와 일치하지 않아 fail-closed 상태입니다."
+            else "하나 이상의 검토 경로가 현재 저장소와 일치하지 않아 안전하게 처리를 중단한 상태입니다."
         ),
         "checked_at": datetime.now(UTC).isoformat(),
         "write_performed": False,

@@ -5,10 +5,15 @@ import { useEffect } from "react";
 // Native <details> cannot open from :target, so open the evidence disclosure that the URL hash
 // (or a clicked in-page anchor) names.
 function openById(rawId: string) {
-  const id = decodeURIComponent(rawId);
+  let id: string;
+  try { id = decodeURIComponent(rawId); } catch { return; }
   const target = id ? document.getElementById(id) : null;
   const disclosure = target?.querySelector<HTMLDetailsElement>(":scope > details.evidence-disclosure");
   if (!target || !disclosure) return;
+  // Evidence can be inside the collapsed supplementary record list.
+  for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+    if (parent instanceof HTMLDetailsElement) parent.open = true;
+  }
   disclosure.open = true;
   requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
 }

@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date
 from typing import Any
 from uuid import UUID, uuid5
 
@@ -84,6 +84,27 @@ from packages.verification.materialization import (
 from packages.verification.nec_person_materialization import NEC_CANDIDACY_PREDICATE
 from packages.verification.person_onboarding import ReviewedPersonBundle, ReviewedPersonImportError
 from packages.verification.policy import PolicyAction, PolicyDenied, require_policy
+
+
+def source_policy_semantics_equal(left: SourcePolicy, right: SourcePolicy) -> bool:
+    """Compare complete policy semantics, preserving unknown naive audit timestamps.
+
+    Aware audit times compare as UTC instants. A naive persisted time may match only
+    the supplied time's unchanged wall-clock representation (SQLite drops offsets),
+    rather than silently assigning a timezone to unknown legacy values.
+    """
+    first, second = left.model_dump(mode="python"), right.model_dump(mode="python")
+    for field in ("robots_checked_at", "terms_checked_at"):
+        a, b = first.pop(field), second.pop(field)
+        if a is None or b is None:
+            if a != b:
+                return False
+        elif a.tzinfo is not None and b.tzinfo is not None:
+            if a.astimezone(UTC) != b.astimezone(UTC):
+                return False
+        elif a.replace(tzinfo=None) != b.replace(tzinfo=None):
+            return False
+    return first == second
 
 
 class DatabaseNotReady(RuntimeError):
@@ -2121,6 +2142,7 @@ class SqlAlchemyRepository:
         observations: Sequence[FeederObservation],
         cursor: str,
         checkpoint_metadata: dict,
+        require_stored_policy_match: bool = False,
     ) -> BatchPageCommitResult:
         if source.policy_id != policy.id:
             raise ValueError("source policy identity does not match SourcePolicy")
@@ -2134,6 +2156,8 @@ class SqlAlchemyRepository:
 
         with self.sessions() as session:
             try:
+                if require_stored_policy_match and self.engine.dialect.name == "sqlite":
+                    session.execute(text("BEGIN IMMEDIATE"))
                 run_row = session.get(SourceRunRow, str(run_id))
                 if run_row is None or run_row.status != SourceRunStatus.RUNNING.value:
                     raise ValueError("source page requires a running source run")
@@ -2144,7 +2168,12 @@ class SqlAlchemyRepository:
                     ):
                         raise ValueError("observation scope does not match source run")
 
-                policy_row = session.get(SourcePolicyRow, str(policy.id))
+                policy_row = session.scalar(select(SourcePolicyRow).where(
+                    SourcePolicyRow.id == str(policy.id)).with_for_update()) if require_stored_policy_match else session.get(SourcePolicyRow, str(policy.id))
+                if require_stored_policy_match and (
+                    policy_row is None or not source_policy_semantics_equal(self._policy(policy_row), policy)
+                ):
+                    raise ValueError("Stored SourcePolicy changed or is missing")
                 domain_policy = session.scalar(
                     select(SourcePolicyRow).where(SourcePolicyRow.domain == policy.domain)
                 )

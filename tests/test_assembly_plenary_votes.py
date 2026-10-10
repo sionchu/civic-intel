@@ -76,7 +76,7 @@ def test_exact_roster_votes_become_claims_and_unreconciled_bills_are_excluded(
     assert (again.published_claims, again.unchanged_claims) == (0, 4)
 
 
-def test_profile_shows_recent_vote_episodes_and_counts_without_embedding_all_votes(
+def test_profile_shows_recent_vote_episodes_and_counts_with_canonical_vote_claims(
     tmp_path: Path,
 ) -> None:
     repository = prepare_repository(tmp_path)
@@ -108,6 +108,42 @@ def test_profile_shows_recent_vote_episodes_and_counts_without_embedding_all_vot
     }
     assert embedded_votes == rendered
     assert people and all("discovery" in item for item in people)
+
+
+def test_all_votes_retain_canonical_bodies_and_source_paths_beyond_recent_ten(tmp_path: Path) -> None:
+    repository = prepare_repository(tmp_path)
+    api = VoteApi({f"B{number}": {"M-001": "찬성", "M-002": "반대"} for number in range(1, 22)})
+    collect(repository, api)
+    AssemblyPlenaryVotePublisher(repository).publish_latest_successful()
+    canonical = [
+        claim for claim in vote_claims(repository)
+        if claim.qualifiers["provider_person_key"] == "M-001"
+    ]
+    person_id = canonical[0].person_id
+    with TestClient(create_app(repository)) as client:
+        response = client.get(f"/people/{person_id}")
+        assert response.status_code == 200
+        payload = response.json()
+        section = next(item for item in payload["profile"]["sections"] if item["id"] == "decision_episodes")
+        assert len(section["entries"]) == 10
+        recent_ids = {item["claim_id"] for item in section["entries"]}
+        public_votes = {item["id"]: item for item in payload["claims"] if item["predicate"] == "ASSEMBLY_PLENARY_VOTE"}
+        assert set(public_votes) == {str(claim.id) for claim in canonical}
+        assert len(public_votes) == 21
+        assert section["eligible_count"] == 21
+        assert section["input_scope"] == "PUBLISHED_SOURCE_VALIDATED_SUBJECT_VOTES"
+        older = next(claim for claim in canonical if str(claim.id) not in recent_ids)
+        public = public_votes[str(older.id)]
+        for field in ("person_id", "subject", "proposition", "object_text", "epistemic_status",
+                      "publication_status", "asserted_as_true", "resolution_note", "valid_from", "valid_to"):
+            assert public[field] == older.model_dump(mode="json")[field]
+        assert public["person_id"] == str(person_id)
+        assert "immutable_observation_hash" not in public["qualifiers"]
+        assert "immutable_observation_hash" in older.qualifiers
+        evidence = repository.evidence_for(older.id)
+        assert public["evidence"] == [item.model_dump(mode="json") for item in evidence]
+        for source_id in public["source_ids"]:
+            assert client.get(f"/sources/{source_id}").status_code == 200
 
 
 def test_quoted_bill_titles_with_periods_stay_atomic() -> None:

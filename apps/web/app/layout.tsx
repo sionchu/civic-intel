@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <strong>{SITE_NAME}</strong>
             </div>
             <div className="footer-note">
-              {snapshotAt && <span>자료 기준 {snapshotAt} (공개 기록 스냅샷)</span>}
+              {snapshotAt && <span>자료 기준 {snapshotAt}</span>}
             </div>
           </footer>
         </div>

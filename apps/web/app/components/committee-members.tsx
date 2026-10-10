@@ -1,3 +1,4 @@
+import { statusLabel } from "../display-labels";
 import Link from "next/link";
 
 import type { GukgamCommittee } from "../types";
@@ -20,7 +21,7 @@ export default function CommitteeMembers({
       </summary>
       {committee.members.length === 0 ? (
         <p className="committee-members-empty" role="status">
-          <span className="status UNKNOWN">UNKNOWN</span> 아직 공개된 위원 기록이 없습니다.
+          <span className="status UNKNOWN">{statusLabel("UNKNOWN")}</span> 아직 공개된 위원 기록이 없습니다.
         </p>
       ) : (
         <ul className="committee-member-list">
@@ -30,7 +31,7 @@ export default function CommitteeMembers({
                 {member.person.name}
               </Link>
               <span className="committee-member-party">{member.party ?? "정당 정보 없음"}</span>
-              <span className={`status ${member.epistemic_status}`}>{member.epistemic_status}</span>
+              <span className={`status ${member.epistemic_status}`}>{statusLabel(member.epistemic_status)}</span>
               <Link
                 className="committee-member-evidence"
                 href={`/people/${member.person.id}#claim-${member.claim_id}`}

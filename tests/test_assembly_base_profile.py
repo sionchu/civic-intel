@@ -110,6 +110,9 @@ def test_base_profile_publishes_atomic_claims_and_projects_evidence(
             "current_role",
             "career_timeline",
             "legislative_activity",
+            "official_press_records",
+            "public_self_housing",
+            "public_declared_assets",
             "limitations",
         ]
         overview = next(item for item in profile["sections"] if item["id"] == "overview")

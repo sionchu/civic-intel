@@ -27,6 +27,33 @@
       "assembly_profile_url": "https://www.assembly.go.kr/members/22nd/AHNCHEOLSOO/",
       "assembly_mona_cd": "YOG1280B",
       "review_status": "ELIGIBLE"
+    },
+    {
+      "person_id": "14ae67da-4a76-498b-977d-6992e3fa8e0c",
+      "canonical_name": "이준석",
+      "local_path": "/portraits/14ae67da-4a76-498b-977d-6992e3fa8e0c.jpg",
+      "source_kind": "WIKIMEDIA_COMMONS_REVIEWED",
+      "file_title": "Lee Jun-seok, the main opposition People Power Party's chairman, speaks to reporters at a Gangnam Square of Seoul on June 20, 2021 (12).jpg",
+      "source_page_url": "https://commons.wikimedia.org/wiki/File:Lee_Jun-seok,_the_main_opposition_People_Power_Party%27s_chairman,_speaks_to_reporters_at_a_Gangnam_Square_of_Seoul_on_June_20,_2021_(12).jpg",
+      "source_original_url": "https://upload.wikimedia.org/wikipedia/commons/5/56/Lee_Jun-seok%2C_the_main_opposition_People_Power_Party%27s_chairman%2C_speaks_to_reporters_at_a_Gangnam_Square_of_Seoul_on_June_20%2C_2021_%2812%29.jpg",
+      "creator": "고려",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution_text": "사진: 고려 · Wikimedia Commons · CC BY 4.0",
+      "commercial_use_allowed": true,
+      "derivatives_allowed": true,
+      "modification_note": "Original Commons pixels are unchanged. Display sizing only; no endorsement implied.",
+      "source_sha1": "f524f4c982d9e798e962b45efddc9caf550d5bd3",
+      "source_byte_size": 1522363,
+      "source_width": 4032,
+      "source_height": 2268,
+      "source_mime": "image/jpeg",
+      "source_revision_timestamp": "2021-06-30T03:09:49Z",
+      "rights_checked_at": "2026-10-09",
+      "identity_checked_at": "2026-10-09",
+      "assembly_profile_url": "https://open.assembly.go.kr/portal/openapi/nwvrqwxyaytdsfvhu",
+      "assembly_mona_cd": "QWL7778X",
+      "review_status": "ELIGIBLE"
     }
   ]
 }

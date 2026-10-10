@@ -1,3 +1,4 @@
+import { sourceClassLabel, statusLabel } from "../display-labels";
 import type { ReactNode } from "react";
 
 import type { Claim, EvidenceTrace, Source } from "../types";
@@ -24,11 +25,14 @@ export function formatDateTime(value: string | null | undefined): string | null 
   const text = new Intl.DateTimeFormat("sv-SE", {
     timeZone: KST, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
   }).format(date);
-  return `${text} KST`;
+  return `${text} 한국 시간`;
 }
 
 const QUALIFIER_LABELS: Record<string, string> = {
   audit_date: "감사일",
+  bill_no: "의안번호", bill_name: "법안명", proposed_date: "발의일",
+  committee: "소관위원회", vote_value_published: "표결", vote_datetime: "표결 시각",
+  participation_role: "발의 구분", publication_date: "공개일", registration_date: "신고 등록일", report_type: "신고유형",
   committee_name: "위원회",
   section: "구분",
   page_number: "쪽",
@@ -36,7 +40,6 @@ const QUALIFIER_LABELS: Record<string, string> = {
   time_text: "시간",
   venue: "장소",
   field_name: "필드",
-  source_contract: "수집 계약",
   fiscal_year: "회계연도",
   as_of: "기준일",
   position_text: "직위",
@@ -57,7 +60,7 @@ const QUALIFIER_LABELS: Record<string, string> = {
   attendance_date: "출석 요구일",
   assumed_year_basis: "연도 근거",
   acquisition_channel: "수집 경로",
-  source_tag: "출처 태그",
+  source_tag: "명단 구분",
   provenance_label: "출처 상태",
   row_number: "명단 행",
   table_index: "표",
@@ -86,6 +89,9 @@ const HIDDEN_QUALIFIERS = new Set([
   "audited_target_index", "alio_apba_id", "classification", "executive_kind",
   "source_claim_id", "source_observation_id", "identity_review_id", "identity_scope",
   "reported_main_career_semantics", "organization_id",
+  // Normalized date anchors are not literal source values. Career presentation preserves units.
+  "period_start", "period_end", "period_point", "period_start_precision", "period_end_precision",
+  "period_point_precision", "period_ongoing",
 ]);
 
 const CONTRACT_NOTES: Record<string, string> = {
@@ -110,16 +116,23 @@ const PERMISSION: Record<string, string> = { PERMITTED: "허용", NOT_PERMITTED:
 function policyText(source: Source): string {
   const policy = source.policy_summary;
   return [
-    `수집 ${PERMISSION[policy.collection]}`,
-    `메타데이터 저장 ${PERMISSION[policy.metadata_storage]}`,
-    `전문 저장 ${PERMISSION[policy.fulltext_storage]}`,
-    `발췌 표시 ${PERMISSION[policy.excerpt_display]}`,
+    `수집 ${PERMISSION[policy.collection] ?? "미확인"}`,
+    `메타데이터 저장 ${PERMISSION[policy.metadata_storage] ?? "미확인"}`,
+    `전문 저장 ${PERMISSION[policy.fulltext_storage] ?? "미확인"}`,
+    `발췌 표시 ${PERMISSION[policy.excerpt_display] ?? "미확인"}`,
   ].join(" · ");
 }
 
 function claimSources(claim: Claim, sourceById: Map<string, Source>): { ids: string[]; sources: Source[] } {
   const ids = [...new Set([...claim.evidence.map((item) => item.source_id), ...claim.source_ids])];
   return { ids, sources: ids.flatMap((id) => sourceById.get(id) ?? []) };
+}
+
+function qualifierText(key: string, value: string): string {
+  if (value === "UNKNOWN") return "미확인";
+  if (key === "participation_role") return value === "REPRESENTATIVE_PROPOSER" ? "대표 발의" : value === "CO_PROPOSER" ? "공동 발의" : "발의 구분 미확인";
+  if (key === "acquisition_channel") return ({ OFFICIAL_SITE: "공식 게시", OFFICIAL_MINUTES: "공식 회의록", OWNER_SUPPLIED_COPY: "제공 사본" } as Record<string, string>)[value] ?? "수집 경로 미확인";
+  return value;
 }
 
 export default function EvidencePanel({
@@ -129,6 +142,8 @@ export default function EvidencePanel({
   kind,
   className,
   sourceConflict = false,
+  dateLabel = "기준",
+  claimAnchor = true,
   children,
 }: {
   claim: Claim;
@@ -137,6 +152,8 @@ export default function EvidencePanel({
   kind?: string;
   className?: string;
   sourceConflict?: boolean;
+  dateLabel?: string;
+  claimAnchor?: boolean;
   children?: ReactNode;
 }) {
   const conflict = sourceConflict || claim.source_conflict === true;
@@ -144,15 +161,15 @@ export default function EvidencePanel({
   const asOf = formatDay(claim.valid_from);
   const validTo = formatDay(claim.valid_to);
   const qualifiers = claim.qualifiers;
-  const position = [qualifiers.section, qualifiers.page_number ? `p.${qualifiers.page_number}` : null]
+  const position = [qualifiers.section, qualifiers.page_number ? `${qualifiers.page_number}쪽` : null]
     .filter(Boolean)
     .join(" · ");
   const rawValues = Object.entries(qualifiers).filter(
-    ([key, value]) => !HIDDEN_QUALIFIERS.has(key) && typeof value === "string" && value !== "" && value.length <= 120,
+    ([key, value]) => key in QUALIFIER_LABELS && !HIDDEN_QUALIFIERS.has(key) && typeof value === "string" && value !== "" && value.length <= 120,
   );
   const contract = qualifiers.source_contract;
-  const scopeNote = qualifiers.semantic_scope ? SCOPE_NOTES[qualifiers.semantic_scope] ?? qualifiers.semantic_scope : null;
-  const processing = contract ? [CONTRACT_NOTES[contract] ?? contract, scopeNote].filter(Boolean).join(" · ") : null;
+  const scopeNote = qualifiers.semantic_scope ? SCOPE_NOTES[qualifiers.semantic_scope] ?? null : null;
+  const processing = contract ? [CONTRACT_NOTES[contract] ?? "출처의 공개 항목을 옮긴 기록", scopeNote].filter(Boolean).join(" · ") : null;
   const limits = [
     qualifiers.event_semantics === "OFFICIAL_PLAN_LISTING_NOT_COMPLETED_AUDIT"
       ? "공식 계획서상 일정 목록이며 감사가 실제로 열렸다는 기록이 아닙니다."
@@ -162,7 +179,7 @@ export default function EvidencePanel({
   const firstSource = sources[0];
 
   return (
-    <article className={`claim evidence-panel${className ? ` ${className}` : ""}`} id={`claim-${claim.id}`}>
+    <article className={`claim evidence-panel${className ? ` ${className}` : ""}`} id={claimAnchor ? `claim-${claim.id}` : undefined}>
       {kind && <span className="claim-kind">{kind}</span>}
       <p className="claim-title">{title ?? claim.proposition}</p>
       {children}
@@ -170,12 +187,12 @@ export default function EvidencePanel({
       <details className="evidence-disclosure">
         <summary>
           <span className="evidence-summary-line">
-            <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>
+            <span className={`status ${claim.epistemic_status}`}>{statusLabel(claim.epistemic_status)}</span>
             {claim.publication_status !== "PUBLISHED" && (
-              <span className="status UNKNOWN">{claim.publication_status}</span>
+              <span className="status UNKNOWN">{statusLabel(claim.publication_status)}</span>
             )}
-            {conflict && <span className="status CONFLICT">SOURCE CONFLICT</span>}
-            <span className="evidence-asof">기준 {asOf ?? "기준일 미기재"}</span>
+            {conflict && <span className="status CONFLICT">{statusLabel("CONFLICT")}</span>}
+            <span className="evidence-asof">{dateLabel} {asOf ?? "기준일 미기재"}</span>
             {firstSource && (
               <span className="evidence-source-name">
                 {firstSource.title}{sources.length > 1 ? ` 외 ${sources.length - 1}` : ""}
@@ -193,9 +210,9 @@ export default function EvidencePanel({
             <dt>상태</dt>
             <dd>
               <span className="evidence-chips">
-                <span className={`status ${claim.epistemic_status}`}>{claim.epistemic_status}</span>
-                <span className="evidence-plain">공개 상태 {claim.publication_status}</span>
-                {conflict && <span className="status CONFLICT">SOURCE CONFLICT</span>}
+                <span className={`status ${claim.epistemic_status}`}>{statusLabel(claim.epistemic_status)}</span>
+                <span className="evidence-plain">공개 상태 {statusLabel(claim.publication_status)}</span>
+                {conflict && <span className="status CONFLICT">{statusLabel("CONFLICT")}</span>}
               </span>
               {conflict && (
                 <small>서로 다른 근거가 상충하며 자동으로 어느 한쪽을 진실로 판정하지 않습니다.</small>
@@ -203,7 +220,7 @@ export default function EvidencePanel({
             </dd>
           </div>
           <div>
-            <dt>유효 기간</dt>
+            <dt>{dateLabel === "기록 기준" ? "기록 유효 기간" : "유효 기간"}</dt>
             <dd>{asOf ?? "시작일 미기재"} – {validTo ?? "종료일 없음"}</dd>
           </div>
           <div>
@@ -222,7 +239,7 @@ export default function EvidencePanel({
                     const source = sourceById.get(item.source_id);
                     return (
                       <li key={item.id}>
-                        <span className={`status ${item.stance}`}>{item.stance}</span>
+                        <span className={`status ${item.stance}`}>{statusLabel(item.stance)}</span>
                         {source ? <a href={`#source-${source.id}`}>{source.title}</a> : <span>출처 정보를 불러오지 못했습니다</span>}
                       </li>
                     );
@@ -259,7 +276,7 @@ export default function EvidencePanel({
               <dd>
                 <ul className="evidence-values">
                   {rawValues.map(([key, value]) => (
-                    <li key={key}><span>{QUALIFIER_LABELS[key] ?? key}</span> {value}</li>
+                    <li key={key}><span>{QUALIFIER_LABELS[key]}</span> {qualifierText(key, value)}</li>
                   ))}
                 </ul>
                 <small>출처에 기재된 값을 그대로 표시합니다.</small>
@@ -286,19 +303,21 @@ export default function EvidencePanel({
           </div>
         </dl>
         <details className="audit-details evidence-audit">
-          <summary>감사 ID</summary>
+          <summary>근거 식별자</summary>
           <small>
-            Claim {claim.id}<br />
-            {claim.person_id && <>Person {claim.person_id}<br /></>}
-            {claim.organization_id && <>Organization {claim.organization_id}<br /></>}
+            기록 {claim.id}<br />
+            판단 상태 식별값 {claim.epistemic_status} · 공개 상태 식별값 {claim.publication_status}<br />
+            {Object.entries(qualifiers).filter(([key]) => !(key in QUALIFIER_LABELS) && !HIDDEN_QUALIFIERS.has(key)).map(([key, value]) => <span key={key}>기록 속성 식별값 {key}: {String(value)}<br /></span>)}
+            {claim.person_id && <>인물 {claim.person_id}<br /></>}
+            {claim.organization_id && <>기관 {claim.organization_id}<br /></>}
             {claim.evidence.map((item) => (
               <span key={item.id}>
-                Evidence {item.id}<br />
-                {item.snapshot_id && <>SourceSnapshot {item.snapshot_id}<br /></>}
-                {item.feeder_observation_id && <>FeederObservation {item.feeder_observation_id}<br /></>}
+                근거 {item.id}<br />
+                {item.snapshot_id && <>출처 저장본 {item.snapshot_id}<br /></>}
+                {item.feeder_observation_id && <>수집 기록 {item.feeder_observation_id}<br /></>}
               </span>
             ))}
-            {sourceIds.map((id) => <span key={id}>Source {id}<br /></span>)}
+            {sourceIds.map((id) => <span key={id}>출처 {id}<br /></span>)}
           </small>
         </details>
       </details>
@@ -325,16 +344,16 @@ export function EvidenceTraceList({
         const source = sourceById.get(trace.source_id);
         return (
           <div className="evidence-trace" key={trace.id}>
-            <span className={`status ${trace.stance}`}>{trace.stance}</span>
+            <span className={`status ${trace.stance}`}>{statusLabel(trace.stance)}</span>
             {source ? <a href={`#source-${source.id}`}>{source.title}</a> : <span>출처 정보를 불러오지 못했습니다</span>}
             <details className="audit-details">
-              <summary>감사 ID</summary>
+              <summary>근거 식별자</summary>
               <small>
-                Evidence {trace.id}<br />
-                {claimLabel && <>Claim {claimLabel}<br /></>}
-                Source {trace.source_id}<br />
-                {trace.snapshot_id && <>SourceSnapshot {trace.snapshot_id}<br /></>}
-                {trace.feeder_observation_id && <>FeederObservation {trace.feeder_observation_id}</>}
+                근거 {trace.id}<br />
+                {claimLabel && <>기록 {claimLabel}<br /></>}
+                출처 {trace.source_id}<br />
+                {trace.snapshot_id && <>출처 저장본 {trace.snapshot_id}<br /></>}
+                {trace.feeder_observation_id && <>수집 기록 {trace.feeder_observation_id}</>}
               </small>
             </details>
           </div>
@@ -349,14 +368,14 @@ export function SourceCard({ source }: { source: Source }) {
     <article className="source" id={`source-${source.id}`}>
       <h3><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></h3>
       <p className="source-meta">
-        {source.publisher} <span>·</span> {source.published_at ? `공개일 ${formatDay(source.published_at)}` : "공개일 미기재"} <span>·</span> {source.source_class}
+        {source.publisher} <span>·</span> {source.published_at ? `공개일 ${formatDay(source.published_at)}` : "공개일 미기재"} <span>·</span> {sourceClassLabel(source.source_class)}
       </p>
-      <p className="source-license">License: {source.license ?? "License not specified"}</p>
+      <p className="source-license">이용 조건: {source.license ?? "이용 조건 미기재"}</p>
       <p className="source-license">출처 정책 {policyText(source)}</p>
       <p className="source-license">확인 시각 {formatDateTime(source.terms_checked_at) ?? "미기재"}</p>
       <details className="audit-details">
-        <summary>감사 ID</summary>
-        <small>Source {source.id}<br />URL {source.url}</small>
+        <summary>근거 식별자</summary>
+        <small>출처 {source.id}<br />자료 유형 식별값 {source.source_class}<br />원문 주소 {source.url}</small>
       </details>
     </article>
   );

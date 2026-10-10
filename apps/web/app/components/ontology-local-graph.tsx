@@ -1,21 +1,8 @@
+import { statusLabel, relationLabel } from "../display-labels";
 import Link from "next/link";
 
 import { committeeHref } from "../gukgam/2026/committees";
 import type { OntologyGraph } from "../types";
-
-const RELATION_LABELS: Record<string, string> = {
-  HELD_ROLE: "직책",
-  DISCLOSED_ROLE_AT: "검토된 공시상 직책",
-  WORKED_AT: "경력",
-  STUDIED_AT: "학력",
-  SERVED_ON: "위원회",
-  DIRECTOR_OF: "이사회",
-  APPOINTED_TO: "임명",
-  APPEARED_AT: "출석",
-  QUESTIONED: "질의",
-  AUDITED_BY: "감사",
-  LISTS_EXECUTIVE: "공식 공시상 임원",
-};
 
 function shortLabel(value: string, length = 16): string {
   return value.length > length ? `${value.slice(0, length - 1)}…` : value;
@@ -25,10 +12,12 @@ export default function OntologyLocalGraph({
   graph,
   sourceTitles,
   gukgamCommittees = [],
+  claimAnchorsInRecords = false,
 }: {
   graph: OntologyGraph;
   sourceTitles: Record<string, string>;
   gukgamCommittees?: string[];
+  claimAnchorsInRecords?: boolean;
 }) {
   const gukgamCommitteeNames = new Set(gukgamCommittees);
   const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
@@ -46,7 +35,7 @@ export default function OntologyLocalGraph({
           {visibleEdges.map((edge, index) => {
             const target = nodeById.get(edge.source === graph.center_node_id ? edge.target : edge.source);
             const targetY = 44 + index * 76;
-            const relation = RELATION_LABELS[edge.relation_type] ?? edge.relation_type;
+            const relation = relationLabel(edge.relation_type)
             return (
               <g key={edge.id}>
                 <line className="ontology-line" x1="250" y1={centerY} x2="470" y2={targetY} />
@@ -64,12 +53,12 @@ export default function OntologyLocalGraph({
           })}
           {singleRelationType && (
             <text className="ontology-edge-label" x="360" y={centerY - 12} textAnchor="middle">
-              {RELATION_LABELS[singleRelationType] ?? singleRelationType}
+              {relationLabel(singleRelationType)}
             </text>
           )}
           <rect className="ontology-node ontology-node-center" x="40" y={centerY - 28} width="210" height="56" rx="12" />
           <text className="ontology-node-label ontology-node-label-center" x="145" y={centerY + 6} textAnchor="middle">
-            {shortLabel(center?.label ?? "Person", 14)}
+            {shortLabel(center?.label ?? "인물", 14)}
           </text>
         </svg>
       </div>
@@ -83,15 +72,15 @@ export default function OntologyLocalGraph({
               className="ontology-relation"
               key={edge.id}
               id={
-                edge.relation_type === "SERVED_ON"
+                !claimAnchorsInRecords && edge.relation_type === "SERVED_ON"
                   && graph.edges.findIndex((item) => item.claim_id === edge.claim_id) === edgeIndex
                   ? `claim-${edge.claim_id}`
                   : undefined
               }
             >
               <div className="ontology-relation-heading">
-                <span className="micro-label">{RELATION_LABELS[edge.relation_type] ?? edge.relation_type}</span>
-                <span className={`status ${edge.epistemic_status}`}>{edge.epistemic_status}</span>
+                <span className="micro-label">{relationLabel(edge.relation_type)}</span>
+                <span className={`status ${edge.epistemic_status}`}>{statusLabel(edge.epistemic_status)}</span>
               </div>
               <strong>
                 {target?.kind === "COMMITTEE" && gukgamCommitteeNames.has(target.label) ? (
@@ -105,7 +94,7 @@ export default function OntologyLocalGraph({
                 {edge.valid_to ? ` · 종료 ${edge.valid_to.slice(0, 10)}` : ""}
               </p>
               {edge.source_conflict && (
-                <p className="ontology-conflict"><span className="status CONFLICT">SOURCE CONFLICT</span> 근거가 서로 상충합니다.</p>
+                <p className="ontology-conflict"><span className="status CONFLICT">{statusLabel("CONFLICT")}</span> 근거가 서로 상충합니다.</p>
               )}
               {firstSource && (
                 <Link className="ontology-source-link" href={`#source-${firstSource}`}>
@@ -125,7 +114,7 @@ export default function OntologyLocalGraph({
           임원은 공식 공시에 적힌 이름이며 인물 기록이 아닙니다. 같은 이름이어도 자동으로 합치거나 인물 페이지에 연결하지 않습니다.
         </p>
       )}
-      <p className="ontology-limit-note">표시된 연결은 공개 기록의 Claim/Evidence 관계이며 친분, 영향력 또는 동기를 의미하지 않습니다.</p>
+      <p className="ontology-limit-note">표시된 연결은 공개된 기록과 근거에 따른 연결이며 친분, 영향력 또는 동기를 의미하지 않습니다.</p>
     </div>
   );
 }
