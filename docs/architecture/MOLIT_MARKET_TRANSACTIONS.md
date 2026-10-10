@@ -70,6 +70,23 @@ public endpoint or map UI is introduced by this L1 work.
 An approved, observed full-reporting-date extract plus exact reviewed
 SourcePolicy and immutable provenance are prerequisites for a public map.
 
+## Region outline UI preview (2026-10-10)
+
+The standalone `/market` route now provides **boundary navigation only** using
+17 historic 2020 province shapes from StatGarten/maps (MIT, based on SGIS).
+The original 2020 province IDs are retained as labels and are explicitly
+**not** a versioned R-ONE `CLS_ID` nor MOLIT `LAWD_CD` crosswalk. These shapes
+must never authorize joins or a claim about a public official's property.
+The 2020 boundaries can differ from today's administrative regions.
+
+The screen has an accessible, keyboard-selectable province list, a separate
+housing/land source selector and links to official datasets. Since there is
+still **zero source-approved eligible region/month series**, it displays
+`공식 거래 수치 미게시`, not zeros, synthetic prices, filled choropleths,
+privacy-risky parcel pins, fake map tiles or a confidence score. Browser smoke
+and authoritative public-series evidence remain separate gates. Its frontend
+readiness is not source maturity or live transaction coverage.
+
 ## Relation to CVIC official asset disclosures
 
 The existing `NATIONAL_ASSEMBLY_ASSET_DISCLOSURE.md` and PETI source contract govern **reported declared totals** and reviewed SELF-housing metadata. Their actual published operational records remain separately unverified; prior 2026-10-09 operations documented 0 new published asset/housing claims. Current resolved-person identity review never makes market transactions into that person's purchases, sales, residences, taxable wealth or unexplained assets.

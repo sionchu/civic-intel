@@ -960,3 +960,30 @@ test("home uses existing exploration paths and never picks arbitrary people", as
   assert.match(html, /공개 인물 1명/);
   assert.doesNotMatch(html, /노출하지않을임의인물|\/people\/fixture-person/);
 });
+
+test("market boundary navigation is bounded, accessible and has no fabricated statistics", () => {
+  const { default: RegionalMarketMap } = loadPresentation("../app/market/regional-market-map.tsx");
+  const markup = renderToStaticMarkup(createElement(RegionalMarketMap));
+  const page = readFileSync(fileURLToPath(new URL("../app/market/page.tsx", import.meta.url)), "utf8");
+  const layout = readFileSync(fileURLToPath(new URL("../app/layout.tsx", import.meta.url)), "utf8");
+  const outline = readFileSync(fileURLToPath(new URL("../app/market/province-shapes.ts", import.meta.url)), "utf8");
+
+  assert.match(markup, /viewBox="0 0 800 759"/);
+  assert.equal((markup.match(/class="market-region-shape/g) ?? []).length, 17);
+  assert.equal((markup.match(/<option /g) ?? []).length, 17);
+  assert.match(markup, /공식 거래 수치 미게시/);
+  assert.match(markup, /0건이나 거래 없음이라는 뜻이 아닙니다/);
+  assert.match(markup, /aria-live="polite"/);
+  assert.match(markup, /강원특별자치도 \(2020년 경계\)/);
+  assert.match(markup, /전북특별자치도 \(2020년 경계\)/);
+  assert.doesNotMatch(markup, /role="status"/);
+  assert.match(markup, /지역별 거래 동향 · 자료 준비 단계/);
+  assert.match(markup, /https:\/\/www.data.go.kr\/data\/15068453\/fileData.do/);
+  assert.doesNotMatch(markup, /개인 소유 확인|현재 거래량.*[0-9]{2,}|동\(호\)수.*[0-9]{2,}/);
+  assert.match(page, /공직자 신고재산과 혼동하지 않고/);
+  assert.match(page, /국토교통부/);
+  assert.match(layout, /href="\/market"/);
+  assert.match(outline, /Not a live boundary source/);
+  assert.match(outline, /강원도/);
+  assert.doesNotMatch(markup, /RONE_CLS_ID|MOLIT_LAWD_CD/);
+});
