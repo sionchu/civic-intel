@@ -74,3 +74,12 @@ def test_legacy_ambiguous_regions_remain_unknown_for_public_map():
         assert len(flagged) >= 2
         assert all(not r["geography_join_approved"] for r in flagged)
         assert any("광주" in r["label_as_published"] for r in flagged)
+
+
+def test_official_seoul_code_both_sale_tables_without_geometry_join():
+    for kind in ("apartment_sale", "land_sale"):
+        seoul = [r for r in _regions(kind) if r["cls_id"] == "500002"]
+        assert len(seoul) == 1
+        assert seoul[0]["label_as_published"] == "서울"
+        assert seoul[0]["provider_lawd_cd"] == "11000000"
+        assert seoul[0]["geography_join_approved"] is False

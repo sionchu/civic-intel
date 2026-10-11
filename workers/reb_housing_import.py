@@ -24,13 +24,15 @@ from packages.connectors.reb_market_statistics import (
     HOUSING_ENDPOINT,
     HOUSING_TABLE,
     L2_REGION,
+    L2_SALE_REGIONS,
+    L2_SEOUL_REGION,
     L2_SOURCE_CONTRACT,
     REGIONAL_SALE_TABLES,
     RebHousingResearchPage,
     RebMarketStatError,
     RebRegionalSalesPage,
     parse_reb_housing_l2_month,
-    parse_reb_national_sale_month,
+    parse_reb_sale_month,
     require_reb_market_l2_policy,
 )
 from packages.domain.contracts import (
@@ -61,11 +63,17 @@ def _month(value: str) -> str:
     return value
 
 
-def scope_key(month: str, *, table: str = HOUSING_TABLE) -> str:
-    allowed = {HOUSING_TABLE} | {x["statbl_id"] for x in REGIONAL_SALE_TABLES.values()}
-    if table not in allowed:
-        raise RebMarketStatError("R-ONE source table is not in the reviewed catalog")
-    return f"{table}:CLS:{L2_REGION}:ITM:100001:MM:{_month(month)}"
+def scope_key(month: str, *, table: str = HOUSING_TABLE, region_code: str = L2_REGION) -> str:
+    sale_tables = {x["statbl_id"] for x in REGIONAL_SALE_TABLES.values()}
+    if table == HOUSING_TABLE:
+        if region_code != L2_REGION:
+            raise RebMarketStatError("all-housing L2 remains national-only")
+    elif table in sale_tables:
+        if region_code not in (L2_REGION, L2_SEOUL_REGION):
+            raise RebMarketStatError("sale L2 region is outside national/Seoul pilot")
+    else:
+        raise RebMarketStatError("source table is not in the reviewed R-ONE catalog")
+    return f"{table}:CLS:{region_code}:ITM:100001:MM:{_month(month)}"
 
 
 class _NoProviderRedirect(HTTPRedirectHandler):
@@ -82,17 +90,18 @@ def _fetch_one_page(
     policy: SourcePolicy,
     key: str,
     opener: Callable[[Request], Any] | None,
+    region_code: str = L2_REGION,
 ) -> Mapping[str, Any]:
     """One reviewed metadata-only R-ONE query, with no request URL logging."""
     require_reb_market_l2_policy(policy)
-    scope_key(month, table=table)
+    scope_key(month, table=table, region_code=region_code)
     if not isinstance(key, str) or not 8 <= len(key) <= 512 or any(c.isspace() for c in key):
         raise RebMarketStatError("R-ONE issued key is missing or malformed")
     query = {
         "KEY": key,
         "STATBL_ID": table,
         "DTACYCLE_CD": "MM",
-        "CLS_ID": L2_REGION,
+        "CLS_ID": region_code,
         "ITM_ID": "100001",
         "START_WRTTIME": month,
         "END_WRTTIME": month,
@@ -146,9 +155,10 @@ def fetch_one_sale_month(
     month: str,
     policy: SourcePolicy,
     key: str,
+    region_code: str = L2_REGION,
     opener: Callable[[Request], Any] | None = None,
 ) -> RebRegionalSalesPage:
-    """Exact one-table/one-month nationwide apartment/land sale data."""
+    """Exact one-table/month national or Seoul apartment/land-sale pilot."""
     if kind not in REGIONAL_SALE_TABLES:
         raise RebMarketStatError("R-ONE regional sale kind not approved")
     result = _fetch_one_page(
@@ -157,8 +167,11 @@ def fetch_one_sale_month(
         policy=policy,
         key=key,
         opener=opener,
+        region_code=region_code,
     )
-    return parse_reb_national_sale_month(result, kind=kind, month=month, policy=policy)
+    return parse_reb_sale_month(
+        result, kind=kind, month=month, region_code=region_code, policy=policy
+    )
 
 
 def capture_one_month(
@@ -200,10 +213,20 @@ def capture_one_month(
         contract = f"reb_{kind}_reporting_date_l2"
         quantity_name = "reported_sale_units"
         sale_row = page.rows[0]
-        if sale_row.month != month or sale_row.region_code != L2_REGION:
-            raise RebMarketStatError("R-ONE sale capture scope mismatch")
+        if sale_row.month != month:
+            raise RebMarketStatError("R-ONE sale capture month mismatch")
+        scope_key(month, table=table, region_code=sale_row.region_code)
+        if sale_row.region_label != L2_SALE_REGIONS[sale_row.region_code]:
+            raise RebMarketStatError("R-ONE sale region label mismatch")
         region_label = sale_row.region_label
         quantity = sale_row.count
+    if (
+        isinstance(quantity, bool)
+        or not isinstance(quantity, int)
+        or not 0 <= quantity <= 1_000_000_000
+    ):
+        raise RebMarketStatError("R-ONE count is not a validated nonnegative integer")
+    checked_region = L2_REGION if kind == "housing_volume" else page.rows[0].region_code
     source = Source(
         id=uuid5(_NAMESPACE, "reb-housing-official-api"),
         url=HOUSING_ENDPOINT,  # NEVER include KEY or any request query.
@@ -219,11 +242,15 @@ def capture_one_month(
         "unit": unit,
         "reported_month": month,
         "region_namespace": "RONE_CLS_ID_NOT_MOLIT_LAWD_CD",
-        "region_code": L2_REGION,
+        "region_code": checked_region,
         "region_label": region_label,
         quantity_name: quantity,
         "statistical_basis": "RONE_REPORTED_DATE",
-        "coverage": "ONE_NATIONAL_MONTH_ONLY",
+        "coverage": (
+            "ONE_NATIONAL_MONTH_ONLY"
+            if checked_region == L2_REGION
+            else "ONE_SEOUL_MONTH_ONLY_NO_MAP_RELEASE"
+        ),
         "publication": "NOT_APPROVED",
         "person_linkage": "NONE",
     }
@@ -231,7 +258,7 @@ def capture_one_month(
         normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode()
     digest = hashlib.sha256(payload).hexdigest()
-    scoped = scope_key(month, table=table)
+    scoped = scope_key(month, table=table, region_code=checked_region)
     snapshot = SourceSnapshot(
         id=uuid5(_NAMESPACE, "snapshot:" + digest),
         source_id=source.id,
@@ -243,7 +270,7 @@ def capture_one_month(
             "scope_key": scoped,
             "query": {
                 "STATBL_ID": table,
-                "CLS_ID": L2_REGION,
+                "CLS_ID": checked_region,
                 "ITM_ID": "100001",
                 "DTACYCLE_CD": "MM",
                 "START_WRTTIME": month,
@@ -260,7 +287,7 @@ def capture_one_month(
         id=uuid5(_NAMESPACE, "observation:" + digest),
         feeder=FEEDER if kind == "housing_volume" else SALE_FEEDER,
         scope_key=scoped,
-        provider_record_key=f"{table}:{L2_REGION}:100001:{month}",
+        provider_record_key=f"{table}:{checked_region}:100001:{month}",
         snapshot_id=snapshot.id,
         run_id=run_id,
         provider_observed_at=None,
@@ -319,7 +346,7 @@ def commit_one_month(
             checkpoint_metadata={
                 "source_contract": contract,
                 "provider_total_count": page.provider_total_count,
-                "region_code": L2_REGION,
+                "region_code": observation.normalized["region_code"],
                 "reported_month": month,
                 "publication": "NOT_APPROVED",
             },
