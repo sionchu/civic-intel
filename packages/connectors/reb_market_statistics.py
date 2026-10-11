@@ -7,10 +7,13 @@ No fetch, credential, canonical DB, person linkage or SourcePolicy registration 
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
@@ -26,7 +29,33 @@ L2_POLICY_ID = UUID("16130000-0000-0000-0000-000000000007")
 L2_SOURCE_CONTRACT = "reb_housing_month_reporting_date_l2_v1"
 L2_REGION = "500001"  # Nationwide official R-ONE CLS_ID, NOT MOLIT LAWD_CD
 L2_SEOUL_REGION = "500002"  # Verified official Seoul CLS_ID on both sale tables
-L2_SALE_REGIONS = {L2_REGION: "전국", L2_SEOUL_REGION: "서울"}
+# Official per-table provider classifications are read from one pinned source
+# artifact. These codes are NOT approved geography/polygon joins.
+_APPROVED_PROVINCE_LAWD = frozenset(
+    {
+        "11000000",
+        "26000000",
+        "27000000",
+        "28000000",
+        "30000000",
+        "31000000",
+        "36110000",
+        "41000000",
+        "51000000",
+        "43000000",
+        "44000000",
+        "52000000",
+        "47000000",
+        "48000000",
+        "50000000",
+    }
+)
+_SOURCE_CODE_CATALOG = (
+    Path(__file__).resolve().parents[2] / "docs/architecture/reb-provincial-code-catalog.json"
+)
+_SOURCE_CODE_CATALOG_SHA256 = "acb9e6c67ffff1ff05a571c4b170de713530abe063f923b25131cdb7cc989e76"
+L2_PROVINCE_MONTH = "202608"  # Only this reporting month authorized for local proof.
+
 SOURCE_KIND = "REB_REPORTED_DATE_ALL_HOUSING_TRADES"
 
 # IDs and item names observed in the official R-ONE StatsVisual dashboard
@@ -48,6 +77,51 @@ REGIONAL_SALE_TABLES = {
         "unit": "필지수",
     },
 }
+
+
+def reb_sale_region_labels(kind: str) -> dict[str, str]:
+    """Exact provider table codes, no inference across tables or to polygons."""
+    if kind not in REGIONAL_SALE_TABLES:
+        raise RebMarketStatError("unknown official sales table")
+    try:
+        raw = _SOURCE_CODE_CATALOG.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != _SOURCE_CODE_CATALOG_SHA256:
+            raise RebMarketStatError("pinned official R-ONE code catalog digest changed")
+        data = json.loads(raw)
+        if data["geo_join_allowed"] is not False:
+            raise RebMarketStatError("region source artifact must prohibit polygon joins")
+        table = data["tables"][kind]
+        if table["statbl_id"] != REGIONAL_SALE_TABLES[kind]["statbl_id"]:
+            raise RebMarketStatError("R-ONE official code table mismatches source")
+        result: dict[str, str] = {}
+        legal_codes: set[str] = set()
+        for row in table["regions"]:
+            region_id = row["cls_id"]
+            region_lawd = row["provider_lawd_cd"]
+            label = row["label_as_published"]
+            if row["geography_join_approved"] is not False:
+                raise RebMarketStatError("official catalog must not authorize geometry")
+            if region_id == L2_REGION:
+                if label != "전국":
+                    raise RebMarketStatError("national label mismatch")
+                result[region_id] = label
+            elif region_lawd in _APPROVED_PROVINCE_LAWD:
+                if row["legacy_or_ambiguous"] or ">" in label or "(구)" in label:
+                    raise RebMarketStatError("selected provider province was marked historical")
+                if region_lawd in legal_codes or region_id in result:
+                    raise RebMarketStatError("ambiguous duplicate official region code")
+                legal_codes.add(region_lawd)
+                result[region_id] = label
+        if len(legal_codes) != len(_APPROVED_PROVINCE_LAWD):
+            raise RebMarketStatError("official province coverage changed")
+        if result.get(L2_SEOUL_REGION) != "서울" or len(result) != 16:
+            raise RebMarketStatError("official R-ONE province catalog changed")
+        return result
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        if isinstance(exc, RebMarketStatError):
+            raise
+        raise RebMarketStatError("official R-ONE code catalog is absent or invalid") from None
+
 
 SCOPE_LIMIT = "UNVERIFIED_PROVIDER_SAMPLE_OR_SINGLE_PAGE"
 REGION_CODE_NAMESPACE = "RONE_CLS_ID_NOT_MOLIT_LAWD_CD"
@@ -144,16 +218,21 @@ def reb_market_l2_policy() -> SourcePolicy:
         terms_checked_at=datetime(2026, 10, 10, tzinfo=UTC),
         license="Public-data portal 15134761: 이용허락범위 제한 없음; operation approval separately required",
         rate_limit=(
-            "Local only: housing national, apartment/land sale national or Seoul, "
-            "one table/region/month/row per request; no schedule or bulk scan"
+            "Preserve old national and Seoul single-month review windows; "
+            "the NEW August 2026 15-province trial permits at most 32 "
+            "source-scoped sale requests (15 selected + national per table); "
+            "one row/table/region/month per request; no scheduler or open-ended scan"
         ),
         policy_note=(
             "Reviewed against R-ONE official Open API developer guide and data.go.kr 15134761. "
             "This object is an exact local-use source contract, not proof of owner review. "
             "Only A_2024_00546 (all-housing volume), A_2024_00554 (apartment sale "
             "volume) and A_2024_00536 (land sale parcels), ITM_ID=100001, "
-            "CLS_ID=500001 for all housing and either 500001 or 500002 for "
-            "apartment/land sales; one reporting month per research pull, "
+            "CLS_ID=500001 for all housing; R-ONE sale table-specific 15 "
+            "nonlegacy official provinces only (legacy Gwangju/Jeonnam held), "
+            "one reporting month per research pull, "
+            "202608 only for other-than-national-or-Seoul provinces, "
+            "preserving previously reviewed national/Seoul month options; "
             "metadata-only isolated SourceSnapshot/Observation. No production policy "
             "installation, public-map statistics, fulltext, AI, or Person links."
         ),
@@ -304,8 +383,11 @@ def parse_reb_sale_month(
     require_reb_market_l2_policy(policy)
     if kind not in REGIONAL_SALE_TABLES:
         raise RebMarketStatError("R-ONE sale table is outside reviewed catalog")
-    if region_code not in L2_SALE_REGIONS:
-        raise RebMarketStatError("R-ONE sale region is outside reviewed pilot scope")
+    region_labels = reb_sale_region_labels(kind)
+    if region_code not in region_labels:
+        raise RebMarketStatError("R-ONE sale region outside exact official L2 catalog")
+    if region_code not in (L2_REGION, L2_SEOUL_REGION) and month != L2_PROVINCE_MONTH:
+        raise RebMarketStatError("multi-province L2 only permits one reviewed month")
     if not isinstance(month, str) or not _SIX_DIGITS.fullmatch(month):
         raise RebMarketStatError("R-ONE reporting month must be YYYYMM")
     try:
@@ -351,8 +433,8 @@ def parse_reb_sale_month(
     ):
         raise RebMarketStatError("R-ONE sale row does not match approved table/item/month/region")
     label = _required_text(row, "CLS_NM")
-    if label != L2_SALE_REGIONS[region_code]:
-        raise RebMarketStatError("R-ONE official region label mismatches pilot selection")
+    if label != region_labels[region_code]:
+        raise RebMarketStatError("R-ONE official region label mismatches table-specific catalog")
     return RebRegionalSalesPage(
         kind=kind,
         month=month,

@@ -19,6 +19,7 @@ from packages.connectors.reb_market_statistics import (
     RebMarketStatError,
     parse_reb_sale_month,
     reb_market_l2_policy,
+    reb_sale_region_labels,
 )
 from packages.domain.db import SourcePolicyRow
 from packages.persistence import SqlAlchemyRepository
@@ -350,14 +351,23 @@ def test_seoul_provider_scope_drift_blocks_capture(kind, code, label):
         )
 
 
-def test_unreviewed_province_and_housing_seoul_scope_are_forbidden():
+def test_historical_provider_code_and_housing_seoul_scope_still_forbidden():
     with pytest.raises(RebMarketStatError):
         scope_key("202608", region_code="500002")  # housing remains national
     with pytest.raises(RebMarketStatError):
         fetch_one_sale_month(
             kind="land_sale",
             month="202608",
-            region_code="500003",
+            region_code="500006",  # historic Gwangju/Jeonnam classification
+            policy=reb_market_l2_policy(),
+            key=SECRET,
+            opener=lambda _: (_ for _ in ()).throw(AssertionError("unexpected HTTP")),
+        )
+    with pytest.raises(RebMarketStatError):
+        fetch_one_sale_month(
+            kind="apartment_sale",
+            month="202607",
+            region_code="500003",  # province pilot is 202608 only
             policy=reb_market_l2_policy(),
             key=SECRET,
             opener=lambda _: (_ for _ in ()).throw(AssertionError("unexpected HTTP")),
@@ -435,3 +445,163 @@ def test_forged_negative_sale_page_denied_before_source_run(tmp_path: Path):
     with pytest.raises(RebMarketStatError, match="nonnegative"):
         commit_one_month(repo, page=forged, month="202608", policy=policy, kind="land_sale")
     assert repo.source_runs(feeder=SALE_FEEDER) == []
+
+
+@pytest.mark.parametrize("kind", ["apartment_sale", "land_sale"])
+def test_exact_15_provinces_from_official_table_catalog_not_map_geometry(kind):
+    mapping = reb_sale_region_labels(kind)
+    assert len(mapping) == 16  # National + 15 unambiguous, no Gwangju/Jeonnam aliases.
+    assert mapping["500001"] == "전국"
+    assert mapping["500002"] == "서울"
+    assert mapping["500003"] == "부산"
+    assert "500006" not in mapping
+    assert "500015" not in mapping
+    assert all(
+        label not in ("전남광주>(구)광주", "전남광주>(구)전남") for label in mapping.values()
+    )
+    if kind == "apartment_sale":
+        assert mapping["500019"] == "제주"
+        assert "500018" not in mapping  # (구)제주 is historical.
+    else:
+        assert mapping["500018"] == "제주"
+        assert "500019" not in mapping
+
+
+@pytest.mark.parametrize("kind", ["apartment_sale", "land_sale"])
+def test_province_month_one_row_official_code_and_identity_separation(kind):
+    region = "500003"
+    month = "202608"
+    label = reb_sale_region_labels(kind)[region]
+    page = parse_reb_sale_month(
+        _provider(kind, month, count=123, overrides={"CLS_ID": int(region), "CLS_NM": label}),
+        kind=kind,
+        month=month,
+        region_code=region,
+        policy=reb_market_l2_policy(),
+    )
+    assert page.rows[0].count == 123
+    source, snap, obs = capture_one_month(
+        page,
+        month=month,
+        kind=kind,
+        policy=reb_market_l2_policy(),
+        run_id=__import__("uuid").uuid4(),
+    )
+    assert obs.normalized["coverage"] == "ONE_PROVIDER_PROVINCE_MONTH_NO_GEOGRAPHY_JOIN_OR_RELEASE"
+    assert obs.identity_hints == {}
+    assert obs.normalized["person_linkage"] == "NONE"
+    assert obs.normalized["publication"] == "NOT_APPROVED"
+    assert snap.fulltext is None
+    assert "?" not in str(source.url)
+    assert obs.normalized["region_code"] == region
+    assert obs.normalized["region_label"] == label
+
+
+@pytest.mark.parametrize("kind", ["apartment_sale", "land_sale"])
+def test_province_bad_month_and_ambiguous_names_blocked_pre_http(kind):
+    for region, month in [("500003", "202607"), ("500006", "202608"), ("500015", "202608")]:
+        with pytest.raises(RebMarketStatError):
+            fetch_one_sale_month(
+                kind=kind,
+                month=month,
+                region_code=region,
+                policy=reb_market_l2_policy(),
+                key=SECRET,
+                opener=lambda _req: (_ for _ in ()).throw(AssertionError("unexpected request")),
+            )
+    with pytest.raises(RebMarketStatError):
+        parse_reb_sale_month(
+            _provider(kind, "202608", overrides={"CLS_ID": 500003, "CLS_NM": "서울"}),
+            kind=kind,
+            month="202608",
+            region_code="500003",
+            policy=reb_market_l2_policy(),
+        )
+
+
+def test_jeju_different_official_identifiers_never_interchanged():
+    assert scope_key("202608", table="A_2024_00554", region_code="500019")
+    assert scope_key("202608", table="A_2024_00536", region_code="500018")
+    for table, wrong in (("A_2024_00554", "500018"), ("A_2024_00536", "500019")):
+        with pytest.raises(RebMarketStatError):
+            scope_key("202608", table=table, region_code=wrong)
+
+
+def test_province_cross_kind_single_source_no_person_claims(tmp_path: Path):
+    repo, db = _db(tmp_path)
+    policy = reb_market_l2_policy()
+    for kind, region_code in (("apartment_sale", "500019"), ("land_sale", "500018")):
+        page = parse_reb_sale_month(
+            _provider(
+                kind,
+                "202608",
+                count=42,
+                overrides={
+                    "CLS_ID": int(region_code),
+                    "CLS_NM": "제주",
+                },
+            ),
+            kind=kind,
+            month="202608",
+            region_code=region_code,
+            policy=policy,
+        )
+        first = commit_one_month(repo, page=page, month="202608", policy=policy, kind=kind)
+        rerun = commit_one_month(repo, page=page, month="202608", policy=policy, kind=kind)
+        assert first["observations_created"] == 1 and rerun["observations_unchanged"] == 1
+        assert first["snapshot_id"] == rerun["snapshot_id"]
+    with repo.sessions() as session:
+        counts = {
+            table: session.scalar(text(f"SELECT COUNT(*) FROM {table}"))
+            for table in (
+                "sources",
+                "source_snapshots",
+                "feeder_observations",
+                "source_runs",
+                "people",
+                "claims",
+                "person_observation_links",
+            )
+        }
+    assert counts == {
+        "sources": 1,
+        "source_snapshots": 2,
+        "feeder_observations": 2,
+        "source_runs": 4,
+        "people": 0,
+        "claims": 0,
+        "person_observation_links": 0,
+    }
+    assert SECRET.encode() not in db.read_bytes()
+
+
+def test_changed_official_region_catalog_blocks_all_new_queries_before_http(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    from packages.connectors import reb_market_statistics as market
+
+    fake = tmp_path / "changed-catalog.json"
+    fake.write_bytes(market._SOURCE_CODE_CATALOG.read_bytes() + b"\n")
+    monkeypatch.setattr(market, "_SOURCE_CODE_CATALOG", fake)
+    with pytest.raises(RebMarketStatError, match="digest changed"):
+        fetch_one_sale_month(
+            kind="apartment_sale",
+            month="202608",
+            region_code="500003",
+            policy=reb_market_l2_policy(),
+            key=SECRET,
+            opener=lambda _req: (_ for _ in ()).throw(AssertionError("no HTTP permitted")),
+        )
+
+
+def test_older_national_and_seoul_month_review_scope_remains_compatible():
+    # The newly added 202608 hard window applies only to the 13 additional
+    # province codes; earlier nationwide and Seoul monthly queries retain
+    # their existing reviewed per-call historical scope.
+    assert scope_key("202607", table="A_2024_00554", region_code="500001")
+    assert scope_key("202608", table="A_2024_00536", region_code="500001")
+    assert scope_key("202607", table="A_2024_00554", region_code="500002")
+    assert scope_key("202608", table="A_2024_00536", region_code="500002")
+    with pytest.raises(RebMarketStatError):
+        scope_key("202607", table="A_2024_00554", region_code="500003")

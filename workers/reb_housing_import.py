@@ -23,8 +23,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from packages.connectors.reb_market_statistics import (
     HOUSING_ENDPOINT,
     HOUSING_TABLE,
+    L2_PROVINCE_MONTH,
     L2_REGION,
-    L2_SALE_REGIONS,
     L2_SEOUL_REGION,
     L2_SOURCE_CONTRACT,
     REGIONAL_SALE_TABLES,
@@ -33,6 +33,7 @@ from packages.connectors.reb_market_statistics import (
     RebRegionalSalesPage,
     parse_reb_housing_l2_month,
     parse_reb_sale_month,
+    reb_sale_region_labels,
     require_reb_market_l2_policy,
 )
 from packages.domain.contracts import (
@@ -69,8 +70,13 @@ def scope_key(month: str, *, table: str = HOUSING_TABLE, region_code: str = L2_R
         if region_code != L2_REGION:
             raise RebMarketStatError("all-housing L2 remains national-only")
     elif table in sale_tables:
-        if region_code not in (L2_REGION, L2_SEOUL_REGION):
-            raise RebMarketStatError("sale L2 region is outside national/Seoul pilot")
+        kind = next(
+            kind for kind, spec in REGIONAL_SALE_TABLES.items() if spec["statbl_id"] == table
+        )
+        if region_code not in reb_sale_region_labels(kind):
+            raise RebMarketStatError("sale L2 region is outside pinned provider code catalog")
+        if region_code not in (L2_REGION, L2_SEOUL_REGION) and month != L2_PROVINCE_MONTH:
+            raise RebMarketStatError("province L2 is restricted to reviewed month")
     else:
         raise RebMarketStatError("source table is not in the reviewed R-ONE catalog")
     return f"{table}:CLS:{region_code}:ITM:100001:MM:{_month(month)}"
@@ -216,8 +222,8 @@ def capture_one_month(
         if sale_row.month != month:
             raise RebMarketStatError("R-ONE sale capture month mismatch")
         scope_key(month, table=table, region_code=sale_row.region_code)
-        if sale_row.region_label != L2_SALE_REGIONS[sale_row.region_code]:
-            raise RebMarketStatError("R-ONE sale region label mismatch")
+        if sale_row.region_label != reb_sale_region_labels(kind).get(sale_row.region_code):
+            raise RebMarketStatError("R-ONE official table-specific region label mismatch")
         region_label = sale_row.region_label
         quantity = sale_row.count
     if (
@@ -249,7 +255,11 @@ def capture_one_month(
         "coverage": (
             "ONE_NATIONAL_MONTH_ONLY"
             if checked_region == L2_REGION
-            else "ONE_SEOUL_MONTH_ONLY_NO_MAP_RELEASE"
+            else (
+                "ONE_SEOUL_MONTH_ONLY_NO_MAP_RELEASE"
+                if checked_region == L2_SEOUL_REGION
+                else "ONE_PROVIDER_PROVINCE_MONTH_NO_GEOGRAPHY_JOIN_OR_RELEASE"
+            )
         ),
         "publication": "NOT_APPROVED",
         "person_linkage": "NONE",
