@@ -24,7 +24,9 @@ HOUSING_SOURCE = "https://www.reb.or.kr/r-one/portal/stat/easyStatPage/A_2024_00
 HOUSING_ENDPOINT = "https://www.reb.or.kr/r-one/openapi/SttsApiTblData.do"
 L2_POLICY_ID = UUID("16130000-0000-0000-0000-000000000007")
 L2_SOURCE_CONTRACT = "reb_housing_month_reporting_date_l2_v1"
-L2_REGION = "500001"  # Explicit nationwide R-ONE CLS_ID, NOT MOLIT LAWD_CD
+L2_REGION = "500001"  # Nationwide official R-ONE CLS_ID, NOT MOLIT LAWD_CD
+L2_SEOUL_REGION = "500002"  # Verified official Seoul CLS_ID on both sale tables
+L2_SALE_REGIONS = {L2_REGION: "전국", L2_SEOUL_REGION: "서울"}
 SOURCE_KIND = "REB_REPORTED_DATE_ALL_HOUSING_TRADES"
 
 # IDs and item names observed in the official R-ONE StatsVisual dashboard
@@ -141,14 +143,18 @@ def reb_market_l2_policy() -> SourcePolicy:
         can_commercialize=False,
         terms_checked_at=datetime(2026, 10, 10, tzinfo=UTC),
         license="Public-data portal 15134761: 이용허락범위 제한 없음; operation approval separately required",
-        rate_limit="Only reviewed 3 tables, one national region/month/page per request; no schedule or bulk scan",
+        rate_limit=(
+            "Local only: housing national, apartment/land sale national or Seoul, "
+            "one table/region/month/row per request; no schedule or bulk scan"
+        ),
         policy_note=(
             "Reviewed against R-ONE official Open API developer guide and data.go.kr 15134761. "
             "This object is an exact local-use source contract, not proof of owner review. "
             "Only A_2024_00546 (all-housing volume), A_2024_00554 (apartment sale "
             "volume) and A_2024_00536 (land sale parcels), ITM_ID=100001, "
-            "CLS_ID=500001, one reporting month per approved local research pull; "
-            "isolated SourceSnapshot/FeederObservation only. No production policy "
+            "CLS_ID=500001 for all housing and either 500001 or 500002 for "
+            "apartment/land sales; one reporting month per research pull, "
+            "metadata-only isolated SourceSnapshot/Observation. No production policy "
             "installation, public-map statistics, fulltext, AI, or Person links."
         ),
     )
@@ -286,17 +292,20 @@ def _parse_reb_housing_response(response: Mapping[str, Any]) -> RebHousingResear
     )
 
 
-def parse_reb_national_sale_month(
+def parse_reb_sale_month(
     response: Mapping[str, Any],
     *,
     kind: str,
     month: str,
+    region_code: str = L2_REGION,
     policy: SourcePolicy,
 ) -> RebRegionalSalesPage:
-    """Validate precisely one official national sale month, never publishable."""
+    """Validate exactly one provider-approved national/Seoul sale month, nonpublishable."""
     require_reb_market_l2_policy(policy)
     if kind not in REGIONAL_SALE_TABLES:
         raise RebMarketStatError("R-ONE sale table is outside reviewed catalog")
+    if region_code not in L2_SALE_REGIONS:
+        raise RebMarketStatError("R-ONE sale region is outside reviewed pilot scope")
     if not isinstance(month, str) or not _SIX_DIGITS.fullmatch(month):
         raise RebMarketStatError("R-ONE reporting month must be YYYYMM")
     try:
@@ -334,7 +343,7 @@ def parse_reb_national_sale_month(
             row.get("STATBL_ID") != expected["statbl_id"],
             row.get("DTACYCLE_CD") != "MM",
             row.get("WRTTIME_IDTFR_ID") != month,
-            str(row.get("CLS_ID")) != L2_REGION,
+            str(row.get("CLS_ID")) != region_code,
             str(row.get("ITM_ID")) != expected["item_id"],
             row.get("ITM_NM") != expected["item_name"],
             row.get("UI_NM") != expected["unit"],
@@ -342,8 +351,8 @@ def parse_reb_national_sale_month(
     ):
         raise RebMarketStatError("R-ONE sale row does not match approved table/item/month/region")
     label = _required_text(row, "CLS_NM")
-    if label != "전국":
-        raise RebMarketStatError("R-ONE national region label was not verified")
+    if label != L2_SALE_REGIONS[region_code]:
+        raise RebMarketStatError("R-ONE official region label mismatches pilot selection")
     return RebRegionalSalesPage(
         kind=kind,
         month=month,
@@ -353,7 +362,7 @@ def parse_reb_national_sale_month(
             RebRegionalSaleRow(
                 kind=kind,
                 month=month,
-                region_code=L2_REGION,
+                region_code=region_code,
                 region_label=label,
                 count=_count(row.get("DTA_VAL"), "DTA_VAL"),
             ),

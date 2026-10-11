@@ -1,6 +1,6 @@
 # Official real-estate market sources — MOLIT L1 and R-ONE local L2
 
-**Status (2026-10-10): MOLIT L1 CONTRACT_STAGED; R-ONE three separately scoped national-month L2 LOCAL_VERIFIED records, province-code catalog DISCOVERY_ONLY.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
+**Status (2026-10-11): MOLIT L1 CONTRACT_STAGED; R-ONE three national-month plus two Seoul sale-month L2 LOCAL_VERIFIED records in isolated proof DBs; province-code catalog DISCOVERY_ONLY, no public map release.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
 
 ## Official sources and rights
 
@@ -179,6 +179,49 @@ denominators, a reviewed historical/current administrative crosswalk, and
 operational distribution rights. The data.go.kr entry for R-ONE permits
 development automatic access but explicitly lists operational approval
 review. The issued key and local proof are **not** operational approval.
+
+## Seoul apartment and land sales — L2 one-region/month LOCAL_VERIFIED (2026-10-11)
+
+The official R-ONE
+[`selectOpenApiItmCd.do` classification metadata](reb-provincial-code-catalog.json)
+identifies **서울 `CLS_ID=500002`** with published `lawdCd=11000000` in
+both approved sale tables. These are *provider-reported code facts*, not
+approval to join the 2020 SVG geometry or to infer a public official's address.
+
+Two owner-authorized, exact, authenticated single-row R-ONE requests
+succeeded (HTTP 200, `INFO-000`, declared 1 / returned 1):
+
+| Kind | Official table | Reporting month | Seoul `CLS_ID` | Value | Unit |
+|---|---|---|---|---:|---|
+| Apartment **sales** | `A_2024_00554` | 2026-08 | `500002` | **4,589** | 호 |
+| Land **sales** | `A_2024_00536` | 2026-08 | `500002` | **11,282** | 필지 |
+
+Both month values refer to the same reporting month; neither is property
+price or any named person's purchase, sale or ownership. The pilot extends
+the **existing canonical R-ONE policy decision** to *only* nationwide
+`500001` or explicit Seoul `500002` for these two sale tables. All-housing
+volume remains **nationwide only**. This is a semantic policy change: older
+recorded decisions do not match silently; only the fresh disposable proof
+database registers the revised exact SourcePolicy. No production API or DB
+policy was revised.
+
+The owner-private, Alembic 0008 proof DB
+(`cvic-reb-seoul-proof-20261011/seoul_official_sales.sqlite` outside Git)
+contains 1 policy, 1 unparameterized Source, 2 SourceSnapshots,
+2 FeederObservations, 4 successful runs and 2 checkpoints. Same-value
+replays created **0** new observations and reused the stored hashes.
+No raw response, API key, individual address, Person/Claim or public
+Site statistic was stored. The exact aggregate-only hashes are
+`efc3ed38bda65af146a391e9e74008d4d1aa63ea66023518b128fb5f4f1963f8`
+(apartment) and
+`023eca1d13a4c054ec34bc1892ab11903e052830e39dbb8470587da4af9372e8`
+(land). These are observations scoped to one month and one metropolitan/province-level
+source classification, **not L3 provider history or a map-data release**.
+
+Broader municipality/province coverage, latest-month corrections,
+official polygon vintage/crosswalk and explicit operating-stage API
+approval remain open before publication. No automatic geography join or
+public statistics were enabled by this change.
 
 ## Region outline UI preview (2026-10-10)
 
