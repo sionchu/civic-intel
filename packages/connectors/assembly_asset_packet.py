@@ -7,7 +7,8 @@ member tables into this packet; this module only validates the packet. It never 
 Privacy contract (AGENTS.md): member-level only (printed position must be 국회의원); no
 family names, no 소재지/면적/권리의 명세, no account/parcel numbers, no change reasons.
 Items held by reported relatives are accepted only as a coarse relation code plus values
-so the printed member totals can be cross-checked; they are never persisted.
+so the printed member totals can be cross-checked; they are never persisted. 고지거부/등록제외
+rows are accepted the same way (relation, exclusion kind and amounts; no reason text).
 Amounts are the declared values printed in the Gazette (thousand KRW), not market wealth.
 """
 
@@ -58,6 +59,10 @@ HOLDER_RELATIONS = frozenset(
         "OTHER_REPORTED_RELATIVE",
     }
 )
+# 고지거부 및 등록제외사항: a relative whose holdings the member declined to report (고지거부)
+# or who left the registration scope (등록제외). The printed member totals still include
+# these rows' amounts, so they are accepted only to reproduce those totals.
+EXCLUSION_KINDS = frozenset({"NOTICE_REFUSED", "REGISTRATION_EXCLUDED"})
 CATEGORY_DEBT = "DEBT"
 # Statutory 재산의 구분 (공직자윤리법 제4조) as codes; the printed heading is kept verbatim.
 ITEM_CATEGORIES = frozenset(
@@ -106,7 +111,8 @@ REGIONS_SIDO = frozenset(
     }
 )
 AMOUNT_FIELDS = ("prior_value", "increase", "decrease", "current_value")
-# Net (assets minus debts) cross-check rule; UNVERIFIED until the first real packet.
+# Reconcile printed prior/current totals using signed item and excluded-holder values.
+# Exact official issue coverage and validation receipts are documented separately.
 CROSS_CHECKED_FIELDS = ("prior_value", "current_value")
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -499,6 +505,52 @@ class AssetItemRow:
         }
 
 
+@dataclass(frozen=True)
+class ExcludedHolderRow:
+    """One 고지거부/등록제외 row: coarse relation, exclusion kind and printed amounts only."""
+
+    locator: GazetteLocator
+    holder_relation: str
+    exclusion_kind: str
+    amounts: Mapping[str, DeclaredAmount | None]
+
+    @classmethod
+    def from_mapping(cls, raw: object, *, report_type: str) -> ExcludedHolderRow:
+        if not isinstance(raw, Mapping):
+            raise AssemblyAssetPacketError("asset packet excluded holder is malformed")
+        _exact_keys(
+            raw,
+            {"locator", "holder_relation", "exclusion_kind", *AMOUNT_FIELDS},
+            "asset packet excluded holder",
+        )
+        relation = _required_text(raw.get("holder_relation"), "excluded_holder.holder_relation")
+        if relation not in HOLDER_RELATIONS or relation == RELATION_SELF:
+            raise AssemblyAssetPacketError(
+                "asset packet excluded_holder.holder_relation must be a reported relative"
+            )
+        kind = _required_text(raw.get("exclusion_kind"), "excluded_holder.exclusion_kind")
+        if kind not in EXCLUSION_KINDS:
+            raise AssemblyAssetPacketError(
+                "asset packet excluded_holder.exclusion_kind is unsupported"
+            )
+        amounts = _amounts(raw, "excluded_holder")
+        _check_report_shape(amounts, report_type, "excluded_holder")
+        return cls(
+            locator=GazetteLocator.from_mapping(raw.get("locator"), "excluded_holder.locator"),
+            holder_relation=relation,
+            exclusion_kind=kind,
+            amounts=amounts,
+        )
+
+    def normalized(self) -> dict[str, object]:
+        return {
+            "locator": self.locator.normalized(),
+            "holder_relation": self.holder_relation,
+            "exclusion_kind": self.exclusion_kind,
+            "amounts": _normalized_amounts(self.amounts),
+        }
+
+
 def _check_report_shape(
     amounts: Mapping[str, DeclaredAmount | None], report_type: str, label: str
 ) -> None:
@@ -523,6 +575,7 @@ class MemberDisclosure:
     total_locator: GazetteLocator
     declared_totals: Mapping[str, DeclaredAmount | None]
     items: tuple[AssetItemRow, ...]
+    excluded_holders: tuple[ExcludedHolderRow, ...] = ()
 
     @classmethod
     def from_mapping(cls, raw: object, *, disclosure_kind: str) -> MemberDisclosure:
@@ -540,6 +593,7 @@ class MemberDisclosure:
                 "total_locator",
                 "declared_totals",
                 "items",
+                "excluded_holders",
             },
             "asset packet member",
         )
@@ -580,6 +634,12 @@ class MemberDisclosure:
         items = tuple(
             AssetItemRow.from_mapping(item, report_type=report_type) for item in items_raw
         )
+        excluded_raw = raw.get("excluded_holders", [])
+        if not isinstance(excluded_raw, list):
+            raise AssemblyAssetPacketError("asset packet member.excluded_holders must be a list")
+        excluded = tuple(
+            ExcludedHolderRow.from_mapping(row, report_type=report_type) for row in excluded_raw
+        )
         member = cls(
             printed_member_name=name,
             printed_affiliation=_private_safe_text(
@@ -594,12 +654,14 @@ class MemberDisclosure:
             ),
             declared_totals=totals,
             items=items,
+            excluded_holders=excluded,
         )
         member.cross_check_totals()
         return member
 
     def cross_check_totals(self) -> None:
-        """Printed prior/current totals must equal the signed item sum (debts subtract).
+        """Printed prior/current totals must equal the signed item sum (debts subtract)
+        plus the printed 고지거부/등록제외 amounts, which the Gazette carries signed.
 
         Increase/decrease totals are kept verbatim but not cross-checked: how the Gazette
         nets debt increases/decreases into the member total is not yet confirmed.
@@ -617,6 +679,14 @@ class MemberDisclosure:
                         f"asset packet member total {name} cannot be cross-checked: an item lacks it"
                     )
                 total += -amount.value if item.item_category == CATEGORY_DEBT else amount.value
+            for row in self.excluded_holders:
+                excluded_amount = row.amounts[name]
+                if excluded_amount is None:
+                    raise AssemblyAssetPacketError(
+                        f"asset packet member total {name} cannot be cross-checked: an excluded "
+                        "holder row lacks it"
+                    )
+                total += excluded_amount.value
             if total != declared.value:
                 raise AssemblyAssetPacketError(
                     f"asset packet member {name} items ({total}) differ from declared total "
@@ -624,7 +694,7 @@ class MemberDisclosure:
                 )
 
     def normalized(self) -> dict[str, object]:
-        return {
+        normalized: dict[str, object] = {
             "printed_member_name": self.printed_member_name,
             "printed_affiliation": self.printed_affiliation,
             "printed_position": self.printed_position,
@@ -635,6 +705,9 @@ class MemberDisclosure:
             "declared_totals": _normalized_amounts(self.declared_totals),
             "items": [item.normalized() for item in self.items],
         }
+        if self.excluded_holders:  # absent otherwise, so existing packet hashes are unchanged
+            normalized["excluded_holders"] = [row.normalized() for row in self.excluded_holders]
+        return normalized
 
 
 @dataclass(frozen=True)
@@ -704,9 +777,11 @@ def parse_reviewed_assembly_asset_packet(raw: Mapping[str, Any]) -> ReviewedAsse
     declared_count = raw.get("declared_member_count")
     if isinstance(declared_count, bool) or declared_count != len(members):
         raise AssemblyAssetPacketError("asset packet declared_member_count differs from members")
-    locators = [member.total_locator for member in members] + [
-        item.locator for member in members for item in member.items
-    ]
+    locators = (
+        [member.total_locator for member in members]
+        + [item.locator for member in members for item in member.items]
+        + [row.locator for member in members for row in member.excluded_holders]
+    )
     if len(set(locators)) != len(locators):
         raise AssemblyAssetPacketError("asset packet Gazette locators must be unique")
     codes = [m.reviewer_stated_mona_cd for m in members if m.reviewer_stated_mona_cd]

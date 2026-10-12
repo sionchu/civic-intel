@@ -504,7 +504,11 @@ class AssemblyAssetCapture:
                 for name, amount in member.declared_totals.items()
             },
             "declared_totals_scope": TOTALS_SCOPE,
-            "totals_cross_check": "ITEM_SUM_MATCHED",
+            "totals_cross_check": (
+                "ITEM_AND_EXCLUDED_HOLDER_SUM_MATCHED"
+                if member.excluded_holders
+                else "ITEM_SUM_MATCHED"
+            ),
             "relative_items_policy": RELATIVE_ITEMS_POLICY,
         }
         return FeederObservation(

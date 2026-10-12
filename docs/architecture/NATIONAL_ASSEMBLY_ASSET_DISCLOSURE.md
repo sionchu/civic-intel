@@ -161,7 +161,17 @@ Member block: `printed_member_name`, `printed_affiliation`, `printed_position` (
 `국회의원`: member-level only; other high officials in the same issue are rejected),
 `report_type` (`변동신고` | `최초등록` | `재등록` | `퇴직`; a `정기` issue accepts only `변동신고`;
 registration types carry only `current_value`), optional `reviewer_stated_mona_cd` +
-`mona_cd_basis` (both or neither), `total_locator`, `declared_totals`, `items`.
+`mona_cd_basis` (both or neither), `total_locator`, `declared_totals`, `items`, and optional
+`excluded_holders`.
+
+Excluded-holder block (`고지거부 및 등록제외사항`): exact `locator`, a non-SELF coarse
+`holder_relation`, `exclusion_kind` (`NOTICE_REFUSED` for 고지거부 | `REGISTRATION_EXCLUDED` for
+등록제외) and the four printed amounts. The printed reason (독립생계유지, 타인부양, 이혼, 사망 …)
+is not accepted. The Gazette prints these amounts signed and includes them in the member totals,
+so they exist only to reproduce those totals; like relative-held items they are never persisted.
+The same registration/regular-report amount-column shape constraints apply to these rows
+and to each disclosed item and member total.
+A member without such rows omits the key, which keeps earlier packet hashes unchanged.
 
 Item block: exact `locator {page_number, table_index, table_row}`, `holder_relation` (coarse
 code SELF | SPOUSE | LINEAL_ASCENDANT | LINEAL_DESCENDANT | OTHER_REPORTED_RELATIVE; the printed
@@ -177,7 +187,8 @@ Validation fails closed on: unknown fields anywhere (so `location`, `account_num
 지번 `12-3`, ㎡, 시/도+시/군/구) or account-like (`NNNN-NN-NNNNNN`, ≥10 digits) text in permitted
 text fields; a region outside the closed 시/도 list; duplicate locators or MONA_CDs; amount
 text/value disagreement; and a **declared-total mismatch**: for each member, printed
-`prior_value` and `current_value` totals must equal the item sum with DEBT items subtracted.
+`prior_value` and `current_value` totals must equal the item sum with DEBT items subtracted,
+plus the signed `excluded_holders` amounts.
 
 ### Privacy decisions (AGENTS.md)
 
@@ -196,9 +207,10 @@ text/value disagreement; and a **declared-total mismatch**: for each member, pri
 - **Change reasons (변동사유):** not accepted. The 2026-09-12 minimal design found free-text
   reasons unnecessary and they can name relatives or transactions; enabling them is an owner
   decision.
-- No family names, account/parcel numbers, contacts or 고지거부 annotations are modeled.
-  고지거부 and similar non-disclosure markers stay outside the contract (an absent row is
-  unresolved, never "no assets").
+- No family names, account/parcel numbers, contacts or private exclusion reasons are
+  modeled. Coarse 고지거부/등록제외 category codes and signed printed totals may occur
+  **only in the local validation packet**, never persisted in observations or
+  displayed publicly. An absent row remains unresolved, never "no assets".
 
 ### Identity
 
@@ -243,10 +255,23 @@ AssetDisclosure/AssetItem/Claim rows, materializer refusal, and stored-policy de
    `SELECTED_MEMBERS` or must be `FULL_ISSUE`.
 3. **Revision semantics:** precedence between a corrected packet and an earlier one for the same
    locator, Gazette correction/republication handling, and cross-release item continuity.
-4. **Cross-check rule confirmation:** the net (assets − debts) prior/current total rule and the
-   statutory category code list are UNVERIFIED against a real Gazette PDF; the first real packet
-   must confirm or correct them. Increase/decrease totals are stored verbatim but not
-   cross-checked until the Gazette's netting of debt changes is confirmed.
+4. **Cross-check rule confirmation — LOCAL OPERATOR-REPORTED, NOT HUMAN_REVIEWED:**
+   the 2026-10-12 local extraction/parser rehearsal of the official 국회공보 제2026-54호
+   PDF (reported 893 pages; source hash prefix `6ce0805e…`) recorded
+   284/284 member current-total reconciliations and category subtotal checks.
+   In that local rehearsal, 248 reported prior totals matched item sums alone;
+   36 matched after including signed `고지거부 및 등록제외사항` rows, motivating
+   the excluded-holder input contract. The operator also reported 15 statutory
+   category headings. **The full source PDF, item-by-item comparison receipt and
+   independently reproduced validation are not part of this repository/PR.**
+   These figures are reported evidence, **not independently audited coverage
+   or a human publication decision**; the actual packet stays
+   `REVIEW_REQUIRED`, with no canonical import, public Claim or Person link.
+   `totals_cross_check` means only the populated printed `prior_value` and/or
+   `current_value` columns were reconciled. On registration reports, only
+   `current_value` is present; the label does **not** assert both columns.
+   Increase/decrease totals are retained verbatim but not reconciled because
+   the Gazette's netting of debt changes remains unverified.
 5. **Optional fields:** whether 시/군/구, change reasons or a relation-category aggregate may ever
    be stored, and whether real-transaction-price columns should be modeled.
 6. **Identity/publication:** an exact MONA_CD linkage review path and any Claim/AssetDisclosure
