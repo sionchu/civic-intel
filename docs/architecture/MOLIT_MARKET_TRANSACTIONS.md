@@ -1,6 +1,6 @@
 # Official real-estate market sources — MOLIT L1 and R-ONE local L2
 
-**Status (2026-10-11): MOLIT L1 CONTRACT_STAGED; R-ONE three national-month plus two Seoul sale-month L2 LOCAL_VERIFIED records in isolated proof DBs; province-code catalog DISCOVERY_ONLY, no public map release.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
+**Status (2026-10-11): MOLIT L1 CONTRACT_STAGED; R-ONE 2026-08 selected 15 provinces plus national comparator for both sale tables LOCAL_L2_VERIFIED in isolated SQLite; the remaining integrated/provisional geography and public map remain BLOCKED.** The private R-ONE capture exists only in a disposable, Alembic-migrated SQLite proof. No production source policy, operational data, public transaction statistic, automatic map overlay, Person Claim or L3 coverage is claimed. These lanes never establish ownership of a public official's property.
 
 ## Official sources and rights
 
@@ -222,6 +222,79 @@ Broader municipality/province coverage, latest-month corrections,
 official polygon vintage/crosswalk and explicit operating-stage API
 approval remain open before publication. No automatic geography join or
 public statistics were enabled by this change.
+
+## R-ONE 2026-08 local 15-province scope proof (2026-10-11)
+
+**Status: LOCAL_L2_VERIFIED / NOT_L3 / NOT_PUBLISHED.** For each of the
+apartment-sale (`A_2024_00554`, 호수) and land-sale
+(`A_2024_00536`, 필지수) tables, one issued-key HTTPS query was
+restricted to `DTACYCLE_CD=MM`, `START_WRTTIME=202608`,
+`END_WRTTIME=202608`, `ITM_ID=100001`, `pIndex=1`,
+`pSize=1` and one provider R-ONE `CLS_ID` at a time.
+The reviewed local-use SourcePolicy is limited to **32 exact
+(table, region, month)** scopes: 15 nonlegacy provider province
+classifications and one nationwide comparator for each of two tables.
+The older housing national scope remains separately supported.
+No unbounded historical crawl, scheduler, production effective-policy
+migration, or public-value materialization is allowed.
+
+**Primary-source bounded receipt:**
+
+| 2026-08 official reporting-date sales | Apartment (호) | Land (필지) |
+|---|---:|---:|
+| Nationwide `CLS_ID=500001` | 37,502 | 80,776 |
+| Sum of 15 verified nonlegacy provider-province codes | 35,027 | 74,395 |
+| **Not accounted for in the selected 15-code sum** | **2,475** | **6,381** |
+| Exact source requests returned | 16 / 16 | 16 / 16 |
+| Approved public map values | **0** | **0** |
+
+All **32** official requests returned exact provider table, month,
+`INFO-000`, `list_total_count=1`, one row, correct unit, `CLS_ID`
+and source label. One new, disposable Alembic-`0008` local SQLite DB
+contained 1 reviewed policy, 1 query-free Source, **32 immutable
+SourceSnapshots, 32 FeederObservations, 64 successful SourceRuns,
+32 checkpoints**, and zero People/Claims/PersonObservationLinks.
+Same-input replay created **0 new** observations, one unchanged per scope.
+The key did not enter the DB; original HTTP responses were not stored.
+This proof is intentionally not the operational database.
+
+A single pinned source catalog,
+[`reb-provincial-code-catalog.json`](reb-provincial-code-catalog.json),
+uses the exact official R-ONE `selectOpenApiItmCd.do` response
+classification per table, excluding entries marked `(구)` or ambiguous.
+Runtime admission checks its full byte-level SHA-256
+`acb9e6c67ffff1ff05a571c4b170de713530abe063f923b25131cdb7cc989e76`,
+the 15 distinct allowed provider municipality parent-codes, table-specific
+R-ONE `CLS_ID` and exact published label. `500006` and
+`500015` are explicitly not ingested. 제주 remains distinct:
+apartment `500019`, land `500018`; apartment `500018` is
+historical and prohibited. No statistical-code-to-map geometry join exists.
+
+**Important 2026 administrative change:** 전남광주통합특별시
+officially launched **2026-07-01** after the merger of 광주/전남:
+[government 2026 execution report](https://www.kihf.or.kr/download.do?uuid=d7e96858-5fe6-4d8f-9174-71fbeecd3626.pdf),
+[July 2026 reporting](https://www.yna.co.kr/amp/view/AKR20260716068500054).
+R-ONE still exposes legacy `전남광주>(구)...` classification
+names in this metadata receipt. The numerical nationwide-minus-selected
+differences above **cannot automatically be attributed to the new province**
+or distributed between old regions: source correction timing, classification,
+missing/changed source codes and boundaries remain unknown.
+No old 2020 SVG boundary is treated as the 2026 special-city polygon.
+
+Official [SGIS 2025 administrative boundaries](https://www.data.go.kr/data/15129688/fileData.do)
+are available with no stated reuse restriction, but their effective date
+precedes the 2026 merger. Applying them or a fuzzy name-based join would
+misrepresent the current geography. Source-valid monthly metrics are
+retained only in the private L2 proof until a versioned, provider-verified
+2026 region crosswalk and current approved geometry become available.
+No choropleth data is approved; no individual public-official apartment,
+land sale, owner, address, price or assets are inferred from these totals.
+
+**Next release gates:** source operational API/use authorization, 2026
+integrated-region official `CLS_ID` & coverage reconciliation, revision
+history and whole-month denominator proof; 2026 effective boundary/license
+and spatial code mapping; rights-reviewed public read-model and visible
+time/source disclaimers. Until then **PUBLIC_RELEASE=FALSE**.
 
 ## Region outline UI preview (2026-10-10)
 
