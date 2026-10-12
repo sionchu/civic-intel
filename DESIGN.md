@@ -30,7 +30,10 @@ page (GOV.UK Frontend, TheyWorkForYou) than to a product landing page.
 External design references may inform this grammar, but they do not override product behavior,
 evidence rules, accessibility or existing component conventions. No external brand assets, copy,
 fonts, icons, screenshots or proprietary tokens are part of this system.
-The optional regional market map is a **2020 historical boundary-navigation surface**.
+The optional regional market map uses the **2026-07-01 16-province boundary**
+from an attributed SGIS-derived, CC BY 4.0 source as navigation only.
+The shape's two-digit administrative ID is not a R-ONE statistic `CLS_ID`,
+MOLIT `LAWD_CD` or licensed time-versioned source crosswalk.
 Until approved regional official statistics are available, it displays no amounts or
 transaction counts, keeps data absence explicit, and never treats geography or
 market-wide transactions as an individual official's property evidence.

@@ -4,29 +4,29 @@ import { useState } from "react";
 
 import { PROVINCE_SHAPES } from "./province-shapes";
 
-type MarketScope = "housing" | "land";
-
-// Visual labels only; never used as a statistical namespace crosswalk.
-const HISTORICAL_NAME_LABELS: Readonly<Record<string, string>> = {
-  "강원도": "강원특별자치도 (2020년 경계)",
-  "전라북도": "전북특별자치도 (2020년 경계)",
-};
-const displayProvince = (name: string) => HISTORICAL_NAME_LABELS[name] ?? name;
+type MarketScope = "housing" | "apartment" | "land";
 
 const MARKET_SOURCES = {
   housing: {
     label: "주택 거래",
-    sourceLabel: "한국부동산원 부동산거래현황",
-    url: "https://www.data.go.kr/data/15068453/fileData.do",
-    basis: "신고일 기준 공식 통계 · 시도별 수치 미연결",
+    sourceLabel: "한국부동산원 주택거래현황",
+    url: "https://www.reb.or.kr/r-one/portal/stat/easyStatPage/A_2024_00546.do",
+    basis: "신고일 기준 공식 통계 · 지역별 수치 미연결",
     note: "주택 유형 전체를 포함합니다. 아파트 전용 통계나 개별 매매가격으로 해석할 수 없습니다.",
+  },
+  apartment: {
+    label: "아파트 매매",
+    sourceLabel: "한국부동산원 아파트매매거래현황",
+    url: "https://www.reb.or.kr/r-one/portal/stat/easyStatPage/A_2024_00554.do",
+    basis: "신고일 기준 공식 통계 · 지역별 수치 미연결",
+    note: "아파트 매매 호수(호)를 나타내는 통계이며 개별 거래가격이 아닙니다.",
   },
   land: {
     label: "토지 매매",
-    sourceLabel: "한국부동산원 토지매매 거래현황",
-    url: "https://www.data.go.kr/data/15067925/fileData.do",
-    basis: "신고일 기준 공식 통계 · 시도별 수치 미연결",
-    note: "토지와 건축물이 함께 거래된 자료의 범위도 포함됩니다. 순수토지 거래만의 통계가 아닙니다.",
+    sourceLabel: "한국부동산원 토지매매거래현황",
+    url: "https://www.reb.or.kr/r-one/portal/stat/easyStatPage/A_2024_00536.do",
+    basis: "신고일 기준 공식 통계 · 지역별 수치 미연결",
+    note: "토지 매매 필지수(필지)를 나타내는 통계이며 개별 매매가격이 아닙니다.",
   },
 } as const;
 
@@ -47,13 +47,13 @@ export default function RegionalMarketMap() {
             지역
             <select id="market-region-select" value={province} onChange={(event) => setProvince(event.target.value)}>
               {PROVINCE_SHAPES.map((shape) => (
-                <option key={shape.id} value={shape.id}>{displayProvince(shape.id)}</option>
+                <option key={shape.id} value={shape.id}>{shape.id}</option>
               ))}
             </select>
           </label>
           <fieldset>
             <legend>통계 종류</legend>
-            {(["housing", "land"] as const).map((kind) => (
+            {(["housing", "apartment", "land"] as const).map((kind) => (
               <label key={kind}>
                 <input type="radio" name="market-kind" value={kind} checked={scope === kind} onChange={() => setScope(kind)} />
                 {MARKET_SOURCES[kind].label}
@@ -75,20 +75,20 @@ export default function RegionalMarketMap() {
                   className={shape.id === province ? "market-region-shape selected" : "market-region-shape"}
                   onClick={() => setProvince(shape.id)}
                 >
-                  <title>{displayProvince(shape.id)}</title>
+                  <title>{shape.id}</title>
                 </path>
               ))}
             </g>
           </svg>
           <p className="market-boundary-note">
-            경계 도형: StatGarten/SGIS 기반 2020년 참고자료. 현재 행정구역 및
-            R-ONE 통계 지역코드와 연결된 지도가 아닙니다.
+            행정구역 경계: 2026년 7월 1일 기준 16개 시·도. 통계청 SGIS 기반
+            가공자료(CC BY 4.0). R-ONE 통계의 기간별 분류코드와 자동으로 연결하지 않습니다.
           </p>
         </div>
 
         <aside className="market-explorer-detail" aria-label="선택한 지역의 거래 자료 상태">
           <span className="market-section-kicker">지역별 거래 동향 · 자료 준비 단계</span>
-          <h3 aria-live="polite">{displayProvince(province)}</h3>
+          <h3 aria-live="polite">{province}</h3>
           <p className="market-data-unavailable">공식 거래 수치 미게시</p>
           <p>이 지역의 {source.label} 수치는 현재 CVIC에 검증된 형태로 연결되어 있지 않습니다. 0건이나 거래 없음이라는 뜻이 아닙니다.</p>
           <dl>
