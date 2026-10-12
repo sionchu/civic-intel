@@ -280,6 +280,91 @@ def test_zero_and_negative_amounts_are_distinct_from_blank() -> None:
     assert declared is not None and declared.value == -15000
 
 
+def _excluded_holder(**overrides: object) -> dict:
+    row: dict = {
+        "locator": {"page_number": 3, "table_index": 1, "table_row": 7},
+        "holder_relation": "LINEAL_ASCENDANT",
+        "exclusion_kind": "NOTICE_REFUSED",
+        "prior_value": {"text": "7,000", "value": 7000},
+        "increase": {"text": "0", "value": 0},
+        "decrease": {"text": "7,000", "value": 7000},
+        "current_value": {"text": "0", "value": 0},
+    }
+    row.update(overrides)
+    return row
+
+
+def _with_excluded_holder(**overrides: object) -> dict:
+    """Member 0 newly declines notice for a relative: the printed prior total includes them."""
+
+    raw = copy.deepcopy(payload())
+    raw["members"][0]["excluded_holders"] = [_excluded_holder(**overrides)]
+    _set_amount(raw["members"][0]["declared_totals"], "prior_value", "167,000", 167000)
+    return raw
+
+
+def test_excluded_holder_rows_reproduce_printed_prior_totals() -> None:
+    plain = parse_reviewed_assembly_asset_packet(payload())
+    assert "excluded_holders" not in plain.members[0].normalized()
+
+    packet = parse_reviewed_assembly_asset_packet(_with_excluded_holder())
+    row = packet.members[0].excluded_holders[0]
+    assert (row.holder_relation, row.exclusion_kind) == ("LINEAL_ASCENDANT", "NOTICE_REFUSED")
+    assert packet.members[0].normalized()["excluded_holders"][0]["exclusion_kind"] == (
+        "NOTICE_REFUSED"
+    )
+    assert packet.content_hash != plain.content_hash
+
+    # The Gazette prints these amounts signed (e.g. "-7,214"); they are summed as printed.
+    negative = _with_excluded_holder(
+        prior_value={"text": "-7,000", "value": -7000},
+        decrease={"text": "-7,000", "value": -7000},
+    )
+    _set_amount(negative["members"][0]["declared_totals"], "prior_value", "153,000", 153000)
+    assert parse_reviewed_assembly_asset_packet(negative).members[0].excluded_holders
+
+    missing = copy.deepcopy(payload())
+    _set_amount(missing["members"][0]["declared_totals"], "prior_value", "167,000", 167000)
+    with pytest.raises(AssemblyAssetPacketError, match="differ from declared total"):
+        parse_reviewed_assembly_asset_packet(missing)
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"holder_relation": "SELF"}, "reported relative"),
+        ({"holder_relation": "부"}, "reported relative"),
+        ({"exclusion_kind": "독립생계유지"}, "exclusion_kind"),
+        ({"change_reason": "이혼"}, "unsupported"),
+        ({"locator": {"page_number": 3, "table_index": 1, "table_row": 2}}, "unique"),
+        ({"prior_value": None}, "excluded holder row lacks it"),
+    ],
+)
+def test_excluded_holder_rows_reject_unsafe_shapes(overrides: dict, message: str) -> None:
+    with pytest.raises(AssemblyAssetPacketError, match=message):
+        parse_reviewed_assembly_asset_packet(_with_excluded_holder(**overrides))
+
+
+def test_excluded_holder_rows_are_never_persisted() -> None:
+    packet = parse_reviewed_assembly_asset_packet(_with_excluded_holder())
+    observations = build_assembly_asset_capture(packet, artifact_bytes=ARTIFACT_BYTES).observations(
+        uuid4()
+    )
+    assert "2099-1:p3:t1:r7" not in {o.provider_record_key for o in observations}
+    totals = {
+        o.normalized["printed_member_name"]: o.normalized["totals_cross_check"]
+        for o in observations
+        if o.normalized["record_kind"] == RECORD_KIND_MEMBER_TOTAL
+    }
+    assert totals == {
+        "합성의원갑": "ITEM_AND_EXCLUDED_HOLDER_SUM_MATCHED",
+        "합성의원을": "ITEM_SUM_MATCHED",
+    }
+    for observation in observations:
+        text = json.dumps(observation.normalized, ensure_ascii=False)
+        assert "NOTICE_REFUSED" not in text and "LINEAL_ASCENDANT" not in text
+
+
 def test_capture_requires_human_review_pdf_and_exact_sha() -> None:
     with pytest.raises(AssemblyAssetImportError, match="HUMAN_REVIEWED"):
         build_assembly_asset_capture(

@@ -161,7 +161,15 @@ Member block: `printed_member_name`, `printed_affiliation`, `printed_position` (
 `국회의원`: member-level only; other high officials in the same issue are rejected),
 `report_type` (`변동신고` | `최초등록` | `재등록` | `퇴직`; a `정기` issue accepts only `변동신고`;
 registration types carry only `current_value`), optional `reviewer_stated_mona_cd` +
-`mona_cd_basis` (both or neither), `total_locator`, `declared_totals`, `items`.
+`mona_cd_basis` (both or neither), `total_locator`, `declared_totals`, `items`, and optional
+`excluded_holders`.
+
+Excluded-holder block (`고지거부 및 등록제외사항`): exact `locator`, a non-SELF coarse
+`holder_relation`, `exclusion_kind` (`NOTICE_REFUSED` for 고지거부 | `REGISTRATION_EXCLUDED` for
+등록제외) and the four printed amounts. The printed reason (독립생계유지, 타인부양, 이혼, 사망 …)
+is not accepted. The Gazette prints these amounts signed and includes them in the member totals,
+so they exist only to reproduce those totals; like relative-held items they are never persisted.
+A member without such rows omits the key, which keeps earlier packet hashes unchanged.
 
 Item block: exact `locator {page_number, table_index, table_row}`, `holder_relation` (coarse
 code SELF | SPOUSE | LINEAL_ASCENDANT | LINEAL_DESCENDANT | OTHER_REPORTED_RELATIVE; the printed
@@ -177,7 +185,8 @@ Validation fails closed on: unknown fields anywhere (so `location`, `account_num
 지번 `12-3`, ㎡, 시/도+시/군/구) or account-like (`NNNN-NN-NNNNNN`, ≥10 digits) text in permitted
 text fields; a region outside the closed 시/도 list; duplicate locators or MONA_CDs; amount
 text/value disagreement; and a **declared-total mismatch**: for each member, printed
-`prior_value` and `current_value` totals must equal the item sum with DEBT items subtracted.
+`prior_value` and `current_value` totals must equal the item sum with DEBT items subtracted,
+plus the signed `excluded_holders` amounts.
 
 ### Privacy decisions (AGENTS.md)
 
@@ -243,10 +252,14 @@ AssetDisclosure/AssetItem/Claim rows, materializer refusal, and stored-policy de
    `SELECTED_MEMBERS` or must be `FULL_ISSUE`.
 3. **Revision semantics:** precedence between a corrected packet and an earlier one for the same
    locator, Gazette correction/republication handling, and cross-release item continuity.
-4. **Cross-check rule confirmation:** the net (assets − debts) prior/current total rule and the
-   statutory category code list are UNVERIFIED against a real Gazette PDF; the first real packet
-   must confirm or correct them. Increase/decrease totals are stored verbatim but not
-   cross-checked until the Gazette's netting of debt changes is confirmed.
+4. **Cross-check rule confirmation:** checked against the real 국회공보 제2026-54호 PDF
+   (893 pages, sha256 `6ce0805e…`) on 2026-10-12. All 284 member tables reproduce the printed
+   `current_value` total and every printed category 소계 as the net item sum. The printed
+   `prior_value` total matches for 248 members. The other 36 match once the signed
+   `고지거부 및 등록제외사항` amounts are added, which is why `excluded_holders` exists. The 15
+   category headings observed all map to the statutory code list. Increase/decrease totals are
+   still stored verbatim but not cross-checked, because the Gazette's netting of debt changes
+   is not confirmed.
 5. **Optional fields:** whether 시/군/구, change reasons or a relation-category aggregate may ever
    be stored, and whether real-transaction-price columns should be modeled.
 6. **Identity/publication:** an exact MONA_CD linkage review path and any Claim/AssetDisclosure
