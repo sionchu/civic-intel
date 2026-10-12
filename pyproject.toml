@@ -30,6 +30,7 @@ civic-stage-assembly-meeting-graph-age = "workers.assembly_meeting_graph_enumera
 civic-stage-assembly-votes = "workers.assembly_roll_call_votes:main"
 civic-stage-gwanbo-personnel = "workers.gwanbo_personnel:main"
 civic-stage-mpm-key-positions = "workers.mpm_key_positions:main"
+civic-stage-seoul-personnel-notices = "workers.seoul_personnel_notices:main"
 civic-stage-legislative = "workers.legislative_activity:main"
 civic-stage-local-election = "workers.local_elections:main"
 civic-stage-policy-research = "workers.policy_research:main"
