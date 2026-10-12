@@ -35,29 +35,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Historical 2020 province outline uses simplified SVG geometry from
-StatGarten/maps (MIT), copyright 2022 StatGarten, sourced from SGIS.
-https://github.com/statgarten/maps/tree/main/svg/simple
-The historical outlines are not a current statistical-region crosswalk or trade data.
-
-MIT License
-
-Copyright (c) 2022 StatGarten
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Regional market map boundaries (navigation geometry only):
+- Based on the 2026-07-01 administrative-dong/province boundary release from
+  vuski/admdongkor (https://github.com/vuski/admdongkor), derived from
+  Statistics Korea SGIS (https://sgis.kostat.go.kr), KOGL Type 1 (attribution).
+  See https://www.kogl.or.kr/info/licenseType1.do.
+- Modified boundary geometry released by vuski/admdongkor under Creative
+  Commons Attribution 4.0 International (CC BY 4.0),
+  https://creativecommons.org/licenses/by/4.0/.
+  Data-license terms: https://github.com/vuski/admdongkor/blob/master/LICENSE-DATA.
+- CVIC transcribed the 2026-07-01 16-province polygons from the
+  DevMinGeonPark/mapcn-kr prepared data/sido.json dataset (MIT-licensed
+  application code, upstream SGIS-derived boundary CC BY 4.0).
+  Prepared data: https://github.com/DevMinGeonPark/mapcn-kr/blob/main/data/sido.json
+  SHA-256 of GeoJSON used as source:
+  fe5a298eab78f4e8d09d22e4f79ac9ddac05cd7a07927937d603be747cfec851.
+  CVIC modified the geometry into simplified static SVG path strings,
+  projected into an 800x759 coordinate space with 0.01px rounding.
+- The outline is not provider-issued R-ONE CLS_ID crosswalk and contains no
+  statistical transaction data or individual/property reference.
