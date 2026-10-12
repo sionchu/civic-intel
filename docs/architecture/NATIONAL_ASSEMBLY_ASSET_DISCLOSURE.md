@@ -169,6 +169,8 @@ Excluded-holder block (`고지거부 및 등록제외사항`): exact `locator`, 
 등록제외) and the four printed amounts. The printed reason (독립생계유지, 타인부양, 이혼, 사망 …)
 is not accepted. The Gazette prints these amounts signed and includes them in the member totals,
 so they exist only to reproduce those totals; like relative-held items they are never persisted.
+The same registration/regular-report amount-column shape constraints apply to these rows
+and to each disclosed item and member total.
 A member without such rows omits the key, which keeps earlier packet hashes unchanged.
 
 Item block: exact `locator {page_number, table_index, table_row}`, `holder_relation` (coarse
@@ -205,9 +207,10 @@ plus the signed `excluded_holders` amounts.
 - **Change reasons (변동사유):** not accepted. The 2026-09-12 minimal design found free-text
   reasons unnecessary and they can name relatives or transactions; enabling them is an owner
   decision.
-- No family names, account/parcel numbers, contacts or 고지거부 annotations are modeled.
-  고지거부 and similar non-disclosure markers stay outside the contract (an absent row is
-  unresolved, never "no assets").
+- No family names, account/parcel numbers, contacts or private exclusion reasons are
+  modeled. Coarse 고지거부/등록제외 category codes and signed printed totals may occur
+  **only in the local validation packet**, never persisted in observations or
+  displayed publicly. An absent row remains unresolved, never "no assets".
 
 ### Identity
 

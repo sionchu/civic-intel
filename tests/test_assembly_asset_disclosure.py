@@ -345,6 +345,48 @@ def test_excluded_holder_rows_reject_unsafe_shapes(overrides: dict, message: str
         parse_reviewed_assembly_asset_packet(_with_excluded_holder(**overrides))
 
 
+def test_excluded_holder_registration_shape_is_source_specific() -> None:
+    raw = _with_excluded_holder()
+    raw["source"]["disclosure_kind"] = "수시"
+    member = raw["members"][0]
+    member["report_type"] = "최초등록"
+    for scope in [member["declared_totals"], *member["items"]]:
+        for field in ("prior_value", "increase", "decrease"):
+            scope[field] = None
+    # The relative's row cannot evade the same report type restrictions.
+    with pytest.raises(AssemblyAssetPacketError, match="excluded_holder registration reports"):
+        parse_reviewed_assembly_asset_packet(raw)
+    for field in ("prior_value", "increase", "decrease"):
+        member["excluded_holders"][0][field] = None
+    packet = parse_reviewed_assembly_asset_packet(raw)
+    assert packet.members[0].report_type == "최초등록"
+    assert packet.members[0].excluded_holders[0].amounts["prior_value"] is None
+
+
+def test_excluded_holder_signed_current_total_but_not_flow_netting() -> None:
+    raw = _with_excluded_holder()
+    member = raw["members"][0]
+    old_value = member["declared_totals"]["current_value"]["value"]
+    new_value = old_value - 3000
+    member["excluded_holders"][0].update(
+        current_value={"text": "-3,000", "value": -3000},
+        increase={"text": "1,234", "value": 1234},
+        decrease={"text": "△5,678", "value": -5678},
+    )
+    _set_amount(
+        member["declared_totals"],
+        "current_value",
+        f"{new_value:,}",
+        new_value,
+    )
+    packet = parse_reviewed_assembly_asset_packet(raw)
+    assert packet.members[0].declared_totals["current_value"].value == new_value
+    assert packet.members[0].excluded_holders[0].amounts["current_value"].value == -3000
+
+    with pytest.raises(AssemblyAssetPacketError, match="excluded_holder.current_value"):
+        parse_reviewed_assembly_asset_packet(_with_excluded_holder(current_value=None))
+
+
 def test_excluded_holder_rows_are_never_persisted() -> None:
     packet = parse_reviewed_assembly_asset_packet(_with_excluded_holder())
     observations = build_assembly_asset_capture(packet, artifact_bytes=ARTIFACT_BYTES).observations(

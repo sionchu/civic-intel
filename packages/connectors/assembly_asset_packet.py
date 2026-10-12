@@ -111,8 +111,8 @@ REGIONS_SIDO = frozenset(
     }
 )
 AMOUNT_FIELDS = ("prior_value", "increase", "decrease", "current_value")
-# Net (assets minus debts) cross-check rule, confirmed on 국회공보 제2026-54호 (284/284 members
-# once 고지거부/등록제외 amounts are included).
+# Reconcile printed prior/current totals using signed item and excluded-holder values.
+# Exact official issue coverage and validation receipts are documented separately.
 CROSS_CHECKED_FIELDS = ("prior_value", "current_value")
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -515,7 +515,7 @@ class ExcludedHolderRow:
     amounts: Mapping[str, DeclaredAmount | None]
 
     @classmethod
-    def from_mapping(cls, raw: object) -> ExcludedHolderRow:
+    def from_mapping(cls, raw: object, *, report_type: str) -> ExcludedHolderRow:
         if not isinstance(raw, Mapping):
             raise AssemblyAssetPacketError("asset packet excluded holder is malformed")
         _exact_keys(
@@ -530,12 +530,16 @@ class ExcludedHolderRow:
             )
         kind = _required_text(raw.get("exclusion_kind"), "excluded_holder.exclusion_kind")
         if kind not in EXCLUSION_KINDS:
-            raise AssemblyAssetPacketError("asset packet excluded_holder.exclusion_kind is unsupported")
+            raise AssemblyAssetPacketError(
+                "asset packet excluded_holder.exclusion_kind is unsupported"
+            )
+        amounts = _amounts(raw, "excluded_holder")
+        _check_report_shape(amounts, report_type, "excluded_holder")
         return cls(
             locator=GazetteLocator.from_mapping(raw.get("locator"), "excluded_holder.locator"),
             holder_relation=relation,
             exclusion_kind=kind,
-            amounts=_amounts(raw, "excluded_holder"),
+            amounts=amounts,
         )
 
     def normalized(self) -> dict[str, object]:
@@ -633,7 +637,9 @@ class MemberDisclosure:
         excluded_raw = raw.get("excluded_holders", [])
         if not isinstance(excluded_raw, list):
             raise AssemblyAssetPacketError("asset packet member.excluded_holders must be a list")
-        excluded = tuple(ExcludedHolderRow.from_mapping(row) for row in excluded_raw)
+        excluded = tuple(
+            ExcludedHolderRow.from_mapping(row, report_type=report_type) for row in excluded_raw
+        )
         member = cls(
             printed_member_name=name,
             printed_affiliation=_private_safe_text(
