@@ -362,6 +362,22 @@ def test_excluded_holder_registration_shape_is_source_specific() -> None:
     assert packet.members[0].report_type == "최초등록"
     assert packet.members[0].excluded_holders[0].amounts["prior_value"] is None
 
+    with pytest.raises(AssemblyAssetPacketError, match="excluded_holder.current_value"):
+        parse_reviewed_assembly_asset_packet(
+            {
+                **raw,
+                "members": [
+                    {
+                        **member,
+                        "excluded_holders": [
+                            {**member["excluded_holders"][0], "current_value": None}
+                        ],
+                    },
+                    *raw["members"][1:],
+                ],
+            }
+        )
+
 
 def test_excluded_holder_signed_current_total_but_not_flow_netting() -> None:
     raw = _with_excluded_holder()

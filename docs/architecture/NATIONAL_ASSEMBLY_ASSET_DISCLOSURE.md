@@ -255,14 +255,23 @@ AssetDisclosure/AssetItem/Claim rows, materializer refusal, and stored-policy de
    `SELECTED_MEMBERS` or must be `FULL_ISSUE`.
 3. **Revision semantics:** precedence between a corrected packet and an earlier one for the same
    locator, Gazette correction/republication handling, and cross-release item continuity.
-4. **Cross-check rule confirmation:** checked against the real 국회공보 제2026-54호 PDF
-   (893 pages, sha256 `6ce0805e…`) on 2026-10-12. All 284 member tables reproduce the printed
-   `current_value` total and every printed category 소계 as the net item sum. The printed
-   `prior_value` total matches for 248 members. The other 36 match once the signed
-   `고지거부 및 등록제외사항` amounts are added, which is why `excluded_holders` exists. The 15
-   category headings observed all map to the statutory code list. Increase/decrease totals are
-   still stored verbatim but not cross-checked, because the Gazette's netting of debt changes
-   is not confirmed.
+4. **Cross-check rule confirmation — LOCAL OPERATOR-REPORTED, NOT HUMAN_REVIEWED:**
+   the 2026-10-12 local extraction/parser rehearsal of the official 국회공보 제2026-54호
+   PDF (reported 893 pages; source hash prefix `6ce0805e…`) recorded
+   284/284 member current-total reconciliations and category subtotal checks.
+   In that local rehearsal, 248 reported prior totals matched item sums alone;
+   36 matched after including signed `고지거부 및 등록제외사항` rows, motivating
+   the excluded-holder input contract. The operator also reported 15 statutory
+   category headings. **The full source PDF, item-by-item comparison receipt and
+   independently reproduced validation are not part of this repository/PR.**
+   These figures are reported evidence, **not independently audited coverage
+   or a human publication decision**; the actual packet stays
+   `REVIEW_REQUIRED`, with no canonical import, public Claim or Person link.
+   `totals_cross_check` means only the populated printed `prior_value` and/or
+   `current_value` columns were reconciled. On registration reports, only
+   `current_value` is present; the label does **not** assert both columns.
+   Increase/decrease totals are retained verbatim but not reconciled because
+   the Gazette's netting of debt changes remains unverified.
 5. **Optional fields:** whether 시/군/구, change reasons or a relation-category aggregate may ever
    be stored, and whether real-transaction-price columns should be modeled.
 6. **Identity/publication:** an exact MONA_CD linkage review path and any Claim/AssetDisclosure
