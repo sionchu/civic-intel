@@ -23,6 +23,10 @@ separately approved plan:
 Party, district and display-name fields are deliberately not retained, partly to keep these
 derivations impossible from this lane's observations.
 
+## Approved record-comparison consumer (2026-10-13)
+
+The current [product restoration plan](../exec-plans/active/civic-intel-product-restoration.md) permits one read-only comparison of existing eligible public Claims: exact Assembly term/BILL_ID/vote timestamp intersection for two resolved people and explicit dates, visible exclusions and both evidence paths. It creates no alignment percentage, ideology, party-deviation, attendance or performance score and changes no acquisition/publication authority.
+
 ## Official contract (verified 2026-10-04)
 
 Verification used the official Open Assembly service page and keyless sample requests from

@@ -31,6 +31,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </Link>
               <nav className="global-nav" aria-label="주요 메뉴">
                 <Link className="nav-link" href="/people">인물 찾기</Link>
+                <Link className="nav-link" href="/compare/votes">표결 비교</Link>
                 <Link className="nav-link nav-event-link" href="/gukgam/2026">국감 일정</Link>
                 <Link className="nav-link" href="/organizations">기관</Link>
                 <Link className="nav-link" href="/market">지역 거래 동향</Link>
