@@ -5,7 +5,10 @@ from __future__ import annotations
 import io
 import json
 import logging
+import os
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlparse
 from urllib.request import Request
@@ -253,6 +256,7 @@ def test_exact_month_page_scope_fails_closed(month, region, total, rows):
         )
 
 
+@pytest.mark.skipif(os.name != "posix", reason="native POSIX file-mode enforcement only")
 def test_missing_issued_key_and_secret_file_permissions(tmp_path: Path):
     credential = tmp_path / "secrets.env"
     credential.write_text("RONE_API_KEY='SYNTHETIC_DO_NOT_LEAK_123456789'\n")
@@ -265,6 +269,30 @@ def test_missing_issued_key_and_secret_file_permissions(tmp_path: Path):
     credential.write_text("RONE_API_KEY=abc\nRONE_API_KEY=two\n")
     with pytest.raises(RebMarketStatError):
         read_issued_key_from_env_file(credential)
+
+
+@pytest.mark.parametrize("platform", ["nt", "java", "unknown"])
+def test_unsupported_key_file_platform_never_accesses_credentials(monkeypatch, platform):
+    from workers import reb_housing_import as worker
+
+    monkeypatch.setattr(worker, "os", SimpleNamespace(name=platform))
+    credential = Mock(spec=Path)
+    with pytest.raises(RebMarketStatError, match="Windows ACL verification is unsupported"):
+        read_issued_key_from_env_file(credential)
+    assert credential.mock_calls == []
+
+
+@pytest.mark.parametrize("mode", [0o604, 0o620, 0o644, 0o660, 0o777])
+def test_posix_key_file_rejects_nonprivate_modes_before_read(monkeypatch, mode):
+    from workers import reb_housing_import as worker
+
+    monkeypatch.setattr(worker, "os", SimpleNamespace(name="posix"))
+    credential = Mock(spec=Path)
+    credential.is_file.return_value = True
+    credential.stat.return_value = SimpleNamespace(st_mode=mode)
+    with pytest.raises(RebMarketStatError, match="private permissions"):
+        read_issued_key_from_env_file(credential)
+    credential.read_text.assert_not_called()
 
 
 def _migrated_repo(tmp_path: Path) -> tuple[SqlAlchemyRepository, Path]:

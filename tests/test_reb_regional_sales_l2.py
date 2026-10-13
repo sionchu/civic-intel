@@ -575,14 +575,19 @@ def test_province_cross_kind_single_source_no_person_claims(tmp_path: Path):
     assert SECRET.encode() not in db.read_bytes()
 
 
+@pytest.mark.parametrize("change", ["append", "crlf"])
 def test_changed_official_region_catalog_blocks_all_new_queries_before_http(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    change: str,
 ):
     from packages.connectors import reb_market_statistics as market
 
     fake = tmp_path / "changed-catalog.json"
-    fake.write_bytes(market._SOURCE_CODE_CATALOG.read_bytes() + b"\n")
+    raw = market._SOURCE_CODE_CATALOG.read_bytes()
+    changed = raw + b"\n" if change == "append" else raw.replace(b"\n", b"\r\n")
+    assert changed != raw
+    fake.write_bytes(changed)
     monkeypatch.setattr(market, "_SOURCE_CODE_CATALOG", fake)
     with pytest.raises(RebMarketStatError, match="digest changed"):
         fetch_one_sale_month(
