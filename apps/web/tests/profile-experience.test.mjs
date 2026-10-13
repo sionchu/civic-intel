@@ -45,7 +45,7 @@ const claim = (id, predicate) => ({ id, person_id: "person-a", subject: "검증�
 const via = { key: "via-a", kind: "COMMITTEE", label: "검증용 위원회", organization_id: null };
 const relationships = { person: { id: "person-a", name: "검증용 인물" }, ruleset_version: "fixture-v1", groups: [{ via, layer: "POLITICAL", relation_count: 4, relations: [{ relation_id: "relation-a", relation_type: "SAME_PARLIAMENTARY_COMMITTEE", status: "DERIVED", rule_id: "same-committee", rule_version: "1", subject_person_id: "person-a", object_person_id: "person-b", counterpart: { id: "person-b", name: "비교 인물" }, via, temporal: { overlap: "UNKNOWN", basis: "UNKNOWN", subject_period: { start: null, end: null, as_of: null, precision: "UNKNOWN" }, object_period: { start: null, end: null, as_of: "2026-10-01", precision: "DAY" } }, source_claim_ids: ["affiliation-a", "affiliation-b"], evidence_ids: ["ev-a", "ev-b"], source_ids: ["source-a", "source-b"], source_conflict: true, interpretation_note: "같은 위원회 기재이며 친분을 뜻하지 않습니다." }] }], relation_count: 4, limitations: ["공개된 입력만 비교합니다."] };
 const entries = [{ id: "entry-a", kind: "CLAIM", title: "검증용 경력 기재", claim_id: "career-a", source_ids: ["source-a"], evidence_ids: ["e-career-a"], epistemic_status: "CLAIM", asserted_as_true: false, date: null, details: { career_semantics: "SOURCE_ATTRIBUTED_BIOGRAPHY", career_period: period } }];
-async function renderPerson(relationshipResult = success(relationships), extraClaims = [], portrait = null, extraSections = []) {
+async function renderPerson(relationshipResult = success(relationships), extraClaims = [], portrait = null, extraSections = [], searchParams = {}) {
   const requestedSources = [];
   const { default: Page } = loadPresentation("../app/people/[id]/page.tsx", {
     "../../data": {
@@ -58,7 +58,8 @@ async function renderPerson(relationshipResult = success(relationships), extraCl
     },
     "../../portrait": { getReviewedPortrait: async () => portrait },
   });
-  return { html: renderToStaticMarkup(await Page({ params: Promise.resolve({ id: "person-a" }) })), requestedSources };
+  const tree = await Page({ params: Promise.resolve({ id: "person-a" }), searchParams: Promise.resolve(searchParams) });
+  return { html: renderToStaticMarkup(tree), tree, requestedSources };
 }
 
 test("declared assets preserve signed/zero thousand-KRW amounts, unknowns and the Claim/Source path", async () => {
@@ -495,4 +496,89 @@ test("single-text evidence transport preserves canonical Claim and Source values
   assert.equal(restored.claims[0].evidence[0].quote_hash, "exact-hash");
   assert.match(html, /&lt;script&gt;/);
   assert.doesNotMatch(html, /<script>/);
+});
+
+
+test("Person server windows bound serialized evidence and Source acquisition before the browser", async (t) => {
+  const inputs = Array.from({ length: 1910 }, (_, index) => {
+    const item = vote(`window-${String(index).padStart(4, "0")}`);
+    item.proposition = `정확한 원문 ${index} ` + "근거".repeat(200);
+    item.source_ids = [`source-${index}`];
+    item.evidence = [{ id: `e-${index}`, source_id: `source-${index}`, stance: "SUPPORT", snapshot_id: `snapshot-${index}` }];
+    return item;
+  });
+  const before = JSON.stringify(inputs);
+  const first = await renderPerson(success(relationships), inputs);
+  const transported = JSON.parse(first.tree.props.dataJson);
+  assert.ok(transported.claims.length <= 30, transported.claims.length);
+  assert.ok(transported.sources.length <= 30, transported.sources.length);
+  assert.ok(first.requestedSources.length <= 30, first.requestedSources.length);
+  assert.ok(first.tree.props.dataJson.length < 60000, first.tree.props.dataJson.length);
+  t.diagnostic(`synthetic1910: claims=${transported.claims.length}, sources=${transported.sources.length}, selectedEvidenceBytes=${Buffer.byteLength(first.tree.props.dataJson)}, fullClaimBytes=${Buffer.byteLength(before)}, htmlBytes=${Buffer.byteLength(first.html)}`);
+  assert.ok(!first.tree.props.dataJson.includes('window-1909'));
+  assert.match(first.html, /검색 범위 1,910건/);
+  assert.match(first.html, /votes=2/);
+  const token = /name="v" value="([a-f0-9]{64})"/.exec(first.html)[1];
+  const second = await renderPerson(success(relationships), inputs, null, [], { votes: "2", sources: "2", v: token });
+  const secondPayload = JSON.parse(second.tree.props.dataJson);
+  assert.ok(secondPayload.claims.some((item) => item.id === "window-0020"));
+  assert.ok(!secondPayload.claims.some((item) => item.id === "window-0010"));
+  assert.match(second.html, /2\/96쪽/);
+  const exact = await renderPerson(success(relationships), inputs, null, [], { claim: "window-1909", source: "source-1909", v: token });
+  assert.equal((exact.html.match(/id="claim-window-1909"/g) ?? []).length, 1);
+  assert.equal((exact.html.match(/id="source-source-1909"/g) ?? []).length, 1);
+  assert.deepEqual(JSON.parse(exact.tree.props.dataJson).claims.find((item) => item.id === "window-1909"), inputs[1909]);
+  const searched = await renderPerson(success(relationships), inputs, null, [], { vote_q: "window-1909", v: token });
+  assert.match(searched.html, /검색 범위 1건/);
+  assert.match(searched.html, /기후 법안 window-1909/);
+  assert.equal(JSON.stringify(inputs), before);
+});
+
+test("Person pagination rejects drift, duplicate input and an unrelated exact source", async () => {
+  const inputs = [vote("stable")];
+  const first = await renderPerson(success(relationships), inputs);
+  const token = /name="v" value="([a-f0-9]{64})"/.exec(first.html)[1];
+  const changed = await renderPerson(success(relationships), [{ ...inputs[0], object_text: "정정된 원문" }], null, [], { votes: "2", v: token });
+  assert.match(changed.html, /SOURCE_VERSION_CONFLICT/);
+  assert.equal(changed.requestedSources.length, 0);
+  const invalid = await renderPerson(success(relationships), inputs, null, [], { votes: ["1", "2"] });
+  assert.match(invalid.html, /INVALID_INPUT/);
+  const missing = await renderPerson(success(relationships), inputs, null, [], { source: "unrelated", claim: "unpublished" });
+  assert.ok(!missing.requestedSources.includes("unrelated"));
+  assert.match(missing.html, /요청한 출처는 이 인물의 현재 공개 범위에 없습니다/);
+  assert.match(missing.html, /요청한 근거 기록은 이 인물의 현재 공개 범위에 없습니다/);
+});
+
+test("legislative search and profile section paging retain every original record with bounded transport", async () => {
+  const inputs = Array.from({ length: 65 }, (_, index) => bill(`paged-${index}`, "2026-09-01"));
+  const section = { id: "legislative_activity", label: "입법 활동", status: "AVAILABLE", entries: inputs.map((item) => ({ ...entries[0], id: `entry-${item.id}`, claim_id: item.id, title: item.object_text })) };
+  const first = await renderPerson(success(relationships), inputs, null, [section]);
+  assert.equal((first.html.match(/id="claim-paged-/g) ?? []).length, 20);
+  const filtered = await renderPerson(success(relationships), inputs, null, [section], { q: "paged-64" });
+  assert.match(filtered.html, /id="claim-paged-64"/);
+  assert.doesNotMatch(filtered.html, /id="claim-paged-10"/);
+  const second = await renderPerson(success(relationships), inputs, null, [section], { bills: "2" });
+  assert.match(second.html, /id="claim-paged-20"/);
+  assert.doesNotMatch(second.html, /id="claim-paged-0"/);
+});
+
+test("legacy unloaded hash resolves once to an exact version-pinned Person query", () => {
+  const effects = [];
+  const { default: Open } = loadPresentation("../app/components/open-target-details.tsx", {
+    react: { useEffect: (effect) => effects.push(effect) },
+  });
+  const previous = { window: globalThis.window, document: globalThis.document };
+  let assigned;
+  try {
+    globalThis.window = { location: { hash: "#claim-remote-record", href: "https://example.org/people/person-a?votes=2", assign: (url) => { assigned = url; } }, addEventListener() {}, removeEventListener() {} };
+    globalThis.document = { getElementById: () => null, addEventListener() {}, removeEventListener() {} };
+    Open({ recordVersion: "a".repeat(64) }); effects[0]();
+    const url = new URL(assigned);
+    assert.equal(url.searchParams.get("claim"), "remote-record");
+    assert.equal(url.searchParams.get("votes"), "2");
+    assert.equal(url.searchParams.get("v"), "a".repeat(64));
+    assert.equal(url.hash, "#claim-remote-record");
+    globalThis.window.location.href = assigned; assigned = null; effects[0]();
+    assert.equal(assigned, null);
+  } finally { globalThis.window = previous.window; globalThis.document = previous.document; }
 });

@@ -392,3 +392,24 @@ test('source batch preserves ordered closure with bounded D1 queries, pins and f
  const unavailable=await reader.readPublicSources([paths[0],paths[1]]);assert.deepEqual(unavailable.map(result=>result.status),[503,503]);assert.equal(snapshotReads,6);
  delete globalThis.__projectionTestEnv;
 });
+
+
+test("legacy static build refuses record paging before API reads or output writes", async () => {
+  let requests = 0;
+  const server = createServer((_request, response) => { requests += 1; response.end("{}"); });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const root = mkdtempSync(join(tmpdir(), "civic-static-guard-"));
+  const out = join(root, "must-not-exist");
+  try {
+    const script = fileURLToPath(new URL("../scripts/build-sites-snapshot.mjs", import.meta.url));
+    const child = spawn(process.execPath, [script, "--api", `http://127.0.0.1:${server.address().port}`, "--out", out]);
+    let output = "";
+    child.stdout.on("data", (chunk) => { output += chunk; });
+    child.stderr.on("data", (chunk) => { output += chunk; });
+    const code = await new Promise((resolve) => child.on("close", resolve));
+    assert.equal(code, 1);
+    assert.match(output, /Person record paging requires the Next server or D1 Sites Worker/);
+    assert.equal(requests, 0);
+    assert.equal(existsSync(out), false);
+  } finally { server.close(); }
+});

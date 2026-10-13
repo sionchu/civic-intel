@@ -7,13 +7,13 @@ import type { Source } from "../types";
 
 const EMPTY_SOURCES: Source[] = [];
 
-export default function SourceLibrary({ sources: providedSources }: { sources?: Source[] }) {
+export default function SourceLibrary({ sources: providedSources, serverWindow = false }: { sources?: Source[]; serverWindow?: boolean }) {
   const shared = usePersonEvidence();
   const available = providedSources !== undefined || shared !== null;
   const sources = providedSources ?? shared?.sources ?? EMPTY_SOURCES;
   const [limit, setLimit] = useState(20);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const shown = sources.slice(0, limit);
+  const shown = serverWindow ? sources : sources.slice(0, limit);
   const active = sources.find((source) => source.id === activeId);
   const cards = active && !shown.some((source) => source.id === active.id) ? [...shown, active] : shown;
   useEffect(() => {
@@ -41,8 +41,8 @@ export default function SourceLibrary({ sources: providedSources }: { sources?: 
     if (activeId) requestAnimationFrame(() => document.getElementById(`source-${activeId}`)?.scrollIntoView({ block: "start", behavior: "instant" }));
   }, [activeId, limit]);
   return <>
-    {available ? <p className="section-note" role="status" aria-live="polite">연결된 출처 {sources.length.toLocaleString("ko-KR")}건 · 현재 {cards.length.toLocaleString("ko-KR")}건 표시</p> : <p className="section-note" role="status">연결된 출처 범위 미확인</p>}
+    {!serverWindow && (available ? <p className="section-note" role="status" aria-live="polite">연결된 출처 {sources.length.toLocaleString("ko-KR")}건 · 현재 {cards.length.toLocaleString("ko-KR")}건 표시</p> : <p className="section-note" role="status">연결된 출처 범위 미확인</p>)}
     <div className="source-grid">{cards.map((source) => <SourceCard key={source.id} source={source} />)}</div>
-    {shown.length < sources.length && <button className="load-more" type="button" onClick={() => setLimit(limit + 20)}>출처 더 보기</button>}
+    {!serverWindow && shown.length < sources.length && <button className="load-more" type="button" onClick={() => setLimit(limit + 20)}>출처 더 보기</button>}
   </>;
 }

@@ -34,6 +34,13 @@ function fail(message) {
   process.exit(1);
 }
 
+// A static HTML capture cannot serve query-selected record windows or exact off-window
+// evidence. Stop before contacting the source API or mutating staging/output directories.
+const personPageSource = readFileSync(join(appRoot, "app", "people", "[id]", "page.tsx"), "utf8");
+if (personPageSource.includes('"../../person-record-window"')) {
+  fail("Person record paging requires the Next server or D1 Sites Worker; static HTML export cannot preserve complete evidence navigation.");
+}
+
 const api = values.api?.replace(/\/+$/, "");
 if (!api) fail("--api <private Civic Intel API origin on this host> is required");
 const apiOrigin = new URL(api).origin;
