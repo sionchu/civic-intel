@@ -1,6 +1,6 @@
 # PETI 공개기록 한 건 — 사람의 확인이 필요한 항목
 
-상태: 로컬 기본 검증 완료 / 실제 신원 확인 및 운영 반영 미실행.
+상태: 2026-10-14 기존 공개 총계 메타데이터 1건 운영 수집 완료 / 실제 신원 확인·연결·공개 미실행.
 이 문서는 확인 요청이며 승인이나 공개 완료 기록이 아니다.
 
 ## 확인 대상
@@ -34,11 +34,16 @@ identity_review_confirmed=false, claim_publication=false. DB 환경변수가 없
 - 기존 정책의 metadata 저장/AI 사용 허용 범위에서 공개 총계 필드만 확인했다.
   PDF·가족 세부정보·주소·항목 원문은 읽거나 새로 보존하지 않았다.
 
-## 아직 확인하지 않은 것
+## 운영 수집과 남은 신원 확인
+
+2026-10-14 사용자의 수집 지시에 따라 기존 정책을 정확히 등록하고, 보존된 후보 1건을
+Source/Snapshot/Observation으로 저장했다. 새 브라우저 열람이나 전체 PETI 수집은 아니다.
+실행 run은 `37319e58-a763-4cd7-b814-f158ca6a47a4`이며 metadata hash는 위 후보와 같다.
+`human_verified=false`, `identity_review_confirmed=false`, `claim_publication=false`를 유지했다.
 
 과거 연결 제안은 Person `14ae67da-4a76-498b-977d-6992e3fa8e0c`와 공식
-MONA `QWL7778X`이다. 현재 canonical roster·정책·동일 selector의 새 버전은
-이번에 재조회하지 않았으므로 이 연결은 NOT_REVALIDATED다.
+MONA `QWL7778X`이다. 이번 수집은 정확한 저장 정책을 검증했지만, 현재 Person·roster·
+동일 selector의 경쟁 버전을 통한 신원 연결은 확정하지 않았다. 이 연결은 NOT_REVALIDATED다.
 기존 proposal의 human_verified는 false다. 에이전트가 이를 true로 바꾸지 않았다.
 
 ## 다음 한 결정
@@ -46,8 +51,8 @@ MONA `QWL7778X`이다. 현재 canonical roster·정책·동일 selector의 새 �
 사용자가 위의 정확한 공식 레코드를 확인하고 해당 인물과 일치한다고 검토했는지 확인한다.
 그 확인은 공개 총계의 신원 연결에만 해당하며 신규 소스 권한·FACT 승격·서비스 배포 승인이 아니다.
 
-실제 적용을 선택하면 현재 canonical 상태를 읽기 전용으로 먼저 확인하고 기존 경로의
-policy registration → capture → reviewed LINK_PERSON → 별도 PUBLISH preview를 준비한다.
+후속 신원 연결을 선택하면 현재 canonical 상태를 다시 읽고 기존 경로의
+reviewed LINK_PERSON → 별도 PUBLISH preview를 준비한다. 정책 등록과 source capture는 완료됐다.
 오래된 preview hash는 재사용하지 않는다. 각 쓰기의 실제 대상·변경 전후·복구 조건을
 확인한 후에만 적용하며, 공개 Claim은 기존 계약의 CLAIM / asserted_as_true=false를 유지한다.
 

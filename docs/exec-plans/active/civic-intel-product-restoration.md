@@ -1,22 +1,37 @@
 # Civic Intel product restoration
 
-Status: LOCAL_CODE_VERIFIED; VISUAL_AND_DATA_REVIEW_PENDING — 2026-10-13 follow-up authorized by the owner's “좋아 마저해”.
+Status: BOUNDED_COLLECTION_VERIFIED; LOCAL_CODE_VERIFIED; IDENTITY_PUBLICATION_AND_VISUAL_REVIEW_PENDING — 2026-10-14 owner explicitly authorized “마저 진행해 수집까지”.
 Current version/runtime evidence: [HANDOFF](../../../HANDOFF.md). Prior plan and receipts are preserved verbatim in [history](../../history/product-restoration-through-2026-10-09.md), not renewed instructions.
 
 ## Objective and boundary
 
-Close existing evidence-to-reader paths before adding more collection/visualization breadth. Base3295ad9e4604b5d113c44244be0457aef3fa8270. Routine local implementation, disposable verification and coherent local commits are in scope. No invented human attestation, canonical DB mutation, source-rights expansion, deployment or cost increase.
+Close existing evidence-to-reader paths before adding more collection/visualization breadth. Base3295ad9e4604b5d113c44244be0457aef3fa8270. Routine local implementation, disposable verification and coherent local commits are in scope. The 2026-10-14 instruction additionally authorizes policy-permitted source ingestion into the existing Mac canonical DB. No invented human attestation, source-rights expansion, deployment or cost increase.
 
 ## Work table
 
 | ID | Owner | Acceptance | State |
 |---|---|---|---|
 | C1 | MAIN | Concise current state; historical evidence and old root preserved | LOCAL_VERIFIED |
-| C2 | record_curator/MAIN | Existing permitted PETI receipt; no-write preview; concrete human decision | DRY_RUN passed; review pending |
+| C2 | record_curator/MAIN | Existing permitted PETI receipt; source capture under October14 authorization; concrete human identity decision | CAPTURE_COMMITTED; identity/link/publication pending |
 | C3 | product_builder | Bounded initial Person serialization; exact record/source reachability; input-version conflict; snapshot paths unchanged | LOCAL_VERIFIED |
 | C4 | runtime builder | Pinned catalog packaged once; LF bytes preserved; credential privacy fails closed | LOCAL_VERIFIED |
 | C5 | MAIN | Two-Person same-period vote records with method/denominator/exclusions/evidence | LOCAL_VERIFIED |
 | C6 | MAIN/independent quality | Canonical checks, synthetic scale proof, Aside desktop/mobile behavior, final diff | Code/Worker/DOM passed; pixel/mobile gate incomplete |
+| C7 | MAIN sole operational writer | Backed-up, locked, source-bounded collection; durable checkpoints and counts; no implicit linkage/publication | VERIFIED:press26/PETI1 new; interrupted vote refresh1,911/1,911 complete; exact receipts in HANDOFF |
+
+## C7 collection contract and preflight — 2026-10-14
+
+Use existing canonical repository/connectors and the exact stored SourcePolicy. Root alone owns operational writes, under the scheduler acquisition.lock. Preserve original/deployed checkouts. No raw source content or credentials in model/tool output; receipts contain counts, hashes and stable error codes only. Check disk reserve before each source-page commit.
+
+Fresh canonical inventory: schema0008; 9,758 people; 905,737 observation versions; 13,040 snapshots; 801,008 published plus 8,616 draft Claims. No RUNNING SourceRun or acquisition process at preflight. These are DB totals, not public export totals.
+
+Recent receipts confirm roster299, bills19,876 and meetings1,964 complete in their declared scopes. ALIO and MOIS also have successful current scopes. Votes22 stopped at858/1,911 on October11 with AssemblyApiError; resume must validate the exact universe fingerprint. DART2025/11011 already has a complete declared run, so it is not an uncollected lane.
+
+Bound this run to the verified October8 official press date (one100-row maximum page, SELECTED_PAGE_ONLY), the existing one-record PETI metadata receipt and up to1,053 remaining vote bills. PETI/Gazette human review, absent canonical market policy and unimplemented MOLIT HTTP acquisition remain distinct gaps. Do not turn them into zero/success or install broader source rights. PETI's exact reviewed metadata-only policy registration is covered by the current collection instruction; identity review is not a source-capture prerequisite.
+
+Backup pre-codex-collection-20261014-004141.dump:302,562,335 bytes; pg_dump exit0 and pg_restore --list exit0. Restore execution was not tested. Existing backups preserved. Narrow press tests:32 passed; collection runner compiled. Operational script/receipts:dist/collection-2026-10-14/.
+
+Final outcome:27new observations and2snapshots; no Person/Claim changes. Vote run99483577-e856-4028-a90a-e417ba5b31a5 SUCCESS at1,911, with one original source conflict preserved. Final DB read confirms no running SourceRun/lock. PETI tests48also passed; independent read-only validation confirms27complete provenance chains and no identity/evidence linkage. Owner-approved relocation moved11hash-verified backup files to the external data drive and preserved the original backup path via symlink. Low-disk and transient API failures remain in the receipts; neither was labelled success. Other source lanes and public release are not declared complete.
 
 ## C5 comparison contract
 
@@ -34,10 +49,10 @@ Tests cover wrong subject, DRAFT/UNKNOWN/conflicting/refuting evidence, invalid 
 
 ## Remaining operational decision
 
-Existing actual PETI candidate needs genuine owner identity confirmation, current canonical policy/roster revalidation and separate exact capture/link/publication decisions. Do not reuse historical preview state hashes. Human review remains a specific final data gate; independent code work continues.
+PETI source-only capture completed under the October14 collection instruction. The next data gate is genuine owner identity confirmation, a fresh canonical roster/policy check and exact link/publication previews. Do not reuse historical preview state hashes. Human review remains a specific final data gate; independent code work continues.
 
-## Final local checkpoint
+## October13 local code checkpoint (historical)
 
 Makefile verify constituents passed: Python 1,473 passed / 4 skipped; web 123 passed / 0 skipped; ruff/mypy/quality/lint/typecheck/Next build/standalone checks passed. Official D1 Worker built with the actual Vinext request-cache test executed. Independent review found no remaining blocking code defect. Full receipts and limitations live in HANDOFF.
 
-No deployment or canonical writes occurred. PETI human identity review, current canonical policy/roster revalidation, visual/mobile QA and existing dependency audit findings remain explicit release/data gates. Person browser serialization is bounded; full server-side Person decoding remains a later measured optimization, not a solved problem. Live HTTP Source-only drift is not guaranteed; D1 immutable snapshot drift is guarded. The old static HTML export fails closed because it cannot preserve query-based paging.
+No deployment or canonical writes occurred during the October13 code milestone; October14 source writes are recorded separately in C7/HANDOFF. PETI human identity review, fresh canonical roster/policy checks, visual/mobile QA and existing dependency audit findings remain explicit release/data gates. Person browser serialization is bounded; full server-side Person decoding remains a later measured optimization, not a solved problem. Live HTTP Source-only drift is not guaranteed; D1 immutable snapshot drift is guarded. The old static HTML export fails closed because it cannot preserve query-based paging.

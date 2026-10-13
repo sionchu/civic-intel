@@ -26,10 +26,12 @@ Not scheduled, and why:
 - Gwanbo personnel notices: every live window tried so far (7 days, 31 days, three years) returns
   `SUCCESS` with zero notices, so a scheduled run would only repeat an empty response. Investigate
   the route/parameters before scheduling it.
-- Assembly asset disclosure (부동산·재산): `L0 RESEARCHED; BLOCKED` in
-  `FEEDER_SOURCE_COVERAGE.md` (Gazette origin, revision/key and route contract unresolved).
-- News, public statements (발언), roll-call votes: no SourcePolicy-approved lane exists. News and
-  curated compilations are discovery-only; statements need primary-source verification first.
+- Assembly asset disclosure (부동산·재산): bounded PETI metadata capture and reviewed Gazette
+  packet operators exist; they do not establish scheduled all-record acquisition or human identity
+  review. Use the current `FEEDER_SOURCE_COVERAGE.md` and asset-disclosure architecture contract.
+- News and public statements (발언): generic news/curated compilations remain discovery-only.
+  The reviewed official Assembly press lane permits bounded metadata capture; it is not a
+  scheduled full press enumeration. Roll-call votes already have the weekly job listed above.
 - Political orientation (정치성향): never collected as a fact. Per the North Star it can only be a
   later Derived Intelligence view over official votes/sponsorship with its own approved method.
 
