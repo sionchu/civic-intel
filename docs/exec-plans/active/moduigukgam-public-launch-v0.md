@@ -1,5 +1,9 @@
 # 모두의국감 public launch v0
 
+> Historical milestone evidence. Current integration, runtime and delivery status is in [HANDOFF](../../../HANDOFF.md); current authorized work is [product restoration](civic-intel-product-restoration.md). The dated statuses/permissions below are preserved for audit and do not independently describe or authorize today's execution.
+
+## Historical milestone record
+
 **Status: `READY_FOR_CODEX_DEPLOY`.** Code and the Sites snapshot build are prepared and verified
 locally. What remains is the Codex/owner deploy: build on the Mac from the canonical DB, then preview
 and publish on ChatGPT Sites.

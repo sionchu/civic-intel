@@ -1,5 +1,9 @@
 # Gukgam 2026 Governance Ontology + Visual Explorer v0
 
+> Historical milestone evidence. Current integration, runtime and delivery status is in [HANDOFF](../../../HANDOFF.md); current authorized work is [product restoration](civic-intel-product-restoration.md). The dated statuses/permissions below are preserved for audit and do not independently describe or authorize today's execution.
+
+## Historical milestone record
+
 Status: IN PROGRESS.
 
 ## Objective
