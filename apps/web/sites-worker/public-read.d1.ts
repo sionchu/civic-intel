@@ -40,6 +40,10 @@ export async function readSnapshotAt(): Promise<string> {
   return (await activeSnapshot()).generated_at_kst;
 }
 
+export async function readSnapshotVersion(): Promise<string> {
+  return (await activeSnapshot()).snapshot_id;
+}
+
 async function gunzipJson(parts: PublicReadPart[], expected: [number, string]): Promise<unknown> {
   if (parts.some((part, index) => part.part !== index || part.status !== expected[0] || part.content_sha256 !== expected[1])) {
     throw new Error("inconsistent public projection parts");

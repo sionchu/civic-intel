@@ -45,7 +45,7 @@ const claim = (id, predicate) => ({ id, person_id: "person-a", subject: "검증�
 const via = { key: "via-a", kind: "COMMITTEE", label: "검증용 위원회", organization_id: null };
 const relationships = { person: { id: "person-a", name: "검증용 인물" }, ruleset_version: "fixture-v1", groups: [{ via, layer: "POLITICAL", relation_count: 4, relations: [{ relation_id: "relation-a", relation_type: "SAME_PARLIAMENTARY_COMMITTEE", status: "DERIVED", rule_id: "same-committee", rule_version: "1", subject_person_id: "person-a", object_person_id: "person-b", counterpart: { id: "person-b", name: "비교 인물" }, via, temporal: { overlap: "UNKNOWN", basis: "UNKNOWN", subject_period: { start: null, end: null, as_of: null, precision: "UNKNOWN" }, object_period: { start: null, end: null, as_of: "2026-10-01", precision: "DAY" } }, source_claim_ids: ["affiliation-a", "affiliation-b"], evidence_ids: ["ev-a", "ev-b"], source_ids: ["source-a", "source-b"], source_conflict: true, interpretation_note: "같은 위원회 기재이며 친분을 뜻하지 않습니다." }] }], relation_count: 4, limitations: ["공개된 입력만 비교합니다."] };
 const entries = [{ id: "entry-a", kind: "CLAIM", title: "검증용 경력 기재", claim_id: "career-a", source_ids: ["source-a"], evidence_ids: ["e-career-a"], epistemic_status: "CLAIM", asserted_as_true: false, date: null, details: { career_semantics: "SOURCE_ATTRIBUTED_BIOGRAPHY", career_period: period } }];
-async function renderPerson(relationshipResult = success(relationships), extraClaims = [], portrait = null, extraSections = [], searchParams = {}) {
+async function renderPerson(relationshipResult = success(relationships), extraClaims = [], portrait = null, extraSections = [], searchParams = {}, snapshotVersion = null, unavailableSource = null) {
   const requestedSources = [];
   const { default: Page } = loadPresentation("../app/people/[id]/page.tsx", {
     "../../data": {
@@ -54,9 +54,10 @@ async function renderPerson(relationshipResult = success(relationships), extraCl
       getPersonRelationships: async () => relationshipResult,
       getGukgamCommittees: async () => success({ committees: [] }),
       getGukgamTargets: async () => success({ items: [] }),
-      getSources: async (ids) => ids.map((id) => { requestedSources.push(id); return success(source(id)); }),
+      getSources: async (ids) => ids.map((id) => { requestedSources.push(id); return id === unavailableSource ? { state: "error", error: { code: "SERVICE_UNAVAILABLE", message: "", request_id: null } } : success(source(id)); }),
     },
     "../../portrait": { getReviewedPortrait: async () => portrait },
+    "../../public-read": { readSnapshotVersion: async () => snapshotVersion },
   });
   const tree = await Page({ params: Promise.resolve({ id: "person-a" }), searchParams: Promise.resolve(searchParams) });
   return { html: renderToStaticMarkup(tree), tree, requestedSources };
@@ -581,4 +582,48 @@ test("legacy unloaded hash resolves once to an exact version-pinned Person query
     globalThis.window.location.href = assigned; assigned = null; effects[0]();
     assert.equal(assigned, null);
   } finally { globalThis.window = previous.window; globalThis.document = previous.document; }
+});
+
+
+test("Person pagination rejects a snapshot-only change and HTTP declares no snapshot guarantee", async () => {
+  const inputs = [vote("unchanged")];
+  const first = await renderPerson(success(relationships), inputs, null, [], {}, "snapshot-a");
+  const token = /name="v" value="([a-f0-9]{64})"/.exec(first.html)[1];
+  const changedSourceSnapshot = await renderPerson(success(relationships), inputs, null, [], { v: token }, "snapshot-b");
+  assert.match(changedSourceSnapshot.html, /SOURCE_VERSION_CONFLICT/);
+  assert.equal(changedSourceSnapshot.requestedSources.length, 0);
+  const { readSnapshotVersion } = loadPresentation("../app/public-read.ts");
+  const previous = process.env.CIVIC_SNAPSHOT_AT;
+  try {
+    process.env.CIVIC_SNAPSHOT_AT = "synthetic timestamp is not an immutable snapshot";
+    assert.equal(await readSnapshotVersion(), null);
+  } finally {
+    if (previous === undefined) delete process.env.CIVIC_SNAPSHOT_AT;
+    else process.env.CIVIC_SNAPSHOT_AT = previous;
+  }
+});
+
+test("empty server vote filters report no match while retaining the known record universe", async () => {
+  const result = await renderPerson(success(relationships), [vote("known")], null, [], { vote_q: "unmatched-query" });
+  assert.match(result.html, /선택한 위원회와 제목에 맞는 공개 기록이 없습니다/);
+  assert.doesNotMatch(result.html, /이 화면에서 확인할 수 있는 근거 연결된 공개 표결 기록이 없습니다/);
+  assert.match(result.html, /class="load-more" type="submit"/);
+});
+
+test("source paging reports actual cards including an extra selection and excluding read failures", async () => {
+  const inputs = Array.from({ length: 30 }, (_, index) => {
+    const item = vote(`count-${index}`);
+    item.source_ids = [`count-source-${index}`];
+    item.evidence = [{ id: `count-e-${index}`, source_id: `count-source-${index}`, stance: "SUPPORT" }];
+    return item;
+  });
+  const selected = await renderPerson(success(relationships), inputs, null, [], { source: "count-source-29" });
+  const selectedSection = selected.html.slice(selected.html.indexOf('id="sources"'));
+  assert.match(selectedSection, /현재 21건 표시/);
+  assert.equal((selectedSection.match(/<article class="source"/g) ?? []).length, 21);
+  const failed = await renderPerson(success(relationships), inputs, null, [], { source: "count-source-29" }, null, "count-source-29");
+  const failedSection = failed.html.slice(failed.html.indexOf('id="sources"'));
+  assert.match(failedSection, /현재 20건 표시/);
+  assert.equal((failedSection.match(/<article class="source"/g) ?? []).length, 20);
+  assert.match(failedSection, /SERVICE_UNAVAILABLE/);
 });

@@ -7,6 +7,7 @@ import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, ge
 import { careerAttribution, careerPeriodText } from "../../career-period";
 import PersonEvidenceProvider from "../../components/person-evidence-context";
 import PersonRecordNavigation from "../../components/person-record-navigation";
+import { readSnapshotVersion } from "../../public-read";
 import { parseRecordQuery, personReadVersion, recordWindow, type RecordQuery } from "../../person-record-window";
 import PersonClaimLibrary from "../../components/person-claim-library";
 import SourceLibrary from "../../components/source-library";
@@ -116,7 +117,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
   let query: RecordQuery;
   try { query = parseRecordQuery(await searchParams ?? {}); }
   catch { return <div className="site-page"><ReadState error={{ code: "INVALID_INPUT", message: "", request_id: null }} /><Link href={`/people/${id}`}>기록 처음부터 보기</Link></div>; }
-  const version = await personReadVersion(person, ontology, relationships);
+  const version = await personReadVersion(person, ontology, relationships, await readSnapshotVersion());
   if (query.v && query.v !== version) return <div className="site-page"><ReadState error={{ code: "SOURCE_VERSION_CONFLICT", message: "", request_id: null }} /><p>기록의 공개 상태가 바뀌었습니다. 새 자료에서 다시 조회해 주세요.</p><Link href={`/people/${id}`}>현재 기록 처음부터 보기</Link></div>;
   query = { ...query, v: version };
   const claims = person.claims ?? [];
@@ -627,7 +628,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
             {query.source && !selectedSourceId && <p className="empty-note" role="status">요청한 출처는 이 인물의 현재 공개 범위에 없습니다.</p>}
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 && !sourceError ? <p className="empty">표시할 출처가 없습니다.</p> : (
-              <><PersonRecordNavigation query={query} name="sources" total={sourceWindow.total} page={sourceWindow.page} anchor="sources" /><SourceLibrary sources={sourceCards} serverWindow /></>
+              <><PersonRecordNavigation query={query} name="sources" total={sourceWindow.total} page={sourceWindow.page} actualCount={sourceCards.length} anchor="sources" /><SourceLibrary sources={sourceCards} serverWindow /></>
             )}
           </section>
         </div>

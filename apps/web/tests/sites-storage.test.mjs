@@ -413,3 +413,29 @@ test("legacy static build refuses record paging before API reads or output write
     assert.equal(existsSync(out), false);
   } finally { server.close(); }
 });
+
+
+test("D1 snapshot version stays request-pinned and changes on a source-only snapshot promotion", async () => {
+  let activeId = "snapshot-source-a";
+  let reads = 0;
+  globalThis.__snapshotVersionGeneration = 0;
+  globalThis.__snapshotVersionEnv = { DB: { prepare() { return { async all() {
+    reads += 1;
+    return { results: [{ snapshot_id: activeId, scope_json: '{"patterns":[],"paths":{}}', generated_at_kst: "same timestamp", projection_schema_version: 2 }] };
+  } }; } } };
+  const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
+    .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__snapshotVersionEnv;')
+    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value, generation = -1; return () => { if (generation !== globalThis.__snapshotVersionGeneration) { generation = globalThis.__snapshotVersionGeneration; value = fn(); } return value; }; };')
+    .replace('"./relationship-path.mjs"', JSON.stringify(relationshipModuleUrl));
+  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+  try {
+    assert.equal(await reader.readSnapshotVersion(), "snapshot-source-a");
+    activeId = "snapshot-source-b";
+    assert.equal(await reader.readSnapshotVersion(), "snapshot-source-a");
+    assert.equal(reads, 1);
+    globalThis.__snapshotVersionGeneration++;
+    assert.equal(await reader.readSnapshotVersion(), "snapshot-source-b");
+    assert.equal(reads, 2);
+  } finally { delete globalThis.__snapshotVersionEnv; delete globalThis.__snapshotVersionGeneration; }
+});

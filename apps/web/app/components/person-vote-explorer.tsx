@@ -64,7 +64,7 @@ export default function PersonVoteExplorer({ records, claims: providedClaims, so
       </div>}
       {!serverWindow && <p className="section-note" role="status" aria-live="polite">{selected.length}건 / 연결된 공개 표결 {records.length}건 · 현재 {Math.min(limit, selected.length)}건 표시 · <span className="status DERIVED">{statusLabel("DERIVED")}</span> 원자료 분류·제목 검색 결과</p>}
       <p className="section-note">{complete ? serverWindow ? `공개 기준을 통과한 표결 ${fullCount.toLocaleString("ko-KR")}건이 조회 범위에 포함되며, 현재 ${records.length.toLocaleString("ko-KR")}건을 표시합니다.` : `공개 기준을 통과한 표결 ${fullCount.toLocaleString("ko-KR")}건이 모두 연결되었습니다.` : countKnown && eligibleCount !== fullCount ? `공개 대상 ${eligibleCount!.toLocaleString("ko-KR")}건과 이 화면의 연결 기록 ${fullCount.toLocaleString("ko-KR")}건이 일치하지 않습니다. 일부 기록만 확인할 수 있습니다.` : "이 화면에 연결된 기록을 표시합니다. 공개 표결 전체가 포함되었는지는 확인되지 않았습니다."}</p>
-      {records.length === 0 ? <p className="empty-note">이 화면에서 확인할 수 있는 근거 연결된 공개 표결 기록이 없습니다. 미수집·미공개 기록의 수는 알 수 없습니다.</p> : selected.length === 0 ? <p className="empty-note">선택한 위원회와 제목에 맞는 공개 기록이 없습니다.</p> : (
+      {serverWindow && fullCount > 0 && records.length === 0 ? <p className="empty-note">선택한 위원회와 제목에 맞는 공개 기록이 없습니다.</p> : records.length === 0 ? <p className="empty-note">이 화면에서 확인할 수 있는 근거 연결된 공개 표결 기록이 없습니다. 미수집·미공개 기록의 수는 알 수 없습니다.</p> : selected.length === 0 ? <p className="empty-note">선택한 위원회와 제목에 맞는 공개 기록이 없습니다.</p> : (
         <ol className="vote-rows">
           {selected.slice(0, limit).map((record) => <li className="vote-row" key={record.claimId}>
             {record.date ? <time className="vote-date" dateTime={record.date}>{record.date}</time> : <span className="vote-date">날짜 미기재·형식 미확인</span>}
