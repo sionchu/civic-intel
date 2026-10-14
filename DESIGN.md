@@ -201,3 +201,7 @@ The existing Server Component data reads in `apps/web/app/data.ts` remain the re
 small client-side roster filter receives only serializable `Person` records from the server and
 does not call a new API or mutate canonical data. Home and People changes must not introduce a
 feeder, schema, dependency or second provenance presentation path.
+
+## Bounded record comparison
+
+The public vote comparison is a native GET form with two explicit people and a date range. Show flat paired choices, common-input count, one-sided coverage and exact Claim/Source links; paginate on the server at20 records and retain input-version conflict feedback. Reuse vote-filters/vote-rows and semantic tokens. Stack controls at narrow widths; no score, percentage, ideology, inferred absence reason or hidden source exceptions.

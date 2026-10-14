@@ -1,14 +1,15 @@
 # Feeder Source Coverage
 
-## Current bounded public records — 2026-10-09
+## Current bounded public records — 2026-10-14
 
 Official press metadata uses the existing Assembly SourcePolicy and canonical
 Source → SourceSnapshot → FeederObservation → reviewed identity → Claim/Evidence → separate
 publication path. The specific `ninnagrlaelvtzfnt` exact-date/page live metadata fetch passed;
 content/body and unreviewed article routes are dropped. AI processing is not authorized by that
 policy. Local capture/review/publication operators and public projection are implemented with
-synthetic regression proof; canonical operational capture/Person assignment/publication remain
-NOT_RUN. Reviewed Person linkage currently supports current Assembly members with an actual
+synthetic regression proof. Canonical October14 capture committed26 observations from the
+October8 selected page (provider total26); Person assignment/publication remain NOT_RUN.
+This proves selected-page capture, not full-source enumeration. Reviewed Person linkage supports current Assembly members with an actual
 published roster bridge, not every public Person. External journalism and direct quotations are
 not covered. See [official press contracts](NATIONAL_ASSEMBLY_PRESS_METADATA.md).
 
@@ -23,8 +24,9 @@ nkulntiravezskrjd and npeslxqbanwkimebr) share that canonical capture path. Thei
 semantics and stable provider locator remain unverified; LINK/PUBLISH fail closed. Schema and
 license review does not establish live-record coverage or relevance to a Person.
 
-PETI printed totals have a reviewed local one-record candidate and executable policy registration,
-capture, reviewed link and separate publication operators. The self-housing receipt is a closed
+PETI printed totals have one canonical metadata observation, captured October14 from the existing
+reviewed receipt after exact policy registration under the owner's collection authorization.
+Reviewed link and separate publication remain unexecuted. The self-housing receipt is a closed
 staged contract: only explicitly disclosed SELF ownership or exact source absence evidence is
 eligible. Empty/withheld/partial data stays UNKNOWN, without family, residence, address or amount
 inference. No real housing receipt exists and neither lane has operational published records.
@@ -84,6 +86,11 @@ fixtures, manual row counts or a successful packet import alone do not promote a
 
 ## Coverage matrix
 
+The meeting and vote proof counts below are historical L3 evidence from the linked feeder
+documents, not a live refresh receipt. The October14 operational audit confirmed1,964 meetings
+in the latest completed scope; today's vote refresh status is recorded separately in
+[HANDOFF](../../HANDOFF.md). Earlier1,954-meeting counts are preserved as their original proof.
+
 | Feeder | Public person scope | Strongest source lane | Mode | Identity anchor | Career / ontology destination | Maturity |
 |---|---|---|---|---|---|---|
 | National Assembly members | elected National Assembly members | 열린국회정보 member API | API | `MONA_CD` | Legislative | L3 FULL_ENUMERATION |
@@ -93,7 +100,7 @@ fixtures, manual row counts or a successful packet import alone do not promote a
 | MOLIT apartment and land trade context (market-only, **not Person discovery**) | Region/month reported apartment/land sales, never a public official or owner | MOLIT official data.go.kr datasets 15126469 and 15126466 | API; explicit account authorization and source-specific reviewed host policy needed | No Person/ownership key; `LAWD_CD + DEAL_YMD` market context only | Bounded numeric aggregate prototype; no Person, Claim, property map or public display | L1 CONTRACT_STAGED (offline XML/mocked HTTP only; no live pull, canonical writes or L3) ([doc](MOLIT_MARKET_TRANSACTIONS.md)) |
 | R-ONE official reported-date housing/apartment-sale/land-sale **volumes** (market-only) | Verified 2026-08 source-verified 15-region/month bounded sale counts plus national per type, not a Person | 한국부동산원 R-ONE API tables `A_2024_00546`, `A_2024_00554`, `A_2024_00536` and table-specific official `selectOpenApiItmCd.do` code listings | API, owner-issued KEY; local source-specific reviewed metadata-only SourcePolicy; **operational approval still unverified** | R-ONE `CLS_ID` **per table**, never MOLIT `LAWD_CD`; 제주 table codes differ and legacy labels remain unresolved | Existing Source/Snapshot/FeederObservation/SourceRun in isolated SQLite, 32 snapshots/64 runs, zero Person or Claim, no map release | L2 LOCAL_BOUNDED_PROVINCE_MONTH: 2026-08 two sale tables × 16 exact source-only classifications (nation + 15 unambiguous regions), 32 successful provider reads, each replay 0 new; nationwide-minus-15 differences 2,475 apartment / 6,381 land, 2026 integrated geography pending; **NOT L3 or public release** ([doc](MOLIT_MARKET_TRANSACTIONS.md)) |
 | Gwanbo personnel notices | official personnel-notice metadata in an explicit publication-date window | 대한민국 전자관보 인사 API | OFFICIAL_WEB | notice `cntntSeqNo`; no Person anchor at list stage | Public Service notice discovery | L3 FULL_ENUMERATION; metadata only, no Person creation |
-| Public factual declared-asset headline (PETI) | one bounded official public record; no family/address/item discovery | official PETI printed headline selector, source-specific normalized metadata receipt | BROWSER receipt; metadata only, no raw/fulltext storage | exact printed context is review-only; resolved Assembly anchor required before reviewed Person link | existing Source/Snapshot/FeederObservation then separate Claim/Evidence publication; shared immutable reader feeds /assets and Person public_declared_assets | LOCAL CONTRACT/STAGING IMPLEMENTED; default-preview canonical operations in preparation, operational observations/Claims absent, no application/publication executed |
+| Public factual declared-asset headline (PETI) | one bounded official public record; no family/address/item discovery | official PETI printed headline selector, source-specific normalized metadata receipt | BROWSER receipt; metadata only, no raw/fulltext storage | exact printed context is review-only; resolved Assembly anchor required before reviewed Person link | existing Source/Snapshot/FeederObservation then separate Claim/Evidence publication; shared immutable reader feeds /assets and Person public_declared_assets | L2 SINGLE_PULL: exact reviewed policy and one existing receipt applied to canonical source storage2026-10-14; no new browser acquisition, identity linkage or Claim publication; not full enumeration |
 | National Assembly bill participation | exact representative/co-sponsorship when complete source/code coverage exists | `nzmimeepazxkubdpn` full-term scan | API | `MONA_CD` + `RST_MONA_CD` / `PUBL_MONA_CD` + `BILL_ID` | Legislative | L3 FULL_ENUMERATION; multi-person event observations, no Person creation |
 | National Assembly committee roster (enrichment only) | official committee/member role context; no staff discovery and no historical-term inference | 열린국회정보 `nktulghcadyhmiqxi` member list + `nxrvzonlafugpqjuh` committee status | API | relationship key `DEPT_CD:MONA_CD`; status key `HR_DEPT_CD`; no Civic Intel UUID authority | Committee membership source observations; future CommitteeMembershipEpisode only after current-roster and InstitutionalBody review | L2 SINGLE_PULL — official no-key sample through staged connectors, contact/staff fields discarded; L3 blocked pending issued key, full enumeration, current-member reconciliation and status-code restriction to member-backed committees |
 | National Assembly subcommittee bill review (enrichment only) | bill-level subcommittee referral/table/processing metadata; no person discovery | 열린국회정보 `TVBPMCONFINFO` (`AGE` required) | API | `BILL_ID` is the source-backed packet key after full-universe proof that each BILL_ID maps to one BILL_NO; provider review rows remain nested variants and `COMMITTEE_ID` remains a provider namespace | Legislative review-process source observations only; no canonical Bill/Committee materialization | L3 FULL_ENUMERATION — 22nd Assembly keyed universe 18,324 rows / 19 pages → 17,727 BILL_ID packet observations; 471 multi-row bills and 5 exact duplicate surplus rows preserved; live partial/resume and final 0-created / 17,727-unchanged rerun proven; page-level representation drift is retained as immutable SourceSnapshots without forcing semantic packet versions; no Person/Organization/Claim mutation ([doc](ASSEMBLY_SUBCOMMITTEE_BILL_REVIEW_FEEDER.md)) |
@@ -363,6 +370,10 @@ The bounded observation worker remains L2 and is not promoted to L3 by this rout
 
 ### Blocked-lane reassessment
 
+Historical reassessment: the dated roll-call L2 row below is superseded by the current L3
+coverage matrix and the full-term proof in ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md. It is not a
+current instruction to re-establish the already implemented lane.
+
 These are architecture classifications from the existing dated source gates, not new live
 probes, permissions or maturity promotions. Human-assisted paths are conditional, not available
 import commands. They need only a justified **packet** contract, not every L3 automation gate.
@@ -384,7 +395,8 @@ import commands. They need only a justified **packet** contract, not every L3 au
 > `RESULT_VOTE_MOD` (찬성/반대/기권/불참), `VOTE_DATE`, `SESSION_CD` and `CURRENTS_CD`; the
 > bill-level `ncocpgfiaoituanbr` (requires `AGE`) bounds the term universe with
 > `list_total_count` and published tallies that member rows must reproduce. The lane is now an
-> acquisition-only `L1 CONTRACT_STAGED` feeder; see
+> acquisition-only `L1 CONTRACT_STAGED` feeder at that date; this milestone is superseded by
+> the current L3 matrix and full-term proof. See
 > [ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md](ASSEMBLY_ROLL_CALL_VOTE_FEEDER.md). The text below is the
 > historical 2026-09-12 assessment; correction/republication semantics remain unpublished.
 

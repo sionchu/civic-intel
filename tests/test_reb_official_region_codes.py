@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from importlib.resources import files
 
 import pytest
 
-CATALOG = Path(__file__).resolve().parents[1] / "docs/architecture/reb-provincial-code-catalog.json"
+CATALOG = files("packages.connectors").joinpath("data/reb-provincial-code-catalog.json")
 
 
 def _regions(kind: str) -> list[dict]:

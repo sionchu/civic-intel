@@ -162,7 +162,7 @@ Official R-ONE `selectOpenApiItmCd.do` table-specific
 [code search page](https://www.reb.or.kr/r-one/portal/openapi/openApiGuideCdPage.do)
 returned **19 apartment-sale and 18 land-sale top-level classifications**.
 The sanitized metadata with exact provider response digests is pinned in
-[`reb-provincial-code-catalog.json`](reb-provincial-code-catalog.json).
+[`reb-provincial-code-catalog.json`](../../packages/connectors/data/reb-provincial-code-catalog.json).
 This is a source/metadata **research record**, not a certified crosswalk
 to the historic 2020 SVG map or a complete 2026 administrative universe.
 
@@ -183,7 +183,7 @@ review. The issued key and local proof are **not** operational approval.
 ## Seoul apartment and land sales — L2 one-region/month LOCAL_VERIFIED (2026-10-11)
 
 The official R-ONE
-[`selectOpenApiItmCd.do` classification metadata](reb-provincial-code-catalog.json)
+[`selectOpenApiItmCd.do` classification metadata](../../packages/connectors/data/reb-provincial-code-catalog.json)
 identifies **서울 `CLS_ID=500002`** with published `lawdCd=11000000` in
 both approved sale tables. These are *provider-reported code facts*, not
 approval to join the 2020 SVG geometry or to infer a public official's address.
@@ -259,7 +259,7 @@ The key did not enter the DB; original HTTP responses were not stored.
 This proof is intentionally not the operational database.
 
 A single pinned source catalog,
-[`reb-provincial-code-catalog.json`](reb-provincial-code-catalog.json),
+[`reb-provincial-code-catalog.json`](../../packages/connectors/data/reb-provincial-code-catalog.json),
 uses the exact official R-ONE `selectOpenApiItmCd.do` response
 classification per table, excluding entries marked `(구)` or ambiguous.
 Runtime admission checks its full byte-level SHA-256
@@ -335,3 +335,7 @@ same thing as MOLIT's still L1 apartment/land market lane or a current regional 
 5. **Official assets:** PETI/Gazette reviewed disclosure total → existing reviewed Person link → separate Claim/Evidence/publication gates. Extension to other high-ranking public officers needs a separate official identity scope; a National Assembly-only packet cannot silently expand.
 
 Privacy, accurate semantics and evidence-first public display are release gates, not model suggestions.
+
+## Runtime artifact and private-key platform boundary (2026-10-13)
+
+The sole reviewed catalog now lives under packages/connectors/data, is included in wheels, and retains the same approved SHA-256 with an explicit Git LF attribute. Runtime uses package resources, not a docs checkout. No source scope or permission changed. Private key-file reading is explicitly POSIX-only until Windows ACL verification is implemented; unsupported hosts reject before accessing the file. Windows chmod bits are not proof of private ACLs.

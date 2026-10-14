@@ -13,7 +13,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
-from pathlib import Path
+from importlib.resources import files
 from typing import Any
 from uuid import UUID
 
@@ -50,8 +50,8 @@ _APPROVED_PROVINCE_LAWD = frozenset(
         "50000000",
     }
 )
-_SOURCE_CODE_CATALOG = (
-    Path(__file__).resolve().parents[2] / "docs/architecture/reb-provincial-code-catalog.json"
+_SOURCE_CODE_CATALOG = files("packages.connectors").joinpath(
+    "data/reb-provincial-code-catalog.json"
 )
 _SOURCE_CODE_CATALOG_SHA256 = "acb9e6c67ffff1ff05a571c4b170de713530abe063f923b25131cdb7cc989e76"
 L2_PROVINCE_MONTH = "202608"  # Only this reporting month authorized for local proof.

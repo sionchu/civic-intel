@@ -629,5 +629,7 @@ Preview and commit use the existing transaction/audit/concurrency contract, with
 Operator stdout contains only IDs, hashes, counts and statuses. Optional `--preview-output`
 writes the full canonical preview to a new owner-local file; existing files are not overwritten.
 This separates owner review from AI transport when SourcePolicy.can_send_to_ai is false.
-All operational application and publication remain unexecuted until a concrete source-policy,
-identity and publication decision; disposable regression DBs do not establish live coverage.
+On2026-10-14 the owner's explicit collection instruction authorized exact PETI policy registration
+and source-only capture of the existing one-record receipt in the canonical DB. The durable receipt
+is recorded in [HANDOFF](../../HANDOFF.md). Identity linkage and publication remain unexecuted;
+disposable regression DBs alone do not establish live coverage.

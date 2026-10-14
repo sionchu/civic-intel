@@ -1,5 +1,9 @@
 # 모두의국감 Sites storage split v0
 
+> Historical milestone evidence. Current integration, runtime and delivery status is in [HANDOFF](../../../HANDOFF.md); current authorized work is [product restoration](civic-intel-product-restoration.md). The dated statuses/permissions below are preserved for audit and do not independently describe or authorize today's execution.
+
+## Historical milestone record
+
 Status: `READY_FOR_REVIEW_WITH_BLOCKERS` (RELEASE-01, 2026-10-08).
 
 The code-only D1 Worker, local snapshot lifecycle and ordinary reader flows are verified.

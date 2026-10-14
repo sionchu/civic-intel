@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from collections.abc import Callable, Mapping
 from contextlib import suppress
 from datetime import date
@@ -385,7 +386,16 @@ def commit_one_month(
 
 
 def read_issued_key_from_env_file(path: Path) -> str:
-    """Read a single private RONE_API_KEY assignment; never log file contents."""
+    """Read one private POSIX key file; Windows ACL verification is unsupported.
+
+    Windows chmod/stat mode bits do not establish ACL privacy. Fail before any
+    file access on unsupported platforms instead of treating those bits as proof.
+    """
+    if os.name != "posix":
+        raise RebMarketStatError(
+            "R-ONE credential files require POSIX private permissions; "
+            "Windows ACL verification is unsupported"
+        )
     if not path.is_file() or path.stat().st_mode & 0o077:
         raise RebMarketStatError("R-ONE credential file must exist with private permissions")
     import re

@@ -57,6 +57,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["packages*", "workers*", "apps*"]
 
+[tool.setuptools.package-data]
+"packages.connectors" = ["data/reb-provincial-code-catalog.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

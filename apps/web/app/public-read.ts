@@ -14,6 +14,13 @@ export async function readSnapshotAt(): Promise<string | null> {
   return process.env.CIVIC_SNAPSHOT_AT?.trim() || null;
 }
 
+// The live HTTP API has no immutable cross-route snapshot identifier. Person paging
+// can pin Claim/profile and related DTO contents, but cannot promise Source-only
+// drift detection in this transport. A timestamp environment variable is not proof.
+export async function readSnapshotVersion(): Promise<string | null> {
+  return null;
+}
+
 export async function readPublic(
   path: string,
   options: { revalidateSeconds?: number } = {},

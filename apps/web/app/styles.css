@@ -105,7 +105,7 @@ button, input, select { font: inherit; }
 .brand-copy { display: grid; line-height: 1.1; }
 .brand-copy strong { font-size: 15px; letter-spacing: -.02em; }
 .brand-copy small { margin-top: 4px; color: var(--color-ink-muted); font-size: 13px; letter-spacing: .01em; }
-.global-nav { display: flex; align-items: center; gap: 20px; }
+.global-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
 .nav-link { display: inline-flex; min-height: 44px; align-items: center; padding: 0; color: var(--color-ink); font-size: 13px; font-weight: 800; text-decoration: none; }
 .nav-link[aria-current="page"] { color: var(--color-accent); }
 .nav-status { display: inline-flex; max-width: 100%; min-width: 0; align-items: center; color: var(--color-ink-muted); font-size: 13px; overflow-wrap: anywhere; }

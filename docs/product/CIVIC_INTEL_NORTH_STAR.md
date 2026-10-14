@@ -2,6 +2,10 @@
 
 ## Authority and current scope
 
+Current implementation/runtime checkpoint: [HANDOFF](../../HANDOFF.md). The baseline/status table below records the 2026-09-14 design milestone only; it is not today's feature inventory. Subsequent roll-call, relationship, public delivery and source work is governed by the current execution plan.
+
+### Historical scope at the original milestone
+
 This document is the canonical long-term product direction and Derived Intelligence boundary.
 [Architecture](../../ARCHITECTURE.md) governs executable boundaries;
 [V0 scope](V0_SCOPE.md) governs current delivery; [DESIGN.md](../../DESIGN.md) remains the

@@ -628,7 +628,7 @@ test("one shared evidence panel renders every Claim on Person and Organization p
   ]);
   for (const page of [person, organization]) {
     assert.match(page, /<EvidencePanel/);
-    assert.match(page, /<OpenTargetDetails \/>/);
+    assert.match(page, /<OpenTargetDetails(?: recordVersion=\{version\})? \/>/);
     assert.match(page, /<FactBox rows=\{factRows\} \/>/);
     assert.match(page, /<PendingLanes/);
     assert.match(page, /className="page-anchors"/);
@@ -674,7 +674,7 @@ test("Person page adds Gukgam committee context and drops empty lanes into one l
   assert.match(person, /\/organizations\/\$\{organization\.id\}/);
   assert.match(person, /memberCommittees\.length > 0/);
   assert.match(person, /section\.entries\.length === 0/);
-  assert.match(person, /\["public_declared_assets", "official_press_records", "public_self_housing"\]\.includes\(section\.id\)/);
+  assert.match(person, /\["legislative_activity", "public_declared_assets", "official_press_records", "public_self_housing"\]\.includes\(section\.id\)/);
   assert.match(lanes, /아직 수집되지 않은 기록/);
   // Empty profile sections are grouped by the projection reason instead of one "not collected" line.
   for (const reason of ["SOURCE_NOT_COLLECTED", "INSUFFICIENT_EVIDENCE", "DERIVATION_NOT_AVAILABLE", "NOT_APPLICABLE"]) {

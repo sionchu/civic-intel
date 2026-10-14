@@ -392,3 +392,50 @@ test('source batch preserves ordered closure with bounded D1 queries, pins and f
  const unavailable=await reader.readPublicSources([paths[0],paths[1]]);assert.deepEqual(unavailable.map(result=>result.status),[503,503]);assert.equal(snapshotReads,6);
  delete globalThis.__projectionTestEnv;
 });
+
+
+test("legacy static build refuses record paging before API reads or output writes", async () => {
+  let requests = 0;
+  const server = createServer((_request, response) => { requests += 1; response.end("{}"); });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const root = mkdtempSync(join(tmpdir(), "civic-static-guard-"));
+  const out = join(root, "must-not-exist");
+  try {
+    const script = fileURLToPath(new URL("../scripts/build-sites-snapshot.mjs", import.meta.url));
+    const child = spawn(process.execPath, [script, "--api", `http://127.0.0.1:${server.address().port}`, "--out", out]);
+    let output = "";
+    child.stdout.on("data", (chunk) => { output += chunk; });
+    child.stderr.on("data", (chunk) => { output += chunk; });
+    const code = await new Promise((resolve) => child.on("close", resolve));
+    assert.equal(code, 1);
+    assert.match(output, /Person record paging requires the Next server or D1 Sites Worker/);
+    assert.equal(requests, 0);
+    assert.equal(existsSync(out), false);
+  } finally { server.close(); }
+});
+
+
+test("D1 snapshot version stays request-pinned and changes on a source-only snapshot promotion", async () => {
+  let activeId = "snapshot-source-a";
+  let reads = 0;
+  globalThis.__snapshotVersionGeneration = 0;
+  globalThis.__snapshotVersionEnv = { DB: { prepare() { return { async all() {
+    reads += 1;
+    return { results: [{ snapshot_id: activeId, scope_json: '{"patterns":[],"paths":{}}', generated_at_kst: "same timestamp", projection_schema_version: 2 }] };
+  } }; } } };
+  const source = readFileSync(new URL('../sites-worker/public-read.d1.ts', import.meta.url), 'utf8')
+    .replace('import { env } from "cloudflare:workers";', 'const env = globalThis.__snapshotVersionEnv;')
+    .replace('import { cacheForRequest } from "vinext/cache";', 'const cacheForRequest = (fn) => { let value, generation = -1; return () => { if (generation !== globalThis.__snapshotVersionGeneration) { generation = globalThis.__snapshotVersionGeneration; value = fn(); } return value; }; };')
+    .replace('"./relationship-path.mjs"', JSON.stringify(relationshipModuleUrl));
+  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  const reader = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+  try {
+    assert.equal(await reader.readSnapshotVersion(), "snapshot-source-a");
+    activeId = "snapshot-source-b";
+    assert.equal(await reader.readSnapshotVersion(), "snapshot-source-a");
+    assert.equal(reads, 1);
+    globalThis.__snapshotVersionGeneration++;
+    assert.equal(await reader.readSnapshotVersion(), "snapshot-source-b");
+    assert.equal(reads, 2);
+  } finally { delete globalThis.__snapshotVersionEnv; delete globalThis.__snapshotVersionGeneration; }
+});

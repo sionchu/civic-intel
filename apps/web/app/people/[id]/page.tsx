@@ -6,6 +6,9 @@ import { notFound } from "next/navigation";
 import { getGukgamCommittees, getGukgamTargets, getPerson, getPersonOntology, getPersonRelationships, getSources } from "../../data";
 import { careerAttribution, careerPeriodText } from "../../career-period";
 import PersonEvidenceProvider from "../../components/person-evidence-context";
+import PersonRecordNavigation from "../../components/person-record-navigation";
+import { readSnapshotVersion } from "../../public-read";
+import { parseRecordQuery, personReadVersion, recordWindow, type RecordQuery } from "../../person-record-window";
 import PersonClaimLibrary from "../../components/person-claim-library";
 import SourceLibrary from "../../components/source-library";
 import EvidencePanel, { EvidenceTraceList } from "../../components/evidence-panel";
@@ -20,7 +23,7 @@ import { committeeHref } from "../../gukgam/2026/committees";
 import { formatAuditDate } from "../../gukgam/2026/schedule";
 import { getReviewedPortrait } from "../../portrait";
 import { predicateLabel } from "../../predicate-labels";
-import { officialVoteRecords, recentOfficialActivity, supportingActivityEvidence } from "../../person-activity";
+import { officialVoteRecords, recentOfficialActivity, selectVoteRecords, supportingActivityEvidence } from "../../person-activity";
 import { buildPageMetadata } from "../../site-metadata";
 import type { Claim, ProfileEntry, ProfileSectionReason } from "../../types";
 
@@ -85,7 +88,7 @@ export async function generateMetadata({
   });
 }
 
-export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PersonPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const { id } = await params;
   const personResult = await getPerson(id);
   if (personResult.state === "error") {
@@ -111,39 +114,60 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const ontology = ontologyResult.state === "success" ? ontologyResult.data : null;
   const relationships = relationshipsResult.state === "success" ? relationshipsResult.data : null;
 
-  const sectionSourceIds =
-    person.profile?.sections.flatMap((section) =>
-      section.entries.flatMap((entry) => entry.source_ids),
-    ) ?? [];
-  const claimSourceIds = (person.claims ?? []).flatMap((claim) => claim.source_ids);
-  const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
-  const relationshipSourceIds = relationships?.groups.flatMap((group) => group.relations.flatMap((relation) => relation.source_ids)) ?? [];
-  const sourceIds = [...new Set([...sectionSourceIds, ...claimSourceIds, ...ontologySourceIds, ...relationshipSourceIds])];
-  const sourceResults = await getSources(sourceIds);
-  const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
-  const sourceError = sourceResults.find((item) => item.state === "error");
-  const sourceById = new Map(sources.map((source) => [source.id, source]));
-  const sourceTitleById = Object.fromEntries(sources.map((source) => [source.id, source.title]));
-  const profile = person.profile;
+  let query: RecordQuery;
+  try { query = parseRecordQuery(await searchParams ?? {}); }
+  catch { return <div className="site-page"><ReadState error={{ code: "INVALID_INPUT", message: "", request_id: null }} /><Link href={`/people/${id}`}>기록 처음부터 보기</Link></div>; }
+  const version = await personReadVersion(person, ontology, relationships, await readSnapshotVersion());
+  if (query.v && query.v !== version) return <div className="site-page"><ReadState error={{ code: "SOURCE_VERSION_CONFLICT", message: "", request_id: null }} /><p>기록의 공개 상태가 바뀌었습니다. 새 자료에서 다시 조회해 주세요.</p><Link href={`/people/${id}`}>현재 기록 처음부터 보기</Link></div>;
+  query = { ...query, v: version };
   const claims = person.claims ?? [];
   const claimById = new Map(claims.map((claim) => [claim.id, claim]));
   const publishedClaims = claims.filter((claim) => claim.publication_status === "PUBLISHED");
   const recentActivity = recentOfficialActivity(person, claims);
-  const votes = officialVoteRecords(person, claims);
-  const factRows: FactRow[] = [
-    ...FACT_PREDICATES.flatMap(([predicate, label]) =>
-      publishedClaims.filter((claim) => claim.predicate === predicate).map((claim) => ({
-        key: claim.id, label, value: claim.object_text, claim,
-      })),
-    ),
-  ];
+  const allVotes = officialVoteRecords(person, claims);
+  const voteWindow = recordWindow(selectVoteRecords(allVotes, query.vote_q ?? "", query.committee ?? "ALL"), query.votes);
+  const votes = voteWindow.items;
+  const committeeOptions = [...new Set(allVotes.flatMap((record) => record.committee ? [record.committee] : []))].sort();
+  const fullProfile = person.profile;
+  const sectionTotals = new Map((fullProfile?.sections ?? []).map((section) => [section.id, section.entries.length]));
+  const profile = fullProfile ? { ...fullProfile, sections: fullProfile.sections.map((section) => {
+    let entries = section.entries;
+    if (section.id === "legislative_activity" && query.q) entries = entries.filter((entry) => {
+      const claim = entry.claim_id ? claimById.get(entry.claim_id) : null;
+      return `${claim?.object_text ?? entry.title} ${claim?.proposition ?? ""}`.includes(query.q.trim());
+    });
+    sectionTotals.set(section.id, entries.length);
+    return { ...section, entries: recordWindow(entries, section.id === "legislative_activity" ? query.bills : query.section === section.id ? query.sectionPage : "1").items };
+  }) } : undefined;
+  const factRows: FactRow[] = FACT_PREDICATES.flatMap(([predicate, label]) =>
+    publishedClaims.filter((claim) => claim.predicate === predicate).slice(0, 20).map((claim) => ({ key: claim.id, label, value: claim.object_text, claim })));
   const career = profile?.sections.find((section) => section.id === "career_timeline");
   const limitations = profile?.sections.find((section) => section.id === "limitations");
   const declaredAssets = profile?.sections.find((section) => section.id === "public_declared_assets");
-  const representedClaims = new Set(profile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? []);
-  const voteIds = new Set(votes.map((record) => record.claimId));
+  const representedClaims = new Set(fullProfile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? []);
+  const visibleProfileClaimIds = new Set(profile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? []);
+  const voteIds = new Set(allVotes.map((record) => record.claimId));
   const staticClaimIds = profile?.sections.filter((section) => section.id !== "legislative_activity").flatMap((section) => section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])) ?? [];
-  const otherClaims = publishedClaims.filter((claim) => !representedClaims.has(claim.id) && !voteIds.has(claim.id));
+  const otherWindow = recordWindow(publishedClaims.filter((claim) => !representedClaims.has(claim.id) && !voteIds.has(claim.id)), query.other);
+  const otherClaims = otherWindow.items;
+  const selectedClaim = publishedClaims.find((claim) => claim.id === query.claim);
+  const selectedExtraClaim = selectedClaim && !visibleProfileClaimIds.has(selectedClaim.id) && !otherClaims.some((claim) => claim.id === selectedClaim.id) ? selectedClaim : null;
+  if (selectedExtraClaim) staticClaimIds.push(selectedExtraClaim.id);
+  const visibleClaimIds = new Set([...visibleProfileClaimIds, ...factRows.flatMap((row) => row.claim ? [row.claim.id] : []), ...recentActivity.items.map((item) => item.claim.id), ...votes.map((record) => record.claimId), ...otherClaims.map((claim) => claim.id), ...(selectedClaim ? [selectedClaim.id] : [])]);
+  const visibleClaims = publishedClaims.filter((claim) => visibleClaimIds.has(claim.id));
+  const ontologySourceIds = ontology?.edges.flatMap((edge) => edge.source_ids) ?? [];
+  const relationshipSourceIds = relationships?.groups.flatMap((group) => group.relations.flatMap((relation) => relation.source_ids)) ?? [];
+  const allSourceIds = [...new Set([...(fullProfile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.source_ids)) ?? []), ...publishedClaims.flatMap((claim) => claim.source_ids), ...ontologySourceIds, ...relationshipSourceIds])];
+  const sourceWindow = recordWindow(allSourceIds, query.sources);
+  const selectedSourceId = query.source && allSourceIds.includes(query.source) ? query.source : null;
+  const visibleSourceIds = [...new Set([...sourceWindow.items, ...visibleClaims.flatMap((claim) => claim.source_ids), ...(profile?.sections.flatMap((section) => section.entries.flatMap((entry) => entry.source_ids)) ?? []), ...ontologySourceIds, ...relationshipSourceIds, ...(selectedSourceId ? [selectedSourceId] : [])])];
+  const sourceResults = await getSources(visibleSourceIds);
+  const sources = sourceResults.flatMap((item) => item.state === "success" ? [item.data] : []);
+  const sourceError = sourceResults.find((item) => item.state === "error");
+  const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const sourceTitleById = Object.fromEntries(sources.map((source) => [source.id, source.title]));
+  const sourceCards = [...new Set([...sourceWindow.items, ...(selectedSourceId ? [selectedSourceId] : [])])].flatMap((sourceId) => { const source = sourceById.get(sourceId); return source ? [source] : []; });
+  const sectionNavigation = (sectionId: string, anchor: string) => sectionId !== "legislative_activity" && (sectionTotals.get(sectionId) ?? 0) <= 20 ? null : <PersonRecordNavigation query={sectionId === "legislative_activity" ? query : { ...query, section: sectionId }} name={sectionId === "legislative_activity" ? "bills" : "sectionPage"} total={sectionTotals.get(sectionId) ?? 0} page={Number(sectionId === "legislative_activity" ? query.bills ?? "1" : query.section === sectionId ? query.sectionPage ?? "1" : "1")} anchor={anchor} {...(sectionId === "legislative_activity" ? { search: { name: "q", label: "기록 제목" } } : {})} />;
 
   const memberCommittees = committeesResult.state === "success"
     ? committeesResult.data.committees.flatMap((committee) => {
@@ -349,7 +373,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   };
 
   return (
-    <PersonEvidenceProvider dataJson={JSON.stringify({ claims: publishedClaims, sources })}>
+    <PersonEvidenceProvider dataJson={JSON.stringify({ claims: visibleClaims, sources })}>
     <div className="site-page profile-page">
       <Link href="/people" className="back-link"><span aria-hidden="true">←</span> 인물 찾기</Link>
       <header className="profile-header">
@@ -384,7 +408,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         ) : null}
       </header>
 
-      <OpenTargetDetails />
+      <OpenTargetDetails recordVersion={version} />
       <div className="profile-layout">
         <aside className="profile-index" aria-label="이 페이지">
           <h2 className="index-heading">이 페이지</h2>
@@ -415,6 +439,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <section className="person-section person-career" id="career" aria-labelledby="career-title">
               <div className="section-intro"><h2 id="career-title">경력 <span className="domain-label" lang="ko">연혁</span></h2><span className={`status ${career.status}`}>{statusLabel(career.status)}</span></div>
               {career.note && <p className="section-note">{career.note}</p>}
+              {sectionNavigation("career_timeline", "career")}
               {career.entries.map(renderEntry)}
             </section>
           )}
@@ -533,7 +558,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </section>
           )}
 
-          {person.identity_status === "RESOLVED" && <PersonVoteExplorer records={votes} eligibleCount={profile?.sections.find((section) => section.id === "decision_episodes")?.eligible_count} inputScope={profile?.sections.find((section) => section.id === "decision_episodes")?.input_scope}  existingClaimIds={[...representedClaims]} />}
+          {person.identity_status === "RESOLVED" && <PersonVoteExplorer records={votes} eligibleCount={fullProfile?.sections.find((section) => section.id === "decision_episodes")?.eligible_count} inputScope={fullProfile?.sections.find((section) => section.id === "decision_episodes")?.input_scope} existingClaimIds={staticClaimIds} serverWindowTotal={allVotes.length} navigation={<PersonRecordNavigation query={query} name="votes" total={voteWindow.total} page={voteWindow.page} anchor="vote-records" search={{ name: "vote_q", label: "법안 제목" }} committeeOptions={committeeOptions} />} />}
 
           <section className="person-section" id="records" aria-labelledby="records-title">
             <div className="section-intro">
@@ -542,7 +567,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             {profile ? (
               <>
                 <div className="profile-sections">
-                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || (section.entries.length === 0 && !["public_declared_assets", "official_press_records", "public_self_housing"].includes(section.id)) ? null : (
+                  {profile.sections.map((section) => section.id === "career_timeline" || section.id === "limitations" || (section.entries.length === 0 && !["legislative_activity", "public_declared_assets", "official_press_records", "public_self_housing"].includes(section.id)) ? null : (
                     <section className="profile-section" key={section.id} id={`section-${section.id}`} aria-labelledby={`heading-${section.id}`}>
                       <div className="section-heading">
                         <div><h3 id={`heading-${section.id}`}>{section.label}</h3></div>
@@ -550,7 +575,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                       </div>
                       {section.note && <p className="section-note">{section.note}</p>}
                       {section.id === "public_declared_assets" && section.entries.length === 0 && <p className="empty-note">이 인물에게 근거가 연결된 공개 신고재산 기록이 없습니다. 재산이 없거나 0원이라는 뜻은 아닙니다.</p>}
-                      {section.id === "legislative_activity" ? <PersonClaimLibrary claimIds={section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])} existingClaimIds={staticClaimIds} legislative /> : section.entries.some(isPlenaryVote)
+                      {sectionNavigation(section.id, `section-${section.id}`)}
+                      {section.id === "legislative_activity" ? <PersonClaimLibrary serverWindow claimIds={section.entries.flatMap((entry) => entry.claim_id ? [entry.claim_id] : [])} existingClaimIds={staticClaimIds} legislative /> : section.entries.some(isPlenaryVote)
                         ? <ol className="vote-rows">{section.entries.map(renderEntry)}</ol>
                         : section.entries.map(renderEntry)}
                     </section>
@@ -560,17 +586,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             ) : (
               <p className="empty-state"><span><span className="status UNKNOWN">{statusLabel("UNKNOWN")}</span> <strong>아직 공개된 기록이 없습니다.</strong></span></p>
             )}
-            {otherClaims.length > 0 && (
+            {otherWindow.total > 0 && (
               <details className="profile-other-records">
-                <summary>기타 공개 근거 기록 {otherClaims.length}건</summary>
-                <PersonClaimLibrary claimIds={otherClaims.map((claim) => claim.id)} existingClaimIds={staticClaimIds} />
+                <summary>기타 공개 근거 기록 {otherWindow.total}건</summary>
+                <PersonRecordNavigation query={query} name="other" total={otherWindow.total} page={otherWindow.page} anchor="records" />
+                <PersonClaimLibrary serverWindow claimIds={otherClaims.map((claim) => claim.id)} existingClaimIds={staticClaimIds} />
               </details>
             )}
+            {query.claim && !selectedClaim && <p className="empty-note" role="status">요청한 근거 기록은 이 인물의 현재 공개 범위에 없습니다.</p>}
+            {selectedExtraClaim && <EvidencePanel claim={selectedExtraClaim} sourceById={sourceById} kind="선택한 근거 기록" />}
             {(emptyLaneGroups.length > 0 || Boolean(limitations?.entries.length)) && (
               <details className="profile-coverage">
                 <summary>자료 범위와 한계</summary>
                 {limitations && limitations.entries.length > 0
-                  ? limitations.entries.map(renderEntry)
+                  ? <>{sectionNavigation("limitations", "records")}{limitations.entries.map(renderEntry)}</>
                   : emptyLaneGroups.map((group) => <PendingLanes key={group.reason} title={group.title} lanes={group.lanes} detail={group.detail} />)}
               </details>
             )}
@@ -596,9 +625,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <div className="section-intro">
               <h2 id="sources-title">이 프로필의 출처</h2>
             </div>
+            {query.source && !selectedSourceId && <p className="empty-note" role="status">요청한 출처는 이 인물의 현재 공개 범위에 없습니다.</p>}
             {sourceError?.state === "error" && <ReadState error={sourceError.error} />}
             {sources.length === 0 && !sourceError ? <p className="empty">표시할 출처가 없습니다.</p> : (
-              <SourceLibrary />
+              <><PersonRecordNavigation query={query} name="sources" total={sourceWindow.total} page={sourceWindow.page} actualCount={sourceCards.length} anchor="sources" /><SourceLibrary sources={sourceCards} serverWindow /></>
             )}
           </section>
         </div>

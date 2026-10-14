@@ -1,5 +1,9 @@
 # Person profile linkage v0 (witness / OpenDART → existing Person)
 
+> Historical milestone evidence. Current integration, runtime and delivery status is in [HANDOFF](../../../HANDOFF.md); current authorized work is [product restoration](civic-intel-product-restoration.md). The dated statuses/permissions below are preserved for audit and do not independently describe or authorize today's execution.
+
+## Historical milestone record
+
 **Status: `CANONICAL_LINKS_APPLIED_DEPLOY_PENDING`.** Code, tests and documents are on branch
 `feat/person-profile-linkage` (base `origin/master` `0a448eb`). The canonical Mac DB, the public
 API and the Sites snapshot are unchanged. Applying any link to the canonical DB needs the owner's
