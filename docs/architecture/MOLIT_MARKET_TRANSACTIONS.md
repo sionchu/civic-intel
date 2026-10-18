@@ -296,22 +296,46 @@ history and whole-month denominator proof; 2026 effective boundary/license
 and spatial code mapping; rights-reviewed public read-model and visible
 time/source disclaimers. Until then **PUBLIC_RELEASE=FALSE**.
 
-## Region outline UI preview (2026-10-10)
+## Regional map navigation — 2026-07-01 boundary revision
 
-The standalone `/market` route now provides **boundary navigation only** using
-17 historic 2020 province shapes from StatGarten/maps (MIT, based on SGIS).
-The original 2020 province IDs are retained as labels and are explicitly
-**not** a versioned R-ONE `CLS_ID` nor MOLIT `LAWD_CD` crosswalk. These shapes
-must never authorize joins or a claim about a public official's property.
-The 2020 boundaries can differ from today's administrative regions.
+The `/market` route is a **boundary-navigation surface, not a statistics
+visualization**. As of the 2026-07-01 administrative reorganization, there
+are 16 current metropolitan/provincial units, including
+`전남광주통합특별시` in place of separate Gwangju and Jeonnam.
+The reorganization is grounded in the statutory
+[2026-07-01 integrated region establishment (MOIS official release)](https://www.mois.go.kr/frt/bbs/type010/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000008&nttId=126845).
 
-The screen has an accessible, keyboard-selectable province list, a separate
-housing/land source selector and links to official datasets. Since there is
-still **zero source-approved eligible region/month series**, it displays
-`공식 거래 수치 미게시`, not zeros, synthetic prices, filled choropleths,
-privacy-risky parcel pins, fake map tiles or a confidence score. Browser smoke
-and authoritative public-series evidence remain separate gates. Its frontend
-readiness is not source maturity or live transaction coverage.
+The previous 17 historic 2020 province SVG outline was **replaced**, not
+duplicated or retained as an alternative runtime path. The new 16-province
+boundaries are based on SGIS public data, released under KOGL Type 1
+(attribution) and modified by
+[vuski/admdongkor](https://github.com/vuski/admdongkor) under CC BY 4.0.
+[DevMinGeonPark/mapcn-kr](https://github.com/DevMinGeonPark/mapcn-kr)
+provides 2026-07-01 simplified WGS84 `data/sido.json`; CVIC verifies its
+16 region codes/names and SHA-256
+`fe5a298eab78f4e8d09d22e4f79ac9ddac05cd7a07927937d603be747cfec851`,
+then statically converts the closed polygons into the existing
+`province-shapes.ts` SVG contract. The original data attribution and
+conversion are recorded in `NOTICE`.
+
+**No geometry join permission follows from this revision.** The SVG's
+two-digit administrative `sido` code is neither an R-ONE table-specific
+`CLS_ID` nor a date-qualified crosswalk. The R-ONE apartment/land-sale
+[official provider classification catalog](reb-provincial-code-catalog.json)
+still lists both `(구)광주` and `(구)전남` historical
+names and table-specific Jeju class IDs. For 2026-07 onward, independently
+review the provider's integration/revision semantics before mapping
+historical categories into the merged province. Never sum pre/post-merger
+series or infer a public official's property location.
+
+The screen retains a keyboard-selectable province list, pointer selection,
+and **three distinct source categories**: all-housing transactions,
+apartment-sale units and land-sale parcels. All source descriptions and
+external links point to official R-ONE table pages. As no approved complete
+public region/month series is attached, it shows
+`공식 거래 수치 미게시`, never zero, fake prices, choropleth values, parcel
+pins or any Person ownership link. Rendering/browser smoke and complete
+provider source-rights/crosswalk evidence remain independent gates.
 
 ## Relation to CVIC official asset disclosures
 
