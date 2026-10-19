@@ -274,8 +274,10 @@ AssetDisclosure/AssetItem/Claim rows, materializer refusal, and stored-policy de
    the Gazette's netting of debt changes remains unverified.
 5. **Optional fields:** whether 시/군/구, change reasons or a relation-category aggregate may ever
    be stored, and whether real-transaction-price columns should be modeled.
-6. **Identity/publication:** an exact MONA_CD linkage review path and any Claim/AssetDisclosure
-   materialization (requires a Person link, so it remains out of scope here).
+6. **Identity/publication:** a reviewed MONA_CD link path now exists (see
+   [Gazette reviewed member-total link](#gazette-reviewed-member-total-link)); it yields only a
+   DRAFT `ASSEMBLY_DECLARED_ASSET_TOTAL` Claim. AssetDisclosure/AssetItem materialization,
+   item/relative linkage and any real link or publication decision remain out of scope.
 
 The L3 blocking conditions below remain in force.
 
@@ -615,7 +617,8 @@ published official Assembly roster Evidence, with identity basis
 `PUBLIC_DISCLOSURE_SOURCE_CONTEXT`. Genuine owner `human_verified: true` records identity
 review of this exact source context; it is not a copyright attestation for public facts.
 A command without that confirmation returns `OWNER_SOURCE_CONTEXT_REVIEW_PENDING` and
-does not construct a confirmed AdminCommand. This basis never permits MERGE or other feeders.
+does not construct a confirmed AdminCommand. This basis never permits MERGE or feeders other
+than PETI and the Gazette member-total path below.
 The official provider key, normalized immutable hash, unique active Person link, completed
 full-roster checkpoint and successful run are revalidated. The resulting Claim is DRAFT.
 
@@ -631,3 +634,43 @@ writes the full canonical preview to a new owner-local file; existing files are 
 This separates owner review from AI transport when SourcePolicy.can_send_to_ai is false.
 All operational application and publication remain unexecuted until a concrete source-policy,
 identity and publication decision; disposable regression DBs do not establish live coverage.
+
+## Gazette reviewed member-total link
+
+A canonical `LINK_PERSON` command with identity basis `PUBLIC_DISCLOSURE_SOURCE_CONTEXT`
+and owner `human_verified: true` may select exactly one committed
+`assembly_asset_gazette_reviewed` observation whose `record_kind` is `MEMBER_DECLARED_TOTAL`.
+Item observations fail closed (`GAZETTE_MEMBER_TOTAL_REQUIRED`). The bridge must be one
+published official roster Evidence for the target RESOLVED Person, revalidated exactly as for
+PETI: current full-roster checkpoint/run, `national_assembly_members` provider key equals the
+normalized `member_code` (MONA_CD) and immutable hash, a unique active roster link, and the
+printed Gazette member name equal to the roster `canonical_name`
+(`GAZETTE_IDENTITY_CONFLICT` / `GAZETTE_ROSTER_REQUIRED`). A reviewer-stated packet code is
+optional; when present it must equal that roster code (`GAZETTE_MONA_CONFLICT`). The roster
+code, never the stated code, is recorded as `assembly_mona_cd`. The source closure (policy,
+canonical detail URL, HUMAN_REVIEWED snapshot metadata, scope/record key, observation hash,
+unit and value semantics) is revalidated from persisted rows (`GAZETTE_SOURCE_INVALID`), and
+differing versions of the same record key fail closed (`GAZETTE_SOURCE_CONFLICT`).
+
+The commit creates one RESOLVED IdentityReviewItem, one `REVIEWED_LINK` /
+`REVIEWED_SOURCE_CONTEXT` PersonObservationLink and one DRAFT CLAIM (asserted-as-true false)
+whose object is the printed current declared total (e.g. `195,000천원`, thousand KRW,
+`DECLARED_VALUE_NOT_MARKET_WEALTH`), with qualifiers for Gazette issue, `pdf_id`, publication
+date, reporting period, report type, record key and immutable observation hash. SUPPORT
+evidence is the observation; NEUTRAL evidence is the roster Evidence. No AssetDisclosure,
+AssetItem, item, relative or excluded-holder link is created. Separate `PUBLISH` reruns the
+identity/roster closure, rebuilds the expected Claim and the printed-total reader, and
+additionally requires a stored Gazette SourcePolicy with reviewed `license` and
+`terms_checked_at` plus a stated issue rights mark. Totals reconciled with excluded-holder
+rows (`ITEM_AND_EXCLUDED_HOLDER_SUM_MATCHED`) are accepted like `ITEM_SUM_MATCHED`.
+
+`python -m workers.assembly_asset_gazette_link --matches MATCHES.csv --scope-key
+gazette:<issue>:pdf:<pdf_id> --reason "..." --confirm-human-reviewed-matches
+--preview-output PREVIEW.json` builds one command per `UNIQUE_ROSTER_MATCH` row
+(`printed_name`, `mona`, `person_id`); the printed name must identify exactly one member total
+in the scope, and the anchor is that Person's published roster Evidence for `mona`. The default
+writes only the new owner-local preview file and prints IDs, hashes and counts. Commit adds
+`--commit --actor OWNER --state-hash AGGREGATE_HASH` and refuses any other aggregate hash;
+it stops on the first failing row and reports the request IDs already committed. The database
+URL comes from `CIVIC_DATABASE_URL` or `--database-env`. Coverage is SYNTHETIC
+(`tests/test_gazette_asset_link_operations.py`); no real packet, link or publication has run.

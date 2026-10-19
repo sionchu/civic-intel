@@ -39,6 +39,7 @@ from packages.verification.assembly_asset_import import (
     ASSEMBLY_ASSET_SEMANTIC_SCOPE,
     ASSEMBLY_ASSET_SOURCE_CONTRACT,
     ASSEMBLY_ASSET_TOTAL_PREDICATE,
+    GAZETTE_TOTALS_CROSS_CHECKS,
     PETI_ASSET_DETAIL,
     PETI_ASSET_FEEDER,
     PETI_ASSET_SOURCE_CONTRACT,
@@ -185,7 +186,7 @@ def build_assembly_declared_assets_from_claims(
                 or n.get("record_kind") != RECORD_KIND_MEMBER_TOTAL
                 or n.get("amount_unit") != AMOUNT_UNIT or n.get("value_semantics") != VALUE_SEMANTICS
                 or n.get("declared_totals_scope") != TOTALS_SCOPE
-                or n.get("totals_cross_check") != "ITEM_SUM_MATCHED"
+                or n.get("totals_cross_check") not in GAZETTE_TOTALS_CROSS_CHECKS
                 or snapshot.fulltext is not None
                 or snapshot.metadata.get("source_contract") != ASSEMBLY_ASSET_SOURCE_CONTRACT
                 or snapshot.metadata.get("review_status") != "HUMAN_REVIEWED"
@@ -198,8 +199,9 @@ def build_assembly_declared_assets_from_claims(
         if (len(matching_links) != 1 or matching_links[0].person_id != person.id
                 or matching_links[0].action != MaterializationAction.REVIEWED_LINK
                 or str(matching_links[0].review_item_id) != claim.qualifiers.get("review_item_id")
-                or not n.get("reviewer_stated_mona_cd")
-                or n.get("reviewer_stated_mona_cd") != claim.qualifiers.get("assembly_mona_cd")):
+                or not claim.qualifiers.get("assembly_mona_cd")
+                or (n.get("reviewer_stated_mona_cd") is not None
+                    and n.get("reviewer_stated_mona_cd") != claim.qualifiers.get("assembly_mona_cd"))):
             raise ValueError("asset exact reviewed Person linkage is unavailable")
         m = snapshot.metadata
         gazette = GazetteSource.from_mapping({
