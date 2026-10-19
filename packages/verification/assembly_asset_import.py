@@ -22,7 +22,11 @@ from packages.connectors.assembly_asset_packet import (
     ASSET_PACKET_SCHEMA,
     GAZETTE_HOST,
     VALUE_SEMANTICS,
+    AssemblyAssetPacketError,
     AssetItemRow,
+    DeclaredAmount,
+    GazetteLocator,
+    GazetteSource,
     MemberDisclosure,
     ReviewedAssemblyAssetPacket,
 )
@@ -623,10 +627,68 @@ def build_assembly_asset_capture(
     return AssemblyAssetCapture(packet=packet, policy=governing, source=source, snapshot=snapshot)
 
 
+GAZETTE_TOTALS_CROSS_CHECKS = frozenset({"ITEM_SUM_MATCHED", "ITEM_AND_EXCLUDED_HOLDER_SUM_MATCHED"})
+
+
+def gazette_member_total_provenance(
+    source: Source, snapshot: SourceSnapshot, observation: FeederObservation, *,
+    policy: SourcePolicy,
+) -> GazetteSource:
+    """Revalidate one persisted Gazette member total against its exact canonical capture.
+
+    Works on Source/SourceSnapshot/FeederObservation rows alone; the local packet and PDF are
+    not retained, so only their recorded hashes and metadata are compared.
+    """
+    try:
+        governing = effective_gazette_policy([policy])
+    except PolicyDenied as exc:
+        raise AssemblyAssetImportError(f"SourcePolicy denies this Gazette total: {exc}") from None
+    m, n = snapshot.metadata, observation.normalized
+    try:
+        gazette = GazetteSource.from_mapping({
+            "gazette_issue": m.get("gazette_issue"), "gazette_title": m.get("gazette_title"),
+            "publication_date": m.get("publication_date"), "disclosure_kind": m.get("disclosure_kind"),
+            "reporting_period_text": n.get("reporting_period_text"),
+            "reporting_period_start": n.get("reporting_period_start"),
+            "reporting_period_end": n.get("reporting_period_end"), "pdf_id": m.get("pdf_id"),
+            "page_url": str(source.url), "artifact_filename": m.get("artifact_filename"),
+            "artifact_sha256": snapshot.content_hash, "rights_mark": None,
+            "automation_gate": m.get("automation_gate"),
+        })
+        locator = GazetteLocator.from_mapping(n.get("locator"), "total locator")
+    except (AssemblyAssetPacketError, TypeError, AttributeError):
+        raise AssemblyAssetImportError("Gazette total provenance metadata is invalid") from None
+    if (source.policy_id != governing.id or str(source.url) != gazette.canonical_url
+            or snapshot.source_id != source.id or snapshot.fulltext is not None
+            or m.get("source_contract") != ASSEMBLY_ASSET_SOURCE_CONTRACT
+            or m.get("review_status") != "HUMAN_REVIEWED"
+            or not re.fullmatch(r"[0-9a-f]{64}", str(snapshot.content_hash))
+            or observation.snapshot_id != snapshot.id
+            or observation.feeder != ASSEMBLY_ASSET_FEEDER
+            or observation.semantic_scope != ASSEMBLY_ASSET_SEMANTIC_SCOPE
+            or observation.scope_key != f"gazette:{gazette.gazette_issue}:pdf:{gazette.pdf_id}"
+            or observation.content_hash != assembly_asset_observation_hash(dict(n))
+            or observation.provider_record_key != (
+                f"{gazette.gazette_issue}:p{locator.page_number}:t{locator.table_index}:r{locator.table_row}")
+            or n.get("record_kind") != RECORD_KIND_MEMBER_TOTAL
+            or n.get("authority") != AUTHORITY
+            or n.get("gazette_issue") != gazette.gazette_issue
+            or n.get("publication_date") != gazette.publication_date.isoformat()
+            or n.get("amount_unit") != AMOUNT_UNIT or n.get("value_semantics") != VALUE_SEMANTICS
+            or n.get("declared_totals_scope") != TOTALS_SCOPE
+            or n.get("totals_cross_check") not in GAZETTE_TOTALS_CROSS_CHECKS
+            or n.get("relative_items_policy") != RELATIVE_ITEMS_POLICY
+            or not isinstance(n.get("printed_member_name"), str)):
+        raise AssemblyAssetImportError("Gazette total immutable metadata provenance differs")
+    return gazette
+
+
 def build_assembly_asset_total_claim(
-    capture: AssemblyAssetCapture,
+    source: Source,
+    snapshot: SourceSnapshot,
     observation: FeederObservation,
     *,
+    policy: SourcePolicy,
     person: Person,
     link: PersonObservationLink,
     review: IdentityReviewItem,
@@ -635,61 +697,61 @@ def build_assembly_asset_total_claim(
 ) -> tuple[Claim, ClaimEvidence]:
     """Stage one exact reviewed linkage; never create/link a Person or write rows.
 
-    The caller obtains official_member_code from the canonical Assembly roster context.
-    Reviewer-stated codes and names alone cannot authorize the supplied reviewed link.
+    The caller obtains official_member_code from the canonical current Assembly roster
+    context. A reviewer-stated packet code may be absent; when present it must equal that
+    official code. Reviewer-stated codes and names alone never authorize the link.
     Publication is a separate explicit decision, and needs reviewed source terms.
     """
-    candidates = capture.observations(observation.run_id)
-    expected = next((item for item in candidates if
-                     item.provider_record_key == observation.provider_record_key), None)
-    if (expected is None or expected.content_hash != observation.content_hash
-            or expected.normalized != observation.normalized
-            or observation.snapshot_id != capture.snapshot.id
-            or observation.normalized.get("record_kind") != RECORD_KIND_MEMBER_TOTAL):
-        raise AssemblyAssetImportError("asset total observation does not match reviewed capture")
+    gazette = gazette_member_total_provenance(source, snapshot, observation, policy=policy)
+    n = observation.normalized
     _require_reviewed_asset_subject(person, observation, link, review)
-    code = observation.normalized.get("reviewer_stated_mona_cd")
-    if not code or code != official_member_code:
+    stated = n.get("reviewer_stated_mona_cd")
+    if not official_member_code or (stated is not None and stated != official_member_code):
         raise AssemblyAssetImportError("asset total requires the exact canonical Assembly code")
-    amount = observation.normalized["declared_totals"]["current_value"]
+    totals = n.get("declared_totals")
+    try:
+        amount = DeclaredAmount.from_mapping(
+            totals.get("current_value") if isinstance(totals, dict) else None, "current_value")
+    except AssemblyAssetPacketError:
+        raise AssemblyAssetImportError("asset total current value is invalid") from None
     if amount is None:
         raise AssemblyAssetImportError("asset total current value is unavailable, never zero")
     if publication_approved and (
-        not capture.policy.license or capture.policy.terms_checked_at is None
-        or not capture.packet.source.rights_mark
+        not policy.license or policy.terms_checked_at is None
+        or snapshot.metadata.get("rights_mark") in {None, "", "NOT_STATED"}
     ):
         raise AssemblyAssetImportError("asset publication requires reviewed issue rights and SourcePolicy terms")
     claim_id = uuid5(_POLICY_NAMESPACE, "|".join((str(person.id),
         ASSEMBLY_ASSET_TOTAL_PREDICATE, observation.provider_record_key, observation.content_hash)))
     claim = Claim(
         id=claim_id, person_id=person.id, subject=person.canonical_name,
-        proposition=f"{person.canonical_name}의 국회공보 신고 재산 총액은 {amount['value']:,}천원이다.",
-        predicate=ASSEMBLY_ASSET_TOTAL_PREDICATE, object_text=f"{amount['value']:,}천원",
+        proposition=f"{person.canonical_name}의 국회공보 신고 재산 총액은 {amount.value:,}천원이다.",
+        predicate=ASSEMBLY_ASSET_TOTAL_PREDICATE, object_text=f"{amount.value:,}천원",
         qualifiers={
             "source_contract": ASSEMBLY_ASSET_SOURCE_CONTRACT,
             "provider_record_key": observation.provider_record_key,
             "immutable_observation_hash": observation.content_hash,
-            "reviewed_packet_hash": capture.packet_hash,
+            "reviewed_packet_hash": snapshot.metadata.get("reviewed_packet_hash"),
             "assembly_mona_cd": official_member_code,
-            "review_item_id": str(review.id),
-            "amount_thousand_krw": str(amount["value"]), "amount_unit": AMOUNT_UNIT,
+            "review_item_id": str(review.id), "identity_basis": "REVIEWED_SOURCE_CONTEXT",
+            "amount_thousand_krw": str(amount.value), "amount_unit": AMOUNT_UNIT,
             "value_semantics": VALUE_SEMANTICS, "declared_totals_scope": TOTALS_SCOPE,
-            "publication_date": observation.normalized["publication_date"],
-            "gazette_issue": capture.packet.source.gazette_issue,
-            "report_type": observation.normalized["report_type"],
-            "reporting_period_text": observation.normalized["reporting_period_text"],
+            "publication_date": gazette.publication_date.isoformat(),
+            "gazette_issue": gazette.gazette_issue, "pdf_id": gazette.pdf_id,
+            "report_type": n["report_type"],
+            "reporting_period_text": n["reporting_period_text"],
         },
         epistemic_status=EpistemicStatus.CLAIM, asserted_as_true=False,
         publication_status=PublicationStatus.PUBLISHED if publication_approved else PublicationStatus.DRAFT,
-        valid_from=capture.source.published_at or observation.recorded_at,
+        valid_from=datetime.combine(gazette.publication_date, time(), tzinfo=_KST),
         recorded_at=observation.recorded_at,
     )
     evidence = ClaimEvidence(id=uuid5(claim.id, str(observation.id)), claim_id=claim.id,
-        source_id=capture.source.id, snapshot_id=capture.snapshot.id,
+        source_id=source.id, snapshot_id=snapshot.id,
         feeder_observation_id=observation.id, stance=EvidenceStance.SUPPORT, excerpt=None)
     if publication_approved:
         gate = validate_claim_publication(claim, person, [evidence],
-            {capture.source.id: capture.source}, {capture.policy.id: capture.policy})
+            {source.id: source}, {policy.id: policy})
         if not gate.publishable:
             raise AssemblyAssetImportError("asset total publication gate rejected the reviewed claim")
     return claim, evidence

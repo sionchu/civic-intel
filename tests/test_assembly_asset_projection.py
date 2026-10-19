@@ -52,10 +52,12 @@ def project(capture, observation, person, link, claim, evidence):
 
 def test_draft_default_is_absent_and_published_integer_total_is_exact():
     capture, observation, person, review, link = prepared()
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001")
     assert project(capture, observation, person, link, claim, evidence) == []
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001", publication_approved=True)
     rows = project(capture, observation, person, link, claim, evidence)
     assert rows[0]["amount_thousand_krw"] == 195000
@@ -75,13 +77,15 @@ def test_staging_requires_exact_reviewed_identity(bad):
     if bad == "review":
         review = review.model_copy(update={"status": IdentityReviewStatus.OPEN})
     with pytest.raises(AssemblyAssetImportError):
-        build_assembly_asset_total_claim(capture, observation, person=person,
+        build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
             link=link, review=review, official_member_code=code)
 
 
 def test_reader_rejects_tampered_amount_and_absent_link():
     capture, observation, person, review, link = prepared()
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001", publication_approved=True)
     tampered = claim.model_copy(update={"qualifiers": claim.qualifiers | {"amount_thousand_krw": "0"}})
     with pytest.raises(ValueError):
@@ -103,7 +107,8 @@ def test_assets_empty_coverage_is_not_zero_or_an_error(tmp_path):
 
 def test_unpublished_corrected_sibling_blocks_old_published_total():
     capture, observation, person, review, link = prepared()
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001", publication_approved=True)
     correction = observation.model_copy(update={"id": uuid4(), "content_hash": "f" * 64})
     from packages.rendering.money_projection import AssetSourceVersionConflict
@@ -117,7 +122,8 @@ def test_unpublished_corrected_sibling_blocks_old_published_total():
 
 def test_reader_rejects_snapshot_publication_date_drift():
     capture, observation, person, review, link = prepared()
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001", publication_approved=True)
     capture = capture.__class__(capture.packet, capture.policy, capture.source,
         capture.snapshot.model_copy(update={"metadata": capture.snapshot.metadata | {"publication_date": "2099-03-27"}}))
@@ -127,7 +133,8 @@ def test_reader_rejects_snapshot_publication_date_drift():
 
 def test_source_publication_instant_normalized_to_utc_keeps_korean_date():
     capture, observation, person, review, link = prepared()
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001", publication_approved=True)
     capture = capture.__class__(capture.packet, capture.policy,
         capture.source.model_copy(update={"published_at": capture.source.published_at.astimezone(UTC)}),
@@ -143,7 +150,8 @@ def test_api_rejects_asset_observation_also_linked_to_another_person(tmp_path, m
     capture, observation, _, review, link = prepared()
     review = review.model_copy(update={"candidate_person_id": person.id})
     link = link.model_copy(update={"person_id": person.id})
-    claim, evidence = build_assembly_asset_total_claim(capture, observation, person=person,
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person,
         link=link, review=review, official_member_code="SYNTH001", publication_approved=True)
     monkeypatch.setattr(repository, "published_person_claim_contexts",
         lambda *args, **kwargs: {person.id: ([claim], {claim.id: [evidence]})})
@@ -155,3 +163,26 @@ def test_api_rejects_asset_observation_also_linked_to_another_person(tmp_path, m
         response = client.get(f"/people/{person.id}/assets")
         assert response.status_code == 503
         assert "195000" not in response.text
+
+
+@pytest.mark.parametrize("variant", ["excluded_holder", "no_stated_code"])
+def test_reviewed_total_with_excluded_holders_or_roster_only_code_projects(variant):
+    from tests.test_assembly_asset_disclosure import _with_excluded_holder
+    raw = _with_excluded_holder()
+    if variant == "no_stated_code":
+        raw["members"][0].update(reviewer_stated_mona_cd=None, mona_cd_basis=None)
+    policy = gazette_asset_policy().model_copy(update={
+        "license": "SYNTHETIC_TEST_ONLY", "terms_checked_at": datetime.now(UTC),
+    })
+    capture = build_assembly_asset_capture(parse_reviewed_assembly_asset_packet(raw),
+        artifact_bytes=ARTIFACT_BYTES, policy=policy)
+    observation = capture.observations(uuid4())[0]
+    _, _, person, review, link = prepared()
+    review = review.model_copy(update={"observation_id": observation.id})
+    link = link.model_copy(update={"observation_id": observation.id})
+    claim, evidence = build_assembly_asset_total_claim(capture.source, capture.snapshot, observation,
+        policy=capture.policy, person=person, link=link, review=review,
+        official_member_code="SYNTH001", publication_approved=True)
+    rows = project(capture, observation, person, link, claim, evidence)
+    assert rows[0]["amount_thousand_krw"] == observation.normalized["declared_totals"]["current_value"]["value"]
+    assert claim.qualifiers["assembly_mona_cd"] == "SYNTH001"
